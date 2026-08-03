@@ -21,4 +21,5 @@
 - [Sequence drift after data migration](db-sequence-drift.md) — rows copied with explicit ids leave id counters behind; every insert then dies on a duplicate PK. Drizzle hides the real cause — replay the query.
 - [Leaving Replit breaks two things](replit-bound-dependencies.md) — object-storage sidecar + repl-bound OIDC have no off-platform equivalent; plus the single-service host checklist.
 - [Image storage architecture](gcs-image-storage.md) — photos live on an external image CDN + IndexedDB, never as bytes in Neon; legacy image endpoints redirect to the CDN.
+- [Clean GitHub history](clean-github-history.md) — never delete the workspace .git (checkpoints/task agents); publish an orphan commit via plumbing + symbolic-ref instead.
 - [Self-hosted auth portability](auth-portability.md) — scrypt + JWT cookie, re-read the user row per request; claiming provider-era accounts by email is a takeover hole unless code-gated.

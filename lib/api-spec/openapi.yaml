@@ -1,0 +1,2313 @@
+openapi: 3.1.0
+info:
+  # Do not change the title, if the title changes, the import paths will be broken
+  title: Api
+  version: 0.1.0
+  description: API specification
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: plants
+    description: Plant scanning, identification, and archive operations
+  - name: insects
+    description: Insect scanning, identification, and archive operations
+  - name: geo
+    description: Offline reverse-geocoding for coarse scan location.
+  - name: Auth
+    description: Email/password accounts and sign-in.
+  - name: users
+    description: Account management for the private-access model (owner only).
+  - name: favorites
+    description: Per-user plant favourites.
+  - name: tasks
+    description: Plant care tasks and reminders.
+paths:
+  /geo/reverse:
+    post:
+      operationId: reverseGeocode
+      tags: [geo]
+      summary: Reverse-geocode coordinates to a DACH city name
+      description: >
+        Accepts WGS-84 latitude/longitude and returns the name of the nearest
+        major city in Germany, Austria, or Switzerland. Lookup is performed
+        from a bundled dataset — no external API call, no API key needed.
+        The returned region string is intended to be stored on a scan row;
+        coordinates themselves are never persisted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GeoReverseInput"
+      responses:
+        "200":
+          description: Nearest city name
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeoReverseResult"
+        "400":
+          description: Invalid coordinates
+        "401":
+          description: Not signed in
+  /plants/health-check:
+    post:
+      operationId: checkPlantHealth
+      tags: [plants]
+      summary: Analyse a plant photo for health issues and suggest home remedies
+      description: >
+        Sends the provided photo to a vision-capable AI model and returns a
+        health score (0–100), a list of detected symptoms, and biological home
+        remedies in German. Stateless — nothing is persisted to the archive.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlantHealthInput"
+      responses:
+        "200":
+          description: Health analysis result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlantHealthResult"
+        "400":
+          description: Invalid input (missing or non-image data URL)
+        "503":
+          description: AI unavailable (missing API key or model overloaded)
+  /plants/scan:
+    post:
+      operationId: scanPlant
+      tags: [plants]
+      summary: Identify a plant from a photo and save it to the archive
+      description: >
+        Sends the provided photo to a vision-capable AI model, generates a
+        full German fact sheet (edibility, animal toxicity, active
+        ingredients, human and poultry benefits), auto-categorizes the
+        result, and persists it to the archive.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlantScanInput"
+      responses:
+        "201":
+          description: Plant identified and saved (or matched to an existing archive entry)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlantScanResult"
+        "400":
+          description: Invalid input
+        "502":
+          description: AI identification failed
+  /plants:
+    get:
+      operationId: listPlants
+      tags: [plants]
+      summary: List archived plants
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            $ref: "#/components/schemas/PlantCategory"
+      responses:
+        "200":
+          description: List of plants, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plant"
+  /plants/{id}:
+    get:
+      operationId: getPlant
+      tags: [plants]
+      summary: Get a single archived plant
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Plant found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plant"
+        "404":
+          description: Plant not found
+    delete:
+      operationId: deletePlant
+      tags: [plants]
+      summary: Delete an archived plant
+      description: Requires the archive password, which is verified server-side.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeletePlantInput"
+      responses:
+        "204":
+          description: Deleted
+        "400":
+          description: Missing or invalid request body
+        "403":
+          description: Wrong password
+        "404":
+          description: Plant not found
+        "503":
+          description: Delete is not configured (server password is unset)
+    patch:
+      operationId: updatePlant
+      tags: [plants]
+      summary: Update fields of an archived plant (maintenance)
+      description: >
+        Password-protected maintenance endpoint used to recompress stored
+        photos and backfill new fact-sheet fields on existing entries. The
+        archive password is verified server-side.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdatePlantInput"
+      responses:
+        "200":
+          description: Updated plant
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plant"
+        "400":
+          description: Missing/invalid body or no updatable fields provided
+        "403":
+          description: Wrong password
+        "404":
+          description: Plant not found
+        "503":
+          description: Updates are not configured (server password is unset)
+  /plants/{id}/image:
+    get:
+      operationId: getPlantImage
+      tags: [plants]
+      summary: Get the stored photo of an archived plant as a binary image
+      description: >
+        Serves the scanned photo as a real image response (instead of a
+        base64 data URL embedded in JSON) so list/detail payloads stay small
+        and browsers can cache photos.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: >
+            The stored photo. Typically JPEG; the Content-Type header always
+            reflects the actual stored format (allowlisted image types only).
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid id
+        "404":
+          description: Plant not found or no image stored
+  /plants/{id}/image/side:
+    get:
+      operationId: getPlantSideImage
+      tags: [plants]
+      summary: Get the stored side-view photo of an entry as a binary image
+      description: >
+        Serves the optional second photo (side view) captured by the
+        two-photo mushroom scan. 404 when the entry has no side view
+        (plants and legacy single-photo mushroom entries).
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: >
+            The stored side-view photo. Typically JPEG; the Content-Type
+            header always reflects the actual stored format (allowlisted
+            image types only).
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "400":
+          description: Invalid id
+        "404":
+          description: Plant not found or no side image stored
+  /plants/animals/backfill:
+    post:
+      operationId: backfillPlantAnimals
+      tags: [plants]
+      summary: Backfill missing per-animal fact sheets (owner only, batched)
+      description: >
+        Generates the per-animal fact sheet (poultry, rabbit, guinea pig, cat, horse)
+        for archived plants that were scanned before the feature existed.
+        Processes a small batch per call and is idempotent; the client calls it
+        repeatedly until `done` is true. Owner-only.
+      responses:
+        "200":
+          description: Batch processed; reports progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillAnimalsResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/edible-medicinal/backfill:
+    post:
+      operationId: backfillEdibleMedicinal
+      tags: [plants]
+      summary: Promote edible plants to medicinal where current phytotherapy supports it (owner only, batched)
+      description: >
+        Reviews each plant currently categorised as "edible" against modern
+        phytotherapy standards using a text-only AI prompt. Plants that are
+        recognised as medicinal herbs today are promoted to "medicinal" and
+        have their symptoms and symptomApplications reset so the existing
+        backfills re-derive them under the new category. Processes a small
+        batch per call and is idempotent (uses medicinalVerifiedAt as marker);
+        the client calls it repeatedly until `done` is true. Owner-only.
+      responses:
+        "200":
+          description: Batch processed; reports progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillEdibleMedicinalResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/medicinal-review/backfill:
+    post:
+      operationId: backfillPlantMedicinalReview
+      tags: [plants]
+      summary: Re-evaluate stored medicinal plants against current phytotherapy standards (owner only, batched)
+      description: >
+        Checks each plant currently categorised as "medicinal" against modern
+        phytotherapy standards using a text-only AI prompt. Plants that are no
+        longer recommended as medicinal herbs (e.g. due to toxicity or outdated
+        practices) are reclassified to "poisonous" or "edible" accordingly.
+        Processes a small batch per call and is idempotent; the client calls it
+        repeatedly until `done` is true. Owner-only.
+      responses:
+        "200":
+          description: Batch processed; reports progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillMedicinalReviewResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/symptom-applications/backfill:
+    post:
+      operationId: backfillPlantSymptomApplications
+      tags: [plants]
+      summary: Backfill missing symptom application instructions (owner only, batched)
+      description: >
+        Generates per-symptom application instructions (how to prepare/use the herb
+        to treat each complaint) for archived plants that were scanned before this
+        feature existed. Processes a small batch per call and is idempotent; the
+        client calls it repeatedly until `done` is true. Owner-only.
+      responses:
+        "200":
+          description: Batch processed; reports progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillSymptomApplicationsResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/symptoms/backfill:
+    post:
+      operationId: backfillPlantSymptoms
+      tags: [plants]
+      summary: Backfill missing treatable-symptom tags (owner only, batched)
+      description: >
+        Derives treatable-symptom tags per target (human, poultry, rabbit,
+        guinea pig, cat, horse) from each plant's stored Heilwirkung for archived plants
+        that were scanned before the "Kräuter-Hexe" feature existed. Processes a
+        small batch per call and is idempotent; the client calls it repeatedly
+        until `done` is true. Owner-only.
+      responses:
+        "200":
+          description: Batch processed; reports progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillSymptomsResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/symptoms/casing/backfill:
+    post:
+      operationId: backfillPlantSymptomCasing
+      tags: [plants]
+      summary: Normalise symptom tag casing in existing rows (owner only)
+      description: >
+        One-time idempotent migration that applies sentence-case normalisation
+        to every symptom tag stored in the database, and re-keys
+        symptomApplications to match. Rows where every tag is already correct
+        are skipped. No AI generation is needed — pure data transformation.
+        Owner-only.
+      responses:
+        "200":
+          description: Normalisation complete; reports how many rows were updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillSymptomCasingResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/fruits/backfill:
+    post:
+      operationId: backfillPlantFruits
+      tags: [plants]
+      summary: Backfill missing edible-fruits classification (owner only, batched)
+      description: >
+        Classifies whether each tree/shrub has edible fruits. Processes a small
+        batch per call and is idempotent; the client calls it repeatedly until
+        `done` is true. Owner-only.
+      responses:
+        "200":
+          description: Batch processed; reports progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillFruitsResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/preparation/backfill:
+    post:
+      operationId: backfillPlantPreparation
+      tags: [plants]
+      summary: Backfill missing preparation info for edible plants (owner only, batched)
+      description: >
+        Generates a short German preparation description for edible plants that
+        were scanned before this field existed. Processes a small batch per call
+        and is idempotent; the client calls it repeatedly until `done` is true.
+        Owner-only.
+      responses:
+        "200":
+          description: Batch processed; reports progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillPreparationResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/toxicity/backfill:
+    post:
+      operationId: backfillPlantToxicity
+      tags: [plants]
+      summary: Backfill missing toxicity-level classifications (owner only, batched)
+      description: >
+        Classifies the three-tier toxicity level (intolerant/poisonous/lethal) for
+        archived plants whose humanToxicityLevel or per-animal toxicityLevel is still
+        null. Processes a small batch per call and is idempotent; the client calls it
+        repeatedly until `done` is true. Owner-only.
+      responses:
+        "200":
+          description: Batch processed; reports progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BackfillToxicityResult"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /plants/my-scans:
+    get:
+      operationId: listMyScans
+      tags: [plants]
+      summary: List plants scanned by the current user
+      responses:
+        "200":
+          description: Plants scanned by the signed-in user, newest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Plant"
+        "401":
+          description: Not signed in
+  /tasks:
+    get:
+      operationId: listTasks
+      tags: [tasks]
+      summary: List all tasks for the current user
+      responses:
+        "200":
+          description: List of tasks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Task"
+        "401":
+          description: Not signed in
+    post:
+      operationId: createTask
+      tags: [tasks]
+      summary: Create a new plant care task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTaskInput"
+      responses:
+        "201":
+          description: Task created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Invalid input
+        "401":
+          description: Not signed in
+  /tasks/{id}/complete:
+    patch:
+      operationId: completeTask
+      tags: [tasks]
+      summary: Mark a task as completed (resets the reminder cycle)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "401":
+          description: Not signed in
+        "404":
+          description: Task not found
+  /tasks/{id}:
+    patch:
+      operationId: updateTask
+      tags: [tasks]
+      summary: Update an existing task's fields
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaskInput"
+      responses:
+        "200":
+          description: Updated task
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Task"
+        "400":
+          description: Validation error
+        "404":
+          description: Task not found
+    delete:
+      operationId: deleteTask
+      tags: [tasks]
+      summary: Permanently delete a task
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Not signed in
+        "404":
+          description: Task not found
+  /care-guides:
+    get:
+      operationId: listCareGuides
+      tags: [careGuides]
+      summary: List all care guides for the current user
+      responses:
+        "200":
+          description: List of care guides
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CareGuide"
+        "401":
+          description: Not signed in
+    post:
+      operationId: createCareGuide
+      tags: [careGuides]
+      summary: Generate a 30-day care guide using AI
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCareGuideInput"
+      responses:
+        "201":
+          description: Care guide created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareGuide"
+        "400":
+          description: Invalid input
+        "401":
+          description: Not signed in
+        "503":
+          description: AI generation unavailable
+  /care-guides/{id}:
+    get:
+      operationId: getCareGuide
+      tags: [careGuides]
+      summary: Get a single care guide by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The care guide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareGuide"
+        "401":
+          description: Not signed in
+        "404":
+          description: Not found
+    delete:
+      operationId: deleteCareGuide
+      tags: [careGuides]
+      summary: Delete a care guide
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+        "401":
+          description: Not signed in
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCareGuide
+      tags: [careGuides]
+      summary: Update reminder settings or completed days for a care guide
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateCareGuideInput"
+      responses:
+        "200":
+          description: Updated care guide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareGuide"
+        "400":
+          description: Invalid input
+        "401":
+          description: Not signed in
+        "404":
+          description: Not found
+  /care-guides/{id}/day30-photo:
+    patch:
+      operationId: uploadDay30Photo
+      tags: [careGuides]
+      summary: Upload the day-30 vitality photo and mark the guide as completed
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadDay30PhotoInput"
+      responses:
+        "200":
+          description: Updated care guide
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareGuide"
+        "400":
+          description: Invalid input
+        "401":
+          description: Not signed in
+        "404":
+          description: Not found
+  /favorites:
+    get:
+      operationId: listFavorites
+      tags: [favorites]
+      summary: Get the IDs of all plants the current user has favourited
+      responses:
+        "200":
+          description: Plant IDs favourited by the signed-in user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FavoriteIds"
+        "401":
+          description: Not signed in
+  /favorites/{plantId}:
+    post:
+      operationId: addFavorite
+      tags: [favorites]
+      summary: Mark a plant as a favourite
+      parameters:
+        - name: plantId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Added (or was already a favourite — idempotent)
+        "401":
+          description: Not signed in
+        "404":
+          description: Plant not found
+    delete:
+      operationId: removeFavorite
+      tags: [favorites]
+      summary: Remove a plant from favourites
+      parameters:
+        - name: plantId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed (or was not a favourite — idempotent)
+        "401":
+          description: Not signed in
+  /plants/categories/summary:
+    get:
+      operationId: getCategorySummary
+      tags: [plants]
+      summary: Get plant counts grouped by category
+      responses:
+        "200":
+          description: Counts per category
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CategoryCount"
+  /auth/user:
+    get:
+      tags: [Auth]
+      operationId: getCurrentAuthUser
+      summary: Get the currently authenticated user
+      parameters:
+        - $ref: "#/components/parameters/AuthorizationSessionHeader"
+        - $ref: "#/components/parameters/SessionCookie"
+      responses:
+        "200":
+          description: Auth status resolved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserEnvelope"
+  /auth/register:
+    post:
+      tags: [Auth]
+      operationId: registerAccount
+      summary: Create an account (or claim one that has no password yet)
+      description: >
+        Creates a new account and signs it in. If an account with this email
+        already exists but has no password (it predates the switch to
+        email/password sign-in), the password is attached to that account so its
+        scans, leaves and approval status are preserved. The first account ever
+        created becomes the owner and is approved automatically; all others
+        start unapproved.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+      responses:
+        "201":
+          description: Account created and signed in.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserEnvelope"
+        "400":
+          description: Invalid email or password.
+        "403":
+          description: Registration code required or wrong.
+        "409":
+          description: An account with this email already exists.
+  /auth/login:
+    post:
+      tags: [Auth]
+      operationId: loginWithPassword
+      summary: Sign in with email and password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Signed in; the session cookie is set.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserEnvelope"
+        "401":
+          description: Wrong email or password.
+        "429":
+          description: Too many failed attempts; try again later.
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: Sign out (clears the session cookie)
+      responses:
+        "200":
+          description: Signed out.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResult"
+  /users:
+    get:
+      tags: [users]
+      operationId: listUsers
+      summary: List all accounts that have ever signed in (owner only)
+      responses:
+        "200":
+          description: All accounts, owner first, then by sign-up date
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ManagedUser"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /users/{id}:
+    patch:
+      tags: [users]
+      operationId: updateUserApproval
+      summary: Approve or revoke an account (owner only)
+      description: >
+        Grants or revokes app access for an account. Revoking also deletes
+        all sessions of that account so it is signed out everywhere. The
+        owner account cannot be modified.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateUserApprovalInput"
+      responses:
+        "200":
+          description: Updated account
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManagedUser"
+        "400":
+          description: Invalid body or attempt to modify the owner account
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+        "404":
+          description: Account not found
+    delete:
+      tags: [users]
+      operationId: deleteUser
+      summary: Remove an account and all its sessions (owner only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Removed
+        "400":
+          description: Attempt to remove the owner account
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+        "404":
+          description: Account not found
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      description: Returns server health status
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+  /insects/scan:
+    post:
+      operationId: scanInsect
+      tags: [insects]
+      summary: Identify an insect from a photo and save it to the archive
+      description: >
+        Sends the provided photo to a vision-capable AI model, generates a
+        German fact sheet (category, relation to garden plants, description,
+        treatment tips for pests), deduplicates by scientific name, and
+        persists the result to the archive.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanInsectInput"
+      responses:
+        "201":
+          description: Insect identified and saved (or matched to an existing archive entry)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanInsectResult"
+        "400":
+          description: Invalid input
+        "422":
+          description: Photo does not show an insect
+        "502":
+          description: AI identification failed
+  /insects:
+    get:
+      operationId: listInsects
+      tags: [insects]
+      summary: List all archived insects, newest first
+      responses:
+        "200":
+          description: List of insects
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Insect"
+  /insects/my-scans:
+    get:
+      operationId: listMyInsects
+      tags: [insects]
+      summary: List insects scanned by the current user, most-recently-scanned first
+      responses:
+        "200":
+          description: List of insects scanned by the current user
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Insect"
+        "401":
+          description: Not signed in
+  /insects/{id}:
+    get:
+      operationId: getInsect
+      tags: [insects]
+      summary: Get a single archived insect
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Insect entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Insect"
+        "404":
+          description: Not found
+  /insects/{id}/image:
+    get:
+      operationId: getInsectImage
+      tags: [insects]
+      summary: Serve the stored insect photo as an image
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Insect photo
+          content:
+            image/jpeg:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Not found
+  /leaderboard:
+    get:
+      operationId: getLeaderboard
+      tags: [leaderboard]
+      summary: Get the leaves leaderboard (top 50 plus the caller's own entry)
+      responses:
+        "200":
+          description: Leaderboard entries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LeaderboardResult"
+        "401":
+          description: Not signed in
+  /push/public-key:
+    get:
+      operationId: getPushPublicKey
+      tags: [push]
+      summary: Get the server's VAPID public key for push subscriptions
+      responses:
+        "200":
+          description: VAPID public key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushPublicKey"
+        "401":
+          description: Not signed in
+  /push/subscribe:
+    post:
+      operationId: subscribePush
+      tags: [push]
+      summary: Register this browser's push subscription for the current user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushSubscriptionInput"
+      responses:
+        "204":
+          description: Subscription stored
+        "400":
+          description: Invalid input
+        "401":
+          description: Not signed in
+  /push/unsubscribe:
+    post:
+      operationId: unsubscribePush
+      tags: [push]
+      summary: Remove a stored push subscription by its endpoint URL
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PushUnsubscribeInput"
+      responses:
+        "204":
+          description: Subscription removed (or was not stored)
+        "400":
+          description: Invalid input
+        "401":
+          description: Not signed in
+  /push/test:
+    post:
+      operationId: sendTestPush
+      tags: [push]
+      summary: Send a test push notification to all of the user's devices
+      responses:
+        "200":
+          description: Number of devices the test was sent to
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PushTestResult"
+        "401":
+          description: Not signed in
+components:
+  parameters:
+    AuthorizationSessionHeader:
+      name: Authorization
+      in: header
+      required: false
+      description: Signed session token — `Bearer <token>`.
+      schema:
+        type: string
+    SessionCookie:
+      name: auth
+      in: cookie
+      required: false
+      description: Browser session cookie holding the signed token.
+      schema:
+        type: string
+  schemas:
+    GeoReverseInput:
+      type: object
+      required: [lat, lon]
+      properties:
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: WGS-84 latitude.
+        lon:
+          type: number
+          minimum: -180
+          maximum: 180
+          description: WGS-84 longitude.
+    OkResult:
+      type: object
+      required: [ok]
+      properties:
+        ok:
+          type: boolean
+    GeoReverseResult:
+      type: object
+      required: [region]
+      properties:
+        region:
+          type: string
+          description: German name of the nearest major DACH city (e.g. "München").
+    LeaderboardEntry:
+      type: object
+      required: [rank, userId, username, leavesCount, isCurrentUser]
+      properties:
+        rank:
+          type: integer
+        userId:
+          type: string
+        username:
+          type: string
+        leavesCount:
+          type: integer
+        isCurrentUser:
+          type: boolean
+    LeaderboardResult:
+      type: object
+      required: [top, own]
+      properties:
+        top:
+          type: array
+          items:
+            $ref: "#/components/schemas/LeaderboardEntry"
+        own:
+          description: The caller's own entry, present even when outside the top 50.
+          oneOf:
+            - $ref: "#/components/schemas/LeaderboardEntry"
+            - type: 'null'
+    PushPublicKey:
+      type: object
+      properties:
+        publicKey:
+          type: string
+      required:
+        - publicKey
+    PushSubscriptionInput:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          minLength: 1
+        keys:
+          type: object
+          properties:
+            p256dh:
+              type: string
+              minLength: 1
+            auth:
+              type: string
+              minLength: 1
+          required:
+            - p256dh
+            - auth
+      required:
+        - endpoint
+        - keys
+    PushUnsubscribeInput:
+      type: object
+      properties:
+        endpoint:
+          type: string
+          minLength: 1
+      required:
+        - endpoint
+    PushTestResult:
+      type: object
+      properties:
+        sent:
+          type: integer
+      required:
+        - sent
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+    PlantCategory:
+      type: string
+      description: >
+        Auto-categorization bucket used to sort the archive: poisonous
+        (Giftige Pflanzen), edible (Essbare Pflanzen), medicinal
+        (Heilkräuter), mushroom (Pilze), tree (Bäume), shrub (Sträucher),
+        moss (Moose), cactus (Kakteen und Sukkulenten).
+      enum: [poisonous, edible, medicinal, mushroom, tree, shrub, moss, cactus]
+    HumanStatus:
+      type: string
+      description: Deterministic human edibility status driving the "Status Mensch" badge.
+      enum: [edible, poisonous]
+    PoultryStatus:
+      type: string
+      description: Deterministic poultry safety status driving the "Status Geflügel" badge.
+      enum: [safe, poisonous]
+    ToxicityLevel:
+      type: string
+      description: >
+        Degree of toxicity shown as a sublabel under the "GIFTIG" badge.
+        intolerant = unverträglich (mild, digestive upset),
+        poisonous = giftig (toxic, systemic effects),
+        lethal = tödlich (potentially fatal).
+        Only present when the status is "poisonous".
+      enum: [intolerant, poisonous, lethal]
+    AnimalInfo:
+      type: object
+      description: >
+        Per-animal fact sheet: safety status plus the German toxicity
+        explanation and medicinal benefits for one specific animal.
+      required: [status, toxicityDetails, benefits]
+      properties:
+        status:
+          $ref: "#/components/schemas/PoultryStatus"
+        toxicityLevel:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ToxicityLevel"
+        toxicityDetails:
+          type: string
+          description: German explanation of toxicity/tolerance for this animal.
+        benefits:
+          type: string
+          description: German medicinal benefits for this animal.
+    PlantAnimals:
+      type: object
+      description: >
+        Per-animal fact sheets keyed by animal. All keys are optional so legacy
+        rows (empty object) stay valid; the UI falls back to the legacy poultry
+        columns when a key is missing.
+      properties:
+        poultry:
+          $ref: "#/components/schemas/AnimalInfo"
+        rabbit:
+          $ref: "#/components/schemas/AnimalInfo"
+        guineaPig:
+          $ref: "#/components/schemas/AnimalInfo"
+        cat:
+          $ref: "#/components/schemas/AnimalInfo"
+        horse:
+          $ref: "#/components/schemas/AnimalInfo"
+    BackfillAnimalsResult:
+      type: object
+      description: Progress of the one-time per-animal backfill batch.
+      required: [processed, remaining, done]
+      properties:
+        processed:
+          type: integer
+          description: Number of plants filled in this batch.
+        remaining:
+          type: integer
+          description: Plants still missing per-animal info after this batch.
+        done:
+          type: boolean
+          description: True when no plants remain to backfill.
+    PlantSymptoms:
+      type: object
+      description: >
+        Treatable complaints/symptoms per target (human + 5 animals), as short
+        canonical German tags derived from the plant's Heilwirkung. Each target
+        is optional; a missing key means the plant has not been processed yet,
+        while an empty array means nothing treatable for that target. Used only
+        for the "Kräuter-Hexe" filter, never as a safety signal.
+      properties:
+        human:
+          type: array
+          items:
+            type: string
+        poultry:
+          type: array
+          items:
+            type: string
+        rabbit:
+          type: array
+          items:
+            type: string
+        guineaPig:
+          type: array
+          items:
+            type: string
+        cat:
+          type: array
+          items:
+            type: string
+        horse:
+          type: array
+          items:
+            type: string
+    BackfillToxicityResult:
+      type: object
+      description: Progress of the one-time toxicity-level backfill batch.
+      required: [processed, remaining, done]
+      properties:
+        processed:
+          type: integer
+          description: Number of plants filled in this batch.
+        remaining:
+          type: integer
+          description: Plants still missing toxicity-level info after this batch.
+        done:
+          type: boolean
+          description: True when no plants remain to backfill.
+    BackfillFruitsResult:
+      type: object
+      description: Progress of the one-time edible-fruits backfill batch.
+      required: [processed, remaining, done]
+      properties:
+        processed:
+          type: integer
+          description: Number of plants filled in this batch.
+        remaining:
+          type: integer
+          description: Plants still missing edible-fruits classification after this batch.
+        done:
+          type: boolean
+          description: True when no plants remain to backfill.
+    BackfillPreparationResult:
+      type: object
+      description: Progress of the one-time preparation-method backfill batch.
+      required: [processed, remaining, done]
+      properties:
+        processed:
+          type: integer
+          description: Number of plants filled in this batch.
+        remaining:
+          type: integer
+          description: Plants still missing preparation info after this batch.
+        done:
+          type: boolean
+          description: True when no plants remain to backfill.
+    BackfillSymptomCasingResult:
+      type: object
+      description: Result of the one-time symptom casing normalisation pass.
+      required: [processed, updated, done]
+      properties:
+        processed:
+          type: integer
+          description: Total number of plants inspected.
+        updated:
+          type: integer
+          description: Number of plants whose symptom tags were changed.
+        done:
+          type: boolean
+          description: Always true; the entire table is processed in one pass.
+    BackfillSymptomsResult:
+      type: object
+      description: Progress of the one-time treatable-symptom backfill batch.
+      required: [processed, remaining, done]
+      properties:
+        processed:
+          type: integer
+          description: Number of plants filled in this batch.
+        remaining:
+          type: integer
+          description: Plants still missing symptom tags after this batch.
+        done:
+          type: boolean
+          description: True when no plants remain to backfill.
+    BackfillEdibleMedicinalResult:
+      type: object
+      description: Progress of the edible-to-medicinal promotion backfill batch.
+      required: [processed, promoted, remaining, done]
+      properties:
+        processed:
+          type: integer
+          description: Number of edible plants reviewed in this batch.
+        promoted:
+          type: integer
+          description: Number of edible plants promoted to "medicinal" in this batch.
+        remaining:
+          type: integer
+          description: Edible plants still awaiting review after this batch.
+        done:
+          type: boolean
+          description: True when no edible plants remain to be reviewed.
+    BackfillMedicinalReviewResult:
+      type: object
+      description: Progress of the medicinal-plant review backfill batch.
+      required: [processed, reclassified, remaining, done]
+      properties:
+        processed:
+          type: integer
+          description: Number of plants reviewed in this batch.
+        reclassified:
+          type: integer
+          description: Number of plants reclassified away from "medicinal" in this batch.
+        remaining:
+          type: integer
+          description: Plants still awaiting review after this batch.
+        done:
+          type: boolean
+          description: True when no medicinal plants remain to be reviewed.
+    BackfillSymptomApplicationsResult:
+      type: object
+      description: Progress of the one-time symptom-application-instructions backfill batch.
+      required: [processed, remaining, done]
+      properties:
+        processed:
+          type: integer
+          description: Number of plants filled in this batch.
+        remaining:
+          type: integer
+          description: Plants still missing application instructions after this batch.
+        done:
+          type: boolean
+          description: True when no plants remain to backfill.
+    PlantSymptomApplications:
+      type: object
+      description: >
+        Per-target map of symptom tag → short German application instruction
+        describing how to prepare/use the herb to treat that specific complaint.
+        Each target is optional (missing = not yet processed; empty object =
+        nothing applicable). Keys within each target match the canonical symptom
+        tags from PlantSymptoms.
+      properties:
+        human:
+          type: object
+          additionalProperties:
+            type: string
+        poultry:
+          type: object
+          additionalProperties:
+            type: string
+        rabbit:
+          type: object
+          additionalProperties:
+            type: string
+        guineaPig:
+          type: object
+          additionalProperties:
+            type: string
+        cat:
+          type: object
+          additionalProperties:
+            type: string
+        horse:
+          type: object
+          additionalProperties:
+            type: string
+    PlantHealthInput:
+      type: object
+      required: [image]
+      properties:
+        image:
+          type: string
+          description: >
+            Base64-encoded data URL of the plant photo to analyse
+            (e.g. "data:image/jpeg;base64,...").
+    PlantHealthRemedy:
+      type: object
+      required: [name, zutaten, anleitung]
+      properties:
+        name:
+          type: string
+          description: German name of the home remedy.
+        zutaten:
+          type: array
+          items:
+            type: string
+          description: List of ingredients (German).
+        anleitung:
+          type: string
+          description: Short German application instruction.
+    PlantHealthResult:
+      type: object
+      required: [pflanzen_name, gesundheits_score, symptome, hausmittel, duenge_biologisch, duenge_chemisch]
+      properties:
+        pflanzen_name:
+          type: string
+          description: Identified plant name (German common name + botanical name).
+        gesundheits_score:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: >
+            Overall health score: 100 = vollkommen gesund, 0 = sehr krank/absterbend.
+        symptome:
+          type: array
+          items:
+            type: string
+          description: List of detected health issues in German (e.g. "Blattflecken", "Chlorose").
+        hausmittel:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlantHealthRemedy"
+          description: >
+            Biological home remedies to treat the detected issues.
+            Empty when gesundheits_score is 100.
+        duenge_biologisch:
+          type: string
+          description: >
+            General organic/biological fertilizer recommendation for this plant (German).
+        duenge_chemisch:
+          type: string
+          description: >
+            General mineral/chemical fertilizer recommendation for this plant (German).
+    PlantScanInput:
+      type: object
+      required: [image]
+      properties:
+        image:
+          type: string
+          description: >
+            Base64-encoded data URL of the captured/uploaded photo (e.g.
+            "data:image/jpeg;base64,..."). Must be an image data URL
+            (data:image/*;base64,...); other payloads are rejected with 400.
+            The image is used for AI identification but is NOT stored server-side;
+            use localImageId to identify the photo in the device's local store.
+        imageSide:
+          type: string
+          description: >
+            Optional second photo as a base64 data URL - the side view of the
+            two-photo mushroom scan (whole mushroom with stem, gills and stem
+            base). Same format rules as `image`. A mushroom is only ever
+            listed as edible when this side view was provided AND the model
+            confirmed a confident identification; otherwise it is stored as
+            not edible with an explanation.
+        localImageId:
+          type: string
+          description: >
+            Client-generated UUID (crypto.randomUUID()) identifying the photo
+            in the device's local IndexedDB image store. Stored server-side so
+            the client can resolve the local image when displaying the entry.
+            For two-photo mushroom scans, the side image is stored under the
+            derived key "${localImageId}-side" in the same store.
+            Omit for legacy clients that still embed image bytes in the response.
+        locationRegion:
+          type: string
+          description: >
+            Optional coarse location region where the scan was taken
+            (e.g. "München", "Bayern"). Max 80 characters. The client derives
+            this from GPS coordinates via the /geo/reverse endpoint; only the
+            plain text name reaches the server — no coordinates are stored.
+    Plant:
+      type: object
+      required:
+        - id
+        - germanName
+        - botanicalName
+        - category
+        - humanStatus
+        - poultryStatus
+        - edibilityDetails
+        - animalToxicityDetails
+        - activeIngredients
+        - humanBenefits
+        - poultryBenefits
+        - habitat
+        - siteConditions
+        - otherUses
+        - fertilizerTips
+        - animals
+        - symptoms
+        - symptomApplications
+        - hasSideImage
+        - createdAt
+      properties:
+        id:
+          type: integer
+        germanName:
+          type: string
+          description: Common German name of the plant.
+        botanicalName:
+          type: string
+          description: Scientific/botanical (Latin) name of the plant.
+        category:
+          $ref: "#/components/schemas/PlantCategory"
+        humanStatus:
+          $ref: "#/components/schemas/HumanStatus"
+        poultryStatus:
+          $ref: "#/components/schemas/PoultryStatus"
+        edibilityDetails:
+          type: string
+          description: German-language explanation of edibility/toxicity for humans.
+        animalToxicityDetails:
+          type: string
+          description: German-language explanation of toxicity for poultry/chickens and general animals.
+        activeIngredients:
+          type: string
+          description: Inhaltsstoffe - active ingredients/compounds, in German.
+        humanBenefits:
+          type: string
+          description: Medical benefits for humans (illnesses/symptoms it helps against), in German.
+        poultryBenefits:
+          type: string
+          description: Medical benefits for poultry (e.g. respiratory health, digestion), in German.
+        habitat:
+          type: string
+          description: >
+            Where the plant usually grows - typical habitats and locations
+            (e.g. Wiesen, Wegränder, Waldränder), in German. Empty string
+            when unknown for legacy entries.
+        siteConditions:
+          type: string
+          description: >
+            Site requirements the location must fulfil for the plant to grow
+            (light, soil, moisture, nutrients), in German. Empty string when
+            unknown for legacy entries.
+        otherUses:
+          type: string
+          description: >
+            "Weitere Nutzung" - practical uses beyond eating/medicine, e.g.
+            fertilizer brew (Jauche/Sud) as with comfrey or nettle, mulch,
+            dye plant, fibres; in German. Empty string for legacy entries.
+        fertilizerTips:
+          type: string
+          description: >
+            How to fertilize this plant when growing it yourself (suitable
+            fertilizer, frequency, caveats), in German. Empty string for
+            legacy entries.
+        animals:
+          $ref: "#/components/schemas/PlantAnimals"
+        symptoms:
+          $ref: "#/components/schemas/PlantSymptoms"
+        symptomApplications:
+          $ref: "#/components/schemas/PlantSymptomApplications"
+        humanToxicityLevel:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/ToxicityLevel"
+        hasEdibleFruits:
+          type: boolean
+          nullable: true
+          description: >
+            Whether the plant produces edible fruits. Relevant primarily for
+            trees and shrubs. Null for legacy entries not yet backfilled.
+        preparation:
+          type: string
+          description: >
+            Short German description of how the edible plant can be prepared
+            (e.g. "Roh, gekocht, als Tee oder Salat"). Only meaningful for
+            edible plants; empty string for poisonous/legacy entries.
+        scannedByUserId:
+          type: string
+          nullable: true
+          description: >
+            ID of the user who triggered this scan. Null for plants scanned
+            before per-user tracking was introduced.
+        hasSideImage:
+          type: boolean
+          description: >
+            True when a verified side-view photo exists for this entry (either
+            stored in the database for legacy rows, or confirmed at scan time
+            for new local-first rows). Image bytes are never embedded in JSON
+            responses.
+        localImageId:
+          type: string
+          nullable: true
+          description: >
+            UUID that identifies the main photo in the client's local IndexedDB
+            image store. Null for entries created before the local-first
+            migration (those use the GET /plants/{id}/image endpoint instead).
+            When a mushroom side image exists, it is stored under the derived
+            key "${localImageId}-side" in the same IndexedDB store.
+        imageUrl:
+          type: string
+          nullable: true
+          description: >
+            Public https URL of the main photo on the image CDN (Cloudinary).
+            Use it directly as an <img> source.
+            Takes priority over localImageId and the legacy image endpoint.
+            Rows scanned before the CDN switch may still hold an internal
+            "/objects/..." path, which is no longer servable and must be
+            ignored by clients.
+        imageUrlSide:
+          type: string
+          nullable: true
+          description: >
+            Public https URL of the mushroom side-view photo, same rules as
+            imageUrl.
+        locationRegion:
+          type: string
+          nullable: true
+          description: >
+            Coarse location region where the scan was taken (e.g. "München").
+            Null when the user did not grant location permission.
+        createdAt:
+          type: string
+          format: date-time
+    PlantScanResult:
+      type: object
+      required: [plant, alreadyInArchive]
+      properties:
+        plant:
+          $ref: "#/components/schemas/Plant"
+        alreadyInArchive:
+          type: boolean
+          description: >
+            True when the scanned plant matched an entry already in the
+            archive (by botanical name); in that case no new entry was
+            created and the existing one is returned.
+        imageMerged:
+          type: boolean
+          nullable: true
+          description: >
+            True when alreadyInArchive is true AND the existing entry had no
+            image before this scan — the new photo was automatically attached
+            to the existing entry (Smart Merge). Null/absent for new entries
+            or duplicates that already had an image.
+    DeletePlantInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          description: Archive password required to delete an entry.
+    UpdatePlantInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+          description: Archive password required to modify an entry.
+        imageData:
+          type: string
+          description: >
+            Replacement photo as a base64 data URL (e.g. a recompressed
+            version of the stored photo). Must be a JPEG/PNG/WebP data URL.
+        habitat:
+          type: string
+          description: Replacement habitat text (German).
+        siteConditions:
+          type: string
+          description: Replacement site-conditions text (German).
+        otherUses:
+          type: string
+          description: Replacement "Weitere Nutzung" text (German).
+        fertilizerTips:
+          type: string
+          description: Replacement fertilizing-tips text (German).
+        category:
+          $ref: "#/components/schemas/PlantCategory"
+    CategoryCount:
+      type: object
+      required: [category, count, poisonousCount, edibleCount]
+      properties:
+        category:
+          $ref: "#/components/schemas/PlantCategory"
+        count:
+          type: integer
+        poisonousCount:
+          type: integer
+          description: >
+            Entries in this category whose humanStatus is "poisonous". Lets
+            the UI split a category (namely Pilze) into poisonous/edible
+            sub-groups without loading full rows.
+        edibleCount:
+          type: integer
+          description: Entries in this category whose humanStatus is "edible".
+    AuthUser:
+      type: object
+      required: [id, email, firstName, lastName, profileImageUrl, approved, isOwner, username, leavesCount]
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, 'null']
+        firstName:
+          type: [string, 'null']
+        lastName:
+          type: [string, 'null']
+        profileImageUrl:
+          type: [string, 'null']
+        approved:
+          type: boolean
+          description: Whether the owner has granted this account access to the app.
+        isOwner:
+          type: boolean
+          description: Whether this account is the app owner (the first account that ever signed in).
+        username:
+          type: [string, 'null']
+        leavesCount:
+          type: integer
+    AuthUserEnvelope:
+      type: object
+      required: [user]
+      properties:
+        user:
+          oneOf:
+            - $ref: "#/components/schemas/AuthUser"
+            - type: 'null'
+    ManagedUser:
+      type: object
+      required:
+        - id
+        - email
+        - firstName
+        - lastName
+        - profileImageUrl
+        - approved
+        - isOwner
+        - createdAt
+        - username
+        - leavesCount
+      properties:
+        id:
+          type: string
+        email:
+          type: [string, 'null']
+        firstName:
+          type: [string, 'null']
+        lastName:
+          type: [string, 'null']
+        profileImageUrl:
+          type: [string, 'null']
+        approved:
+          type: boolean
+        isOwner:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        username:
+          type: [string, 'null']
+        leavesCount:
+          type: integer
+    TaskActionType:
+      type: string
+      description: The type of care action to perform.
+      enum:
+        - Gießen
+        - Besprühen
+        - Düngen
+        - Pflanze drehen
+    TaskIntervalUnit:
+      type: string
+      description: The unit of the reminder interval.
+      enum:
+        - Tage
+        - Wochen
+        - Monate
+    TaskFertilizerType:
+      type: string
+      description: The type of fertilizer (only relevant when actionType is "Düngen").
+      enum:
+        - Biologischer Dünger
+        - Mineralischer Dünger
+        - Manuell
+    Task:
+      type: object
+      required:
+        - id
+        - userId
+        - plantId
+        - actionType
+        - intervalValue
+        - intervalUnit
+        - reminderTime
+        - isActive
+        - createdAt
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        plantId:
+          type: integer
+        actionType:
+          $ref: "#/components/schemas/TaskActionType"
+        intervalValue:
+          type: integer
+          minimum: 1
+          maximum: 60
+        intervalUnit:
+          $ref: "#/components/schemas/TaskIntervalUnit"
+        reminderTime:
+          type: string
+          description: Local time for reminder in HH:MM format (e.g. "08:00").
+        isActive:
+          type: boolean
+        lastCompletedAt:
+          type: string
+          nullable: true
+          description: ISO timestamp of the last time this task was marked as done.
+        fertilizerType:
+          nullable: true
+          description: Fertilizer sub-type, only set when actionType is "Düngen".
+          oneOf:
+            - $ref: "#/components/schemas/TaskFertilizerType"
+        fertilizerCustomName:
+          type: string
+          nullable: true
+          description: Custom fertilizer name when fertilizerType is "Manuell".
+        createdAt:
+          type: string
+    UpdateTaskInput:
+      type: object
+      description: All fields optional – only provided fields are updated.
+      properties:
+        actionType:
+          $ref: "#/components/schemas/TaskActionType"
+        intervalValue:
+          type: integer
+          minimum: 1
+          maximum: 60
+        intervalUnit:
+          $ref: "#/components/schemas/TaskIntervalUnit"
+        reminderTime:
+          type: string
+          description: Local time for reminder in HH:MM format (e.g. "08:00").
+        fertilizerType:
+          nullable: true
+          description: Fertilizer sub-type, only relevant when actionType is "Düngen".
+          oneOf:
+            - $ref: "#/components/schemas/TaskFertilizerType"
+        fertilizerCustomName:
+          type: string
+          nullable: true
+          description: Custom fertilizer name when fertilizerType is "Manuell".
+    CreateTaskInput:
+      type: object
+      required:
+        - plantId
+        - actionType
+        - intervalValue
+        - intervalUnit
+        - reminderTime
+      properties:
+        plantId:
+          type: integer
+        actionType:
+          $ref: "#/components/schemas/TaskActionType"
+        intervalValue:
+          type: integer
+          minimum: 1
+          maximum: 60
+        intervalUnit:
+          $ref: "#/components/schemas/TaskIntervalUnit"
+        reminderTime:
+          type: string
+          description: Local time for reminder in HH:MM format (e.g. "08:00").
+        fertilizerType:
+          nullable: true
+          description: Fertilizer sub-type, only set when actionType is "Düngen".
+          oneOf:
+            - $ref: "#/components/schemas/TaskFertilizerType"
+        fertilizerCustomName:
+          type: string
+          nullable: true
+          description: Custom fertilizer name when fertilizerType is "Manuell".
+    FavoriteIds:
+      type: object
+      required: [plantIds]
+      properties:
+        plantIds:
+          type: array
+          items:
+            type: integer
+          description: IDs of all plants the current user has marked as a favourite.
+    UpdateUserApprovalInput:
+      type: object
+      required: [approved]
+      properties:
+        approved:
+          type: boolean
+          description: True grants access, false revokes it (the owner account cannot be modified).
+    InsectCategory:
+      type: string
+      description: >
+        Taxonomic / ecological group of the insect or arthropod.
+        "beetle"=Käfer, "butterfly"=Schmetterlinge und Motten,
+        "bee_wasp"=Bienen/Wespen/Hummeln/Ameisen, "fly_mosquito"=Fliegen und Mücken,
+        "bug_cicada"=Wanzen und Zikaden, "grasshopper"=Heuschrecken und Grillen,
+        "dragonfly"=Libellen, "spider_other"=Spinnen und andere Gliedertiere.
+      enum:
+        - beetle
+        - butterfly
+        - bee_wasp
+        - fly_mosquito
+        - bug_cicada
+        - grasshopper
+        - dragonfly
+        - spider_other
+    InsectRelationStatus:
+      type: string
+      description: >
+        Relationship of the insect to garden / cultivated plants.
+        "pest"=Schädling (harms plants), "beneficial"=Nützling (predator or pollinator),
+        "neutral"=Neutral.
+      enum:
+        - pest
+        - beneficial
+        - neutral
+    Insect:
+      type: object
+      required:
+        - id
+        - germanName
+        - scientificName
+        - category
+        - relationStatus
+        - affectedPlants
+        - description
+        - treatmentTips
+        - createdAt
+      properties:
+        id:
+          type: integer
+        germanName:
+          type: string
+          description: German common name (e.g. "Marienkäfer").
+        scientificName:
+          type: string
+          description: Scientific / Latin name (e.g. "Coccinella septempunctata").
+        category:
+          $ref: "#/components/schemas/InsectCategory"
+        relationStatus:
+          $ref: "#/components/schemas/InsectRelationStatus"
+        affectedPlants:
+          type: array
+          items:
+            type: string
+          description: German names of plants this insect frequently targets or visits.
+        description:
+          type: string
+          description: German description of appearance, habitat, and behaviour.
+        treatmentTips:
+          type: string
+          description: >
+            For pests: organic / biological treatment and prevention tips in German.
+            Empty string for beneficial and neutral insects.
+        plantContext:
+          type: string
+          nullable: true
+          description: >
+            German common name of the plant the insect was photographed on, when
+            a host plant was clearly visible. Null otherwise.
+        scannedByUserId:
+          type: string
+          nullable: true
+          description: ID of the user who triggered this scan.
+        localImageId:
+          type: string
+          nullable: true
+          description: >
+            UUID that identifies the photo in the client's local IndexedDB
+            image store. Null for entries created before the local-first
+            migration (those use GET /insects/{id}/image instead).
+        imageUrl:
+          type: string
+          nullable: true
+          description: >
+            Public https URL of the photo on the image CDN (Cloudinary).
+            Use it directly as an <img> source. Takes priority over
+            localImageId and the legacy image endpoint.
+        locationRegion:
+          type: string
+          nullable: true
+          description: >
+            Coarse location region where the scan was taken (e.g. "München").
+            Null when the user did not grant location permission.
+        createdAt:
+          type: string
+          format: date-time
+    ScanInsectInput:
+      type: object
+      required: [image]
+      properties:
+        image:
+          type: string
+          description: >
+            Base64-encoded data URL of the captured photo
+            (e.g. "data:image/jpeg;base64,..."). Must be an image data URL.
+            The image is used for AI identification only and is NOT stored
+            server-side; use localImageId for local storage reference.
+        localImageId:
+          type: string
+          description: >
+            Client-generated UUID (crypto.randomUUID()) identifying the photo
+            in the device's local IndexedDB image store.
+        locationRegion:
+          type: string
+          description: >
+            Optional coarse location region (e.g. "München"). Same semantics
+            as PlantScanInput.locationRegion.
+    CareGuideDailyEntry:
+      type: object
+      required: [day, giessen, bespruehen, beschneiden, drehen, duengen, umtopfen]
+      properties:
+        day:
+          type: integer
+          minimum: 1
+          maximum: 30
+        giessen:
+          type: boolean
+        bespruehen:
+          type: boolean
+        beschneiden:
+          type: boolean
+          nullable: true
+        drehen:
+          type: boolean
+        duengen:
+          type: boolean
+        duengerart:
+          type: string
+          nullable: true
+          description: "biologisch | mineralisch | null"
+        umtopfen:
+          type: boolean
+          description: Repotting recommended on this day (only true on day 1 or 2 when repotting is needed)
+        notizen:
+          type: string
+    CareGuide:
+      type: object
+      required: [id, userId, plantName, targetHumidity, startDate, endDate, status, dailyPlan, hasImageDay1, hasImageDay30, reminderEnabled, reminderTime, completedDays, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: string
+        plantId:
+          type: integer
+          nullable: true
+        plantName:
+          type: string
+        targetHumidity:
+          type: string
+        potSizeRecommendation:
+          type: string
+          nullable: true
+          description: Assessment of current pot size, e.g. "Aktueller Topf ist ausreichend" or "Umtopfen empfohlen"
+        recommendedPotDiameter:
+          type: string
+          nullable: true
+          description: Recommended minimum pot diameter in cm when repotting is needed, e.g. "18 cm"
+        recommendedSoilType:
+          type: string
+          nullable: true
+          description: Recommended soil type for this plant, e.g. "Zimmerpflanzenerde mit Perlit"
+        startDate:
+          type: string
+        endDate:
+          type: string
+        status:
+          type: string
+          enum: [Aktiv, Abgeschlossen]
+        dailyPlan:
+          type: array
+          items:
+            $ref: "#/components/schemas/CareGuideDailyEntry"
+        hasImageDay1:
+          type: boolean
+        hasImageDay30:
+          type: boolean
+        reminderEnabled:
+          type: boolean
+          description: Whether daily reminders are active for this guide.
+        reminderTime:
+          type: string
+          description: Time of day for the reminder in HH:MM format, e.g. "09:00".
+        completedDays:
+          type: array
+          items:
+            type: integer
+          description: List of day numbers (1–30) the user has marked as done.
+        createdAt:
+          type: string
+    UpdateCareGuideInput:
+      type: object
+      properties:
+        reminderEnabled:
+          type: boolean
+        reminderTime:
+          type: string
+          description: HH:MM format, e.g. "09:00"
+        completedDays:
+          type: array
+          items:
+            type: integer
+    CreateCareGuideInput:
+      type: object
+      required: [plantName, healthScore, symptoms, duengeBiologisch, duegeChemisch]
+      properties:
+        plantId:
+          type: integer
+          nullable: true
+        plantName:
+          type: string
+        imageDay1:
+          type: string
+          nullable: true
+          description: Base64 data URL of the scan photo (Pflanzendoc day-1 image).
+        healthScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+        symptoms:
+          type: array
+          items:
+            type: string
+        duengeBiologisch:
+          type: string
+        duegeChemisch:
+          type: string
+    UploadDay30PhotoInput:
+      type: object
+      required: [imageDay30]
+      properties:
+        imageDay30:
+          type: string
+          description: Base64 data URL of the day-30 follow-up photo.
+    ScanInsectResult:
+      type: object
+      required: [insect, alreadyInArchive]
+      properties:
+        insect:
+          $ref: "#/components/schemas/Insect"
+        alreadyInArchive:
+          type: boolean
+          description: >
+            True when the scanned insect matched an entry already in the archive
+            (by scientific name); in that case no new entry was created and the
+            existing one is returned.
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          minLength: 3
+          description: Account email address (compared case-insensitively).
+        password:
+          type: string
+          minLength: 8
+          maxLength: 200
+    RegisterInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          minLength: 3
+        password:
+          type: string
+          minLength: 8
+          maxLength: 200
+        registrationCode:
+          type: string
+          description: >
+            Shared invitation code. Only required when the server is configured
+            with REGISTRATION_CODE.
+

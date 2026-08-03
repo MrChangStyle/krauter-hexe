@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+  <rect width="120" height="120" fill="#e3f2fd"/>
+  <!-- Upper wings -->
+  <ellipse cx="60" cy="53" rx="32" ry="12" fill="#81d4fa" opacity="0.85"/>
+  <!-- Lower wings -->
+  <ellipse cx="60" cy="67" rx="26" ry="10" fill="#81d4fa" opacity="0.85"/>
+  <!-- Body -->
+  <rect x="57" y="36" width="6" height="50" rx="3" fill="#0277bd"/>
+  <!-- Head -->
+  <circle cx="60" cy="31" r="7" fill="#0277bd"/>
+  <!-- Eyes -->
+  <circle cx="56.5" cy="29" r="2.2" fill="#e3f2fd"/>
+  <circle cx="63.5" cy="29" r="2.2" fill="#e3f2fd"/>
+</svg>

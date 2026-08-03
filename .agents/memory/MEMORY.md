@@ -1,0 +1,24 @@
+- [Gemini direct API quirks](gemini-direct-api-quirks.md) — model-name 404s, thinking-token truncation, and free-tier quota gotchas when calling Gemini directly with a user-provided key.
+- [Managed AI integration blockers](managed-ai-integration-blockers.md) — OpenAI/Anthropic managed integrations can be blocked by account-upgrade requirements; user's own provider key is the fallback.
+- [Plant identification sentinels](plant-id-sentinels.md) — AI-missing fields coerce to sentinels ("Unbekannt" etc.); exclude them before any dedup/grouping/matching or unrelated unknowns collapse together.
+- [Backfill ordering & key-presence done trap](backfill-key-presence-ordering.md) — new animal/target key touches many sites + client regen; symptom backfill must run AFTER animal backfill or it writes empty tags marked "done" forever.
+- [Offline PWA queue testing](offline-pwa-testing.md) — can't offline-reload a dev PWA (shell served over network); test IndexedDB recovery by injecting records + in-app remount while offline.
+- [jsPDF client-side export](pdf-export-jspdf.md) — core fonts render German umlauts (no TTF); downscale images + stream categories for mobile memory; verify via pdftoppm→ReadFile.
+- [Mobile image memory](mobile-image-memory.md) — full-res photos as list thumbnails blank previews on phones (not desktop); downscale at capture (~1600px); 1x1 data URLs are test junk.
+- [Prod has a separate database](prod-deployment-database.md) — published apps use their own Postgres (read-only from workspace); fix prod data via password-gated app endpoints after republish.
+- [Orval zod format traps](orval-zod-formats.md) — never use `format: email`/`format: uri` in the OpenAPI spec; orval emits zod-v4 calls that fail typecheck against zod 3 and leave stale lib declarations.
+- [Persist-first scanning](persist-first-scanning.md) — phones reload the tab right after camera use; direct POSTs lose the photo — always queue to IndexedDB first, dedup server-side.
+- [Offline-tolerant auth gate](offline-auth-gate.md) — a network auth check blocks cold offline boot; cache the approved identity, fall back offline, revalidate on reconnect.
+- [Session stability rules](session-stability.md) — never destroy a session on OIDC refresh failure; roll cookie+DB expiry on activity; auth-check network errors ≠ logout, but logout must clear caches first.
+- [Offline read architecture](offline-read-architecture.md) — React Query needs networkMode:'offlineFirst' to hit the SW cache; derive all read views from ONE warmed list query; SW is prod-only.
+- [Stale installed-PWA SW trap](stale-pwa-sw-trap.md) — empty published views + ZERO data requests in prod logs = device stuck on old service worker, not a server bug; confirm via fresh incognito tab.
+- [PWA update-prompt setup](pwa-update-prompt.md) — autoUpdate→prompt needs workbox-window dep (build-only failure) + pwa/react types; first post-switch release still auto-reloads old clients once.
+- [Verifying a session-bound prod backfill](prod-backfill-verification.md) — owner-tab-loop backfill only runs while tab is open; flat coverage is usually replica lag or a closed session, not failure.
+- [Leaf recount & legacy scans](leaf-recount-legacy-scans.md) — points backfills must be idempotent full recounts; old scans exist only as scannedByUserId (no scan rows) and must be backfilled first.
+- [Web push setup](web-push-setup.md) — VAPID keys auto-stored in DB, push-sw.js via importScripts, Berlin-time scheduler, scope-relative click URLs; spec drift breaks orval codegen.
+- [Mushroom two-photo gate](mushroom-two-photo-gate.md) — "essbar" for Pilze needs stored side photo + confident ID; enforced write-time AND read-time (SQL CASE in shared selection), rows never mutated.
+- [Scan quota vs. queue retries](scan-quota-vs-queue-retries.md) — refund pre-recorded rate-limit attempts by row id on failure; any gate that pauses the queue MUST show a banner or "waiting" looks hung.
+- [Sequence drift after data migration](db-sequence-drift.md) — rows copied with explicit ids leave id counters behind; every insert then dies on a duplicate PK. Drizzle hides the real cause — replay the query.
+- [Leaving Replit breaks two things](replit-bound-dependencies.md) — object-storage sidecar + repl-bound OIDC have no off-platform equivalent; plus the single-service host checklist.
+- [Image storage architecture](gcs-image-storage.md) — photos live on an external image CDN + IndexedDB, never as bytes in Neon; legacy image endpoints redirect to the CDN.
+- [Self-hosted auth portability](auth-portability.md) — scrypt + JWT cookie, re-read the user row per request; claiming provider-era accounts by email is a takeover hole unless code-gated.

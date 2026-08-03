@@ -1,0 +1,77 @@
+# Render Blueprint für die Kräuter-Hexe
+# Doku: https://render.com/docs/blueprint-spec
+#
+# Ein einziger Web Service bedient beides: die REST-API unter /api/* und die
+# gebaute PWA unter allen anderen Pfaden (SERVE_WEB_CLIENT=true). Das ist nötig,
+# weil der kostenlose Tarif nur einen Service erlaubt — und es passt zum
+# Sicherheitsmodell der App: das Session-Cookie ist an dieselbe Domain gebunden
+# und es gibt bewusst kein CORS.
+#
+# Achtung, kostenloser Tarif: der Service wird nach ~15 Minuten ohne Anfragen
+# schlafen gelegt und braucht beim nächsten Aufruf ca. 30-60 Sekunden zum
+# Aufwachen. Push-Erinnerungen laufen deshalb über einen externen Cron-Dienst
+# (z. B. cron-job.org), der POST /api/cron/trigger-notifications mit dem Header
+# "Authorization: Bearer <CRON_SECRET>" aufruft. Dieser Aufruf weckt den Service
+# gleichzeitig wieder auf.
+
+services:
+  - type: web
+    name: kraeuter-hexe
+    runtime: node
+    plan: free
+    # Frankfurt = kürzeste Wege für Nutzer in Deutschland und nah an der
+    # Neon-Datenbank in eu-central-1.
+    region: frankfurt
+    branch: main
+    autoDeploy: true
+
+    # Das Repo ist ein pnpm-Monorepo. corepack aktiviert die in package.json
+    # unter "packageManager" festgelegte pnpm-Version, damit die Lockfile passt.
+    # Gebaut werden nur die beiden Pakete, die im Betrieb gebraucht werden —
+    # nicht die Design-Werkbank aus der Entwicklung.
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm run build:server
+    startCommand: pnpm run start
+
+    healthCheckPath: /api/healthz
+
+    envVars:
+      # --- Plattform / Build ---------------------------------------------
+      - key: NODE_VERSION
+        value: "24.13.0"
+      - key: NODE_ENV
+        value: production
+      # Die PWA liegt auf Render im Wurzelverzeichnis der Domain, nicht mehr
+      # unter einem Unterpfad. Wird schon beim Build gebraucht.
+      - key: BASE_PATH
+        value: /
+      # Lässt den API-Server zusätzlich die gebaute PWA ausliefern.
+      - key: SERVE_WEB_CLIENT
+        value: "true"
+      - key: LOG_LEVEL
+        value: info
+
+      # --- Geheimnisse: sync:false heißt "im Render-Dashboard eintragen" ---
+      # Postgres-Verbindung (Neon). Die Datenbank bleibt, wo sie ist.
+      - key: NEON_DATABASE_URL
+        sync: false
+      # Google Gemini — Pflanzen- und Insektenerkennung.
+      - key: GEMINI_API_KEY
+        sync: false
+      # Bearer-Token, mit dem sich der externe Cron-Dienst ausweist.
+      - key: CRON_SECRET
+        sync: false
+      # PIN zum Löschen von Einträgen.
+      - key: DELETE_PASSWORD
+        sync: false
+      # Signiert die Anmelde-Tokens. Langer Zufallsstring; wird er geändert,
+      # müssen sich alle neu anmelden.
+      - key: JWT_SECRET
+        sync: false
+      # Cloudinary-Zugangsdaten für die Bild-Uploads
+      # (Cloudinary Dashboard → Account Details → API environment variable).
+      - key: CLOUDINARY_URL
+        sync: false
+      # Optional: gemeinsamer Einladungscode für die Registrierung.
+      # Weglassen, wenn keiner verlangt werden soll.
+      - key: REGISTRATION_CODE
+        sync: false

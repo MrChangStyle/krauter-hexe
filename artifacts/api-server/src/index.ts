@@ -1,0 +1,36 @@
+import app from "./app";
+import { logger } from "./lib/logger";
+import { assertAuthConfigured } from "./lib/token";
+
+// Fail at startup rather than on the first sign-in attempt: without a signing
+// key nobody can log in, and that should be obvious from the deploy log.
+assertAuthConfigured();
+
+// The host assigns the port: Replit gives each artifact its own, Render (and
+// most container hosts) inject PORT at start. The fallback only applies when
+// running the bundle by hand.
+const rawPort = process.env["PORT"] ?? "3000";
+
+const port = Number(rawPort);
+
+if (Number.isNaN(port) || port <= 0) {
+  throw new Error(`Invalid PORT value: "${rawPort}"`);
+}
+
+// Bind to all interfaces. Container platforms route traffic in from outside the
+// container, so a server listening only on localhost is invisible to them and
+// the deploy is marked as failed ("no open ports detected").
+const host = process.env["HOST"] ?? "0.0.0.0";
+
+app.listen(port, host, (err?: Error) => {
+  if (err) {
+    logger.error({ err }, "Error listening on port");
+    process.exit(1);
+  }
+
+  logger.info({ port, host }, "Server listening");
+  // Push notifications are no longer driven by an in-process setInterval.
+  // An external cron service (e.g. cron-job.org) should POST to
+  // /api/cron/trigger-notifications with Authorization: Bearer <CRON_SECRET>
+  // once per minute. See replit.md → "Push-Benachrichtigungen (Cron)".
+});

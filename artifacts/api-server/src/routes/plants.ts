@@ -1703,8 +1703,11 @@ router.post(
       }
     }
 
-    // Idempotent: image URL already set.
-    if (plant.imageUrl !== null) {
+    // Idempotent: a usable image URL is already stored. Dead leftovers from the
+    // old internal object storage ("/objects/...") do NOT count — nothing can
+    // serve them any more, so such rows must stay repairable from a device that
+    // still holds the photo.
+    if (isServableImageUrl(plant.imageUrl)) {
       res.json({ stored: false });
       return;
     }

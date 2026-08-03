@@ -429,8 +429,11 @@ router.post(
       return;
     }
 
-    // Idempotent: GCS URL already set.
-    if (insect.imageUrl !== null) {
+    // Idempotent: a usable image URL is already stored. Dead leftovers from the
+    // old internal object storage ("/objects/...") do NOT count — nothing can
+    // serve them any more, so such rows must stay repairable from a device that
+    // still holds the photo.
+    if (isServableImageUrl(insect.imageUrl)) {
       res.json({ stored: false });
       return;
     }

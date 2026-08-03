@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import healthRouter from "./health";
 import authRouter from "./auth";
+import googleAuthRouter from "./google-auth";
 import usersRouter from "./users";
 import plantsRouter from "./plants";
 import insectsRouter from "./insects";
@@ -16,6 +17,7 @@ const router: IRouter = Router();
 
 router.use(healthRouter);
 router.use(authRouter);
+router.use(googleAuthRouter);
 router.use(usersRouter);
 router.use(plantsRouter);
 router.use(insectsRouter);

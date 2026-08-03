@@ -12,6 +12,7 @@ import { db, usersTable } from '@workspace/db';
 import { and, eq, sql, ne } from 'drizzle-orm';
 import { Router, type IRouter, type Request, type Response } from 'express';
 
+import { promoteFirstOwner, publicUserColumns } from '../lib/accounts';
 import { clearAuthCookie, setAuthCookie } from '../lib/auth';
 import {
   hashPassword,
@@ -22,19 +23,6 @@ import {
 import { createAuthToken } from '../lib/token';
 
 const router: IRouter = Router();
-
-/** Columns that may be sent to the client – never the password hash. */
-const publicUserColumns = {
-  id: usersTable.id,
-  email: usersTable.email,
-  firstName: usersTable.firstName,
-  lastName: usersTable.lastName,
-  profileImageUrl: usersTable.profileImageUrl,
-  approved: usersTable.approved,
-  isOwner: usersTable.isOwner,
-  username: usersTable.username,
-  leavesCount: usersTable.leavesCount,
-};
 
 // Deliberately permissive: this only catches typos, the real check is that the
 // owner has to approve the account before it can do anything.
@@ -116,35 +104,6 @@ function parseCredentials(
   }
 
   return { ok: true, data: { email: normalizeEmail(email), password } };
-}
-
-/**
- * Promotes the very first account to owner. The NOT EXISTS guard handles the
- * common case; the partial unique index users_single_owner_idx is the hard
- * backstop – if two "first" registrations race, exactly one promotion commits
- * and the loser continues as a regular (unapproved) account.
- */
-async function promoteFirstOwner(userId: string) {
-  try {
-    const [promoted] = await db
-      .update(usersTable)
-      .set({ isOwner: true, approved: true })
-      .where(
-        and(
-          eq(usersTable.id, userId),
-          sql`NOT EXISTS (SELECT 1 FROM ${usersTable} WHERE ${usersTable.isOwner} = true)`,
-        ),
-      )
-      .returning(publicUserColumns);
-    return promoted ?? null;
-  } catch (err) {
-    const code =
-      (err as { code?: string })?.code ??
-      (err as { cause?: { code?: string } })?.cause?.code;
-    // 23505 = unique violation: someone else won the owner race just now.
-    if (code !== '23505') throw err;
-    return null;
-  }
 }
 
 async function signIn(res: Response, userId: string): Promise<void> {

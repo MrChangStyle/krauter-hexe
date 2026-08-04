@@ -17,6 +17,9 @@ import {
 const ENV_KEYS = ['GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'PUBLIC_BASE_URL'] as const;
 const ORIGINAL = Object.fromEntries(ENV_KEYS.map((k) => [k, process.env[k]]));
 
+// The pending-sign-in cookie is signed with the same secret as session tokens.
+process.env['JWT_SECRET'] ??= 'test-geheimnis-mindestens-16-zeichen';
+
 beforeEach(() => {
   for (const key of ENV_KEYS) delete process.env[key];
 });
@@ -118,6 +121,7 @@ describe('pending sign-in cookie', () => {
     state: 'a'.repeat(32),
     codeVerifier: 'b'.repeat(43),
     returnPath: '/pflanzenscanner/',
+    callbackUrl: 'https://kraeuter-hexe.onrender.com/api/auth/google/callback',
     createdAt: 1_000_000,
   };
 
@@ -134,17 +138,28 @@ describe('pending sign-in cookie', () => {
     ).toBeNull();
   });
 
-  it('refuses garbage, missing fields and a too-short state', () => {
+  it('refuses garbage, an unsigned cookie and a too-short state', () => {
     expect(decodePendingSignIn('nicht-base64!', Date.now())).toBeNull();
     expect(decodePendingSignIn(undefined, Date.now())).toBeNull();
+    // Correctly shaped payload, but nobody signed it.
     expect(
       decodePendingSignIn(
-        Buffer.from(JSON.stringify({ state: 'kurz', codeVerifier: 'b'.repeat(43), createdAt: 1 })).toString(
-          'base64url',
-        ),
-        2,
+        `${Buffer.from(JSON.stringify(pending)).toString('base64url')}.unterschrift`,
+        pending.createdAt + 1,
       ),
     ).toBeNull();
+    expect(
+      decodePendingSignIn(encodePendingSignIn({ ...pending, state: 'kurz' }), pending.createdAt + 1),
+    ).toBeNull();
+  });
+
+  it('refuses a payload that was changed after signing', () => {
+    const encoded = encodePendingSignIn(pending);
+    const signature = encoded.slice(encoded.lastIndexOf('.'));
+    const tampered =
+      Buffer.from(JSON.stringify({ ...pending, state: 'c'.repeat(32) })).toString('base64url') +
+      signature;
+    expect(decodePendingSignIn(tampered, pending.createdAt + 1)).toBeNull();
   });
 
   it('re-sanitises the return path on the way out', () => {

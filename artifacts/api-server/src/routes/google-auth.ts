@@ -28,6 +28,7 @@ import {
   encodePendingSignIn,
   getGoogleCredentials,
   isGoogleAuthConfigured,
+  type GoogleIdentity,
   readIdentity,
   resolveCallbackUrl,
   sanitizeReturnPath,
@@ -56,6 +57,20 @@ function clearPendingCookie(res: Response): void {
   res.clearCookie(GOOGLE_OAUTH_COOKIE, { path: '/' });
 }
 
+/**
+ * A sign-in that cannot be completed for a reason the user should hear about,
+ * carrying the code the login screen turns into German text.
+ */
+class SignInRejected extends Error {
+  constructor(
+    readonly code: string,
+    reason: string,
+  ) {
+    super(reason);
+    this.name = 'SignInRejected';
+  }
+}
+
 /** PKCE S256 challenge for a verifier. */
 function codeChallengeFor(verifier: string): string {
   return createHash('sha256').update(verifier).digest('base64url');
@@ -82,16 +97,23 @@ router.get('/auth/google', async (req: Request, res: Response): Promise<void> =>
 
   const state = randomBytes(24).toString('base64url');
   const codeVerifier = randomBytes(48).toString('base64url');
+  const callbackUrl = resolveCallbackUrl(req);
 
   setPendingCookie(
     res,
-    encodePendingSignIn({ state, codeVerifier, returnPath, createdAt: Date.now() }),
+    encodePendingSignIn({
+      state,
+      codeVerifier,
+      returnPath,
+      callbackUrl,
+      createdAt: Date.now(),
+    }),
   );
 
   const client = new OAuth2Client({
     clientId: credentials.clientId,
     clientSecret: credentials.clientSecret,
-    redirectUri: resolveCallbackUrl(req),
+    redirectUri: callbackUrl,
   });
 
   const url = client.generateAuthUrl({
@@ -158,10 +180,14 @@ router.get(
       return;
     }
 
+    // The exchange must repeat the exact redirect URI of the first leg. Taking
+    // it from the signed cookie instead of re-deriving it means a forwarded
+    // header that changes mid-flow (or is spoofed on this second request)
+    // cannot alter it.
     const client = new OAuth2Client({
       clientId: credentials.clientId,
       clientSecret: credentials.clientSecret,
-      redirectUri: resolveCallbackUrl(req),
+      redirectUri: pending.callbackUrl,
     });
 
     let idToken: string | undefined;
@@ -198,61 +224,83 @@ router.get(
       return;
     }
 
-    const [existing] = await db
-      .select({
-        id: usersTable.id,
-        firstName: usersTable.firstName,
-        lastName: usersTable.lastName,
-        profileImageUrl: usersTable.profileImageUrl,
-      })
-      .from(usersTable)
-      .where(sql`lower(${usersTable.email}) = ${identity.email}`);
-
-    let userId: string;
-
-    if (existing) {
-      userId = existing.id;
-      // Fill in what the account is still missing, but never overwrite a name
-      // or picture the user has set inside the app.
-      const patch: Record<string, string> = {};
-      if (!existing.firstName && identity.firstName) patch['firstName'] = identity.firstName;
-      if (!existing.lastName && identity.lastName) patch['lastName'] = identity.lastName;
-      if (!existing.profileImageUrl && identity.profileImageUrl) {
-        patch['profileImageUrl'] = identity.profileImageUrl;
-      }
-      if (Object.keys(patch).length > 0) {
-        await db.update(usersTable).set(patch).where(eq(usersTable.id, userId));
-      }
-    } else {
-      // An invitation code being configured means "no self-service accounts".
-      // A Google redirect has nowhere to type that code, so an unknown address
-      // is turned away instead of quietly creating a row – otherwise anyone
-      // with a Google account could sign up on a URL that is meant to be
-      // closed.
-      if (process.env['REGISTRATION_CODE']) {
-        fail('google-konto-unbekannt', 'unknown email and registration is code-gated');
+    // Everything from here on talks to the database and mints the session.
+    // A failure must still return the user to the app with a message – an
+    // unhandled rejection would answer the *browser navigation* with a bare
+    // 500 page and strand them outside the app. Nothing in here writes to the
+    // response, so the catch below can always still redirect.
+    let token: string;
+    try {
+      token = await createAuthToken(await resolveAccount(identity));
+    } catch (err) {
+      if (err instanceof SignInRejected) {
+        fail(err.code, err.message);
         return;
       }
-
-      const [created] = await db
-        .insert(usersTable)
-        .values({
-          email: identity.email,
-          firstName: identity.firstName,
-          lastName: identity.lastName,
-          profileImageUrl: identity.profileImageUrl,
-        })
-        .returning(publicUserColumns);
-
-      userId = created.id;
-      // Same rule as for the email + password registration: the very first
-      // account is the owner, everyone after that waits for approval.
-      await promoteFirstOwner(userId);
+      fail('google-fehlgeschlagen', 'account resolution failed', err);
+      return;
     }
 
-    setAuthCookie(res, await createAuthToken(userId));
+    setAuthCookie(res, token);
     res.redirect(returnPath);
   },
 );
+
+/** Finds or creates the account for a verified Google identity. */
+async function resolveAccount(
+  identity: GoogleIdentity,
+): Promise<string> {
+  const [existing] = await db
+    .select({
+      id: usersTable.id,
+      firstName: usersTable.firstName,
+      lastName: usersTable.lastName,
+      profileImageUrl: usersTable.profileImageUrl,
+    })
+    .from(usersTable)
+    .where(sql`lower(${usersTable.email}) = ${identity.email}`);
+
+  let userId: string;
+
+  if (existing) {
+    userId = existing.id;
+    // Fill in what the account is still missing, but never overwrite a name
+    // or picture the user has set inside the app.
+    const patch: Record<string, string> = {};
+    if (!existing.firstName && identity.firstName) patch['firstName'] = identity.firstName;
+    if (!existing.lastName && identity.lastName) patch['lastName'] = identity.lastName;
+    if (!existing.profileImageUrl && identity.profileImageUrl) {
+      patch['profileImageUrl'] = identity.profileImageUrl;
+    }
+    if (Object.keys(patch).length > 0) {
+      await db.update(usersTable).set(patch).where(eq(usersTable.id, userId));
+    }
+  } else {
+    // An invitation code being configured means "no self-service accounts".
+    // A Google redirect has nowhere to type that code, so an unknown address
+    // is turned away instead of quietly creating a row – otherwise anyone
+    // with a Google account could sign up on a URL that is meant to be closed.
+    if (process.env['REGISTRATION_CODE']) {
+      throw new SignInRejected('google-konto-unbekannt', 'unknown email, registration is code-gated');
+    }
+
+    const [created] = await db
+      .insert(usersTable)
+      .values({
+        email: identity.email,
+        firstName: identity.firstName,
+        lastName: identity.lastName,
+        profileImageUrl: identity.profileImageUrl,
+      })
+      .returning(publicUserColumns);
+
+    userId = created.id;
+    // Same rule as for the email + password registration: the very first
+    // account is the owner, everyone after that waits for approval.
+    await promoteFirstOwner(userId);
+  }
+
+  return userId;
+}
 
 export default router;

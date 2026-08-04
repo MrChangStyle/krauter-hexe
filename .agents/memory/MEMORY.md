@@ -23,4 +23,5 @@
 - [Image storage architecture](gcs-image-storage.md) — photos live on an external image CDN + IndexedDB, never as bytes in Neon; legacy image endpoints redirect to the CDN.
 - [Local-first photos vs. domain moves](indexeddb-origin-trap.md) — IndexedDB is origin-bound; device-only photos vanish on a new host and can only be rescued from the old origin.
 - [Clean GitHub history](clean-github-history.md) — never delete the workspace .git (checkpoints/task agents); publish an orphan commit via plumbing + symbolic-ref instead.
+- [Provider sign-in as a second door](oauth-second-door.md) — optional OAuth beside own accounts: sign the state cookie, pin the callback URL, redirect errors back to the app.
 - [Self-hosted auth portability](auth-portability.md) — scrypt + JWT cookie, re-read the user row per request; claiming provider-era accounts by email is a takeover hole unless code-gated.

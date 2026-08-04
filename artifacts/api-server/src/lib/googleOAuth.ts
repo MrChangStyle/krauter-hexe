@@ -12,12 +12,22 @@
  */
 
 import type { Request } from 'express';
+import { createHmac, timingSafeEqual } from 'node:crypto';
+
+import { getJwtSecret } from './token';
 
 /** Must match the URI registered in the Google Cloud console, exactly. */
 export const GOOGLE_CALLBACK_PATH = '/api/auth/google/callback';
 
-/** Cookie holding the one-time state of an in-flight sign-in. */
-export const GOOGLE_OAUTH_COOKIE = 'google_oauth';
+/**
+ * Cookie holding the one-time state of an in-flight sign-in.
+ *
+ * The `__Host-` prefix is enforced by the browser: the cookie is only accepted
+ * when it is Secure, has path "/" and no Domain attribute. That makes it
+ * impossible for a sibling host (or a network attacker on a look-alike
+ * subdomain) to plant a cookie of this name for us.
+ */
+export const GOOGLE_OAUTH_COOKIE = '__Host-google_oauth';
 
 /** A sign-in that is not finished within this window has to be restarted. */
 export const GOOGLE_OAUTH_TTL_MS = 10 * 60 * 1000;
@@ -102,23 +112,56 @@ export interface PendingGoogleSignIn {
   codeVerifier: string;
   /** Same-origin path to return to. */
   returnPath: string;
+  /** The redirect URI handed to Google; the token exchange must repeat it. */
+  callbackUrl: string;
   /** Unix ms; anything older than GOOGLE_OAUTH_TTL_MS is refused. */
   createdAt: number;
 }
 
-export function encodePendingSignIn(pending: PendingGoogleSignIn): string {
-  return Buffer.from(JSON.stringify(pending), 'utf8').toString('base64url');
+/**
+ * The cookie is signed, not just encoded.
+ *
+ * Without a signature the whole state check is worthless: anyone able to plant
+ * a cookie in the victim's browser could put in *their own* state and PKCE
+ * verifier, hand the victim a matching callback link, and have the victim's
+ * browser finish the sign-in as the attacker's Google account (login CSRF).
+ * Comparing two values the attacker chose proves nothing – so the server signs
+ * the payload with the same secret that signs session tokens and refuses
+ * anything it did not issue itself.
+ */
+function signPayload(payload: string): string {
+  return createHmac('sha256', getJwtSecret()).update(payload).digest('base64url');
 }
 
-/** Returns null for anything unreadable, tampered with, or stale. */
+function signatureMatches(payload: string, signature: string): boolean {
+  const expected = Buffer.from(signPayload(payload), 'utf8');
+  const actual = Buffer.from(signature, 'utf8');
+  if (expected.length !== actual.length) return false;
+  return timingSafeEqual(expected, actual);
+}
+
+export function encodePendingSignIn(pending: PendingGoogleSignIn): string {
+  const payload = Buffer.from(JSON.stringify(pending), 'utf8').toString('base64url');
+  return `${payload}.${signPayload(payload)}`;
+}
+
+/** Returns null for anything unreadable, unsigned, tampered with, or stale. */
 export function decodePendingSignIn(
   raw: unknown,
   now: number,
 ): PendingGoogleSignIn | null {
   if (typeof raw !== 'string' || raw.length === 0) return null;
+
+  const separator = raw.lastIndexOf('.');
+  if (separator <= 0 || separator === raw.length - 1) return null;
+
+  const payload = raw.slice(0, separator);
+  const signature = raw.slice(separator + 1);
+  if (!signatureMatches(payload, signature)) return null;
+
   try {
     const parsed = JSON.parse(
-      Buffer.from(raw, 'base64url').toString('utf8'),
+      Buffer.from(payload, 'base64url').toString('utf8'),
     ) as Partial<PendingGoogleSignIn>;
 
     if (
@@ -126,6 +169,8 @@ export function decodePendingSignIn(
       parsed.state.length < 16 ||
       typeof parsed.codeVerifier !== 'string' ||
       parsed.codeVerifier.length < 16 ||
+      typeof parsed.callbackUrl !== 'string' ||
+      !parsed.callbackUrl.startsWith('http') ||
       typeof parsed.createdAt !== 'number'
     ) {
       return null;
@@ -138,6 +183,7 @@ export function decodePendingSignIn(
       state: parsed.state,
       codeVerifier: parsed.codeVerifier,
       returnPath: sanitizeReturnPath(parsed.returnPath),
+      callbackUrl: parsed.callbackUrl,
       createdAt: parsed.createdAt,
     };
   } catch {

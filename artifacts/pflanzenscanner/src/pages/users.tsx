@@ -35,6 +35,7 @@ import { PeckingChicken } from "@/components/pecking-chicken";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
 import { PushNotificationCard } from "@/components/push-notification-card";
+import { ImageRescueCard } from "@/components/image-rescue-card";
 import { useFavorites } from "@/lib/use-favorites";
 import {
   useListPlants,
@@ -1031,6 +1032,9 @@ export default function UsersPage() {
 
       {/* Pflanzenretter rank card */}
       {me?.username && <PflanzenretterCard />}
+
+      {/* Photos that exist only on this device: upload them visibly */}
+      <ImageRescueCard />
 
       {/* Tab switcher */}
       <div className="grid grid-cols-4 gap-1 bg-muted rounded-xl p-1">

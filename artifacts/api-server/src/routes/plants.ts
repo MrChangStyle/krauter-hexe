@@ -279,16 +279,24 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
     scanAttemptId = rateLimit.attemptId;
   }
 
-  // Start the image uploads in parallel with AI identification so we don't pay
-  // the latency twice. Failures are tolerated – the scan still works via
-  // IndexedDB, the photo is then just missing on other devices.
-  const uploadMainPromise = uploadImage(parsed.data.image).catch((e: unknown) => {
-    req.log.warn({ err: e }, "Plant image upload failed");
-    return null as null;
-  });
-  const uploadSidePromise = typeof imageSide === "string"
-    ? uploadImage(imageSide).catch(() => null as null)
-    : Promise.resolve(null as null);
+  // Photos are uploaded to the CDN only once we know they are needed: for a
+  // new species, or for an existing entry that has no shared photo yet.
+  // Uploading every scan up front (in parallel with the AI call) stored a
+  // never-used copy for every duplicate scan, so storage grew per scan
+  // instead of per species. Failures stay non-fatal: the photo still lives in
+  // the device's IndexedDB and can be backed up later.
+  const uploadMain = () =>
+    uploadImage(parsed.data.image).catch((e: unknown) => {
+      req.log.warn({ err: e }, "Plant image upload failed");
+      return null as null;
+    });
+  const uploadSide = () =>
+    typeof imageSide === "string"
+      ? uploadImage(imageSide).catch((e: unknown) => {
+          req.log.warn({ err: e }, "Plant side image upload failed");
+          return null as null;
+        })
+      : Promise.resolve(null as null);
 
   let identification;
   try {
@@ -301,9 +309,6 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
     res.status(502).json({ error: "AI-Identifizierung fehlgeschlagen" });
     return;
   }
-
-  // Await the uploads (likely already finished since AI takes longer).
-  const [imageUrl, imageUrlSide] = await Promise.all([uploadMainPromise, uploadSidePromise]);
 
   // Not a plant: reject without archiving.
   if (!identification.istPflanze) {
@@ -362,6 +367,7 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
         typeof imageSide === "string" &&
         !existing.hasSideImage;
       if (upgradesMushroom) {
+        const [imageUrl, imageUrlSide] = await Promise.all([uploadMain(), uploadSide()]);
         const [updated] = await db
           .update(plantsTable)
           .set({
@@ -450,21 +456,32 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
       // their local photos and rescans a known plant to restore the image.
       let returnedPlant = existing;
       let imageMerged = false;
-      const needsImageAttach =
-        (!existing.imageUrl && imageUrl) ||
-        (!existing.imageUrlSide && imageUrlSide) ||
-        (localImageId && localImageId !== existing.localImageId);
+      // Upload only what the shared entry is missing. A legacy "/objects/..."
+      // path counts as missing: it can no longer be served.
+      const missingMain = !isServableImageUrl(existing.imageUrl);
+      const missingSide =
+        typeof imageSide === "string" && !isServableImageUrl(existing.imageUrlSide);
+      const [imageUrl, imageUrlSide] = await Promise.all([
+        missingMain ? uploadMain() : Promise.resolve(null as null),
+        missingSide ? uploadSide() : Promise.resolve(null as null),
+      ]);
+      // The shared entry keeps the local photo key of whoever scanned it
+      // first. Overwriting it with every later scanner's key used to point
+      // the entry at a different device each time, which made the original
+      // photo unrecoverable for the device that actually had it.
+      const adoptLocalId = !!localImageId && !existing.localImageId;
+      const needsImageAttach = !!imageUrl || !!imageUrlSide || adoptLocalId;
 
       if (needsImageAttach) {
         const updateSet: Record<string, unknown> = {};
-        if (localImageId && localImageId !== existing.localImageId) {
+        if (adoptLocalId) {
           updateSet.localImageId = localImageId;
         }
-        if (!existing.imageUrl && imageUrl) {
+        if (imageUrl) {
           updateSet.imageUrl = imageUrl;
-          imageMerged = true; // a real GCS photo was newly attached
+          imageMerged = true; // a real CDN photo was newly attached
         }
-        if (!existing.imageUrlSide && imageUrlSide) {
+        if (imageUrlSide) {
           updateSet.imageUrlSide = imageUrlSide;
         }
         const [healed] = await db
@@ -495,6 +512,8 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
       return;
     }
   }
+
+  const [imageUrl, imageUrlSide] = await Promise.all([uploadMain(), uploadSide()]);
 
   const [plant] = await db
     .insert(plantsTable)

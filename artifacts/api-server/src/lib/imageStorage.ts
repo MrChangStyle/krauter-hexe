@@ -134,6 +134,11 @@ async function uploadWithTimeout(
       // wanted here because every scan is a new photo.
       unique_filename: true,
       timeout: timeoutMs,
+      // Incoming transformation: Cloudinary stores the photo already limited
+      // to 1280 px and recompressed. The app downscales before sending, but
+      // older clients and the image migration did not, which left the
+      // average stored photo around 1.4 MB instead of ~150 KB.
+      transformation: [{ width: 1280, height: 1280, crop: 'limit', quality: 'auto:good' }],
     });
 
     const result = await Promise.race([
@@ -184,6 +189,41 @@ export async function uploadImageBuffer(
     `data:${mime};base64,${buffer.toString('base64')}`,
     timeoutMs,
   );
+}
+
+/**
+ * Extracts the Cloudinary public_id from a delivery URL such as
+ * https://res.cloudinary.com/<cloud>/image/upload/v1712/kraeuterhexe/abc.jpg
+ * → "kraeuterhexe/abc". Returns null for anything that is not a plain
+ * Cloudinary upload URL (so we never delete something we did not create).
+ */
+export function cloudinaryPublicId(url: string | null | undefined): string | null {
+  if (typeof url !== 'string') return null;
+  const match = /^https:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\/(?:v\d+\/)?(.+?)(?:\.[a-z0-9]+)?$/i.exec(
+    url,
+  );
+  return match?.[1] ?? null;
+}
+
+/**
+ * Deletes a photo from Cloudinary by its delivery URL. Used when a photo is
+ * replaced, so storage stays at one photo per species. Returns false when the
+ * URL is not a Cloudinary upload or the delete failed (never throws: a left
+ * over file costs a little storage, a crash would cost the user's action).
+ */
+export async function deleteImageByUrl(url: string | null | undefined): Promise<boolean> {
+  const publicId = cloudinaryPublicId(url);
+  if (!publicId) return false;
+  try {
+    const cloudinary = await getCloudinary();
+    const result = (await cloudinary.uploader.destroy(publicId, {
+      resource_type: 'image',
+      invalidate: true,
+    })) as { result?: string };
+    return result.result === 'ok';
+  } catch {
+    return false;
+  }
 }
 
 /**

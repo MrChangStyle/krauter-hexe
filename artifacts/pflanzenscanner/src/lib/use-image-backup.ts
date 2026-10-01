@@ -38,7 +38,7 @@ function saveDoneSet(set: Set<string>): void {
  * Returns true when the server confirmed the image was newly stored in GCS
  * (i.e. response json contains { stored: true }).
  */
-async function backupOneImage(
+export async function backupOneImage(
   type: "plant" | "insect",
   id: number,
   localImageId: string,

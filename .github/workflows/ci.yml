@@ -1,0 +1,43 @@
+name: CI
+
+# Typecheck und Tests für jeden Pull Request und jeden Push auf main.
+# Läuft komplett ohne echte Datenbank oder echte Schlüssel: die Tests mocken
+# die Datenbank, die Platzhalter unten erfüllen nur die Start-Prüfungen.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DATABASE_URL: postgres://ci:ci@localhost:5432/ci
+      JWT_SECRET: ci-only-placeholder-secret-0123456789
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Abhängigkeiten installieren
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Tests API-Server
+        run: pnpm --filter @workspace/api-server run test
+
+      - name: Tests App
+        run: pnpm --filter @workspace/pflanzenscanner run test

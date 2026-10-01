@@ -107,6 +107,51 @@ describe("offline guard", () => {
   });
 });
 
+describe("real connection check", () => {
+  it("stops as a network stop without scanning when the server is unreachable", async () => {
+    const item = makePending();
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValue([item]),
+      checkConnection: vi.fn().mockResolvedValue(false),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.checkConnection).toHaveBeenCalledTimes(1);
+    expect(deps.scanPlant).not.toHaveBeenCalled();
+    expect(stats.networkStop).toBe(true);
+    expect(deps.lockRef.current).toBe(false);
+  });
+
+  it("scans normally when the server is reachable", async () => {
+    const item = makePending();
+    const deps = makeDeps({
+      getAllPendingScans: vi
+        .fn()
+        .mockResolvedValueOnce([item]) // connection pre-check
+        .mockResolvedValueOnce([item]) // loop iteration 1
+        .mockResolvedValue([]),
+      checkConnection: vi.fn().mockResolvedValue(true),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.scanPlant).toHaveBeenCalledTimes(1);
+    expect(stats.added).toBe(1);
+  });
+
+  it("does not probe the server when the queue is empty", async () => {
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValue([]),
+      checkConnection: vi.fn().mockResolvedValue(true),
+    });
+
+    await drainQueue(deps);
+
+    expect(deps.checkConnection).not.toHaveBeenCalled();
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Happy path
 // ---------------------------------------------------------------------------

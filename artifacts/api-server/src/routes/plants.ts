@@ -46,6 +46,9 @@ import {
   BackfillPlantSymptomCasingResponse,
   CheckPlantHealthBody,
   CheckPlantHealthResponse,
+  SetPlantImageLockParams,
+  SetPlantImageLockBody,
+  SetPlantImageLockResponse,
 } from "@workspace/api-zod";
 import {
   identifyPlant,
@@ -72,7 +75,8 @@ import {
   recordScanFailure,
   recordScanSuccess,
 } from "../lib/scanFailureBreaker";
-import { isServableImageUrl, uploadImage } from "../lib/imageStorage";
+import { deleteImageByUrl, isServableImageUrl, uploadImage } from "../lib/imageStorage";
+import { shouldReplaceSharedImage } from "../lib/imageQualityPolicy";
 
 
 const router: IRouter = Router();
@@ -329,7 +333,10 @@ export async function handlePlantScan(
   // photo if the shared entry has none, record the scan for "Meine Scans",
   // and return the existing entry. Used both after the quick identification
   // (no full fact sheet needed) and after a full identification.
-  const respondDuplicate = async (existing: PlantRow): Promise<void> => {
+  const respondDuplicate = async (
+    existing: PlantRow,
+    candidateQuality: number | null,
+  ): Promise<void> => {
     // Duplicate scan (non-upgrade): record it so the existing plant appears
     // in the current user's "Meine Scans", then return without modifications.
     //
@@ -344,10 +351,24 @@ export async function handlePlantScan(
     const missingMain = !isServableImageUrl(existing.imageUrl);
     const missingSide =
       typeof imageSide === "string" && !isServableImageUrl(existing.imageUrlSide);
+    // Better photo: a clearly better rated scan replaces the shared photo
+    // (unless the admin locked it). A two-photo mushroom entry is only
+    // replaced by another two-photo scan, so both views stay from one find.
+    const keepsPair = !existing.hasSideImage || typeof imageSide === "string";
+    const replaceBetter =
+      !missingMain &&
+      keepsPair &&
+      shouldReplaceSharedImage({
+        locked: existing.imageLocked,
+        current: existing.imageQuality,
+        candidate: candidateQuality,
+      });
+    const replaceSide = replaceBetter && typeof imageSide === "string";
     const [imageUrl, imageUrlSide] = await Promise.all([
-      missingMain ? uploadMain() : Promise.resolve(null as null),
-      missingSide ? uploadSide() : Promise.resolve(null as null),
+      missingMain || replaceBetter ? uploadMain() : Promise.resolve(null as null),
+      missingSide || replaceSide ? uploadSide() : Promise.resolve(null as null),
     ]);
+    let imageImproved = false;
     // The shared entry keeps the local photo key of whoever scanned it
     // first. Overwriting it with every later scanner's key used to point
     // the entry at a different device each time, which made the original
@@ -362,7 +383,9 @@ export async function handlePlantScan(
       }
       if (imageUrl) {
         updateSet.imageUrl = imageUrl;
-        imageMerged = true; // a real CDN photo was newly attached
+        updateSet.imageQuality = candidateQuality;
+        if (replaceBetter) imageImproved = true;
+        else imageMerged = true; // a real CDN photo was newly attached
       }
       if (imageUrlSide) {
         updateSet.imageUrlSide = imageUrlSide;
@@ -373,6 +396,15 @@ export async function handlePlantScan(
         .where(eq(plantsTable.id, existing.id))
         .returning(plantSelection);
       if (healed) returnedPlant = healed;
+      if (healed && imageImproved) {
+        req.log.info(
+          { plantId: existing.id, from: existing.imageQuality, to: candidateQuality },
+          "Shared plant photo replaced by a better one",
+        );
+        // The replaced photos are no longer referenced anywhere.
+        void deleteImageByUrl(existing.imageUrl).catch(() => false);
+        if (imageUrlSide) void deleteImageByUrl(existing.imageUrlSide).catch(() => false);
+      }
     }
 
     const [dupScanRow] = await db
@@ -391,7 +423,14 @@ export async function handlePlantScan(
 
     res
       .status(201)
-      .json(ScanPlantResponse.parse({ plant: returnedPlant, alreadyInArchive: !dupIsNew, imageMerged: imageMerged || null }));
+      .json(
+        ScanPlantResponse.parse({
+          plant: returnedPlant,
+          alreadyInArchive: !dupIsNew,
+          imageMerged: imageMerged || null,
+          imageImproved: imageImproved || null,
+        }),
+      );
   };
 
   // Step 1: cheap identification. If the species is already archived, the
@@ -424,7 +463,7 @@ export async function handlePlantScan(
       const known = await findPlantByBotanicalKey(quickKey);
       const mayUpgradeMushroom = typeof imageSide === "string" && !!known && !known.hasSideImage;
       if (known && !mayUpgradeMushroom) {
-        await respondDuplicate(known);
+        await respondDuplicate(known, quick.imageQuality ?? null);
         req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: false }, "Plant scan done");
         return;
       }
@@ -506,7 +545,7 @@ export async function handlePlantScan(
           .set({
             // Update image references: GCS URLs take priority; also set
             // hasSideImage flag and refresh localImageId for IndexedDB fallback.
-            ...(imageUrl ? { imageUrl } : {}),
+            ...(imageUrl ? { imageUrl, imageQuality: quick?.imageQuality ?? null } : {}),
             ...(imageUrlSide ? { imageUrlSide } : {}),
             hasSideImage: true,
             ...(localImageId ? { localImageId } : {}),
@@ -580,7 +619,7 @@ export async function handlePlantScan(
         return;
       }
 
-      await respondDuplicate(existing);
+      await respondDuplicate(existing, quick?.imageQuality ?? null);
       return;
     }
   }
@@ -591,6 +630,8 @@ export async function handlePlantScan(
   const [plant] = await db
     .insert(plantsTable)
     .values({
+      // Rating of the photo uploaded in the background below.
+      imageQuality: quick?.imageQuality ?? null,
       ...(localImageId
         ? { localImageId, hasSideImage: typeof imageSide === "string" }
         : { hasSideImage: typeof imageSide === "string" }),
@@ -1544,6 +1585,26 @@ router.get("/plants/:id", requireApproved, async (req, res): Promise<void> => {
   }
 
   res.json(GetPlantResponse.parse(plant));
+});
+
+// Admin: lock the shared photo so a better rated scan never replaces it.
+router.put("/plants/:id/image-lock", requireOwner, async (req, res): Promise<void> => {
+  const params = SetPlantImageLockParams.safeParse(req.params);
+  const body = SetPlantImageLockBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Ungültige Anfrage." });
+    return;
+  }
+  const [plant] = await db
+    .update(plantsTable)
+    .set({ imageLocked: body.data.locked })
+    .where(eq(plantsTable.id, params.data.id))
+    .returning(plantSelection);
+  if (!plant) {
+    res.status(404).json({ error: "Pflanze nicht gefunden" });
+    return;
+  }
+  res.json(SetPlantImageLockResponse.parse(plant));
 });
 
 // Password-gated maintenance update: used to recompress stored photos, to

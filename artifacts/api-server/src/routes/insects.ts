@@ -14,13 +14,16 @@ import {
   GetInsectResponse,
   GetInsectParams,
   GetInsectImageParams,
+  SetInsectImageLockParams,
+  SetInsectImageLockBody,
+  SetInsectImageLockResponse,
 } from "@workspace/api-zod";
 import {
   identifyInsect,
   parseDataUrl,
   UNKNOWN_SCIENTIFIC_NAME,
 } from "../lib/insectIdentification";
-import { requireApproved } from "../middlewares/requireApproved";
+import { requireApproved, requireOwner } from "../middlewares/requireApproved";
 import { checkAndRecordScanAttempt, refundScanAttempt } from "../lib/scanRateLimit";
 import {
   checkScanBrake,
@@ -29,7 +32,8 @@ import {
   recordScanFailure,
   recordScanSuccess,
 } from "../lib/scanFailureBreaker";
-import { isServableImageUrl, uploadImage } from "../lib/imageStorage";
+import { deleteImageByUrl, isServableImageUrl, uploadImage } from "../lib/imageStorage";
+import { shouldReplaceSharedImage } from "../lib/imageQualityPolicy";
 
 
 const router: IRouter = Router();
@@ -183,20 +187,39 @@ export async function handleInsectScan(req: Request, res: Response): Promise<voi
       // so that device can still back its photo up later).
       const localImageId = parsed.data.localImageId ?? null;
       let returnedInsect = existing;
-      const healedImageUrl = isServableImageUrl(existing.imageUrl)
-        ? null
-        : await uploadPhoto();
+      const hasImage = isServableImageUrl(existing.imageUrl);
+      // Better photo: a clearly better rated scan replaces the shared
+      // photo, unless the admin locked it.
+      const replaceBetter =
+        hasImage &&
+        shouldReplaceSharedImage({
+          locked: existing.imageLocked,
+          current: existing.imageQuality,
+          candidate: identification.imageQuality,
+        });
+      const newImageUrl = !hasImage || replaceBetter ? await uploadPhoto() : null;
       const adoptLocalId = !!localImageId && !existing.localImageId;
-      if (healedImageUrl || adoptLocalId) {
+      let imageImproved = false;
+      if (newImageUrl || adoptLocalId) {
         const [healed] = await db
           .update(insectsTable)
           .set({
-            ...(healedImageUrl ? { imageUrl: healedImageUrl } : {}),
+            ...(newImageUrl
+              ? { imageUrl: newImageUrl, imageQuality: identification.imageQuality }
+              : {}),
             ...(adoptLocalId ? { localImageId } : {}),
           })
           .where(eq(insectsTable.id, existing.id))
           .returning(insectPublicColumns);
         if (healed) returnedInsect = healed;
+        if (healed && newImageUrl && replaceBetter) {
+          imageImproved = true;
+          req.log.info(
+            { insectId: existing.id, from: existing.imageQuality, to: identification.imageQuality },
+            "Shared insect photo replaced by a better one",
+          );
+          void deleteImageByUrl(existing.imageUrl).catch(() => false);
+        }
       }
 
       let insectIsNewToUser = false;
@@ -219,7 +242,11 @@ export async function handleInsectScan(req: Request, res: Response): Promise<voi
       res
         .status(201)
         .json(
-          ScanInsectResponse.parse({ insect: returnedInsect, alreadyInArchive: !insectIsNewToUser }),
+          ScanInsectResponse.parse({
+            insect: returnedInsect,
+            alreadyInArchive: !insectIsNewToUser,
+            imageImproved: imageImproved || null,
+          }),
         );
       req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: false }, "Insect scan done");
       return;
@@ -234,6 +261,7 @@ export async function handleInsectScan(req: Request, res: Response): Promise<voi
     .insert(insectsTable)
     .values({
       ...(localImageId ? { localImageId } : {}),
+      imageQuality: identification.imageQuality,
       germanName: identification.germanName,
       scientificName: identification.scientificName,
       category: identification.category,
@@ -289,6 +317,27 @@ export async function handleInsectScan(req: Request, res: Response): Promise<voi
     }
   })();
 }
+
+// ── PUT /insects/:id/image-lock (admin) ───────────────────────────────────────
+
+router.put("/insects/:id/image-lock", requireOwner, async (req: Request, res: Response): Promise<void> => {
+  const params = SetInsectImageLockParams.safeParse(req.params);
+  const body = SetInsectImageLockBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Ungültige Anfrage." });
+    return;
+  }
+  const [insect] = await db
+    .update(insectsTable)
+    .set({ imageLocked: body.data.locked })
+    .where(eq(insectsTable.id, params.data.id))
+    .returning(insectPublicColumns);
+  if (!insect) {
+    res.status(404).json({ error: "Insekt nicht gefunden" });
+    return;
+  }
+  res.json(SetInsectImageLockResponse.parse(insect));
+});
 
 // ── GET /insects ──────────────────────────────────────────────────────────────
 

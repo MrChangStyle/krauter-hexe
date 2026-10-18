@@ -31,6 +31,7 @@ import { downscaleFile, downscaleScan } from "@/lib/image";
 import { useLocationRegion } from "@/lib/use-location-region";
 import { LocationCard } from "@/components/location-card";
 import { putImage } from "@/lib/image-store";
+import { recordScanPhoto } from "@/lib/my-photos";
 
 // Which capture the hidden file input is currently serving: the universal
 // scan ("auto": the server decides plant or insect), the normal single-photo
@@ -370,7 +371,19 @@ export default function ScanPage() {
   // Insect scan — direct POST, no queue.
   const { mutate: scanInsect, isPending: isInsectScanning } = useScanInsect({
     mutation: {
-      onSuccess(data) {
+      onSuccess(data, variables) {
+        void recordScanPhoto({
+          kind: "insect",
+          id: data.insect.id,
+          newLocalId: variables.data.localImageId,
+          fallbackOldId: data.insect.localImageId,
+        });
+        if (data.imageImproved) {
+          toast({
+            title: "📸 Dein Foto ist jetzt das Galerie-Bild",
+            description: "Es war deutlich besser als das bisherige und wird jetzt allen gezeigt.",
+          });
+        }
         if (data.alreadyInArchive) {
           toast({
             title: "Insekt bereits bekannt",

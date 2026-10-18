@@ -7,6 +7,7 @@ import { Plant } from "@workspace/api-client-react";
 import { plantImageUrl, plantCategoryPlaceholder } from "@/lib/image";
 import { ImageLightbox } from "@/components/image-lightbox";
 import { useLocalImage } from "@/lib/use-local-image";
+import { useMyPhoto } from "@/lib/my-photos";
 
 /** Text-only row rendered in community/archive views (no image, no icons). */
 function PlantCardTextOnly({
@@ -117,12 +118,16 @@ export function PlantCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const placeholder = plantCategoryPlaceholder(plant.category);
-  const { src: imageSrc, isPlaceholder } = useLocalImage(
+  const { src: sharedSrc, isPlaceholder: sharedIsPlaceholder } = useLocalImage(
     plant.localImageId ?? undefined,
     plantImageUrl(plant.id),
     placeholder,
     plant.imageUrl,
   );
+  // "Meine Scans" shows the user's own photo when this device has one.
+  const myPhoto = useMyPhoto("plant", plant.id);
+  const imageSrc = myPhoto ?? sharedSrc;
+  const isPlaceholder = myPhoto ? false : sharedIsPlaceholder;
 
   return (
     <>

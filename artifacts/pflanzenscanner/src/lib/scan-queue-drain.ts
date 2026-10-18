@@ -11,8 +11,13 @@ import type { Insect, Plant } from "@workspace/api-client-react";
 
 /** Result of the universal scan: one of the two keys is set. */
 export type AutoScanResponse =
-  | { plant: Plant; alreadyInArchive: boolean; imageMerged?: boolean | null }
-  | { insect: Insect; alreadyInArchive: boolean };
+  | {
+      plant: Plant;
+      alreadyInArchive: boolean;
+      imageMerged?: boolean | null;
+      imageImproved?: boolean | null;
+    }
+  | { insect: Insect; alreadyInArchive: boolean; imageImproved?: boolean | null };
 
 export interface DrainScanResult {
   itemId: string;
@@ -20,12 +25,18 @@ export interface DrainScanResult {
   alreadyInArchive: boolean;
   /** True when a photo was newly attached to an existing entry (Smart Merge). */
   imageMerged?: boolean;
+  /** True when this photo was clearly better and replaced the shared one. */
+  imageImproved?: boolean;
+  /** Device image-store key of the scanned photo (for "Meine Scans"). */
+  localImageId?: string;
 }
 
 export interface DrainInsectResult {
   itemId: string;
   insect: Insect;
   alreadyInArchive: boolean;
+  imageImproved?: boolean;
+  localImageId?: string;
 }
 
 export interface DrainDeps {
@@ -50,7 +61,12 @@ export interface DrainDeps {
     imageSide?: string;
     localImageId?: string;
     locationRegion?: string;
-  }) => Promise<{ plant: Plant; alreadyInArchive: boolean; imageMerged?: boolean | null }>;
+  }) => Promise<{
+    plant: Plant;
+    alreadyInArchive: boolean;
+    imageMerged?: boolean | null;
+    imageImproved?: boolean | null;
+  }>;
   /**
    * Sends a queued insect photo. Optional so callers that only queue plants
    * (and older tests) need not provide it; an insect item without it is
@@ -60,7 +76,7 @@ export interface DrainDeps {
     image: string;
     localImageId?: string;
     locationRegion?: string;
-  }) => Promise<{ insect: Insect; alreadyInArchive: boolean }>;
+  }) => Promise<{ insect: Insect; alreadyInArchive: boolean; imageImproved?: boolean | null }>;
   /**
    * Sends a photo from the universal scan button; the server decides whether
    * it is a plant or an insect. Optional like scanInsect.
@@ -212,6 +228,8 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
               itemId: item.id,
               insect: autoRes.insect,
               alreadyInArchive: autoRes.alreadyInArchive,
+              ...(autoRes.imageImproved ? { imageImproved: true } : {}),
+              ...(item.localImageId ? { localImageId: item.localImageId } : {}),
             });
           } else {
             deps.onSuccess({
@@ -219,6 +237,8 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
               plant: autoRes.plant,
               alreadyInArchive: autoRes.alreadyInArchive,
               imageMerged: autoRes.imageMerged ?? undefined,
+              ...(autoRes.imageImproved ? { imageImproved: true } : {}),
+              ...(item.localImageId ? { localImageId: item.localImageId } : {}),
             });
             if (autoRes.alreadyInArchive) duplicates += 1;
             else added += 1;
@@ -242,6 +262,8 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
             itemId: item.id,
             insect: insectRes.insect,
             alreadyInArchive: insectRes.alreadyInArchive,
+            ...(insectRes.imageImproved ? { imageImproved: true } : {}),
+            ...(item.localImageId ? { localImageId: item.localImageId } : {}),
           });
           // Not counted in the plant stats: those drive plant-specific
           // toasts ("Pflanze bereits gescannt"). The insect page reports
@@ -260,6 +282,8 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
           plant: res.plant,
           alreadyInArchive: res.alreadyInArchive,
           imageMerged: res.imageMerged ?? undefined,
+          ...(res.imageImproved ? { imageImproved: true } : {}),
+          ...(item.localImageId ? { localImageId: item.localImageId } : {}),
         });
         if (res.alreadyInArchive) duplicates += 1;
         else added += 1;

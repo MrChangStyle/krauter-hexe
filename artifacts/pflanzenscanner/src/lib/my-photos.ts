@@ -82,7 +82,8 @@ async function deletePhoto(localId: string): Promise<void> {
 }
 
 export function getMyPhotoId(kind: PhotoKind, id: number): string | null {
-  return read().photos[keyOf(kind, id)] ?? null;
+  const value: string | undefined = read().photos[keyOf(kind, id)];
+  return value ?? null;
 }
 
 /**
@@ -102,7 +103,7 @@ export async function recordScanPhoto(args: {
   if (!newLocalId) return;
   const store = read();
   const key = keyOf(kind, id);
-  let oldId = store.photos[key] ?? null;
+  let oldId: string | null = store.photos[key] ?? null;
   if (!oldId && args.fallbackOldId && args.fallbackOldId !== newLocalId) {
     oldId = (await hasImage(args.fallbackOldId).catch(() => false))
       ? args.fallbackOldId

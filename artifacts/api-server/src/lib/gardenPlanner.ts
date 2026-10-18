@@ -52,7 +52,7 @@ const plantingColumns = {
   h: bedPlantingsTable.h,
 };
 
-function validSeason(season: number): number {
+export function validSeason(season: number): number {
   if (!Number.isInteger(season) || season < 2000 || season > 2100) throw notFound();
   return season;
 }

@@ -15,6 +15,7 @@ import type { Task } from "@workspace/api-client-react";
 import { plantImageUrl } from "@/lib/image";
 import { BackToPflanzen } from "@/components/back-to-pflanzen";
 import { PflegeGuidesSection } from "@/pages/mehr";
+import { GardenTodoSection } from "@/components/garden-overview";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -344,6 +345,9 @@ export default function AufgabenPage() {
       {/* 30-day care guides from the Pflanzendoc belong to the care plan. */}
       <div className="px-6 pb-4">
         <PflegeGuidesSection />
+      </div>
+      <div className="px-6 pb-4">
+        <GardenTodoSection />
       </div>
 
       {/* Form (create OR edit) */}

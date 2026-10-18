@@ -1475,6 +1475,42 @@ export interface BedPlanting {
   h: number;
 }
 
+export type GardenEventKind = typeof GardenEventKind[keyof typeof GardenEventKind];
+
+
+export const GardenEventKind = {
+  sow_indoor: 'sow_indoor',
+  direct_sow: 'direct_sow',
+  plant_out: 'plant_out',
+  harvest: 'harvest',
+} as const;
+
+export interface GardenCalendarEntry {
+  plantingId: number;
+  bedId: number;
+  bedName: string;
+  label: string;
+  cropKey: string;
+  kind: GardenEventKind;
+  /** First day, YYYY-MM-DD */
+  start: string;
+  /** Last day, YYYY-MM-DD */
+  end: string;
+  done: boolean;
+  /** Still to do – false when ticked off or no longer needed (sown directly instead of indoors) */
+  open: boolean;
+}
+
+export interface FrostWarning {
+  bedId: number;
+  bedName: string;
+  /** Day the night starts, YYYY-MM-DD */
+  night: string;
+  /** Lowest forecast air temperature (°C) */
+  minTemp: number;
+  plants: string[];
+}
+
 export interface BedPlantingInput {
   /** @nullable */
   cropKey?: string | null;

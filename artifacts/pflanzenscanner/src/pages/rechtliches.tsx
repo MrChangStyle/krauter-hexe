@@ -175,7 +175,7 @@ export function DatenschutzPage() {
           </li>
           <li>
             Bright Sky mit Daten des Deutschen Wetterdienstes (Beet-Architekt:
-            Frosttermine; übermittelt wird nur ein auf etwa 10 km gerundeter Ort)
+            Frosttermine und Frostwarnung; übermittelt wird nur ein auf etwa 10 km gerundeter Ort)
           </li>
         </ul>
         <p className="mt-2">

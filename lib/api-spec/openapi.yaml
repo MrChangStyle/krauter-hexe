@@ -2566,6 +2566,125 @@ paths:
       responses:
         "204":
           description: Removed.
+  /farms/{farmId}/plantings/{plantingId}/checks/{kind}:
+    put:
+      tags: [garden]
+      operationId: checkGardenEvent
+      summary: Tick off a date of a planting (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: plantingId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: kind
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/GardenEventKind"
+      responses:
+        "204":
+          description: Ticked off.
+        "400":
+          description: The plant has no such date.
+    delete:
+      tags: [garden]
+      operationId: uncheckGardenEvent
+      summary: Undo a ticked-off date (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: plantingId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: kind
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/GardenEventKind"
+      responses:
+        "204":
+          description: Undone.
+  /farms/{farmId}/beds/{bedId}/history:
+    get:
+      tags: [garden]
+      operationId: getBedHistory
+      summary: Plantings of a bed over all seasons, newest first (crop rotation)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The plantings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BedPlanting"
+  /farms/{farmId}/garden/seasons/{season}/calendar:
+    get:
+      tags: [garden]
+      operationId: getGardenCalendar
+      summary: Sowing, planting and harvest dates of all plantings of a season, from the crop data and the frost dates
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: season
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The dates, sorted by start.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GardenCalendarEntry"
+  /farms/{farmId}/garden/frost-warnings:
+    get:
+      tags: [garden]
+      operationId: getFrostWarnings
+      summary: Beds where frost-tender plants meet a frosty night (DWD forecast via Bright Sky)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The warnings for the coming night (empty when there is none or no forecast).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FrostWarning"
   /farms/{farmId}:
     patch:
       tags: [farm]
@@ -4755,6 +4874,54 @@ components:
           type: integer
         h:
           type: integer
+    GardenEventKind:
+      type: string
+      enum: [sow_indoor, direct_sow, plant_out, harvest]
+    GardenCalendarEntry:
+      type: object
+      required: [plantingId, bedId, bedName, label, cropKey, kind, start, end, done, open]
+      properties:
+        plantingId:
+          type: integer
+        bedId:
+          type: integer
+        bedName:
+          type: string
+        label:
+          type: string
+        cropKey:
+          type: string
+        kind:
+          $ref: "#/components/schemas/GardenEventKind"
+        start:
+          type: string
+          description: First day, YYYY-MM-DD
+        end:
+          type: string
+          description: Last day, YYYY-MM-DD
+        done:
+          type: boolean
+        open:
+          type: boolean
+          description: Still to do – false when ticked off or no longer needed (sown directly instead of indoors)
+    FrostWarning:
+      type: object
+      required: [bedId, bedName, night, minTemp, plants]
+      properties:
+        bedId:
+          type: integer
+        bedName:
+          type: string
+        night:
+          type: string
+          description: Day the night starts, YYYY-MM-DD
+        minTemp:
+          type: number
+          description: Lowest forecast air temperature (°C)
+        plants:
+          type: array
+          items:
+            type: string
     BedPlantingInput:
       type: object
       required: [x, y]

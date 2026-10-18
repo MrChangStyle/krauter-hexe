@@ -1881,6 +1881,12 @@ components:
             image before this scan — the new photo was automatically attached
             to the existing entry (Smart Merge). Null/absent for new entries
             or duplicates that already had an image.
+        imageImproved:
+          type: boolean
+          nullable: true
+          description: >
+            True when this scan's photo was clearly better than the shared one
+            and replaced it.
     DeletePlantInput:
       type: object
       required: [password]
@@ -2407,6 +2413,12 @@ components:
             True when the scanned insect matched an entry already in the archive
             (by scientific name); in that case no new entry was created and the
             existing one is returned.
+        imageImproved:
+          type: boolean
+          nullable: true
+          description: >
+            True when this scan's photo was clearly better than the shared one
+            and replaced it.
     LoginInput:
       type: object
       required: [email, password]

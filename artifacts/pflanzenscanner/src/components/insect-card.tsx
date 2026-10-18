@@ -7,6 +7,7 @@ import type { Insect } from "@workspace/api-client-react";
 import { insectImageUrl, insectCategoryPlaceholder } from "@/lib/image";
 import { ImageLightbox } from "@/components/image-lightbox";
 import { useLocalImage } from "@/lib/use-local-image";
+import { useMyPhoto } from "@/lib/my-photos";
 
 // German labels for the backend enum values.
 export const INSECT_CATEGORY_LABELS: Record<string, string> = {
@@ -68,12 +69,16 @@ export function InsectCard({
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const placeholder = insectCategoryPlaceholder(insect.category);
-  const { src: imageSrc, isPlaceholder } = useLocalImage(
+  const { src: sharedSrc, isPlaceholder: sharedIsPlaceholder } = useLocalImage(
     variant === "private" ? (insect.localImageId ?? undefined) : undefined,
     variant === "private" ? insectImageUrl(insect.id) : "",
     placeholder,
     variant === "private" ? (insect.imageUrl ?? undefined) : undefined,
   );
+  // "Meine Scans" shows the user's own photo when this device has one.
+  const myPhoto = useMyPhoto("insect", variant === "private" ? insect.id : undefined);
+  const imageSrc = myPhoto ?? sharedSrc;
+  const isPlaceholder = myPhoto ? false : sharedIsPlaceholder;
 
   // ── Community / archive view: text-only, no images or icons ────────────────
   if (variant === "community") {

@@ -1,12 +1,4 @@
-import {
-  boolean,
-  jsonb,
-  pgEnum,
-  pgTable,
-  serial,
-  text,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { boolean, jsonb, pgEnum, pgTable, serial, text, timestamp, integer } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -117,6 +109,12 @@ export const plantsTable = pgTable("plants", {
   // Client-generated UUID that identifies the photo in the device's local
   // IndexedDB image store. Null for rows created before the local-first migration.
   localImageId: text("local_image_id"),
+  // AI rating 1-10 of how well the shared photo shows the species (sharpness,
+  // light, subject fills the frame, typical features visible). A later scan
+  // with a clearly better photo replaces it. Null for photos never rated.
+  imageQuality: integer("image_quality"),
+  // Set by the admin: the shared photo is never replaced automatically.
+  imageLocked: boolean("image_locked").notNull().default(false),
   germanName: text("german_name").notNull(),
   botanicalName: text("botanical_name").notNull(),
   category: plantCategoryEnum("category").notNull(),

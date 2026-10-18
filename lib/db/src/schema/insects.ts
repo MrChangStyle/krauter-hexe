@@ -1,11 +1,4 @@
-import {
-  jsonb,
-  pgEnum,
-  pgTable,
-  serial,
-  text,
-  timestamp,
-} from "drizzle-orm/pg-core";
+import { jsonb, pgEnum, pgTable, serial, text, timestamp, integer, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -50,6 +43,12 @@ export const insectsTable = pgTable("insects", {
   // GCS object path (e.g. "/objects/uploads/uuid") for the photo.
   // Takes priority over image_data and local_image_id for serving.
   imageUrl: text("image_url"),
+  // AI rating 1-10 of how well the shared photo shows the species (sharpness,
+  // light, subject fills the frame, typical features visible). A later scan
+  // with a clearly better photo replaces it. Null for photos never rated.
+  imageQuality: integer("image_quality"),
+  // Set by the admin: the shared photo is never replaced automatically.
+  imageLocked: boolean("image_locked").notNull().default(false),
   germanName: text("german_name").notNull(),
   scientificName: text("scientific_name").notNull(),
   category: insectCategoryEnum("category").notNull(),

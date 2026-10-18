@@ -23,6 +23,12 @@ import {
 } from "@/lib/scan-queue";
 import { drainQueue } from "@/lib/scan-queue-drain";
 import { hasRealConnection, resetConnectionCache } from "@/lib/connectivity";
+import { recordScanPhoto } from "@/lib/my-photos";
+
+const IMPROVED_TOAST = {
+  title: "📸 Dein Foto ist jetzt das Galerie-Bild",
+  description: "Es war deutlich besser als das bisherige und wird jetzt allen gezeigt.",
+};
 
 /** Outcome of one successfully scanned queue item. */
 export interface ScanResult {
@@ -226,6 +232,13 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
         },
         onInsectSuccess: (result) => {
           setIsAuthBlocked(false);
+          void recordScanPhoto({
+            kind: "insect",
+            id: result.insect.id,
+            newLocalId: result.localImageId,
+            fallbackOldId: result.insect.localImageId,
+          });
+          if (result.imageImproved) toast(IMPROVED_TOAST);
           setInsectResults((prev) => [
             ...prev.slice(-19),
             { ...result, finishedAt: Date.now() },
@@ -250,6 +263,13 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
         onSuccess: (result) => {
           // A successful scan clears any previous auth-block state.
           setIsAuthBlocked(false);
+          void recordScanPhoto({
+            kind: "plant",
+            id: result.plant.id,
+            newLocalId: result.localImageId,
+            fallbackOldId: result.plant.localImageId,
+          });
+          if (result.imageImproved) toast(IMPROVED_TOAST);
           // Keep a bounded list so a huge backlog can't grow memory forever.
           setResults((prev) => [
             ...prev.slice(-19),

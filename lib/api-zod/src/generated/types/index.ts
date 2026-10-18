@@ -29,6 +29,8 @@ export * from './createReportInput';
 export * from './createTaskInput';
 export * from './deleteAccountInput';
 export * from './deletePlantInput';
+export * from './farmRole';
+export * from './farmSummary';
 export * from './favoriteIds';
 export * from './geoReverseInput';
 export * from './geoReverseResult';

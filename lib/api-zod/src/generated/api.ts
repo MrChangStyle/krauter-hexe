@@ -1624,6 +1624,31 @@ export const GetInsectImageResponse = zod.unknown()
 
 
 /**
+ * @summary The farms the signed-in account belongs to
+ */
+export const ListMyFarmsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+})
+export const ListMyFarmsResponse = zod.array(ListMyFarmsResponseItem)
+
+
+/**
+ * @summary One farm the account is a member of
+ */
+export const GetFarmParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFarmResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+})
+
+
+/**
  * Any approved account can report the shared photo of a plant or insect, or a username from the leaderboard. Reporting the same content again while the first report is open changes nothing.
  * @summary Report a shared photo or a username
  */

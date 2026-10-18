@@ -21,8 +21,13 @@ vi.mock("@workspace/db", async () => {
   const { getTableName } = await vi.importActual<typeof import("drizzle-orm")>("drizzle-orm");
   const schema = await vi.importActual<Record<string, unknown>>("@workspace/db/schema");
   const tx = {
+    // Only the users lookup returns rows here; farm handover is covered by the
+    // real-database test (orphanCleanup.integration.test.ts).
     select: () => ({
-      from: () => ({ where: () => Promise.resolve(state.user ? [state.user] : []) }),
+      from: (table: Parameters<typeof getTableName>[0]) => ({
+        where: () =>
+          Promise.resolve(getTableName(table) === "users" && state.user ? [state.user] : []),
+      }),
     }),
     delete: (table: Parameters<typeof getTableName>[0]) => ({
       where: () => {

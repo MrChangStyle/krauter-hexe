@@ -6,7 +6,7 @@ vi.hoisted(() => {
 });
 vi.mock("./plantIdentification", () => ({ MODELS: [], TEXT_MODELS: [], parseDataUrl: vi.fn(), runModelChain: vi.fn() }));
 
-const { buildFeedAnalysis, coerceGuide, coerceSpeciesSuggestion, speciesKey, statusFor } = await import("./farmAi");
+const { buildFeedAnalysis, coerceGuide, coerceSpeciesSuggestion, pickHelpfulPlants, speciesKey, statusFor } = await import("./farmAi");
 
 const archiveEntry = (status: "safe" | "poisonous") => ({
   plantId: 7,
@@ -95,5 +95,56 @@ describe("feed analysis", () => {
     expect(out.nutrients).toEqual({ protein: "mittel", fat: null, fiber: "hoch", carbohydrates: null, minerals: null });
     expect(out.medicalNotes).toEqual(["Wegen Moderhinke auf trockenes Futter achten."]);
     expect(buildFeedAnalysis({ bewertung: "super" }, new Map()).verdict).toBe("limited");
+  });
+});
+
+describe("helpful plants", () => {
+  const row = (id: number, germanName: string, botanicalName: string, over: Record<string, unknown> = {}) => ({
+    id,
+    germanName,
+    botanicalName,
+    category: "medicinal",
+    animals: {},
+    poultryStatus: "safe" as const,
+    animalToxicityDetails: "",
+    poultryBenefits: "",
+    symptoms: {},
+    symptomApplications: {},
+    ...over,
+  });
+  const safe = (benefits = "") => ({ status: "safe" as const, toxicityDetails: "", benefits });
+  const kamille = row(1, "Kamille", "Matricaria chamomilla", {
+    animals: { cat: safe("beruhigt den Magen"), rabbit: safe() },
+    symptoms: { cat: ["Magenbeschwerden"], rabbit: ["Blähungen"] },
+    symptomApplications: { cat: { Magenbeschwerden: "Abgekühlten Tee teelöffelweise ins Futter." }, rabbit: { Blähungen: "Getrocknet ins Heu." } },
+  });
+  const loewenzahn = row(2, "Löwenzahn", "Taraxacum officinale", { category: "edible", animals: { cat: safe(), rabbit: safe() } });
+  const eibe = row(3, "Eibe", "Taxus baccata", { animals: { rabbit: { status: "poisonous", toxicityDetails: "", benefits: "" } } });
+
+  it("gives a cat only medicinal plants, with how to use them", () => {
+    expect(pickHelpfulPlants([kamille, loewenzahn, eibe], "cat", "carnivore")).toEqual([
+      {
+        plantId: 1,
+        germanName: "Kamille",
+        botanicalName: "Matricaria chamomilla",
+        use: "medicinal",
+        benefits: "beruhigt den Magen",
+        applications: [{ symptom: "Magenbeschwerden", howTo: "Abgekühlten Tee teelöffelweise ins Futter." }],
+      },
+    ]);
+  });
+
+  it("gives plant eaters medicinal plants first, then feed plants, and never a poisonous one", () => {
+    const out = pickHelpfulPlants([loewenzahn, eibe, kamille], "rabbit", "herbivore");
+    expect(out.map((p) => [p.germanName, p.use])).toEqual([
+      ["Kamille", "medicinal"],
+      ["Löwenzahn", "feed"],
+    ]);
+  });
+
+  it("drops a species when any archive entry of it is poisonous, and plants of risky categories", () => {
+    const duplicate = row(4, "Kamille (2)", "Matricaria chamomilla L.", { animals: { rabbit: { status: "poisonous", toxicityDetails: "", benefits: "" } } });
+    const pilz = row(5, "Steinpilz", "Boletus edulis", { category: "mushroom", animals: { rabbit: safe() } });
+    expect(pickHelpfulPlants([kamille, duplicate, pilz], "rabbit", "herbivore")).toEqual([]);
   });
 });

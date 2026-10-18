@@ -3,10 +3,10 @@ import {
   AnalyzeFeedBody,
   AnalyzeFeedResponse,
   GetHusbandryGuideParams,
+  GetHelpfulPlantsParams,
+  GetHelpfulPlantsResponse,
   GetHusbandryGuideResponse,
   ListFeedAnalysesResponse,
-  ListToxicPlantsParams,
-  ListToxicPlantsResponse,
   SuggestFarmAnimalSpeciesBody,
   SuggestFarmAnimalSpeciesResponse,
 } from '@workspace/api-zod';
@@ -17,10 +17,10 @@ import {
   analyzeFeed,
   checkImage,
   deleteFeedAnalysis,
+  helpfulPlantsFor,
   husbandryGuide,
   listFeedAnalyses,
   suggestSpecies,
-  toxicPlantsFor,
 } from '../lib/farmAi';
 import { checkAndRecordScanAttempt, refundScanAttempt } from '../lib/scanRateLimit';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
@@ -87,12 +87,12 @@ router.get(
 );
 
 router.get(
-  '/farms/:farmId/toxic-plants/:species',
+  '/farms/:farmId/helpful-plants/:species',
   requireFarm('guest'),
   handle(async (req, res) => {
-    const params = ListToxicPlantsParams.safeParse(req.params);
+    const params = GetHelpfulPlantsParams.safeParse(req.params);
     if (!params.success) return notFound(res);
-    res.json(ListToxicPlantsResponse.parse(await toxicPlantsFor(params.data.species)));
+    res.json(GetHelpfulPlantsResponse.parse(await helpfulPlantsFor(params.data.species)));
   }),
 );
 

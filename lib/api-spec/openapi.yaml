@@ -2024,11 +2024,11 @@ paths:
           description: No guide for this species.
         "502":
           description: AI unavailable.
-  /farms/{farmId}/toxic-plants/{species}:
+  /farms/{farmId}/helpful-plants/{species}:
     get:
       tags: [farm]
-      operationId: listToxicPlants
-      summary: Archive plants poisonous for a species
+      operationId: getHelpfulPlants
+      summary: Medicinal and feed plants of the archive for a species (carnivores get medicinal plants only)
       parameters:
         - name: farmId
           in: path
@@ -2042,13 +2042,11 @@ paths:
             $ref: "#/components/schemas/FarmSpecies"
       responses:
         "200":
-          description: Poisonous plants from the plant archive (empty when the archive has no status for this species).
+          description: Plants the archive calls safe for this species; empty when the archive has no data for it.
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ArchivePlantStatus"
+                $ref: "#/components/schemas/HelpfulPlants"
   /farms/{farmId}/animals/{animalId}/feed:
     get:
       tags: [farm]
@@ -4027,6 +4025,42 @@ components:
           enum: [intolerant, poisonous, lethal, null]
         details:
           type: string
+    HelpfulPlant:
+      type: object
+      required: [plantId, germanName, botanicalName, use, benefits, applications]
+      properties:
+        plantId:
+          type: integer
+        germanName:
+          type: string
+        botanicalName:
+          type: string
+        use:
+          type: string
+          enum: [medicinal, feed]
+        benefits:
+          type: [string, 'null']
+        applications:
+          type: array
+          items:
+            type: object
+            required: [symptom, howTo]
+            properties:
+              symptom:
+                type: string
+              howTo:
+                type: string
+    HelpfulPlants:
+      type: object
+      required: [diet, plants]
+      properties:
+        diet:
+          type: string
+          enum: [herbivore, omnivore, carnivore]
+        plants:
+          type: array
+          items:
+            $ref: "#/components/schemas/HelpfulPlant"
     FeedItem:
       type: object
       required: [name, botanicalName, aiPoisonous, archive, poisonous, note]

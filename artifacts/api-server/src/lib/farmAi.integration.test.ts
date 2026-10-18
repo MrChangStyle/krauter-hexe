@@ -146,18 +146,38 @@ describe.skipIf(!enabled)("Meine Farm – AI features (real database, AI replace
     expect((await api("GET", `/farms/${farm.anna}/husbandry/dragon`)).status).toBe(404);
   });
 
-  it("lists archive plants poisonous for a species, legacy poultry rows included", async () => {
+  it("offers medicinal plants with their use, and feed plants only to plant eaters – never poisonous ones", async () => {
+    const safe = { status: "safe", toxicityDetails: "", benefits: "" };
+    await plant("Kamille", "Matricaria chamomilla", { horse: safe, cat: { ...safe, benefits: "beruhigt" } });
+    await q(
+      `UPDATE plants SET category = 'medicinal', symptoms = '{"cat": ["Magenbeschwerden"], "horse": ["Husten"]}',
+         symptom_applications = '{"cat": {"Magenbeschwerden": "Abgekühlten Tee ins Futter."}, "horse": {"Husten": "Als Tee übers Heu."}}'
+       WHERE german_name = 'Kamille'`,
+    );
+    await plant("Löwenzahn", "Taraxacum officinale", { horse: safe, cat: safe });
+    await q("UPDATE plants SET category = 'edible' WHERE german_name = 'Löwenzahn'");
     await plant("Eibe", "Taxus baccata", { horse: { status: "poisonous", toxicityLevel: "lethal", toxicityDetails: "Taxin", benefits: "" } });
-    await plant("Eibe (Duplikat)", "Taxus baccata L.", { horse: { status: "poisonous", toxicityDetails: "Taxin", benefits: "" } });
-    await plant("Löwenzahn", "Taraxacum officinale", { horse: { status: "safe", toxicityDetails: "", benefits: "" } });
-    await plant("Altes Kraut", "Herba antiqua", {}, "poisonous");
-    expect((await api("GET", `/farms/${farm.anna}/toxic-plants/horse`)).data).toEqual([
-      { plantId: 1, germanName: "Eibe", botanicalName: "Taxus baccata", status: "poisonous", toxicityLevel: "lethal", details: "Taxin" },
-    ]);
-    expect((await api("GET", `/farms/${farm.anna}/toxic-plants/poultry`)).data.map((p: { germanName: string }) => p.germanName)).toEqual([
-      "Altes Kraut",
-    ]);
-    expect((await api("GET", `/farms/${farm.anna}/toxic-plants/goat`)).data).toEqual([]);
+
+    const horse = (await api("GET", `/farms/${farm.anna}/helpful-plants/horse`)).data;
+    expect(horse.diet).toBe("herbivore");
+    expect(horse.plants.map((p: { germanName: string; use: string }) => `${p.germanName}:${p.use}`)).toEqual(["Kamille:medicinal", "Löwenzahn:feed"]);
+
+    as = "gast";
+    const cat = (await api("GET", `/farms/${farm.anna}/helpful-plants/cat`)).data;
+    expect(cat).toEqual({
+      diet: "carnivore",
+      plants: [
+        {
+          plantId: 1,
+          germanName: "Kamille",
+          botanicalName: "Matricaria chamomilla",
+          use: "medicinal",
+          benefits: "beruhigt",
+          applications: [{ symptom: "Magenbeschwerden", howTo: "Abgekühlten Tee ins Futter." }],
+        },
+      ],
+    });
+    expect((await api("GET", `/farms/${farm.anna}/helpful-plants/goat`)).data).toEqual({ diet: "herbivore", plants: [] });
   });
 
   it("analyses feed with the medical history, trusts the archive's 'poisonous' and stores the result", async () => {

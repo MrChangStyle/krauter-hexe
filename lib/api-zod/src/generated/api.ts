@@ -2440,22 +2440,27 @@ export const GetHusbandryGuideResponse = zod.object({
 
 
 /**
- * @summary Archive plants poisonous for a species
+ * @summary Medicinal and feed plants of the archive for a species (carnivores get medicinal plants only)
  */
-export const ListToxicPlantsParams = zod.object({
+export const GetHelpfulPlantsParams = zod.object({
   "farmId": zod.coerce.number(),
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])
 })
 
-export const ListToxicPlantsResponseItem = zod.object({
+export const GetHelpfulPlantsResponse = zod.object({
+  "diet": zod.enum(['herbivore', 'omnivore', 'carnivore']),
+  "plants": zod.array(zod.object({
   "plantId": zod.number(),
   "germanName": zod.string(),
   "botanicalName": zod.string(),
-  "status": zod.enum(['safe', 'poisonous']),
-  "toxicityLevel": zod.union([zod.literal('intolerant'),zod.literal('poisonous'),zod.literal('lethal'),zod.literal(null)]).nullable(),
-  "details": zod.string()
+  "use": zod.enum(['medicinal', 'feed']),
+  "benefits": zod.string().nullable(),
+  "applications": zod.array(zod.object({
+  "symptom": zod.string(),
+  "howTo": zod.string()
+}))
+}))
 })
-export const ListToxicPlantsResponse = zod.array(ListToxicPlantsResponseItem)
 
 
 /**

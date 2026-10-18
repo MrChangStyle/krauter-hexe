@@ -296,8 +296,8 @@ OK warten; jeder Schritt auf einem eigenen Branch mit Pull Request gegen main)
 - Schritt 4 – Medizin, Gewicht, Aufgaben (UMGESETZT): CRUD, Gewichtsdiagramm mit Warnlogik,
   Stall-Aufgaben mit Push, Veterinäramt-Export (CSV + PDF). Entscheidung: eigene Tabelle
   farm_tasks statt tasks zu erweitern (Begründung in replit.md), derselbe Cron.
-- Schritt 5 – KI: Arterkennung, Haltungs-Wiki, Futteranalyse inkl. Abgleich mit dem
-  Pflanzenarchiv.
+- Schritt 5 – KI (UMGESETZT): Arterkennung, Haltungs-Wiki, Futteranalyse inkl. Abgleich mit dem
+  Pflanzenarchiv. Details in replit.md.
 - Schritt 6 – IoT: Kamera-Verwaltung (Secret nur einmal anzeigen), Webhook, Relais,
   Ereignisliste, Push. VOR dem Bau klären: Der kostenlose Render-Tarif schläft nach
   ~15 Minuten ein (30–60 s Aufwachzeit) – für einen echten Raubtier-Alarm braucht es einen

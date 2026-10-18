@@ -1,0 +1,99 @@
+import { describe, expect, it, vi } from "vitest";
+
+// The pure helpers need the schema constants, not a database connection.
+vi.hoisted(() => {
+  process.env["DATABASE_URL"] ??= "postgres://unused@127.0.0.1:1/unused";
+});
+vi.mock("./plantIdentification", () => ({ MODELS: [], TEXT_MODELS: [], parseDataUrl: vi.fn(), runModelChain: vi.fn() }));
+
+const { buildFeedAnalysis, coerceGuide, coerceSpeciesSuggestion, speciesKey, statusFor } = await import("./farmAi");
+
+const archiveEntry = (status: "safe" | "poisonous") => ({
+  plantId: 7,
+  germanName: "Eibe",
+  botanicalName: "Taxus baccata",
+  status,
+  toxicityLevel: status === "poisonous" ? ("lethal" as const) : null,
+  details: "…",
+});
+
+describe("species suggestion", () => {
+  it("keeps only known species keys and clamps the confidence", () => {
+    expect(coerceSpeciesSuggestion({ istTier: true, tierart: "goat", rasse: " Saanenziege ", sicherheit: 1.7 })).toEqual({
+      isAnimal: true,
+      species: "goat",
+      breed: "Saanenziege",
+      confidence: 1,
+    });
+    expect(coerceSpeciesSuggestion({ istTier: true, tierart: "dragon", sicherheit: "0.4" }).species).toBeNull();
+    expect(coerceSpeciesSuggestion({ istTier: false, tierart: "goat" })).toEqual({
+      isAnimal: false,
+      species: null,
+      breed: null,
+      confidence: 0,
+    });
+  });
+});
+
+describe("Haltungs-Wiki", () => {
+  it("is only accepted complete", () => {
+    const full = { summary: "a", nutrition: "b", housing: "c", care: "d", health: "e", lifeExpectancy: "f" };
+    expect(coerceGuide(full)).toEqual(full);
+    expect(coerceGuide({ ...full, health: " " })).toBeNull();
+  });
+});
+
+describe("plant archive bridge", () => {
+  it("matches on genus and species only", () => {
+    expect(speciesKey("Taxus baccata L.")).toBe("taxus baccata");
+    expect(speciesKey("Taxus")).toBeNull();
+  });
+
+  it("reads the per-animal status and falls back to the legacy poultry columns", () => {
+    const row = {
+      id: 1,
+      germanName: "Eibe",
+      botanicalName: "Taxus baccata",
+      animals: { horse: { status: "poisonous" as const, toxicityLevel: "lethal" as const, toxicityDetails: "Taxin", benefits: "" } },
+      poultryStatus: "poisonous" as const,
+      animalToxicityDetails: "alt",
+    };
+    expect(statusFor(row, "horse")).toMatchObject({ status: "poisonous", toxicityLevel: "lethal", details: "Taxin" });
+    expect(statusFor(row, "poultry")).toMatchObject({ status: "poisonous", details: "alt" });
+    expect(statusFor(row, "rabbit")).toBeNull();
+  });
+});
+
+describe("feed analysis", () => {
+  const answer = (giftig: boolean) => ({
+    istFutter: true,
+    bestandteile: [
+      { name: "Heu", botanisch: null, giftig: false },
+      { name: "Eibenzweig", botanisch: "Taxus baccata", giftig },
+    ],
+    naehrstoffe: { protein: "mittel", rohfaser: "hoch" },
+    einschaetzung: "Heu ist gut.",
+    hinweiseKrankenakte: ["Wegen Moderhinke auf trockenes Futter achten."],
+    bewertung: "good",
+  });
+
+  it("calls a plant poisonous when the archive says so, even if the AI does not (safety first)", () => {
+    const out = buildFeedAnalysis(answer(false), new Map([["taxus baccata", archiveEntry("poisonous")]]));
+    expect(out.items[1]).toMatchObject({ name: "Eibenzweig", aiPoisonous: false, poisonous: true, archive: { status: "poisonous" } });
+    expect(out.verdict).toBe("unsuitable");
+  });
+
+  it("calls a plant poisonous when the AI says so, even if the archive lists it as safe", () => {
+    const out = buildFeedAnalysis(answer(true), new Map([["taxus baccata", archiveEntry("safe")]]));
+    expect(out.items[1]!.poisonous).toBe(true);
+    expect(out.verdict).toBe("unsuitable");
+  });
+
+  it("keeps the model's verdict when nothing is poisonous and fills missing fields", () => {
+    const out = buildFeedAnalysis(answer(false), new Map());
+    expect(out.verdict).toBe("good");
+    expect(out.nutrients).toEqual({ protein: "mittel", fat: null, fiber: "hoch", carbohydrates: null, minerals: null });
+    expect(out.medicalNotes).toEqual(["Wegen Moderhinke auf trockenes Futter achten."]);
+    expect(buildFeedAnalysis({ bewertung: "super" }, new Map()).verdict).toBe("limited");
+  });
+});

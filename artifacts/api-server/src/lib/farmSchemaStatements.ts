@@ -127,6 +127,11 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"last_notified_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
+  `CREATE TABLE IF NOT EXISTS "husbandry_guides" (
+	"species" "farm_species" PRIMARY KEY NOT NULL,
+	"content" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
   `DO $$ BEGIN
      ALTER TABLE "camera_events" ADD CONSTRAINT "camera_events_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,

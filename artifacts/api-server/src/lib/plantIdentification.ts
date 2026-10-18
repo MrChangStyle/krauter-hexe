@@ -107,7 +107,7 @@ function coerceText(value: unknown, fallback: string): string {
     : fallback;
 }
 
-function parseDataUrl(dataUrl: string): { mimeType: string; data: string } {
+export function parseDataUrl(dataUrl: string): { mimeType: string; data: string } {
   const match = /^data:([^;]+);base64,(.+)$/s.exec(dataUrl);
   if (!match) {
     throw new Error("Invalid image data URL");
@@ -123,7 +123,7 @@ function parseDataUrl(dataUrl: string): { mimeType: string; data: string } {
 // 503 "high demand" for nearly every image request. So we try the reliable model
 // first, fall back to the next, and retry transient overloads. Always validate a
 // model against a real image request, not a text call. See replit.md for details.
-const MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
+export const MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
   { name: "gemini-flash-lite-latest", attempts: 2 },
   { name: "gemini-flash-latest", attempts: 1 },
 ];
@@ -131,7 +131,7 @@ const MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
 // Text-only requests (the animal backfill from a plant name, no image) are far
 // less model-sensitive than image requests, so we lead with the fuller model
 // and fall back to the lite one.
-const TEXT_MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
+export const TEXT_MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
   { name: "gemini-flash-latest", attempts: 2 },
   { name: "gemini-flash-lite-latest", attempts: 1 },
 ];
@@ -181,7 +181,7 @@ function parseJsonLoose(raw: string): unknown {
 // Runs a model fallback chain with transient-error retries and returns the
 // parsed (but not yet validated) JSON object. Shared by the image scan and the
 // text-only animal backfill.
-async function runModelChain(
+export async function runModelChain(
   contents: unknown,
   models: ReadonlyArray<{ name: string; attempts: number }>,
   config: { maxOutputTokens: number; responseMimeType: string } = GENERATION_CONFIG,

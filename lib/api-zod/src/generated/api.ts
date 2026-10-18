@@ -2401,6 +2401,168 @@ export const GetFarmExportResponse = zod.object({
 
 
 /**
+ * @summary AI suggestion for species and breed from a photo (caretaker or admin)
+ */
+export const SuggestFarmAnimalSpeciesParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const SuggestFarmAnimalSpeciesBody = zod.object({
+  "imageData": zod.string().describe('JPEG\/PNG\/WebP data URL, already downscaled by the app.')
+})
+
+export const SuggestFarmAnimalSpeciesResponse = zod.object({
+  "isAnimal": zod.boolean(),
+  "species": zod.union([zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),zod.null()]),
+  "breed": zod.string().nullable(),
+  "confidence": zod.number().describe('0..1')
+})
+
+
+/**
+ * @summary Haltungs-Wiki for a species (generated once, then cached)
+ */
+export const GetHusbandryGuideParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])
+})
+
+export const GetHusbandryGuideResponse = zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "summary": zod.string(),
+  "nutrition": zod.string(),
+  "housing": zod.string(),
+  "care": zod.string(),
+  "health": zod.string(),
+  "lifeExpectancy": zod.string(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Archive plants poisonous for a species
+ */
+export const ListToxicPlantsParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])
+})
+
+export const ListToxicPlantsResponseItem = zod.object({
+  "plantId": zod.number(),
+  "germanName": zod.string(),
+  "botanicalName": zod.string(),
+  "status": zod.enum(['safe', 'poisonous']),
+  "toxicityLevel": zod.union([zod.literal('intolerant'),zod.literal('poisonous'),zod.literal('lethal'),zod.literal(null)]).nullable(),
+  "details": zod.string()
+})
+export const ListToxicPlantsResponse = zod.array(ListToxicPlantsResponseItem)
+
+
+/**
+ * @summary Feed analyses of an animal, newest first
+ */
+export const ListFeedAnalysesParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const ListFeedAnalysesResponseItem = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number(),
+  "date": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "analysis": zod.object({
+  "isFeed": zod.boolean(),
+  "items": zod.array(zod.object({
+  "name": zod.string(),
+  "botanicalName": zod.string().nullable(),
+  "aiPoisonous": zod.boolean(),
+  "archive": zod.union([zod.object({
+  "plantId": zod.number(),
+  "germanName": zod.string(),
+  "botanicalName": zod.string(),
+  "status": zod.enum(['safe', 'poisonous']),
+  "toxicityLevel": zod.union([zod.literal('intolerant'),zod.literal('poisonous'),zod.literal('lethal'),zod.literal(null)]).nullable(),
+  "details": zod.string()
+}),zod.null()]),
+  "poisonous": zod.boolean().describe('Archive OR AI says poisonous (safety first).'),
+  "note": zod.string().nullable()
+})),
+  "nutrients": zod.object({
+  "protein": zod.string().nullable(),
+  "fat": zod.string().nullable(),
+  "fiber": zod.string().nullable(),
+  "carbohydrates": zod.string().nullable(),
+  "minerals": zod.string().nullable()
+}),
+  "assessment": zod.string(),
+  "medicalNotes": zod.array(zod.string()),
+  "verdict": zod.enum(['good', 'limited', 'unsuitable'])
+})
+})
+export const ListFeedAnalysesResponse = zod.array(ListFeedAnalysesResponseItem)
+
+
+/**
+ * @summary Analyse a feed photo for an animal (caretaker or admin)
+ */
+export const AnalyzeFeedParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const AnalyzeFeedBody = zod.object({
+  "imageData": zod.string().describe('JPEG\/PNG\/WebP data URL, already downscaled by the app.')
+})
+
+export const AnalyzeFeedResponse = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number(),
+  "date": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "analysis": zod.object({
+  "isFeed": zod.boolean(),
+  "items": zod.array(zod.object({
+  "name": zod.string(),
+  "botanicalName": zod.string().nullable(),
+  "aiPoisonous": zod.boolean(),
+  "archive": zod.union([zod.object({
+  "plantId": zod.number(),
+  "germanName": zod.string(),
+  "botanicalName": zod.string(),
+  "status": zod.enum(['safe', 'poisonous']),
+  "toxicityLevel": zod.union([zod.literal('intolerant'),zod.literal('poisonous'),zod.literal('lethal'),zod.literal(null)]).nullable(),
+  "details": zod.string()
+}),zod.null()]),
+  "poisonous": zod.boolean().describe('Archive OR AI says poisonous (safety first).'),
+  "note": zod.string().nullable()
+})),
+  "nutrients": zod.object({
+  "protein": zod.string().nullable(),
+  "fat": zod.string().nullable(),
+  "fiber": zod.string().nullable(),
+  "carbohydrates": zod.string().nullable(),
+  "minerals": zod.string().nullable()
+}),
+  "assessment": zod.string(),
+  "medicalNotes": zod.array(zod.string()),
+  "verdict": zod.enum(['good', 'limited', 'unsuitable'])
+})
+})
+
+
+/**
+ * @summary Delete a feed analysis (caretaker or admin)
+ */
+export const DeleteFeedAnalysisParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "logId": zod.coerce.number()
+})
+
+export const DeleteFeedAnalysisResponse = zod.void()
+
+
+/**
  * @summary Rename a farm (admin only)
  */
 export const RenameFarmParams = zod.object({

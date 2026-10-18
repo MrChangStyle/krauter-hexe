@@ -222,6 +222,15 @@ export const farmTasksTable = pgTable(
   (table) => [index("farm_tasks_farm_idx").on(table.farmId)],
 );
 
+// "Haltungs-Wiki": general AI husbandry notes per species. Not farm data –
+// the same for every farm, generated once per species and then served from
+// here (cache), so no farm_id.
+export const husbandryGuidesTable = pgTable("husbandry_guides", {
+  species: farmSpeciesEnum("species").primaryKey(),
+  content: jsonb("content").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 export const camerasTable = pgTable(
   "cameras",
   {

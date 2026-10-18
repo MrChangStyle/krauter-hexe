@@ -16,6 +16,7 @@ export const publicUserColumns = {
   isOwner: usersTable.isOwner,
   username: usersTable.username,
   leavesCount: usersTable.leavesCount,
+  blockedAt: usersTable.blockedAt,
 };
 
 /**

@@ -20,6 +20,8 @@ tags:
     description: Email/password accounts and sign-in.
   - name: users
     description: Account management for the private-access model (owner only).
+  - name: moderation
+    description: Reporting content and acting on reports
   - name: favorites
     description: Per-user plant favourites.
   - name: tasks
@@ -1225,6 +1227,75 @@ paths:
                 format: binary
         "404":
           description: Not found
+  /reports:
+    post:
+      tags: [moderation]
+      operationId: createReport
+      summary: Report a shared photo or a username
+      description: >
+        Any approved account can report the shared photo of a plant or insect,
+        or a username from the leaderboard. Reporting the same content again
+        while the first report is open changes nothing.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateReportInput"
+      responses:
+        "201":
+          description: Report filed (or already filed by this account).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResult"
+        "400":
+          description: Invalid input, or reporting yourself.
+        "404":
+          description: The reported content does not exist.
+        "429":
+          description: Too many reports from this account today.
+    get:
+      tags: [moderation]
+      operationId: listReports
+      summary: Open reports, grouped by content (owner only)
+      responses:
+        "200":
+          description: One entry per reported content, most reported first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ReportGroup"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /reports/resolve:
+    post:
+      tags: [moderation]
+      operationId: resolveReports
+      summary: Act on all open reports of one content (owner only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolveReportsInput"
+      responses:
+        "200":
+          description: Reports closed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResolveReportsResult"
+        "400":
+          description: Action does not fit the content type, or targets the owner.
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
   /leaderboard:
     get:
       operationId: getLeaderboard
@@ -2040,6 +2111,12 @@ components:
           type: [string, 'null']
         leavesCount:
           type: integer
+        blockedAt:
+          type: [string, 'null']
+          format: date-time
+          description: >
+            Set when the owner blocked the account through moderation; the app
+            then says "gesperrt" instead of "warte auf Freigabe".
     AuthUserEnvelope:
       type: object
       required: [user]
@@ -2510,6 +2587,85 @@ components:
           type: string
           minLength: 8
           maxLength: 200
+    ReportContentType:
+      type: string
+      enum: [plant_image, insect_image, username]
+    ReportReason:
+      type: string
+      enum: [unangemessen, person, falsch, urheberrecht, spam, sonstiges]
+    CreateReportInput:
+      type: object
+      required: [contentType, contentId, reason]
+      properties:
+        contentType:
+          $ref: "#/components/schemas/ReportContentType"
+        contentId:
+          type: string
+          minLength: 1
+          maxLength: 100
+          description: Plant id, insect id, or the user id from the leaderboard.
+        reason:
+          $ref: "#/components/schemas/ReportReason"
+        note:
+          type: string
+          maxLength: 500
+    ReportReasonCount:
+      type: object
+      required: [reason, count]
+      properties:
+        reason:
+          $ref: "#/components/schemas/ReportReason"
+        count:
+          type: integer
+    ReportGroup:
+      type: object
+      required: [contentType, contentId, reportCount, reasons, notes, firstReportedAt, exists, label, imageUrl]
+      properties:
+        contentType:
+          $ref: "#/components/schemas/ReportContentType"
+        contentId:
+          type: string
+        reportCount:
+          type: integer
+        reasons:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReportReasonCount"
+        notes:
+          type: array
+          items:
+            type: string
+        firstReportedAt:
+          type: string
+          format: date-time
+        exists:
+          type: boolean
+          description: False when the content is already gone (deleted plant, photo, account or username).
+        label:
+          type: string
+          description: Plant/insect name, or the username as reported.
+        imageUrl:
+          type: [string, 'null']
+    ResolveReportsInput:
+      type: object
+      required: [contentType, contentId, action]
+      properties:
+        contentType:
+          $ref: "#/components/schemas/ReportContentType"
+        contentId:
+          type: string
+          minLength: 1
+          maxLength: 100
+        action:
+          type: string
+          enum: [dismiss, remove_image, reset_username, block_user]
+    ResolveReportsResult:
+      type: object
+      required: [resolved]
+      properties:
+        resolved:
+          type: integer
+          description: Number of reports closed.
     OrphanedDataReport:
       type: object
       required: [counts, total]

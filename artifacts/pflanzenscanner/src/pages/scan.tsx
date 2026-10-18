@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { ReportButton } from "@/components/report-button";
 import { Link, useLocation } from "wouter";
 import {
   Camera,
@@ -128,6 +129,14 @@ export function LeaderboardSection({ className }: { className?: string } = {}) {
             )}>
               {entry.username}
             </span>
+            {!entry.isCurrentUser && (
+              <ReportButton
+                contentType="username"
+                contentId={entry.userId}
+                variant="icon"
+                what={<>den Namen „{entry.username}“</>}
+              />
+            )}
             <span className="text-xs text-muted-foreground flex items-center gap-0.5">
               <Leaf className="w-3 h-3 text-emerald-500" />
               {entry.leavesCount}

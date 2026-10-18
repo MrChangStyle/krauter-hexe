@@ -244,7 +244,7 @@ unfreigeschaltet; optionaler REGISTRATION_CODE; Inhaber verwaltet unter /benutze
   - Test: Nach dem Löschen gibt es keine Zeile mit der userId mehr.
   - Später: Farm-Daten (eine Farm, deren einziger Admin gelöscht wird, wird mitgelöscht;
     sonst nur die Mitgliedschaft).
-- A3 Moderation:
+- A3 Moderation (UMGESETZT – Details in replit.md):
   - "Melden" an allen öffentlich sichtbaren Inhalten: Archiv-Fotos von Pflanzen/Insekten,
     Benutzernamen in der Rangliste.
   - Neue Tabelle reports (Meldender, Inhaltstyp, Inhalts-ID, Grund, Status, Zeitpunkt).

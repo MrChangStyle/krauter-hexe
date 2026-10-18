@@ -454,6 +454,11 @@ export interface AuthUser {
   /** @nullable */
   username: string | null;
   leavesCount: number;
+  /**
+     * Set when the owner blocked the account through moderation; the app then says "gesperrt" instead of "warte auf Freigabe".
+     * @nullable
+     */
+  blockedAt?: string | null;
 }
 
 export interface AuthUserEnvelope {
@@ -752,6 +757,85 @@ export interface LoginInput {
      * @maxLength 200
      */
   password: string;
+}
+
+export type ReportContentType = typeof ReportContentType[keyof typeof ReportContentType];
+
+
+export const ReportContentType = {
+  plant_image: 'plant_image',
+  insect_image: 'insect_image',
+  username: 'username',
+} as const;
+
+export type ReportReason = typeof ReportReason[keyof typeof ReportReason];
+
+
+export const ReportReason = {
+  unangemessen: 'unangemessen',
+  person: 'person',
+  falsch: 'falsch',
+  urheberrecht: 'urheberrecht',
+  spam: 'spam',
+  sonstiges: 'sonstiges',
+} as const;
+
+export interface CreateReportInput {
+  contentType: ReportContentType;
+  /**
+     * Plant id, insect id, or the user id from the leaderboard.
+     * @minLength 1
+     * @maxLength 100
+     */
+  contentId: string;
+  reason: ReportReason;
+  /** @maxLength 500 */
+  note?: string;
+}
+
+export interface ReportReasonCount {
+  reason: ReportReason;
+  count: number;
+}
+
+export interface ReportGroup {
+  contentType: ReportContentType;
+  contentId: string;
+  reportCount: number;
+  reasons: ReportReasonCount[];
+  notes: string[];
+  firstReportedAt: string;
+  /** False when the content is already gone (deleted plant, photo, account or username). */
+  exists: boolean;
+  /** Plant/insect name, or the username as reported. */
+  label: string;
+  /** @nullable */
+  imageUrl: string | null;
+}
+
+export type ResolveReportsInputAction = typeof ResolveReportsInputAction[keyof typeof ResolveReportsInputAction];
+
+
+export const ResolveReportsInputAction = {
+  dismiss: 'dismiss',
+  remove_image: 'remove_image',
+  reset_username: 'reset_username',
+  block_user: 'block_user',
+} as const;
+
+export interface ResolveReportsInput {
+  contentType: ReportContentType;
+  /**
+     * @minLength 1
+     * @maxLength 100
+     */
+  contentId: string;
+  action: ResolveReportsInputAction;
+}
+
+export interface ResolveReportsResult {
+  /** Number of reports closed. */
+  resolved: number;
 }
 
 /**

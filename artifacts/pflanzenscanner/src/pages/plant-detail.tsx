@@ -35,6 +35,7 @@ import { de } from "date-fns/locale";
 import { exportPlantPdf } from "@/lib/pdf-export";
 import { PhotoChoiceCard } from "@/components/photo-choice-card";
 import { ImageLockToggle } from "@/components/image-lock-toggle";
+import { ReportButton } from "@/components/report-button";
 
 /** Parse and validate the `tier` query-param; fall back to "poultry". */
 function parseTierParam(search: string): AnimalKey {
@@ -490,6 +491,15 @@ export default function PlantDetailPage() {
           locked={plant.imageLocked ?? false}
           quality={plant.imageQuality}
         />
+        {plant.imageUrl && (
+          <div className="-mt-6 flex justify-end">
+            <ReportButton
+              contentType="plant_image"
+              contentId={plant.id}
+              what={<>das Foto von „{plant.germanName}“</>}
+            />
+          </div>
+        )}
         {/* CRITICAL SAFETY BADGES */}
         <div className="grid grid-cols-2 gap-4">
           {/* Status Mensch */}

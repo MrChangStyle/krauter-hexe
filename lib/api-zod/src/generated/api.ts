@@ -1172,7 +1172,8 @@ export const GetCurrentAuthUserResponse = zod.object({
   "approved": zod.boolean().describe('Whether the owner has granted this account access to the app.'),
   "isOwner": zod.boolean().describe('Whether this account is the app owner (the first account that ever signed in).'),
   "username": zod.string().nullable(),
-  "leavesCount": zod.number()
+  "leavesCount": zod.number(),
+  "blockedAt": zod.coerce.date().nullish().describe('Set when the owner blocked the account through moderation; the app then says \"gesperrt\" instead of \"warte auf Freigabe\".\n')
 }),zod.null()])
 })
 
@@ -1224,7 +1225,8 @@ export const RegisterAccountResponse = zod.object({
   "approved": zod.boolean().describe('Whether the owner has granted this account access to the app.'),
   "isOwner": zod.boolean().describe('Whether this account is the app owner (the first account that ever signed in).'),
   "username": zod.string().nullable(),
-  "leavesCount": zod.number()
+  "leavesCount": zod.number(),
+  "blockedAt": zod.coerce.date().nullish().describe('Set when the owner blocked the account through moderation; the app then says \"gesperrt\" instead of \"warte auf Freigabe\".\n')
 }),zod.null()])
 })
 
@@ -1254,7 +1256,8 @@ export const LoginWithPasswordResponse = zod.object({
   "approved": zod.boolean().describe('Whether the owner has granted this account access to the app.'),
   "isOwner": zod.boolean().describe('Whether this account is the app owner (the first account that ever signed in).'),
   "username": zod.string().nullable(),
-  "leavesCount": zod.number()
+  "leavesCount": zod.number(),
+  "blockedAt": zod.coerce.date().nullish().describe('Set when the owner blocked the account through moderation; the app then says \"gesperrt\" instead of \"warte auf Freigabe\".\n')
 }),zod.null()])
 })
 
@@ -1618,6 +1621,66 @@ export const GetInsectImageParams = zod.object({
 })
 
 export const GetInsectImageResponse = zod.unknown()
+
+
+/**
+ * Any approved account can report the shared photo of a plant or insect, or a username from the leaderboard. Reporting the same content again while the first report is open changes nothing.
+ * @summary Report a shared photo or a username
+ */
+export const createReportBodyContentIdMax = 100;
+
+export const createReportBodyNoteMax = 500;
+
+
+
+export const CreateReportBody = zod.object({
+  "contentType": zod.enum(['plant_image', 'insect_image', 'username']),
+  "contentId": zod.string().min(1).max(createReportBodyContentIdMax).describe('Plant id, insect id, or the user id from the leaderboard.'),
+  "reason": zod.enum(['unangemessen', 'person', 'falsch', 'urheberrecht', 'spam', 'sonstiges']),
+  "note": zod.string().max(createReportBodyNoteMax).optional()
+})
+
+export const CreateReportResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+
+/**
+ * @summary Open reports, grouped by content (owner only)
+ */
+export const ListReportsResponseItem = zod.object({
+  "contentType": zod.enum(['plant_image', 'insect_image', 'username']),
+  "contentId": zod.string(),
+  "reportCount": zod.number(),
+  "reasons": zod.array(zod.object({
+  "reason": zod.enum(['unangemessen', 'person', 'falsch', 'urheberrecht', 'spam', 'sonstiges']),
+  "count": zod.number()
+})),
+  "notes": zod.array(zod.string()),
+  "firstReportedAt": zod.coerce.date(),
+  "exists": zod.boolean().describe('False when the content is already gone (deleted plant, photo, account or username).'),
+  "label": zod.string().describe('Plant\/insect name, or the username as reported.'),
+  "imageUrl": zod.string().nullable()
+})
+export const ListReportsResponse = zod.array(ListReportsResponseItem)
+
+
+/**
+ * @summary Act on all open reports of one content (owner only)
+ */
+export const resolveReportsBodyContentIdMax = 100;
+
+
+
+export const ResolveReportsBody = zod.object({
+  "contentType": zod.enum(['plant_image', 'insect_image', 'username']),
+  "contentId": zod.string().min(1).max(resolveReportsBodyContentIdMax),
+  "action": zod.enum(['dismiss', 'remove_image', 'reset_username', 'block_user'])
+})
+
+export const ResolveReportsResponse = zod.object({
+  "resolved": zod.number().describe('Number of reports closed.')
+})
 
 
 /**

@@ -71,7 +71,8 @@ describe("deleteAccount", () => {
   it("deletes the personal rows of every table that has a user_id", async () => {
     expect(await deleteAccount("user-1")).toBe(true);
 
-    const personal = state.deletedFrom.filter((name) => name !== "users").sort();
+    // A table may be touched twice (reports: filed by and filed about).
+    const personal = [...new Set(state.deletedFrom.filter((name) => name !== "users"))].sort();
     expect(personal).toEqual(tablesWithColumn("user_id"));
   });
 

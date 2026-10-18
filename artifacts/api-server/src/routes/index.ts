@@ -13,6 +13,7 @@ import pushRouter from "./push";
 import geoRouter from "./geo";
 import cronRouter from "./cron";
 import migrationRouter from "./migration";
+import reportsRouter from "./reports";
 
 const router: IRouter = Router();
 
@@ -30,5 +31,6 @@ router.use(pushRouter);
 router.use(geoRouter);
 router.use(cronRouter);
 router.use(migrationRouter);
+router.use(reportsRouter);
 
 export default router;

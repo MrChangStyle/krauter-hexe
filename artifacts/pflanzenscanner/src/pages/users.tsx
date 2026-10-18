@@ -37,6 +37,7 @@ import { useAuthContext } from "@/lib/auth-context";
 import { PushNotificationCard } from "@/components/push-notification-card";
 import { AccountCard } from "@/components/account-card";
 import { OrphanCleanupCard } from "@/components/orphan-cleanup-card";
+import { ModerationCard } from "@/components/moderation-card";
 import { ImageRescueCard } from "@/components/image-rescue-card";
 import { useFavorites } from "@/lib/use-favorites";
 import {
@@ -1091,6 +1092,7 @@ export default function UsersPage() {
       {me?.isOwner && (
         <>
           <div className="h-px bg-border mt-6" />
+          <ModerationCard />
           <Benutzerverwaltung />
           <OrphanCleanupCard />
         </>

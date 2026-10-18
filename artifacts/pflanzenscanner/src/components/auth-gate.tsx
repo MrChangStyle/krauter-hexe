@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import { Leaf, LogIn, LogOut, Hourglass, RefreshCw, UserPlus } from "lucide-react";
+import { Ban, Leaf, LogIn, LogOut, Hourglass, RefreshCw, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -353,6 +353,31 @@ function WaitingForApprovalScreen() {
     [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
     user?.email ||
     "Dein Konto";
+
+  if (user?.blockedAt) {
+    return (
+      <FullScreenCentered>
+        <BrandMark />
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-destructive/15 mb-4">
+          <Ban className="h-6 w-6 text-destructive" />
+        </div>
+        <h2 className="text-lg font-semibold mb-2">Konto gesperrt</h2>
+        <p className="max-w-xs text-sm text-muted-foreground mb-8">
+          Dieses Konto wurde wegen eines Verstoßes gegen die{" "}
+          <LegalLink path={LEGAL_PATHS.nutzungsbedingungen}>Nutzungsbedingungen</LegalLink>{" "}
+          gesperrt. Wenn du denkst, dass das ein Irrtum ist, schreib uns an die
+          Adresse im <LegalLink path={LEGAL_PATHS.impressum}>Impressum</LegalLink>.
+        </p>
+        <div className="flex w-full max-w-xs flex-col gap-2">
+          <Button variant="outline" className="gap-2" onClick={logout}>
+            <LogOut className="h-4 w-4" />
+            Abmelden
+          </Button>
+        </div>
+        <LegalFooter />
+      </FullScreenCentered>
+    );
+  }
 
   return (
     <FullScreenCentered>

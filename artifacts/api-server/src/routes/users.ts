@@ -9,6 +9,7 @@ import {
   DeleteUserParams,
 } from '@workspace/api-zod';
 import { requireOwner } from '../middlewares/requireApproved';
+import { OwnerAccountDeletionError, deleteAccount } from '../lib/accountDeletion';
 
 const router: IRouter = Router();
 
@@ -82,23 +83,26 @@ router.delete('/users/:id', requireOwner, async (req, res): Promise<void> => {
     return;
   }
 
-  const [target] = await db
-    .select()
-    .from(usersTable)
-    .where(eq(usersTable.id, params.data.id));
+  // Same complete deletion as when users delete themselves – removing only the
+  // users row used to leave favourites, tasks, push subscriptions and scan
+  // history behind.
+  let deleted: boolean;
+  try {
+    deleted = await deleteAccount(params.data.id);
+  } catch (err) {
+    if (err instanceof OwnerAccountDeletionError) {
+      res
+        .status(400)
+        .json({ error: 'Das Besitzer-Konto kann nicht entfernt werden.' });
+      return;
+    }
+    throw err;
+  }
 
-  if (!target) {
+  if (!deleted) {
     res.status(404).json({ error: 'Konto nicht gefunden' });
     return;
   }
-  if (target.isOwner) {
-    res
-      .status(400)
-      .json({ error: 'Das Besitzer-Konto kann nicht entfernt werden.' });
-    return;
-  }
-
-  await db.delete(usersTable).where(eq(usersTable.id, params.data.id));
 
   res.sendStatus(204);
 });

@@ -25,6 +25,7 @@ export * from './careGuideStatus';
 export * from './categoryCount';
 export * from './createCareGuideInput';
 export * from './createTaskInput';
+export * from './deleteAccountInput';
 export * from './deletePlantInput';
 export * from './favoriteIds';
 export * from './geoReverseInput';

@@ -826,6 +826,33 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AuthUserEnvelope"
+    delete:
+      tags: [Auth]
+      operationId: deleteOwnAccount
+      summary: Delete the signed-in account and all of its personal data
+      description: >
+        Removes favourites, tasks, care guides, push subscriptions and scan
+        history, unlinks the user from shared archive entries (which stay) and
+        deletes the account. Requires the password, or – for accounts without
+        one (Google only) – the account's email address typed again. The owner
+        account cannot be deleted.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteAccountInput"
+      responses:
+        "204":
+          description: Account deleted; the session cookie is cleared.
+        "400":
+          description: The owner account cannot be deleted.
+        "401":
+          description: Not signed in.
+        "403":
+          description: Wrong password or email address.
+        "429":
+          description: Too many failed attempts; try again later.
   /auth/register:
     post:
       tags: [Auth]
@@ -2436,6 +2463,16 @@ components:
           type: string
           minLength: 8
           maxLength: 200
+    DeleteAccountInput:
+      type: object
+      properties:
+        password:
+          type: string
+          maxLength: 200
+          description: Current password (accounts that have one).
+        confirmEmail:
+          type: string
+          description: The account's email address (accounts without a password).
     RegisterInput:
       type: object
       required: [email, password, acceptTerms]

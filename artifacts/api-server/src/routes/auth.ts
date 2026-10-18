@@ -15,6 +15,7 @@ import { and, eq, sql, ne } from 'drizzle-orm';
 import { Router, type IRouter, type Request, type Response } from 'express';
 
 import { promoteFirstOwner, publicUserColumns } from '../lib/accounts';
+import { OwnerAccountDeletionError, deleteAccount } from '../lib/accountDeletion';
 import {
   LEGAL_VERSION,
   addressMayRegister,
@@ -377,6 +378,89 @@ router.patch('/auth/user', async (req: Request, res: Response): Promise<void> =>
     .returning(publicUserColumns);
 
   res.json({ user: updated });
+});
+
+// ── DELETE /auth/user ─────────────────────────────────────────────────────────
+// The signed-in user deletes their own account. Proof that it is really them:
+// the password, or – for accounts that only ever used Google and have none –
+// typing their email address. Wrong attempts count towards the same lock-out
+// as logins, so this cannot be used to guess passwords.
+
+router.delete('/auth/user', async (req: Request, res: Response): Promise<void> => {
+  if (!req.isAuthenticated()) {
+    res.status(401).json({ error: 'Nicht angemeldet.' });
+    return;
+  }
+  const userId = req.user!.id;
+  const key = failureKey(req, `konto-loeschen:${userId}`);
+
+  if (isLockedOut(key)) {
+    res.status(429).json({
+      error: 'Zu viele Fehlversuche. Bitte warte 15 Minuten und versuche es erneut.',
+    });
+    return;
+  }
+
+  const [row] = await db
+    .select({
+      email: usersTable.email,
+      passwordHash: usersTable.passwordHash,
+      isOwner: usersTable.isOwner,
+    })
+    .from(usersTable)
+    .where(eq(usersTable.id, userId));
+
+  if (!row) {
+    clearAuthCookie(res);
+    res.sendStatus(204);
+    return;
+  }
+  if (row.isOwner) {
+    res.status(400).json({ error: 'Das Inhaber-Konto kann nicht gelöscht werden.' });
+    return;
+  }
+
+  const { password, confirmEmail } = (req.body ?? {}) as {
+    password?: unknown;
+    confirmEmail?: unknown;
+  };
+
+  let confirmed: boolean;
+  if (row.passwordHash) {
+    confirmed =
+      typeof password === 'string' &&
+      password.length <= 200 &&
+      (await verifyPassword(password, row.passwordHash));
+  } else {
+    confirmed =
+      typeof confirmEmail === 'string' &&
+      !!row.email &&
+      normalizeEmail(confirmEmail) === normalizeEmail(row.email);
+  }
+
+  if (!confirmed) {
+    recordFailure(key);
+    res.status(403).json({
+      error: row.passwordHash
+        ? 'Das Passwort ist falsch.'
+        : 'Die E-Mail-Adresse stimmt nicht mit deinem Konto überein.',
+    });
+    return;
+  }
+
+  try {
+    await deleteAccount(userId);
+  } catch (err) {
+    if (err instanceof OwnerAccountDeletionError) {
+      res.status(400).json({ error: 'Das Inhaber-Konto kann nicht gelöscht werden.' });
+      return;
+    }
+    throw err;
+  }
+
+  clearFailures(key);
+  clearAuthCookie(res);
+  res.sendStatus(204);
 });
 
 export default router;

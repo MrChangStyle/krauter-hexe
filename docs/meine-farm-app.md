@@ -227,7 +227,8 @@ unfreigeschaltet; optionaler REGISTRATION_CODE; Inhaber verwaltet unter /benutze
   - Zustimmung zu Datenschutzerklärung/Nutzungsbedingungen beim Registrieren speichern
     (Zeitpunkt + Version).
   - Seiten Impressum und Datenschutz in der App, ohne Login erreichbar.
-- A2 Konto-Löschung in der App:
+- A2 Konto-Löschung in der App (UMGESETZT – "Meine Scans"-Fotos liegen nur auf dem Gerät,
+  daher gibt es auf Cloudinary nichts, das allein einem Konto gehört; Details in replit.md):
   - Unter Profil "Konto löschen" mit Passwort-Bestätigung (Google-Konten: Bestätigung per
     Eingabe der E-Mail).
   - Zentrale Funktion deleteAccount(userId) in einer Transaktion:

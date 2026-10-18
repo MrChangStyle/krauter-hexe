@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { scanInsect, scanPlant, type Insect, type Plant } from "@workspace/api-client-react";
+import { scanAuto, scanInsect, scanPlant, type Insect, type Plant } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   addPendingScan,
@@ -19,6 +19,7 @@ import {
   resetPendingScan,
   findRevivableScans,
   type PendingScan,
+  type PendingScanKind,
 } from "@/lib/scan-queue";
 import { drainQueue } from "@/lib/scan-queue-drain";
 import { hasRealConnection, resetConnectionCache } from "@/lib/connectivity";
@@ -40,6 +41,13 @@ export interface InsectScanResult {
   itemId: string;
   insect: Insect;
   alreadyInArchive: boolean;
+  finishedAt: number;
+}
+
+/** Universal scan: nothing scannable (or an animal) on the photo. */
+export interface NoSubjectResult {
+  itemId: string;
+  message: string;
   finishedAt: number;
 }
 
@@ -87,6 +95,9 @@ interface ScanQueueContextValue {
   /** Insect photos the server discarded because no insect was found. */
   notInsectResults: NotPlantResult[];
   clearNotInsectResults: () => void;
+  /** Universal-scan photos discarded because nothing scannable was found. */
+  noSubjectResults: NoSubjectResult[];
+  clearNoSubjectResults: () => void;
   /** Epoch ms when the last drain finished (null until one has run). */
   lastDrainAt: number | null;
   /**
@@ -100,7 +111,7 @@ interface ScanQueueContextValue {
     imageSide?: string,
     localImageId?: string,
     locationRegion?: string,
-    kind?: "plant" | "insect",
+    kind?: PendingScanKind,
   ) => Promise<string>;
   /** Manually kick off processing (e.g. a "scan now" button). */
   processQueue: () => void;
@@ -140,6 +151,7 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
   const [notPlantResults, setNotPlantResults] = useState<NotPlantResult[]>([]);
   const [insectResults, setInsectResults] = useState<InsectScanResult[]>([]);
   const [notInsectResults, setNotInsectResults] = useState<NotPlantResult[]>([]);
+  const [noSubjectResults, setNoSubjectResults] = useState<NoSubjectResult[]>([]);
   const [lastDrainAt, setLastDrainAt] = useState<number | null>(null);
   const [isAuthBlocked, setIsAuthBlocked] = useState(false);
   // ISO timestamp of the next Berlin midnight when the daily scan limit resets.
@@ -203,6 +215,15 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
         getAllPendingScans,
         scanPlant,
         scanInsect: (args) => scanInsect(args),
+        scanAuto: (args) => scanAuto(args),
+        onNoSubject: (itemId, message) => {
+          setIsAuthBlocked(false);
+          setNoSubjectResults((prev) => [
+            ...prev.slice(-19),
+            { itemId, message, finishedAt: Date.now() },
+          ]);
+          void refresh();
+        },
         onInsectSuccess: (result) => {
           setIsAuthBlocked(false);
           setInsectResults((prev) => [
@@ -328,7 +349,7 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
       imageSide?: string,
       localImageId?: string,
       locationRegion?: string,
-      kind: "plant" | "insect" = "plant",
+      kind: PendingScanKind = "plant",
     ) => {
       // A new photo means the user just interacted with the app — they are
       // almost certainly logged in. Clear any stale auth block so the
@@ -437,6 +458,7 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
   const clearNotPlantResults = useCallback(() => setNotPlantResults([]), []);
   const clearInsectResults = useCallback(() => setInsectResults([]), []);
   const clearNotInsectResults = useCallback(() => setNotInsectResults([]), []);
+  const clearNoSubjectResults = useCallback(() => setNoSubjectResults([]), []);
 
   const value: ScanQueueContextValue = {
     pending,
@@ -454,6 +476,8 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
     clearInsectResults,
     notInsectResults,
     clearNotInsectResults,
+    noSubjectResults,
+    clearNoSubjectResults,
     lastDrainAt,
     enqueue,
     processQueue: () => {

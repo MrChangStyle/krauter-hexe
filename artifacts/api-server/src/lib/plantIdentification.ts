@@ -1064,6 +1064,60 @@ export async function quickIdentifyPlant(
   };
 }
 
+// ── Universal scan: what is on the photo? ─────────────────────────────────────
+
+export type ScanSubject = "pflanze" | "insekt" | "tier" | "nichts";
+
+export interface SubjectClassification {
+  subject: ScanSubject;
+  /** Filled for "pflanze": same shape as the quick plant identification, so
+   *  the plant scan can skip its own quick step. */
+  plant: QuickPlantId;
+}
+
+const SUBJECT_PROMPT = `Du erkennst, was das Hauptmotiv eines Fotos ist. \
+Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdown) mit exakt diesen Feldern:
+{
+  "motiv": "pflanze" | "insekt" | "tier" | "nichts",
+  "germanName": string (deutscher Trivialname des Hauptmotivs),
+  "botanicalName": string (nur bei "pflanze": botanischer/lateinischer Artname, nur Gattung und Art, ohne Autor; sonst "")
+}
+Bedeutung von "motiv":
+- "pflanze": Pflanze, Kraut, Blume, Gras, Baum, Strauch, Moos, Kaktus, Pilz, Flechte, Frucht/Blatt einer Pflanze
+- "insekt": Insekt oder anderes Gliedertier: Käfer, Schmetterling, Raupe, Larve, Puppe, Biene, Wespe, Ameise, Fliege, Mücke, Wanze, Blattlaus, Heuschrecke, Libelle, Spinne, Milbe, Zecke, Assel, Tausendfüßer; auch Eier, Kokons oder Gespinste davon
+- "tier": anderes Tier, z.B. Huhn, Vogel, Hase, Katze, Hund, Pferd, Schaf, Fisch, Frosch, Eidechse, Schnecke, Wurm
+- "nichts": kein Lebewesen erkennbar (Mensch, Gebäude, Gegenstand, leere Fläche, Etikett)
+Regeln:
+- Sitzt ein Gliedertier gut sichtbar auf einer Pflanze und ist offensichtlich das, was fotografiert wurde, wähle "insekt".
+- Ist das Tier nur winzig am Rand zu sehen und die Pflanze füllt das Bild, wähle "pflanze".
+- Bei Unsicherheit gib deine beste Einschätzung ab.`;
+
+export async function classifyScanSubject(imageDataUrl: string): Promise<SubjectClassification> {
+  const main = parseDataUrl(imageDataUrl);
+  const parts = [
+    { text: `${SUBJECT_PROMPT}\n\nWas ist auf diesem Foto?` },
+    { inlineData: { mimeType: main.mimeType, data: main.data } },
+  ];
+  const parsed = (await runModelChain([{ role: "user", parts }], MODELS, QUICK_CONFIG)) as Record<
+    string,
+    unknown
+  >;
+  const raw = typeof parsed.motiv === "string" ? parsed.motiv.trim().toLowerCase() : "";
+  const subject: ScanSubject =
+    raw === "pflanze" || raw === "insekt" || raw === "tier" || raw === "nichts"
+      ? raw
+      : // An unexpected answer goes to the plant scan, which decides on its own.
+        "pflanze";
+  return {
+    subject,
+    plant: {
+      istPflanze: subject === "pflanze",
+      germanName: coerceText(parsed.germanName, "Unbekannte Pflanze"),
+      botanicalName: coerceText(parsed.botanicalName, UNKNOWN_BOTANICAL_NAME),
+    },
+  };
+}
+
 export async function identifyPlant(
   imageDataUrl: string,
   sideImageDataUrl?: string,

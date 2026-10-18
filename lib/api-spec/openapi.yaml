@@ -978,6 +978,43 @@ paths:
           description: Photo does not show an insect
         "502":
           description: AI identification failed
+  /scan:
+    post:
+      operationId: scanAuto
+      tags: [plants, insects]
+      summary: Universal scan - detects plant, mushroom or insect and scans it
+      description: >
+        A quick AI call decides what the photo shows; the request is then
+        handled exactly like POST /plants/scan or POST /insects/scan and that
+        endpoint's result is returned (a ScanPlantResult with "plant" or a
+        ScanInsectResult with "insect"). Hand-written client:
+        lib/api-client-react/src/scan-auto.ts.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanInsectInput"
+      responses:
+        "201":
+          description: Scanned and saved (or matched to an existing archive entry)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: "#/components/schemas/PlantScanResult"
+                  - $ref: "#/components/schemas/ScanInsectResult"
+        "400":
+          description: Invalid input
+        "422":
+          description: >
+            Nothing scannable on the photo (code KEIN_MOTIV), an animal that the
+            animal module will handle later (code TIER_ERKANNT), or the same
+            codes as the plant and insect scans.
+        "429":
+          description: Daily scan limit reached
+        "502":
+          description: AI identification failed
   /insects:
     get:
       operationId: listInsects

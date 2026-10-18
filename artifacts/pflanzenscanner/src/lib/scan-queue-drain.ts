@@ -9,6 +9,11 @@
 import { isRetryDue, type PendingScan } from "@/lib/scan-queue";
 import type { Insect, Plant } from "@workspace/api-client-react";
 
+/** Result of the universal scan: one of the two keys is set. */
+export type AutoScanResponse =
+  | { plant: Plant; alreadyInArchive: boolean; imageMerged?: boolean | null }
+  | { insect: Insect; alreadyInArchive: boolean };
+
 export interface DrainScanResult {
   itemId: string;
   plant: Plant;
@@ -56,6 +61,20 @@ export interface DrainDeps {
     localImageId?: string;
     locationRegion?: string;
   }) => Promise<{ insect: Insect; alreadyInArchive: boolean }>;
+  /**
+   * Sends a photo from the universal scan button; the server decides whether
+   * it is a plant or an insect. Optional like scanInsect.
+   */
+  scanAuto?: (args: {
+    image: string;
+    localImageId?: string;
+    locationRegion?: string;
+  }) => Promise<AutoScanResponse>;
+  /**
+   * The universal scan found nothing it can scan (HTTP 422 KEIN_MOTIV) or an
+   * animal (TIER_ERKANNT). `message` is the server's explanation.
+   */
+  onNoSubject?: (itemId: string, message: string) => void;
   onInsectSuccess?: (result: DrainInsectResult) => void;
   /** The server found no insect on the photo (HTTP 422 KEIN_INSEKTEN_FOTO). */
   onNotInsect?: (itemId: string) => void;
@@ -175,6 +194,37 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
 
       deps.setScanning(item.id, true);
       try {
+        if (item.kind === "auto") {
+          if (!deps.scanAuto) {
+            if (await deps.markScanError(item.id, "Der Universal-Scan ist hier nicht verfügbar.", false)) {
+              failed += 1;
+            }
+            continue;
+          }
+          const autoRes = await deps.scanAuto({
+            image: item.image,
+            ...(item.localImageId ? { localImageId: item.localImageId } : {}),
+            ...(item.locationRegion ? { locationRegion: item.locationRegion } : {}),
+          });
+          await deps.deletePendingScan(item.id);
+          if ("insect" in autoRes) {
+            deps.onInsectSuccess?.({
+              itemId: item.id,
+              insect: autoRes.insect,
+              alreadyInArchive: autoRes.alreadyInArchive,
+            });
+          } else {
+            deps.onSuccess({
+              itemId: item.id,
+              plant: autoRes.plant,
+              alreadyInArchive: autoRes.alreadyInArchive,
+              imageMerged: autoRes.imageMerged ?? undefined,
+            });
+            if (autoRes.alreadyInArchive) duplicates += 1;
+            else added += 1;
+          }
+          continue;
+        }
         if (item.kind === "insect") {
           if (!deps.scanInsect) {
             if (await deps.markScanError(item.id, "Insekten-Scan ist hier nicht verfügbar.", false)) {
@@ -238,6 +288,19 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
         ) {
           await deps.deletePendingScan(item.id);
           deps.onNotInsect?.(item.id);
+          continue;
+        }
+        const code422 =
+          status === 422
+            ? (err as { data?: { code?: string } } | null)?.data?.code
+            : undefined;
+        if (code422 === "KEIN_MOTIV" || code422 === "TIER_ERKANNT") {
+          await deps.deletePendingScan(item.id);
+          deps.onNoSubject?.(
+            item.id,
+            (err as { data?: { error?: string } } | null)?.data?.error ??
+              "Auf dem Foto wurde nichts zum Scannen erkannt.",
+          );
           continue;
         }
         if (status === 401 || status === 403) {

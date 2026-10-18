@@ -295,6 +295,9 @@ beforeAll(
 
       // Inject a test user without needing a real session store.
       app.use((req: Request, _res: Response, next: NextFunction) => {
+        // pino-http is not mounted in tests; the handlers log timings.
+        const noop = () => {};
+        (req as unknown as { log: unknown }).log = { info: noop, warn: noop, error: noop };
         (req as Request & { user: unknown }).user = {
           id: currentUserId,
           approved: true,

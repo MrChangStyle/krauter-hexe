@@ -107,3 +107,19 @@ export async function deleteImage(localImageId: string): Promise<void> {
     // Ignore errors on delete (best-effort cleanup)
   }
 }
+
+/**
+ * Ids of all stored images, without loading their bytes. Used by the move
+ * helper, which then copies them one batch at a time.
+ */
+export async function listImageIds(): Promise<string[]> {
+  try {
+    const db = await openDb();
+    const keys = await promisify(
+      db.transaction(STORE, "readonly").objectStore(STORE).getAllKeys(),
+    );
+    return keys.filter((key): key is string => typeof key === "string");
+  } catch {
+    return [];
+  }
+}

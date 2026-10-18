@@ -29,6 +29,8 @@ import {
   ImpressumPage,
   NutzungsbedingungenPage,
 } from '@/pages/rechtliches';
+import UmzugPage from '@/pages/umzug';
+import { MoveGate } from '@/components/move-screen';
 import { ScanQueueProvider } from '@/lib/scan-queue-context';
 import { UpdatePrompt } from '@/components/update-prompt';
 import { useOfflineWarmup } from '@/lib/use-offline-warmup';
@@ -130,12 +132,12 @@ function Router() {
 }
 
 /**
- * Impressum, Datenschutz and Nutzungsbedingungen must be readable without an
- * account (the registration form links to them), so they are picked before
- * the AuthGate. Links to them are plain page loads, so reading the path once
- * per render is enough.
+ * Pages that work without an account, picked before the AuthGate: Impressum,
+ * Datenschutz and Nutzungsbedingungen (the registration form links to them)
+ * and /umzug, which receives this device's photos from the old address.
+ * Links to them are plain page loads, so reading the path once is enough.
  */
-function legalPageFor(pathname: string) {
+function publicPageFor(pathname: string) {
   const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   const path = pathname.startsWith(base) ? pathname.slice(base.length) || '/' : pathname;
   switch (path.replace(/\/$/, '')) {
@@ -145,35 +147,40 @@ function legalPageFor(pathname: string) {
       return <DatenschutzPage />;
     case LEGAL_PATHS.nutzungsbedingungen:
       return <NutzungsbedingungenPage />;
+    case '/umzug':
+      return <UmzugPage />;
     default:
       return null;
   }
 }
 
 function App() {
-  const legalPage = legalPageFor(window.location.pathname);
-  if (legalPage) return legalPage;
+  const publicPage = publicPageFor(window.location.pathname);
+  if (publicPage) return publicPage;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        {/* Everything - including the offline scan queue - only runs for
-            signed-in, approved accounts. */}
-        <AuthGate>
-          <ScanQueueProvider>
-            <TooltipProvider>
-              <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-                <Router />
-              </WouterRouter>
-            </TooltipProvider>
-          </ScanQueueProvider>
-        </AuthGate>
-        {/* Automatic "new version available" popup. Rendered outside AuthGate
-            so it also appears on the login screen if an update lands there. */}
-        <UpdatePrompt />
-        <Toaster />
-      </AuthProvider>
-    </QueryClientProvider>
+    // At an old address after the move, the move helper replaces the app.
+    <MoveGate>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          {/* Everything - including the offline scan queue - only runs for
+              signed-in, approved accounts. */}
+          <AuthGate>
+            <ScanQueueProvider>
+              <TooltipProvider>
+                <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+                  <Router />
+                </WouterRouter>
+              </TooltipProvider>
+            </ScanQueueProvider>
+          </AuthGate>
+          {/* Automatic "new version available" popup. Rendered outside AuthGate
+              so it also appears on the login screen if an update lands there. */}
+          <UpdatePrompt />
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </MoveGate>
   );
 }
 

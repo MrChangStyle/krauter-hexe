@@ -260,7 +260,8 @@ PHASE B – UMBENENNUNG ZU LITTLE FARMING (nach A3, vor dem öffentlichen Start)
 Entschieden: Name "Little Farming" (auch als Kurzname auf dem Handy), Domain littlefarming.de
 (vorhanden), App-Symbol (Blatt) vorerst unverändert.
 - B1 Name & Wording (UMGESETZT): siehe replit.md, Kopfabschnitt.
-- B2 Umzug auf littlefarming.de: Domain in Render hinzufügen + DNS; PUBLIC_BASE_URL,
+- B2 Umzug auf littlefarming.de (Umzugshelfer UMGESETZT; Domain in Render verifiziert, Hauptadresse
+  https://littlefarming.de, www leitet weiter; Umstellung über PUBLIC_BASE_URL – Details in replit.md): Domain in Render hinzufügen + DNS; PUBLIC_BASE_URL,
   Google-Callback und Cron-URL umstellen. Umzugshelfer: Die alte Adresse öffnet
   littlefarming.de als eigenes Fenster und übergibt Warteschlange und "Meine Scans"-Fotos per
   postMessage (nur an die neue Herkunft, mit Bestätigung des Empfangs); erst danach leitet die

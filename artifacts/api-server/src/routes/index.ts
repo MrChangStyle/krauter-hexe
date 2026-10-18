@@ -14,6 +14,7 @@ import geoRouter from "./geo";
 import cronRouter from "./cron";
 import migrationRouter from "./migration";
 import reportsRouter from "./reports";
+import appConfigRouter from "./app-config";
 
 const router: IRouter = Router();
 
@@ -32,5 +33,6 @@ router.use(geoRouter);
 router.use(cronRouter);
 router.use(migrationRouter);
 router.use(reportsRouter);
+router.use(appConfigRouter);
 
 export default router;

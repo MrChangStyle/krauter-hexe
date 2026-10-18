@@ -95,3 +95,11 @@ services:
         sync: false
       - key: TURNSTILE_SECRET_KEY
         sync: false
+
+      # --- Umzug auf littlefarming.de ---------------------------------------
+      # Alte Adressen, von denen die neue Adresse Gerätedaten (Fotos,
+      # Warteschlange) annimmt. Der Umzug selbst startet, sobald PUBLIC_BASE_URL
+      # auf https://littlefarming.de steht: Dann zeigt jede andere Adresse den
+      # Umzugshelfer statt der App.
+      - key: LEGACY_ORIGINS
+        value: "https://kraeuter-hexe.onrender.com"

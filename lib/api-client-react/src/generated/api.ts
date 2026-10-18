@@ -38,6 +38,7 @@ import type {
   CreateTaskInput,
   DeleteAccountInput,
   DeletePlantInput,
+  FarmSummary,
   FavoriteIds,
   GeoReverseInput,
   GeoReverseResult,
@@ -4000,6 +4001,160 @@ export function useGetInsectImage<TData = Awaited<ReturnType<typeof getInsectIma
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetInsectImageQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListMyFarmsUrl = () => {
+
+
+
+
+  return `/api/farms`
+}
+
+/**
+ * @summary The farms the signed-in account belongs to
+ */
+export const listMyFarms = async ( options?: RequestInit): Promise<FarmSummary[]> => {
+
+  return customFetch<FarmSummary[]>(getListMyFarmsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListMyFarmsQueryKey = () => {
+    return [
+    `/api/farms`
+    ] as const;
+    }
+
+
+export const getListMyFarmsQueryOptions = <TData = Awaited<ReturnType<typeof listMyFarms>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyFarms>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListMyFarmsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listMyFarms>>> = ({ signal }) => listMyFarms({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listMyFarms>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListMyFarmsQueryResult = NonNullable<Awaited<ReturnType<typeof listMyFarms>>>
+export type ListMyFarmsQueryError = ErrorType<void>
+
+
+/**
+ * @summary The farms the signed-in account belongs to
+ */
+
+export function useListMyFarms<TData = Awaited<ReturnType<typeof listMyFarms>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listMyFarms>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListMyFarmsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetFarmUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}`
+}
+
+/**
+ * @summary One farm the account is a member of
+ */
+export const getFarm = async (farmId: number, options?: RequestInit): Promise<FarmSummary> => {
+
+  return customFetch<FarmSummary>(getGetFarmUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFarmQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}`
+    ] as const;
+    }
+
+
+export const getGetFarmQueryOptions = <TData = Awaited<ReturnType<typeof getFarm>>, TError = ErrorType<void>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarm>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFarmQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFarm>>> = ({ signal }) => getFarm(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFarm>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFarmQueryResult = NonNullable<Awaited<ReturnType<typeof getFarm>>>
+export type GetFarmQueryError = ErrorType<void>
+
+
+/**
+ * @summary One farm the account is a member of
+ */
+
+export function useGetFarm<TData = Awaited<ReturnType<typeof getFarm>>, TError = ErrorType<void>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarm>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFarmQueryOptions(farmId,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

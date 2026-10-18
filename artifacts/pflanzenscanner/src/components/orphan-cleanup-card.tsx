@@ -28,6 +28,9 @@ export const ORPHAN_LABELS: Record<string, string> = {
   plant_scans: "Pflanzen-Scanverlauf",
   insect_scans: "Insekten-Scanverlauf",
   scan_attempts: "Scan-Zähler",
+  reports: "Meldungen",
+  farm_memberships: "Farm-Mitgliedschaften",
+  farms: "Farmen ohne Mitglieder (mit ihren Tieren)",
   plants: "Pflanzen im Archiv (nur Bezug entfernt)",
   insects: "Insekten im Archiv (nur Bezug entfernt)",
 };

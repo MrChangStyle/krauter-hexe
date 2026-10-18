@@ -287,7 +287,7 @@ Entschieden: Name "Little Farming" (auch als Kurzname auf dem Handy), Domain lit
 
 VORGEHENSWEISE (zuerst Phase A1 → A2 → A3, dann Phase B, dann das Farm-Modul; streng sequenziell; nach JEDEM Schritt anhalten, kurz berichten und auf mein
 OK warten; jeder Schritt auf einem eigenen Branch mit Pull Request gegen main)
-- Schritt 1 – Fundament: Drizzle-Schemas (Farm-Ebene + Datenmodell), OpenAPI-Spec,
+- Schritt 1 – Fundament (UMGESETZT; Aufgaben-Erweiterung folgt mit Schritt 4): Drizzle-Schemas (Farm-Ebene + Datenmodell), OpenAPI-Spec,
   Codegen, requireFarm() + Isolationstest. Keine UI.
 - Schritt 2 – Farm & Rollen: automatische eigene Farm, Mitglieder verwalten, Farm wechseln,
   Navigationspunkt "Meine Farm" mit leerem Dashboard.

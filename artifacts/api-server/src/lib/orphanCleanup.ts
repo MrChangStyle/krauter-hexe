@@ -13,7 +13,7 @@
  * about what belongs to an account.
  */
 
-import { db, usersTable } from '@workspace/db';
+import { db, farmMembershipsTable, farmsTable, usersTable } from '@workspace/db';
 import { and, isNotNull, sql, type SQL } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 
@@ -30,9 +30,25 @@ function orphaned(column: PgColumn): SQL | undefined {
   );
 }
 
+/**
+ * A farm none of whose members still has an account. Such farms go with
+ * their animals and records – the same as deleteAccount does for a farm whose
+ * last member leaves.
+ */
+const farmWithoutLivingMembers = sql`NOT EXISTS (
+  SELECT 1 FROM ${farmMembershipsTable}
+  JOIN ${usersTable} ON ${usersTable.id} = ${farmMembershipsTable.userId}
+  WHERE ${farmMembershipsTable.farmId} = ${farmsTable.id}
+)`;
+
 /** Counts leftover rows without changing anything. */
 export async function findOrphanedData(): Promise<OrphanCounts> {
   const counts: OrphanCounts = {};
+  const [farms] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(farmsTable)
+    .where(farmWithoutLivingMembers);
+  counts['farms'] = farms?.count ?? 0;
   for (const { name, table, userId } of [...PERSONAL_TABLES, ...ARCHIVE_TABLES]) {
     const [row] = await db
       .select({ count: sql<number>`count(*)::int` })
@@ -65,6 +81,28 @@ export async function cleanupOrphanedData(): Promise<OrphanCounts> {
         .returning({ userId });
       counts[name] = unlinked.length;
     }
+    // With the orphaned memberships gone, a farm without any member left is one
+    // whose members all had their accounts removed: it goes, cascading to its
+    // animals and records. Same set findOrphanedData counted as "farms".
+    const farms = await tx
+      .delete(farmsTable)
+      .where(
+        sql`NOT EXISTS (SELECT 1 FROM ${farmMembershipsTable} WHERE ${farmMembershipsTable.farmId} = ${farmsTable.id})`,
+      )
+      .returning({ id: farmsTable.id });
+    counts['farms'] = farms.length;
+    // A shared farm that just lost its only admin gets its longest-standing
+    // member as admin, as deleteAccount would have done.
+    await tx.execute(sql`
+      UPDATE ${farmMembershipsTable} SET role = 'admin'
+      WHERE id IN (
+        SELECT DISTINCT ON (m.farm_id) m.id
+        FROM ${farmMembershipsTable} m
+        WHERE NOT EXISTS (
+          SELECT 1 FROM ${farmMembershipsTable} a WHERE a.farm_id = m.farm_id AND a.role = 'admin'
+        )
+        ORDER BY m.farm_id, m.created_at, m.id
+      )`);
     return counts;
   });
 }

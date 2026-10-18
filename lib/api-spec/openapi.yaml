@@ -22,6 +22,10 @@ tags:
     description: Account management for the private-access model (owner only).
   - name: moderation
     description: Reporting content and acting on reports
+  - name: farm
+    description: >
+      "Meine Farm" – animals, health records and stable tasks. Farm data is
+      private to the members of each farm.
   - name: favorites
     description: Per-user plant favourites.
   - name: tasks
@@ -1227,6 +1231,44 @@ paths:
                 format: binary
         "404":
           description: Not found
+  /farms:
+    get:
+      tags: [farm]
+      operationId: listMyFarms
+      summary: The farms the signed-in account belongs to
+      responses:
+        "200":
+          description: Farms with the account's role on each, oldest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmSummary"
+        "401":
+          description: Not signed in
+        "403":
+          description: Not approved
+  /farms/{farmId}:
+    get:
+      tags: [farm]
+      operationId: getFarm
+      summary: One farm the account is a member of
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The farm with the account's role.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmSummary"
+        "404":
+          description: No such farm – or the account is not a member (same answer on purpose).
   /reports:
     post:
       tags: [moderation]
@@ -2587,6 +2629,20 @@ components:
           type: string
           minLength: 8
           maxLength: 200
+    FarmRole:
+      type: string
+      enum: [admin, caretaker, guest]
+      description: admin = everything incl. members; caretaker = write animals and records; guest = read only.
+    FarmSummary:
+      type: object
+      required: [id, name, role]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        role:
+          $ref: "#/components/schemas/FarmRole"
     ReportContentType:
       type: string
       enum: [plant_image, insect_image, username]

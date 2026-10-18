@@ -19,6 +19,8 @@
 import {
   careGuidesTable,
   db,
+  farmMembershipsTable,
+  farmsTable,
   favoritesTable,
   insectScansTable,
   insectsTable,
@@ -30,7 +32,7 @@ import {
   tasksTable,
   usersTable,
 } from '@workspace/db';
-import { and, eq } from 'drizzle-orm';
+import { and, asc, eq, ne } from 'drizzle-orm';
 
 /**
  * Tables whose rows belong to one person and go when that person goes. Shared
@@ -51,6 +53,8 @@ export const PERSONAL_TABLES = [
   { name: 'scan_attempts', table: scanAttemptsTable, userId: scanAttemptsTable.userId },
   // Reports this person filed.
   { name: 'reports', table: reportsTable, userId: reportsTable.userId },
+  // Farm memberships – deleteAccount first hands over or removes the farms.
+  { name: 'farm_memberships', table: farmMembershipsTable, userId: farmMembershipsTable.userId },
 ] as const;
 
 /** Shared archive tables: entries stay, only the link to the person is cut. */
@@ -82,6 +86,34 @@ export async function deleteAccount(userId: string): Promise<boolean> {
 
     if (!user) return false;
     if (user.isOwner) throw new OwnerAccountDeletionError();
+
+    // Farms: a farm whose last member leaves goes with them (cascading to its
+    // animals and records); a farm that would lose its last admin gets the
+    // longest-standing remaining member as admin, so it is never unmanaged.
+    const memberships = await tx
+      .select({ farmId: farmMembershipsTable.farmId, role: farmMembershipsTable.role })
+      .from(farmMembershipsTable)
+      .where(eq(farmMembershipsTable.userId, userId));
+    for (const membership of memberships) {
+      const others = await tx
+        .select({ id: farmMembershipsTable.id, role: farmMembershipsTable.role })
+        .from(farmMembershipsTable)
+        .where(
+          and(
+            eq(farmMembershipsTable.farmId, membership.farmId),
+            ne(farmMembershipsTable.userId, userId),
+          ),
+        )
+        .orderBy(asc(farmMembershipsTable.createdAt), asc(farmMembershipsTable.id));
+      if (others.length === 0) {
+        await tx.delete(farmsTable).where(eq(farmsTable.id, membership.farmId));
+      } else if (membership.role === 'admin' && !others.some((o) => o.role === 'admin')) {
+        await tx
+          .update(farmMembershipsTable)
+          .set({ role: 'admin' })
+          .where(eq(farmMembershipsTable.id, others[0]!.id));
+      }
+    }
 
     // Personal rows: gone.
     for (const { table, userId: column } of PERSONAL_TABLES) {

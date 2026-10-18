@@ -1,5 +1,6 @@
 import { pool } from "@workspace/db";
 import { logger } from "./logger";
+import { FARM_SCHEMA_STATEMENTS } from "./farmSchemaStatements";
 
 /**
  * Small, additive schema changes applied at server start.
@@ -42,6 +43,8 @@ const STATEMENTS = [
    )`,
   "CREATE UNIQUE INDEX IF NOT EXISTS reports_open_unique_idx ON reports (user_id, content_type, content_id) WHERE status = 'open'",
   "CREATE INDEX IF NOT EXISTS reports_status_idx ON reports (status)",
+  // "Meine Farm" (generated, see farmSchemaStatements.ts).
+  ...FARM_SCHEMA_STATEMENTS,
 ];
 
 export async function upgradeSchema(): Promise<void> {

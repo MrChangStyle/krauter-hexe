@@ -19,7 +19,7 @@ const enabled =
 
 describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", () => {
   const TABLES =
-    "favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, plants, insects, users";
+    "favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, farm_memberships, farms, plants, insects, users";
 
   async function load() {
     const { pool } = await import("@workspace/db");
@@ -73,6 +73,16 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       `INSERT INTO reports (user_id, content_type, content_id, reason) VALUES ($1, 'plant_image', $2, 'falsch')`,
       [userId, String(plantId)],
     );
+    // A farm of one's own, and membership in a shared farm (as admin).
+    const own = await pool.query(`INSERT INTO farms (name) VALUES ($1) RETURNING id`, [`Hof ${label}`]);
+    await pool.query(
+      `INSERT INTO farm_memberships (farm_id, user_id, role) VALUES ($1, $2, 'admin')`,
+      [own.rows[0].id, userId],
+    );
+    await pool.query(
+      `INSERT INTO farm_animals (farm_id, name, species, registration_number) VALUES ($1, 'Tier', 'goat', 'R1')`,
+      [own.rows[0].id],
+    );
   }
 
   beforeEach(async () => {
@@ -100,6 +110,8 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       insect_scans: 1,
       scan_attempts: 1,
       reports: 1,
+      farm_memberships: 1,
+      farms: 1,
       plants: 1,
       insects: 1,
     });

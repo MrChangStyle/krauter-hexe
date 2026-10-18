@@ -759,6 +759,24 @@ export interface LoginInput {
   password: string;
 }
 
+/**
+ * admin = everything incl. members; caretaker = write animals and records; guest = read only.
+ */
+export type FarmRole = typeof FarmRole[keyof typeof FarmRole];
+
+
+export const FarmRole = {
+  admin: 'admin',
+  caretaker: 'caretaker',
+  guest: 'guest',
+} as const;
+
+export interface FarmSummary {
+  id: number;
+  name: string;
+  role: FarmRole;
+}
+
 export type ReportContentType = typeof ReportContentType[keyof typeof ReportContentType];
 
 

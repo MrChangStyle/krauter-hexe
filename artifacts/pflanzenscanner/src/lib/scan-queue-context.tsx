@@ -294,7 +294,7 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
             variant: "destructive",
           });
         },
-        onScanLimitReached: (resetsAt, limit) => {
+        onScanLimitReached: (resetsAt, limit, appWide) => {
           // Store the reset time so processQueue gates itself until midnight
           // instead of hammering the server with repeated 429 responses.
           setRateLimitResetsAt(resetsAt);
@@ -305,6 +305,14 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
                 minute: "2-digit",
               }).format(new Date(resetsAt)) + " Uhr"
             : "Mitternacht";
+          if (appWide) {
+            toast({
+              title: "Heute keine Scans mehr",
+              description: `Die App hat ihr gemeinsames Tageskontingent aufgebraucht. Deine Fotos bleiben gespeichert und werden ab ${resetTime} gescannt.`,
+              variant: "destructive",
+            });
+            return;
+          }
           const limitText = limit != null ? ` (${limit} Fotos pro Tag)` : "";
           toast({
             title: "Tageslimit erreicht",

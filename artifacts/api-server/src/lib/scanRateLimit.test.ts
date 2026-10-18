@@ -10,7 +10,7 @@
  * `@workspace/db` is mocked so the tests run without a database.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mock @workspace/db
@@ -185,6 +185,55 @@ describe("checkAndRecordScanAttempt - capped accounts", () => {
     await checkAndRecordScanAttempt("user-1", "insect");
 
     expect(state.inserted.map((i) => i.scanType)).toEqual(["plant", "insect"]);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// App-wide daily budget (SCAN_DAILY_BUDGET)
+// The mocked count query answers both the per-user and the app-wide count
+// with existingCount, which is enough to drive each branch.
+// ---------------------------------------------------------------------------
+
+describe("checkAndRecordScanAttempt - app-wide budget", () => {
+  afterEach(() => {
+    delete process.env["SCAN_DAILY_BUDGET"];
+  });
+
+  it("ignores the budget when SCAN_DAILY_BUDGET is not set", async () => {
+    state.existingCount = 10;
+    const res = await checkAndRecordScanAttempt("user-1", "plant");
+    expect(res.allowed).toBe(true);
+  });
+
+  it("allows a scan while the app is below its budget", async () => {
+    process.env["SCAN_DAILY_BUDGET"] = "50";
+    state.existingCount = 10;
+    const res = await checkAndRecordScanAttempt("user-1", "plant");
+    expect(res.allowed).toBe(true);
+    expect(res.reason).toBeUndefined();
+  });
+
+  it("blocks with reason 'budget' once the app-wide budget is used up", async () => {
+    process.env["SCAN_DAILY_BUDGET"] = "10";
+    state.existingCount = 10; // user still below 15, app at its budget
+    const res = await checkAndRecordScanAttempt("user-1", "plant");
+    expect(res.allowed).toBe(false);
+    expect(res.reason).toBe("budget");
+    expect(state.inserted).toHaveLength(0);
+  });
+
+  it("reports the user's own limit first when both are reached", async () => {
+    process.env["SCAN_DAILY_BUDGET"] = "10";
+    state.existingCount = DAILY_SCAN_LIMIT;
+    const res = await checkAndRecordScanAttempt("user-1", "plant");
+    expect(res.reason).toBe("user");
+  });
+
+  it("never applies the budget to the owner", async () => {
+    process.env["SCAN_DAILY_BUDGET"] = "1";
+    state.existingCount = 9_999;
+    const res = await checkAndRecordScanAttempt("owner-id", "plant", { unlimited: true });
+    expect(res.allowed).toBe(true);
   });
 });
 

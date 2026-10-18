@@ -3,6 +3,16 @@ import type { AuthUser } from "@workspace/api-client-react";
 
 export type { AuthUser };
 
+/** Extra fields of a registration besides email and password. */
+export interface RegisterOptions {
+  /** The user ticked "Datenschutzerklärung und Nutzungsbedingungen akzeptiert". */
+  acceptTerms: boolean;
+  /** Shared invitation code, if the server requires one. */
+  registrationCode?: string;
+  /** Token from the Cloudflare Turnstile widget, if the server uses it. */
+  turnstileToken?: string;
+}
+
 export interface AuthState {
   user: AuthUser | null;
   isLoading: boolean;
@@ -19,7 +29,7 @@ export interface AuthState {
   register: (
     email: string,
     password: string,
-    registrationCode?: string,
+    options: RegisterOptions,
   ) => Promise<AuthUser>;
   logout: () => Promise<void>;
   /** Re-run the /api/auth/user check (e.g. after coming back online). */
@@ -39,7 +49,7 @@ async function toError(res: Response): Promise<Error> {
 
 async function postCredentials(
   path: string,
-  body: Record<string, string>,
+  body: Record<string, unknown>,
 ): Promise<AuthUser> {
   let res: Response;
   try {
@@ -119,11 +129,14 @@ export function useAuth(): AuthState {
   );
 
   const register = useCallback(
-    async (email: string, password: string, registrationCode?: string) => {
+    async (email: string, password: string, options: RegisterOptions) => {
+      const { acceptTerms, registrationCode, turnstileToken } = options;
       const next = await postCredentials("/auth/register", {
         email,
         password,
+        acceptTerms,
         ...(registrationCode ? { registrationCode } : {}),
+        ...(turnstileToken ? { turnstileToken } : {}),
       });
       adopt(next);
       return next;

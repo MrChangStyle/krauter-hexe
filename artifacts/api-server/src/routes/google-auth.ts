@@ -19,6 +19,14 @@ import { OAuth2Client } from 'google-auth-library';
 import { randomBytes, createHash } from 'node:crypto';
 
 import { promoteFirstOwner, publicUserColumns } from '../lib/accounts';
+import {
+  LEGAL_VERSION,
+  addressMayRegister,
+  dailyCapAllowsRegistration,
+  isOpenRegistration,
+  recordRegistration,
+} from '../lib/registrationPolicy';
+import { getTurnstileConfig } from '../lib/turnstile';
 import { setAuthCookie } from '../lib/auth';
 import {
   GOOGLE_OAUTH_COOKIE,
@@ -81,7 +89,12 @@ function codeChallengeFor(verifier: string): string {
 // instead of showing one that can only fail.
 
 router.get('/auth/providers', (_req: Request, res: Response) => {
-  res.json({ google: isGoogleAuthConfigured() });
+  res.json({
+    google: isGoogleAuthConfigured(),
+    // Public: the site key is meant to be embedded in the page.
+    turnstileSiteKey: getTurnstileConfig()?.siteKey ?? null,
+    openRegistration: isOpenRegistration(),
+  });
 });
 
 // ── GET /auth/google ──────────────────────────────────────────────────────────
@@ -231,7 +244,9 @@ router.get(
     // response, so the catch below can always still redirect.
     let token: string;
     try {
-      token = await createAuthToken(await resolveAccount(identity));
+      token = await createAuthToken(
+        await resolveAccount(identity, req.ip ?? 'unknown'),
+      );
     } catch (err) {
       if (err instanceof SignInRejected) {
         fail(err.code, err.message);
@@ -249,6 +264,7 @@ router.get(
 /** Finds or creates the account for a verified Google identity. */
 async function resolveAccount(
   identity: GoogleIdentity,
+  address: string,
 ): Promise<string> {
   const [existing] = await db
     .select({
@@ -284,6 +300,14 @@ async function resolveAccount(
       throw new SignInRejected('google-konto-unbekannt', 'unknown email, registration is code-gated');
     }
 
+    // Same brakes as the email + password registration.
+    if (!addressMayRegister(address)) {
+      throw new SignInRejected('zu-viele-konten', 'too many accounts from this address');
+    }
+    if (!(await dailyCapAllowsRegistration())) {
+      throw new SignInRejected('registrierung-pausiert', 'daily registration cap reached');
+    }
+
     const [created] = await db
       .insert(usersTable)
       .values({
@@ -291,12 +315,19 @@ async function resolveAccount(
         firstName: identity.firstName,
         lastName: identity.lastName,
         profileImageUrl: identity.profileImageUrl,
+        approved: isOpenRegistration(),
+        // The login screen states that signing in with Google means agreeing
+        // to Datenschutzerklärung and Nutzungsbedingungen.
+        termsAcceptedAt: new Date(),
+        termsVersion: LEGAL_VERSION,
       })
       .returning(publicUserColumns);
+    recordRegistration(address);
 
     userId = created.id;
     // Same rule as for the email + password registration: the very first
-    // account is the owner, everyone after that waits for approval.
+    // account is the owner; everyone after that waits for approval unless
+    // registration is open.
     await promoteFirstOwner(userId);
   }
 

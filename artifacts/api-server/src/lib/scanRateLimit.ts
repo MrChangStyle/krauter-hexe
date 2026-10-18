@@ -22,6 +22,18 @@ import { db, scanAttemptsTable } from "@workspace/db";
  */
 export const DAILY_SCAN_LIMIT = 15;
 
+/**
+ * Optional cap on AI scans for the whole app per Berlin day (all users, both
+ * scan types, owner excluded), from SCAN_DAILY_BUDGET. Every scan is paid from
+ * the owner's Gemini key; with open registration the per-user limit alone does
+ * not bound the bill, because anyone can create more accounts. Unset or
+ * invalid = no app-wide cap (the family setup).
+ */
+export function scanDailyBudget(): number | null {
+  const raw = Number(process.env["SCAN_DAILY_BUDGET"]);
+  return Number.isInteger(raw) && raw > 0 ? raw : null;
+}
+
 export interface RateLimitResult {
   allowed: boolean;
   /** ISO timestamp of the next Berlin midnight (when the limit resets). */
@@ -31,6 +43,11 @@ export interface RateLimitResult {
    * instead of the client guessing it.
    */
   limit: number;
+  /**
+   * Why a request was refused: the user's own daily limit, or the app-wide
+   * budget. Undefined when allowed.
+   */
+  reason?: "user" | "budget";
   /**
    * Primary key of the `scan_attempts` row this call recorded, or null when the
    * request was rejected (nothing was written). Pass it to refundScanAttempt so
@@ -134,7 +151,36 @@ export async function checkAndRecordScanAttempt(
 
     const count = row?.count ?? 0;
     if (count >= DAILY_SCAN_LIMIT) {
-      return { allowed: false, resetsAt, limit: DAILY_SCAN_LIMIT, attemptId: null };
+      return {
+        allowed: false,
+        resetsAt,
+        limit: DAILY_SCAN_LIMIT,
+        reason: "user",
+        attemptId: null,
+      };
+    }
+
+    const budget = scanDailyBudget();
+    if (budget !== null) {
+      // One app-wide lock, taken after the per-user one (always in this order,
+      // so two transactions can never wait on each other), serializes the
+      // budget check so concurrent scans cannot overshoot it.
+      await tx.execute(
+        sql`SELECT pg_advisory_xact_lock(hashtext('scan-budget'), hashtext('all'))`,
+      );
+      const [total] = await tx
+        .select({ count: sql<number>`count(*)::int` })
+        .from(scanAttemptsTable)
+        .where(gte(scanAttemptsTable.attemptedAt, berlinMidnight));
+      if ((total?.count ?? 0) >= budget) {
+        return {
+          allowed: false,
+          resetsAt,
+          limit: DAILY_SCAN_LIMIT,
+          reason: "budget",
+          attemptId: null,
+        };
+      }
     }
 
     const [inserted] = await tx

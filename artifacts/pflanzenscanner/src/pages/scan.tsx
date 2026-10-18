@@ -402,6 +402,14 @@ export default function ScanPage() {
           status?: number;
           data?: { error?: string; code?: string; resetsAt?: string; limit?: number };
         } | null;
+        if (apiErr?.status === 429 && apiErr?.data?.error === "SCAN_BUDGET_REACHED") {
+          toast({
+            title: "Heute keine Scans mehr",
+            description: `Die App hat ihr gemeinsames Tageskontingent aufgebraucht. Ab ${formatBerlinTime(apiErr?.data?.resetsAt ?? null)} geht es weiter.`,
+            variant: "destructive",
+          });
+          return;
+        }
         if (apiErr?.status === 429) {
           const limitText = apiErr?.data?.limit != null ? ` (${apiErr.data.limit} Fotos pro Tag)` : "";
           toast({

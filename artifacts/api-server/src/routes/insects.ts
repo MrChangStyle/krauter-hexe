@@ -125,7 +125,7 @@ export async function handleInsectScan(req: Request, res: Response): Promise<voi
       // `limit` lets the UI name the exact number the user hit instead of
       // hard-coding a copy that would silently drift out of sync.
       res.status(429).json({
-        error: "SCAN_LIMIT_REACHED",
+        error: rateLimit.reason === "budget" ? "SCAN_BUDGET_REACHED" : "SCAN_LIMIT_REACHED",
         resetsAt: rateLimit.resetsAt,
         limit: rateLimit.limit,
       });

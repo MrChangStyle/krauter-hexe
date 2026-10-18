@@ -1,15 +1,37 @@
-# Meine Farm – Master-Prompt (Version 8.3)
+# Little Farming – Master-Prompt (Version 8.4)
 
 Entwickler-Prompt für einen KI-Programmier-Agenten (Claude Code), um die **Kräuter-Hexe**
 Schritt für Schritt um das Modul **„Meine Farm“** zu erweitern: Verwaltung von Haus- und
 Nutztieren, Krankenakte, Gewicht, Stall-Aufgaben, KI-Foto-Analyse und ein IoT-Wildtier-Radar.
 
-## Grundsatz: Wir bauen die Kräuter-Hexe aus, keine neue App
+## Grundsatz: Little Farming ist die App – Kräuterhexe und Meine Farm sind ihre Teile
+
+**Little Farming** ist die Dach-App. Die bestehende **Kräuterhexe** (Pflanzen, Pilze, Insekten)
+wird ein Teil von Little Farming, ebenso **Meine Farm** (Tiere). Nicht umgekehrt: Little Farming
+ist nicht ein Teil der Kräuterhexe.
+
+Technisch entsteht dafür keine neue App: Gebaut wird im bestehenden Code der Kräuterhexe
+(dieses Repo, dieselbe Render-Instanz, dieselbe Datenbank, dieselben Konten). Name, Wording und
+Domain werden in Phase B auf Little Farming umgestellt.
+
+## Bisheriger Grundsatz (bleibt gültig): Wir bauen auf dem Bestehenden auf, keine neue App
 
 Die Kräuter-Hexe bleibt, wo sie ist (dieses Repo, dieselbe Render-Instanz, dieselbe
 Neon-Datenbank, dieselben Nutzerkonten). „Meine Farm“ ist **kein eigenständiges Projekt**,
 sondern ein weiteres Modul in derselben App. Wir verbessern und ergänzen die Kräuter-Hexe
 stetig weiter – die Farm-Funktionen sind der nächste Ausbau, nicht der letzte.
+
+## Änderungen gegenüber Version 8.3
+
+- **Little Farming ist die Dach-App.** Kräuterhexe und Meine Farm sind Module darin.
+- **Neue Phase B „Umbenennung zu Little Farming“** zwischen Phase A und dem Farm-Modul.
+  Der öffentliche Start soll unter dem endgültigen Namen und der endgültigen Domain laufen.
+- **Neue Texte nutzen schon jetzt „Little Farming“ als App-Namen**, z. B. die Rechtsseiten
+  aus A1. Die Kräuterhexe wird dort als Teil der App genannt.
+- **A1 (freie Registrierung) ist umgesetzt.** Entscheidungen:
+  - Neue Konten sind sofort nutzbar (Schalter `OPEN_REGISTRATION`).
+  - Kein E-Mail-Versand.
+  - Cloudflare Turnstile als Bot-Schutz.
 
 ## Änderungen gegenüber Version 8.2
 
@@ -57,6 +79,9 @@ stetig weiter – die Farm-Funktionen sind der nächste Ausbau, nicht der letzte
 
 ```text
 PROJEKTBESCHREIBUNG
+Die App heißt "Little Farming". Die bestehende App "Kräuter-Hexe" (dieses Repo) wird zu ihrem
+Modul für Pflanzen, Pilze und Insekten; "Meine Farm" wird ihr Modul für Tiere. Neue Texte
+nennen die App "Little Farming" und die Module beim Namen.
 Erweitere die bestehende App "Kräuter-Hexe" (dieses Repo) um das Modul "Meine Farm" zur
 Verwaltung von Haus- und Nutztieren: Tierbestand (Einzeltier/Herde), digitale Krankenakte,
 Gewichts-Tracking, Stall-Aufgaben, KI-Foto-Analyse (Gemini) und ein IoT-Wildtier-Radar.
@@ -189,7 +214,8 @@ Passwort-Zurücksetzen nur, wenn in Phase A ausdrücklich entschieden.)
 PHASE A – GRUNDLAGEN FÜR DIE ÖFFENTLICHE APP (vor dem Farm-Modul)
 Ausgangslage: privates Familienmodell (erstes Konto = Inhaber, alle anderen starten
 unfreigeschaltet; optionaler REGISTRATION_CODE; Inhaber verwaltet unter /benutzer).
-- A1 Freie Registrierung:
+- A1 Freie Registrierung (UMGESETZT – Entscheidungen: sofort nutzbar per OPEN_REGISTRATION,
+  kein E-Mail-Versand, Cloudflare Turnstile; Details in replit.md):
   - Neue Konten sind ohne Einladung sofort nutzbar; der Schalter dafür ist eine ENV-Variable
     (z. B. OPEN_REGISTRATION=true), damit der Familienbetrieb jederzeit zurück kann.
   - Der Schutz vor Konto-Übernahme alter, passwortloser Konten bleibt unverändert.
@@ -229,7 +255,27 @@ unfreigeschaltet; optionaler REGISTRATION_CODE; Inhaber verwaltet unter /benutze
   - Einfacher Wortfilter für Benutzernamen.
   - Gesperrte Konten sehen beim Login eine klare deutsche Meldung.
 
-VORGEHENSWEISE (zuerst Phase A1 → A2 → A3, dann das Farm-Modul; streng sequenziell; nach JEDEM Schritt anhalten, kurz berichten und auf mein
+PHASE B – UMBENENNUNG ZU LITTLE FARMING (nach A3, vor dem öffentlichen Start)
+- Sichtbarer Name überall "Little Farming":
+  - Kopfzeile und Anmeldemaske
+  - PWA-Manifest (name, short_name, Icons)
+  - Seitentitel
+  - Push-Texte
+  - Rechtsseiten
+- "Kräuterhexe" bleibt als Name des Pflanzen-Moduls sichtbar (z. B. Bereich/Navigation
+  "Kräuterhexe"), so wie später "Meine Farm" für die Tiere.
+- Startseite/Navigation so ordnen, dass Little Farming der Rahmen ist und die Module darunter
+  liegen. Bestehende Routen bleiben erreichbar; wo sich Pfade ändern, gibt es Weiterleitungen.
+- Domain: neue Domain für Little Farming auf den Render-Dienst legen; die alte Adresse leitet
+  dauerhaft weiter. Google-Login-Callback, PUBLIC_BASE_URL und Cron-Job-URL auf die neue Domain
+  umstellen.
+- Installierte PWAs: Hinweis bzw. sanfter Übergang, damit niemand seine Offline-Warteschlange
+  verliert (IndexedDB ist an die Domain gebunden – vor dem Umzug leeren lassen oder die alte
+  Domain so lange parallel bedienen, bis die Warteschlangen leer sind).
+- NICHT umbenennen: Repo, Paketnamen, Datenbank (Tabellen/Spalten), Cloudinary-Ordner,
+  Render-Dienstname – das bringt nur Risiko und keinen Nutzen für die Nutzer.
+
+VORGEHENSWEISE (zuerst Phase A1 → A2 → A3, dann Phase B, dann das Farm-Modul; streng sequenziell; nach JEDEM Schritt anhalten, kurz berichten und auf mein
 OK warten; jeder Schritt auf einem eigenen Branch mit Pull Request gegen main)
 - Schritt 1 – Fundament: Drizzle-Schemas (Farm-Ebene + Datenmodell), OpenAPI-Spec,
   Codegen, requireFarm() + Isolationstest. Keine UI.

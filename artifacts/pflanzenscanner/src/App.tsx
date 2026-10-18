@@ -23,6 +23,12 @@ import UsersPage from '@/pages/users';
 import PflegeGuidesPage from '@/pages/pflege-guides';
 import PflegeGuideDetailPage from '@/pages/pflege-guide-detail';
 import { AuthProvider } from '@/lib/auth-context';
+import { LEGAL_PATHS } from '@/lib/legal';
+import {
+  DatenschutzPage,
+  ImpressumPage,
+  NutzungsbedingungenPage,
+} from '@/pages/rechtliches';
 import { ScanQueueProvider } from '@/lib/scan-queue-context';
 import { UpdatePrompt } from '@/components/update-prompt';
 import { useOfflineWarmup } from '@/lib/use-offline-warmup';
@@ -123,7 +129,31 @@ function Router() {
   );
 }
 
+/**
+ * Impressum, Datenschutz and Nutzungsbedingungen must be readable without an
+ * account (the registration form links to them), so they are picked before
+ * the AuthGate. Links to them are plain page loads, so reading the path once
+ * per render is enough.
+ */
+function legalPageFor(pathname: string) {
+  const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+  const path = pathname.startsWith(base) ? pathname.slice(base.length) || '/' : pathname;
+  switch (path.replace(/\/$/, '')) {
+    case LEGAL_PATHS.impressum:
+      return <ImpressumPage />;
+    case LEGAL_PATHS.datenschutz:
+      return <DatenschutzPage />;
+    case LEGAL_PATHS.nutzungsbedingungen:
+      return <NutzungsbedingungenPage />;
+    default:
+      return null;
+  }
+}
+
 function App() {
+  const legalPage = legalPageFor(window.location.pathname);
+  if (legalPage) return legalPage;
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

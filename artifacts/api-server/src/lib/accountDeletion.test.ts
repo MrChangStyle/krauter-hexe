@@ -58,7 +58,7 @@ beforeEach(() => {
 
 /** Tables of the real schema that carry a column with the given name. */
 function tablesWithColumn(columnName: string): string[] {
-  return Object.values(schema)
+  return (Object.values(schema) as unknown[])
     .filter((value): value is Table => is(value, Table))
     .filter((table) =>
       Object.values(getTableColumns(table)).some((column) => column.name === columnName),

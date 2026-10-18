@@ -8,6 +8,7 @@
 import type { BedOrientation } from './bedOrientation';
 import type { BedType } from './bedType';
 import type { FrostSource } from './frostSource';
+import type { PhotoPoint } from './photoPoint';
 import type { SoilTexture } from './soilTexture';
 import type { WindProtection } from './windProtection';
 
@@ -43,4 +44,16 @@ export interface GardenBed {
   /** @nullable */
   notes: string | null;
   createdAt: Date;
+  /** @nullable */
+  photoUrl: string | null;
+  /**
+     * Compass heading of the phone when the photo was taken (0–360°)
+     * @nullable
+     */
+  photoHeading: number | null;
+  /**
+     * The four bed corners on the photo (0–1), in grid order
+     * @nullable
+     */
+  photoCorners: PhotoPoint[] | null;
 }

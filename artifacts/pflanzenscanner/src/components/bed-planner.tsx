@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { HenniTip } from "@/components/henni";
+import { BedPhoto } from "@/components/bed-photo";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
@@ -260,6 +261,7 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
   const [season, setSeason] = useState(new Date().getFullYear());
   const [cell, setCell] = useState<{ x: number; y: number } | null>(null);
   const [selected, setSelected] = useState<BedPlanting | null>(null);
+  const [view, setView] = useState<"grid" | "photo">(bed.photoCorners ? "photo" : "grid");
   const catalog = useGetGardenCatalog({ query: { queryKey: getGetGardenCatalogQueryKey(), staleTime: Infinity } });
   const plantingsQuery = useListPlantings(farmId, bed.id, season);
   const refresh = () => queryClient.invalidateQueries({ queryKey: getListPlantingsQueryKey(farmId, bed.id, season) });
@@ -311,8 +313,25 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
 
       <HenniTip>{hennyLine(hints, shady, inside.length === 0)}</HenniTip>
 
+      <div role="tablist" aria-label="Ansicht" className="inline-flex rounded-full bg-muted p-1 text-sm">
+        {(["grid", "photo"] as const).map((v) => (
+          <button
+            key={v}
+            type="button"
+            role="tab"
+            aria-selected={view === v}
+            onClick={() => setView(v)}
+            className={cn("rounded-full px-4 py-1 font-medium", view === v ? "bg-background shadow-sm" : "text-muted-foreground")}
+          >
+            {v === "grid" ? "Raster" : "Foto"}
+          </button>
+        ))}
+      </div>
+
       {plantingsQuery.isLoading || catalog.isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      ) : view === "photo" ? (
+        <BedPhoto farmId={farmId} bed={bed} canWrite={canWrite} plantings={inside} crops={crops} onCell={setCell} onPlanting={setSelected} />
       ) : (
         <div className="overflow-x-auto rounded-2xl bg-[#5C4330] p-2">
           <div

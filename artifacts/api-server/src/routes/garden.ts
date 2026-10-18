@@ -8,13 +8,27 @@ import {
   GetGardenCatalogResponse,
   ListBedsResponse,
   ListPlantingsResponse,
+  RemoveBedPhotoResponse,
+  SetBedPhotoBody,
+  SetBedPhotoCornersBody,
+  SetBedPhotoCornersResponse,
+  SetBedPhotoResponse,
   UpdateBedBody,
   UpdateBedResponse,
 } from '@workspace/api-zod';
 
 import { requireApproved } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
-import { createBed, deleteBed, getBed, listBeds, updateBed } from '../lib/gardenBeds';
+import {
+  createBed,
+  deleteBed,
+  getBed,
+  listBeds,
+  removeBedPhoto,
+  setBedCorners,
+  setBedPhoto,
+  updateBed,
+} from '../lib/gardenBeds';
 import { GARDEN_CATALOG } from '../lib/gardenCatalog';
 import { addPlanting, listPlantings, removePlanting } from '../lib/gardenPlanner';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
@@ -79,6 +93,42 @@ router.delete(
     if (bedId === null) return notFound(res);
     await deleteBed(req.farm!.farmId, bedId);
     res.sendStatus(204);
+  }),
+);
+
+// ── Foto mit Pflanzraster ────────────────────────────────────────────────────
+
+router.put(
+  '/farms/:farmId/beds/:bedId/photo',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const bedId = idParam(req, 'bedId');
+    if (bedId === null) return notFound(res);
+    const body = SetBedPhotoBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(SetBedPhotoResponse.parse(await setBedPhoto(req.farm!.farmId, bedId, body.data.imageData, body.data.heading)));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/beds/:bedId/photo',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const bedId = idParam(req, 'bedId');
+    if (bedId === null) return notFound(res);
+    res.json(RemoveBedPhotoResponse.parse(await removeBedPhoto(req.farm!.farmId, bedId)));
+  }),
+);
+
+router.put(
+  '/farms/:farmId/beds/:bedId/photo-corners',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const bedId = idParam(req, 'bedId');
+    if (bedId === null) return notFound(res);
+    const body = SetBedPhotoCornersBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(SetBedPhotoCornersResponse.parse(await setBedCorners(req.farm!.farmId, bedId, body.data.corners)));
   }),
 );
 

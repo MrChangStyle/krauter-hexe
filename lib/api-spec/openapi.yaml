@@ -2394,6 +2394,92 @@ paths:
       responses:
         "204":
           description: Deleted.
+  /farms/{farmId}/beds/{bedId}/photo:
+    put:
+      tags: [garden]
+      operationId: setBedPhoto
+      summary: Photo of the bed for the grid overlay (caretaker or admin); resets the corners
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BedPhotoInput"
+      responses:
+        "200":
+          description: The bed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenBed"
+        "400":
+          description: Not an image.
+        "502":
+          description: Photo storage unavailable.
+    delete:
+      tags: [garden]
+      operationId: removeBedPhoto
+      summary: Remove the bed photo (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The bed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenBed"
+  /farms/{farmId}/beds/{bedId}/photo-corners:
+    put:
+      tags: [garden]
+      operationId: setBedPhotoCorners
+      summary: The four bed corners on the photo (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BedCornersInput"
+      responses:
+        "200":
+          description: The bed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenBed"
+        "400":
+          description: No photo, or the corners form no quadrilateral.
   /farms/{farmId}/beds/{bedId}/seasons/{season}/plantings:
     get:
       tags: [garden]
@@ -4446,7 +4532,7 @@ components:
           description: MM-DD
     GardenBed:
       type: object
-      required: [id, name, type, lengthCm, widthCm, heightCm, postalCode, latitude, longitude, sunHours, orientation, windProtection, soilTexture, soilPh, lastFrost, firstFrost, frostSource, notes, createdAt]
+      required: [id, name, type, lengthCm, widthCm, heightCm, postalCode, latitude, longitude, sunHours, orientation, windProtection, soilTexture, soilPh, lastFrost, firstFrost, frostSource, notes, createdAt, photoUrl, photoHeading, photoCorners]
       properties:
         id:
           type: integer
@@ -4496,6 +4582,43 @@ components:
         createdAt:
           type: string
           format: date-time
+        photoUrl:
+          type: [string, 'null']
+        photoHeading:
+          type: [integer, 'null']
+          description: Compass heading of the phone when the photo was taken (0–360°)
+        photoCorners:
+          type: [array, 'null']
+          description: The four bed corners on the photo (0–1), in grid order
+          items:
+            $ref: "#/components/schemas/PhotoPoint"
+    PhotoPoint:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: number
+        y:
+          type: number
+    BedPhotoInput:
+      type: object
+      required: [imageData]
+      properties:
+        imageData:
+          type: string
+          description: JPEG/PNG/WebP data URL, already downscaled by the app.
+        heading:
+          type: [number, 'null']
+    BedCornersInput:
+      type: object
+      required: [corners]
+      properties:
+        corners:
+          type: array
+          minItems: 4
+          maxItems: 4
+          items:
+            $ref: "#/components/schemas/PhotoPoint"
     GardenBedInput:
       type: object
       required: [name, type, lengthCm, widthCm]

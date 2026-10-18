@@ -82,4 +82,8 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "garden_beds_farm_idx" ON "garden_beds" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "bed_plantings_bed_season_idx" ON "bed_plantings" USING btree ("farm_id","bed_id","season")`,
+  // Added with step 3 (Foto mit Pflanzraster) – the table already exists in production.
+  `ALTER TABLE "garden_beds" ADD COLUMN IF NOT EXISTS "photo_url" text`,
+  `ALTER TABLE "garden_beds" ADD COLUMN IF NOT EXISTS "photo_heading" integer`,
+  `ALTER TABLE "garden_beds" ADD COLUMN IF NOT EXISTS "photo_corners" jsonb`,
 ];

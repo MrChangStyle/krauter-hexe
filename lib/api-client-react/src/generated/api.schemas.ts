@@ -1299,6 +1299,11 @@ export interface FrostDates {
   firstFrost: string;
 }
 
+export interface PhotoPoint {
+  x: number;
+  y: number;
+}
+
 export interface GardenBed {
   id: number;
   name: string;
@@ -1331,6 +1336,33 @@ export interface GardenBed {
   /** @nullable */
   notes: string | null;
   createdAt: string;
+  /** @nullable */
+  photoUrl: string | null;
+  /**
+     * Compass heading of the phone when the photo was taken (0–360°)
+     * @nullable
+     */
+  photoHeading: number | null;
+  /**
+     * The four bed corners on the photo (0–1), in grid order
+     * @nullable
+     */
+  photoCorners: PhotoPoint[] | null;
+}
+
+export interface BedPhotoInput {
+  /** JPEG/PNG/WebP data URL, already downscaled by the app. */
+  imageData: string;
+  /** @nullable */
+  heading?: number | null;
+}
+
+export interface BedCornersInput {
+  /**
+     * @minItems 4
+     * @maxItems 4
+     */
+  corners: PhotoPoint[];
 }
 
 export interface GardenBedInput {

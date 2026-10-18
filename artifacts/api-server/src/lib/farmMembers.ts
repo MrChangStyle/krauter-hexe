@@ -10,12 +10,15 @@
 
 import {
   db,
+  farmAnimalsTable,
   farmMembershipsTable,
   farmsTable,
   usersTable,
   type FarmRole,
 } from '@workspace/db';
-import { and, asc, count, eq, sql } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+
+import { deleteImageByUrl } from './imageStorage';
 
 export class FarmError extends Error {
   constructor(
@@ -94,7 +97,31 @@ export async function deleteFarm(farmId: number, confirmName: unknown): Promise<
   if (typeof confirmName !== 'string' || confirmName.trim() !== farm.name) {
     throw new FarmError(400, 'Bitte gib zur Bestätigung den Namen der Farm genau so ein.');
   }
+  const photos = await farmPhotoUrls([farmId]);
   await db.delete(farmsTable).where(eq(farmsTable.id, farmId));
+  deleteFarmPhotos(photos);
+}
+
+/** Cloudinary URLs of the animal photos of these farms. */
+export async function farmPhotoUrls(
+  farmIds: number[],
+  executor: Pick<typeof db, 'select'> = db,
+): Promise<string[]> {
+  if (farmIds.length === 0) return [];
+  const rows = await executor
+    .select({ url: farmAnimalsTable.imageUrl })
+    .from(farmAnimalsTable)
+    .where(and(inArray(farmAnimalsTable.farmId, farmIds), isNotNull(farmAnimalsTable.imageUrl)));
+  return rows.map((r) => r.url!).filter(Boolean);
+}
+
+/**
+ * Removes photos of deleted farms from Cloudinary – after the database change
+ * is committed, best effort (a leftover file costs a little storage, nothing
+ * more).
+ */
+export function deleteFarmPhotos(urls: string[]): void {
+  for (const url of urls) void deleteImageByUrl(url).catch(() => false);
 }
 
 export interface FarmMember {

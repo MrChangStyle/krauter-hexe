@@ -4,6 +4,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import FarmPage from '@/pages/farm';
+import FarmAnimalPage from '@/pages/farm-animal';
 import NotFound from '@/pages/not-found';
 import { Redirect, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import Layout from '@/components/layout';
@@ -121,6 +122,7 @@ function Router() {
         <Route path="/mehr" component={MehrPage} />
         <Route path="/aufgaben" component={AufgabenPage} />
         <Route path="/farm" component={FarmPage} />
+        <Route path="/farm/:farmId/tier/:animalId" component={FarmAnimalPage} />
         {/* Legacy redirects — keep old deep links working */}
         <Route path="/insekten">{() => { window.location.replace(import.meta.env.BASE_URL + "insekten-scanner"); return null; }}</Route>
         <Route path="/archiv"><Redirect to="/lexikon" replace /></Route>

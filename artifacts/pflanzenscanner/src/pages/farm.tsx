@@ -5,7 +5,6 @@ import {
   LogOut,
   Pencil,
   Plus,
-  Tractor,
   Trash2,
   UserPlus,
   Users,
@@ -37,6 +36,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { FarmAnimalsSection } from "@/components/farm-animals-section";
+import { FarmExportCard } from "@/components/farm-export-card";
+import { FarmTasksSection } from "@/components/farm-tasks-section";
 import {
   FARM_ROLE_HINTS,
   FARM_ROLE_LABELS,
@@ -439,13 +441,11 @@ export default function FarmPage() {
         </div>
       </div>
 
-      <section className="rounded-xl border border-dashed border-border p-6 text-center">
-        <Tractor className="mx-auto mb-2 h-8 w-8 text-primary/70" />
-        <p className="font-medium">Noch keine Tiere</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Hier verwaltest du bald deine Tiere und Herden mit Gesundheitsakte, Gewicht und Stall-Aufgaben.
-        </p>
-      </section>
+      <FarmTasksSection farm={farm} />
+
+      <FarmAnimalsSection farm={farm} />
+
+      <FarmExportCard farm={farm} />
 
       <MembersCard
         farm={farm}

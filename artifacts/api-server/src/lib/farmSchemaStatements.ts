@@ -18,6 +18,9 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `DO $$ BEGIN
      CREATE TYPE "public"."farm_species" AS ENUM('poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other');
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     CREATE TYPE "public"."farm_task_action" AS ENUM('Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges');
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE TABLE IF NOT EXISTS "farms" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" text NOT NULL,
@@ -109,6 +112,21 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"relay_triggered" boolean DEFAULT false NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
+  `CREATE TABLE IF NOT EXISTS "farm_tasks" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"animal_id" integer,
+	"herd_id" integer,
+	"action_type" "farm_task_action" NOT NULL,
+	"notes" text,
+	"interval_value" integer NOT NULL,
+	"interval_unit" "task_interval_unit" NOT NULL,
+	"reminder_time" text NOT NULL,
+	"is_active" boolean DEFAULT true NOT NULL,
+	"last_completed_at" timestamp with time zone,
+	"last_notified_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
   `DO $$ BEGIN
      ALTER TABLE "camera_events" ADD CONSTRAINT "camera_events_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
@@ -151,10 +169,20 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `DO $$ BEGIN
      ALTER TABLE "weight_logs" ADD CONSTRAINT "weight_logs_animal_id_farm_animals_id_fk" FOREIGN KEY ("animal_id") REFERENCES "public"."farm_animals"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_tasks" ADD CONSTRAINT "farm_tasks_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_tasks" ADD CONSTRAINT "farm_tasks_animal_id_farm_animals_id_fk" FOREIGN KEY ("animal_id") REFERENCES "public"."farm_animals"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_tasks" ADD CONSTRAINT "farm_tasks_herd_id_herds_id_fk" FOREIGN KEY ("herd_id") REFERENCES "public"."herds"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "camera_events_farm_created_idx" ON "camera_events" USING btree ("farm_id","created_at")`,
   `CREATE INDEX IF NOT EXISTS "cameras_farm_idx" ON "cameras" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "farm_animals_farm_idx" ON "farm_animals" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "farm_memberships_farm_idx" ON "farm_memberships" USING btree ("farm_id")`,
+  `CREATE INDEX IF NOT EXISTS "farm_tasks_farm_idx" ON "farm_tasks" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "food_logs_farm_idx" ON "food_logs" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "herds_farm_idx" ON "herds" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "medical_records_farm_animal_idx" ON "medical_records" USING btree ("farm_id","animal_id")`,

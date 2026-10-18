@@ -27,11 +27,11 @@ export class FarmDataError extends Error {
   }
 }
 
-const notFound = () => new FarmDataError(404, 'Nicht gefunden.');
+export const notFound = () => new FarmDataError(404, 'Nicht gefunden.');
 
-function text(raw: unknown, max: number, label: string, required: true): string;
-function text(raw: unknown, max: number, label: string, required?: false): string | null;
-function text(raw: unknown, max: number, label: string, required = false): string | null {
+export function text(raw: unknown, max: number, label: string, required: true): string;
+export function text(raw: unknown, max: number, label: string, required?: false): string | null;
+export function text(raw: unknown, max: number, label: string, required = false): string | null {
   const value = typeof raw === 'string' ? raw.trim() : '';
   if (!value) {
     if (required) throw new FarmDataError(400, `${label} fehlt.`);
@@ -41,20 +41,27 @@ function text(raw: unknown, max: number, label: string, required = false): strin
   return value;
 }
 
-/** YYYY-MM-DD, a real calendar day, not in the future. */
-export function validBirthDate(raw: unknown, today: Date = new Date()): string {
+/**
+ * YYYY-MM-DD, a real calendar day, not in the future and not before 1950.
+ * `label` names the field in the messages ("Geburtsdatum", "Datum").
+ */
+export function validDate(raw: unknown, label: string, today: Date = new Date()): string {
   if (typeof raw !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
-    throw new FarmDataError(400, 'Bitte gib das Geburtsdatum an.');
+    throw new FarmDataError(400, `Bitte gib das ${label} an.`);
   }
   const date = new Date(`${raw}T00:00:00Z`);
   if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== raw) {
-    throw new FarmDataError(400, 'Das Geburtsdatum ist ungültig.');
+    throw new FarmDataError(400, `Das ${label} ist ungültig.`);
   }
   if (raw > today.toISOString().slice(0, 10)) {
-    throw new FarmDataError(400, 'Das Geburtsdatum liegt in der Zukunft.');
+    throw new FarmDataError(400, `Das ${label} liegt in der Zukunft.`);
   }
-  if (raw < '1950-01-01') throw new FarmDataError(400, 'Das Geburtsdatum ist ungültig.');
+  if (raw < '1950-01-01') throw new FarmDataError(400, `Das ${label} ist ungültig.`);
   return raw;
+}
+
+export function validBirthDate(raw: unknown, today: Date = new Date()): string {
+  return validDate(raw, 'Geburtsdatum', today);
 }
 
 // ── Herds ────────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { Router, type IRouter, type Request, type Response } from 'express';
+import { Router, type IRouter } from 'express';
 import {
   CreateFarmAnimalBody,
   CreateFarmAnimalResponse,
@@ -19,7 +19,6 @@ import {
 
 import { requireFarm } from '../middlewares/requireFarm';
 import {
-  FarmDataError,
   createAnimal,
   createHerd,
   deleteHerd,
@@ -31,40 +30,13 @@ import {
   updateAnimal,
   updateHerd,
 } from '../lib/farmAnimals';
+import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
 // Herds and animals of one farm. Reading: every member; writing: caretaker
 // or admin. Every handler passes req.farm.farmId down – ids from another farm
 // are "not found".
 
 const router: IRouter = Router();
-
-function idParam(req: Request, name: string): number | null {
-  const raw = req.params[name];
-  return typeof raw === 'string' && /^[1-9]\d{0,8}$/.test(raw) ? Number(raw) : null;
-}
-
-/** Runs a handler, turning FarmDataError into its status and German message. */
-function handle(fn: (req: Request, res: Response) => Promise<void>) {
-  return async (req: Request, res: Response): Promise<void> => {
-    try {
-      await fn(req, res);
-    } catch (err) {
-      if (err instanceof FarmDataError) {
-        res.status(err.status).json({ error: err.message });
-        return;
-      }
-      throw err;
-    }
-  };
-}
-
-function badRequest(res: Response) {
-  res.status(400).json({ error: 'Bitte prüfe deine Eingaben.' });
-}
-
-function notFound(res: Response) {
-  res.status(404).json({ error: 'Nicht gefunden.' });
-}
 
 // ── Herds ────────────────────────────────────────────────────────────────────
 

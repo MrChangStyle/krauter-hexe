@@ -13,6 +13,7 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core";
+import { taskIntervalUnitEnum } from "./tasks";
 
 // "Meine Farm" – the animal module of Little Farming (docs/meine-farm-app.md).
 //
@@ -48,7 +49,23 @@ export type FarmSpecies = (typeof FARM_SPECIES)[number];
 export const ANIMAL_SEXES = ["female", "male", "neutered", "unknown"] as const;
 export type AnimalSex = (typeof ANIMAL_SEXES)[number];
 
+// Stall tasks. Kept apart from the plant tasks (tasks table): those belong to
+// one user and one plant, these to a farm and are shared by its members.
+export const FARM_TASK_ACTIONS = [
+  "Füttern",
+  "Tränken",
+  "Ausmisten",
+  "Eier sammeln",
+  "Entwurmen",
+  "Impfen",
+  "Klauen-/Hufpflege",
+  "Gesundheitskontrolle",
+  "Sonstiges",
+] as const;
+export type FarmTaskAction = (typeof FARM_TASK_ACTIONS)[number];
+
 export const farmRoleEnum = pgEnum("farm_role", FARM_ROLES);
+export const farmTaskActionEnum = pgEnum("farm_task_action", FARM_TASK_ACTIONS);
 export const farmSpeciesEnum = pgEnum("farm_species", FARM_SPECIES);
 export const animalSexEnum = pgEnum("animal_sex", ANIMAL_SEXES);
 
@@ -180,6 +197,31 @@ export const foodLogsTable = pgTable(
   (table) => [index("food_logs_farm_idx").on(table.farmId)],
 );
 
+export const farmTasksTable = pgTable(
+  "farm_tasks",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    // At most one of the two; neither means the whole farm.
+    animalId: integer("animal_id").references(() => farmAnimalsTable.id, { onDelete: "cascade" }),
+    herdId: integer("herd_id").references(() => herdsTable.id, { onDelete: "cascade" }),
+    actionType: farmTaskActionEnum("action_type").notNull(),
+    notes: text("notes"),
+    // Same schedule model as the plant tasks: every <value> <unit>, reminder
+    // at a Berlin wall-clock time (HH:MM), sent by the same cron.
+    intervalValue: integer("interval_value").notNull(),
+    intervalUnit: taskIntervalUnitEnum("interval_unit").notNull(),
+    reminderTime: text("reminder_time").notNull(),
+    isActive: boolean("is_active").notNull().default(true),
+    lastCompletedAt: timestamp("last_completed_at", { withTimezone: true }),
+    lastNotifiedAt: timestamp("last_notified_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("farm_tasks_farm_idx").on(table.farmId)],
+);
+
 export const camerasTable = pgTable(
   "cameras",
   {
@@ -221,3 +263,4 @@ export const cameraEventsTable = pgTable(
 export type Farm = typeof farmsTable.$inferSelect;
 export type FarmMembership = typeof farmMembershipsTable.$inferSelect;
 export type FarmAnimal = typeof farmAnimalsTable.$inferSelect;
+export type FarmTask = typeof farmTasksTable.$inferSelect;

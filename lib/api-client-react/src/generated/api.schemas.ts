@@ -893,6 +893,153 @@ export interface PhotoInput {
   imageData: string;
 }
 
+export interface MedicalRecord {
+  id: number;
+  animalId: number;
+  /** YYYY-MM-DD */
+  date: string;
+  diagnosis: string;
+  /** @nullable */
+  treatment: string | null;
+  /** @nullable */
+  medication: string | null;
+  /**
+     * Wartezeit in days after the treatment date.
+     * @nullable
+     */
+  withdrawalPeriodDays: number | null;
+  /** @nullable */
+  vet: string | null;
+  /** @nullable */
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface MedicalRecordInput {
+  /** YYYY-MM-DD, not in the future */
+  date: string;
+  /**
+     * @minLength 1
+     * @maxLength 200
+     */
+  diagnosis: string;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  treatment?: string | null;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  medication?: string | null;
+  /**
+     * @minimum 0
+     * @maximum 999
+     * @nullable
+     */
+  withdrawalPeriodDays?: number | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  vet?: string | null;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface WeightLog {
+  id: number;
+  animalId: number;
+  /** YYYY-MM-DD */
+  date: string;
+  weightKg: number;
+  createdAt: string;
+}
+
+export interface WeightLogInput {
+  /** YYYY-MM-DD, not in the future */
+  date: string;
+  /**
+     * @maximum 2000
+     * @exclusiveMinimum 0
+     */
+  weightKg: number;
+}
+
+export type FarmTaskAction = typeof FarmTaskAction[keyof typeof FarmTaskAction];
+
+
+export const FarmTaskAction = {
+  Füttern: 'Füttern',
+  Tränken: 'Tränken',
+  Ausmisten: 'Ausmisten',
+  Eier_sammeln: 'Eier sammeln',
+  Entwurmen: 'Entwurmen',
+  Impfen: 'Impfen',
+  'Klauen-/Hufpflege': 'Klauen-/Hufpflege',
+  Gesundheitskontrolle: 'Gesundheitskontrolle',
+  Sonstiges: 'Sonstiges',
+} as const;
+
+export interface FarmTask {
+  id: number;
+  /** @nullable */
+  animalId: number | null;
+  /** @nullable */
+  animalName: string | null;
+  /** @nullable */
+  herdId: number | null;
+  /** @nullable */
+  herdName: string | null;
+  actionType: FarmTaskAction;
+  /** @nullable */
+  notes: string | null;
+  intervalValue: number;
+  intervalUnit: TaskIntervalUnit;
+  /** HH:MM, Berlin time */
+  reminderTime: string;
+  isActive: boolean;
+  /** @nullable */
+  lastCompletedAt: string | null;
+  createdAt: string;
+  /** Next due day (YYYY-MM-DD, Berlin) */
+  dueDate: string;
+  /** Due today or overdue. */
+  isDue: boolean;
+}
+
+export interface FarmTaskInput {
+  actionType: FarmTaskAction;
+  /** @nullable */
+  animalId?: number | null;
+  /** @nullable */
+  herdId?: number | null;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  notes?: string | null;
+  /**
+     * @minimum 1
+     * @maximum 365
+     */
+  intervalValue: number;
+  intervalUnit: TaskIntervalUnit;
+  /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
+  reminderTime: string;
+  isActive?: boolean;
+}
+
+export interface FarmExport {
+  farmName: string;
+  animals: FarmAnimal[];
+  medicalRecords: MedicalRecord[];
+}
+
 export interface FarmMember {
   userId: string;
   displayName: string;

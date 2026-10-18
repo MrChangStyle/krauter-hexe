@@ -37,6 +37,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { FarmAnimalsSection } from "@/components/farm-animals-section";
+import { FarmExportCard } from "@/components/farm-export-card";
+import { FarmTasksSection } from "@/components/farm-tasks-section";
 import {
   FARM_ROLE_HINTS,
   FARM_ROLE_LABELS,
@@ -439,7 +441,11 @@ export default function FarmPage() {
         </div>
       </div>
 
+      <FarmTasksSection farm={farm} />
+
       <FarmAnimalsSection farm={farm} />
+
+      <FarmExportCard farm={farm} />
 
       <MembersCard
         farm={farm}

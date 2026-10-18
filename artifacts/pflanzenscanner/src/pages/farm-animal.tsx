@@ -23,6 +23,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { MedicalSection, WeightSection } from "@/components/farm-animal-health";
 import { downscaleFile } from "@/lib/image";
 import { SEX_LABELS, SPECIES_LABELS, SPECIES_ORDER, ageText, todayIso } from "@/lib/farm-labels";
 
@@ -459,6 +460,9 @@ function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: numb
             <p className="whitespace-pre-wrap text-sm text-muted-foreground">{a.notes}</p>
           </section>
         )}
+
+        <MedicalSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
+        <WeightSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
 
         {canWrite && (
           <Button

@@ -17,6 +17,8 @@ import reportsRouter from "./reports";
 import appConfigRouter from "./app-config";
 import farmsRouter from "./farms";
 import farmAnimalsRouter from "./farm-animals";
+import farmHealthRouter from "./farm-health";
+import farmTasksRouter from "./farm-tasks";
 
 const router: IRouter = Router();
 
@@ -38,5 +40,7 @@ router.use(reportsRouter);
 router.use(appConfigRouter);
 router.use(farmsRouter);
 router.use(farmAnimalsRouter);
+router.use(farmHealthRouter);
+router.use(farmTasksRouter);
 
 export default router;

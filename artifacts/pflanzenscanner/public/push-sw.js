@@ -2,7 +2,7 @@
 // workbox.importScripts. Keeps push support without switching the PWA build
 // to injectManifest.
 self.addEventListener("push", (event) => {
-  let payload = { title: "Kräuterhexe", body: "", tag: undefined, url: "/" };
+  let payload = { title: "Little Farming", body: "", tag: undefined, url: "/" };
   try {
     payload = { ...payload, ...event.data.json() };
   } catch (e) {

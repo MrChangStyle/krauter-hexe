@@ -50,10 +50,12 @@ export default defineConfig({
       includeAssets: ['favicon.svg', 'robots.txt', 'apple-touch-icon.png'],
       manifest: {
         id: basePath,
-        name: 'Kräuterhexe',
-        short_name: 'Kräuterhexe',
+        // The manifest id (basePath) stays the same, so installed apps keep
+        // working and only pick up the new name.
+        name: 'Little Farming',
+        short_name: 'Little Farming',
         description:
-          'Scanne Wildpflanzen und erfahre sofort, ob sie für dich und deine Tiere sicher sind.',
+          'Little Farming – deine App für Garten, Hof und Tiere. Mit der Kräuterhexe scannst du Wildpflanzen, Pilze und Insekten.',
         start_url: basePath,
         scope: basePath,
         display: 'standalone',

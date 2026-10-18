@@ -1,4 +1,7 @@
-# Pflanzenscanner
+# Little Farming (Kräuterhexe)
+
+**Little Farming** is the app; the **Kräuterhexe** (plant/mushroom/insect scanning, archive, care tasks) is its first module, "Meine Farm" (animals) comes next — see `docs/meine-farm-app.md`. User-facing text names the app "Little Farming" (manifest, page title, header, login, push default title, PDF footers and file names `LittleFarming_*.pdf`) and the module "Kräuterhexe" (scan page badge, login subtitle). "Kräuter-Hexe" is also the name of the AI herb advisor under Werkzeug and stays. Package names, DB, Cloudinary folder and the Render service keep their old names on purpose.
+
 
 Eine mobile-first, deutschsprachige Web-App, mit der Nutzer wilde Pflanzen per Foto scannen, per KI bestimmen lassen und in einem kategorisierten Archiv (Giftige Pflanzen, Essbare Pflanzen, Heilkräuter, Giftige Pilze, Essbare Pilze, Bäume, Sträucher, Moose) sammeln können.
 

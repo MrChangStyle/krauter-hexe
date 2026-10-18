@@ -257,6 +257,14 @@ unfreigeschaltet; optionaler REGISTRATION_CODE; Inhaber verwaltet unter /benutze
   - Gesperrte Konten sehen beim Login eine klare deutsche Meldung.
 
 PHASE B – UMBENENNUNG ZU LITTLE FARMING (nach A3, vor dem öffentlichen Start)
+Entschieden: Name "Little Farming" (auch als Kurzname auf dem Handy), Domain littlefarming.de
+(vorhanden), App-Symbol (Blatt) vorerst unverändert.
+- B1 Name & Wording (UMGESETZT): siehe replit.md, Kopfabschnitt.
+- B2 Umzug auf littlefarming.de: Domain in Render hinzufügen + DNS; PUBLIC_BASE_URL,
+  Google-Callback und Cron-URL umstellen. Umzugshelfer: Die alte Adresse öffnet
+  littlefarming.de als eigenes Fenster und übergibt Warteschlange und "Meine Scans"-Fotos per
+  postMessage (nur an die neue Herkunft, mit Bestätigung des Empfangs); erst danach leitet die
+  alte Adresse dauerhaft weiter. Hinweis zur Neuinstallation der PWA.
 - Sichtbarer Name überall "Little Farming":
   - Kopfzeile und Anmeldemaske
   - PWA-Manifest (name, short_name, Icons)

@@ -205,7 +205,7 @@ export default function PlantDetailPage() {
     setShareState("generating");
     try {
       const blob = await exportPlantPdf(plant, window.location.origin);
-      const filename = `Kraeuterhexe_${plant.germanName.replace(/\s+/g, "-")}.pdf`;
+      const filename = `LittleFarming_${plant.germanName.replace(/\s+/g, "-")}.pdf`;
       const file = new File([blob], filename, { type: "application/pdf" });
 
       // Try native file share (Web Share API Level 2 — works on iOS Safari,

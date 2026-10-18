@@ -114,3 +114,4 @@ The frontend is set up as an installable Progressive Web App via `vite-plugin-pw
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Planned expansion: the "Meine Farm" module (animals, medical records, weight, stable tasks, camera webhook) is built into this app step by step — see `docs/meine-farm-app.md` (master prompt, rules and order of steps)

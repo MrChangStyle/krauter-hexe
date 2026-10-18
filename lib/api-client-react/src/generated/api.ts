@@ -33,6 +33,10 @@ import type {
   BackfillSymptomCasingResult,
   BackfillSymptomsResult,
   BackfillToxicityResult,
+  Camera,
+  CameraEvent,
+  CameraInput,
+  CameraWithSecret,
   CareGuide,
   CategoryCount,
   ChangeFarmRoleInput,
@@ -6742,6 +6746,452 @@ export const useDeleteFeedAnalysis = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getDeleteFeedAnalysisMutationOptions(options));
     }
+
+export const getListCamerasUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/cameras`
+}
+
+/**
+ * @summary Cameras of the farm (relay URL only for admins)
+ */
+export const listCameras = async (farmId: number, options?: RequestInit): Promise<Camera[]> => {
+
+  return customFetch<Camera[]>(getListCamerasUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCamerasQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/cameras`
+    ] as const;
+    }
+
+
+export const getListCamerasQueryOptions = <TData = Awaited<ReturnType<typeof listCameras>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCameras>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCamerasQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCameras>>> = ({ signal }) => listCameras(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCameras>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCamerasQueryResult = NonNullable<Awaited<ReturnType<typeof listCameras>>>
+export type ListCamerasQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Cameras of the farm (relay URL only for admins)
+ */
+
+export function useListCameras<TData = Awaited<ReturnType<typeof listCameras>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCameras>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCamerasQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateCameraUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/cameras`
+}
+
+/**
+ * @summary Add a camera (admin); the secret is returned only here
+ */
+export const createCamera = async (farmId: number,
+    cameraInput: CameraInput, options?: RequestInit): Promise<CameraWithSecret> => {
+
+  return customFetch<CameraWithSecret>(getCreateCameraUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cameraInput)
+  }
+);}
+
+
+
+
+
+export const getCreateCameraMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCamera>>, TError,{farmId: number;data: BodyType<CameraInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCamera>>, TError,{farmId: number;data: BodyType<CameraInput>}, TContext> => {
+
+const mutationKey = ['createCamera'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCamera>>, {farmId: number;data: BodyType<CameraInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  createCamera(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCameraMutationResult = NonNullable<Awaited<ReturnType<typeof createCamera>>>
+    export type CreateCameraMutationBody = BodyType<CameraInput>
+    export type CreateCameraMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a camera (admin); the secret is returned only here
+ */
+export const useCreateCamera = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCamera>>, TError,{farmId: number;data: BodyType<CameraInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCamera>>,
+        TError,
+        {farmId: number;data: BodyType<CameraInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCameraMutationOptions(options));
+    }
+
+export const getUpdateCameraUrl = (farmId: number,
+    cameraId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/cameras/${cameraId}`
+}
+
+/**
+ * @summary Change a camera (admin)
+ */
+export const updateCamera = async (farmId: number,
+    cameraId: number,
+    cameraInput: CameraInput, options?: RequestInit): Promise<Camera> => {
+
+  return customFetch<Camera>(getUpdateCameraUrl(farmId,cameraId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cameraInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateCameraMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCamera>>, TError,{farmId: number;cameraId: number;data: BodyType<CameraInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCamera>>, TError,{farmId: number;cameraId: number;data: BodyType<CameraInput>}, TContext> => {
+
+const mutationKey = ['updateCamera'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCamera>>, {farmId: number;cameraId: number;data: BodyType<CameraInput>}> = (props) => {
+          const {farmId,cameraId,data} = props ?? {};
+
+          return  updateCamera(farmId,cameraId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCameraMutationResult = NonNullable<Awaited<ReturnType<typeof updateCamera>>>
+    export type UpdateCameraMutationBody = BodyType<CameraInput>
+    export type UpdateCameraMutationError = ErrorType<void>
+
+    /**
+ * @summary Change a camera (admin)
+ */
+export const useUpdateCamera = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCamera>>, TError,{farmId: number;cameraId: number;data: BodyType<CameraInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCamera>>,
+        TError,
+        {farmId: number;cameraId: number;data: BodyType<CameraInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateCameraMutationOptions(options));
+    }
+
+export const getDeleteCameraUrl = (farmId: number,
+    cameraId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/cameras/${cameraId}`
+}
+
+/**
+ * @summary Delete a camera with its events (admin)
+ */
+export const deleteCamera = async (farmId: number,
+    cameraId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteCameraUrl(farmId,cameraId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteCameraMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCamera>>, TError,{farmId: number;cameraId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCamera>>, TError,{farmId: number;cameraId: number}, TContext> => {
+
+const mutationKey = ['deleteCamera'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCamera>>, {farmId: number;cameraId: number}> = (props) => {
+          const {farmId,cameraId} = props ?? {};
+
+          return  deleteCamera(farmId,cameraId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCameraMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCamera>>>
+
+    export type DeleteCameraMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a camera with its events (admin)
+ */
+export const useDeleteCamera = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCamera>>, TError,{farmId: number;cameraId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCamera>>,
+        TError,
+        {farmId: number;cameraId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteCameraMutationOptions(options));
+    }
+
+export const getRotateCameraSecretUrl = (farmId: number,
+    cameraId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/cameras/${cameraId}/secret`
+}
+
+/**
+ * @summary New secret for a camera; the old one stops working (admin)
+ */
+export const rotateCameraSecret = async (farmId: number,
+    cameraId: number, options?: RequestInit): Promise<CameraWithSecret> => {
+
+  return customFetch<CameraWithSecret>(getRotateCameraSecretUrl(farmId,cameraId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRotateCameraSecretMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rotateCameraSecret>>, TError,{farmId: number;cameraId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof rotateCameraSecret>>, TError,{farmId: number;cameraId: number}, TContext> => {
+
+const mutationKey = ['rotateCameraSecret'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rotateCameraSecret>>, {farmId: number;cameraId: number}> = (props) => {
+          const {farmId,cameraId} = props ?? {};
+
+          return  rotateCameraSecret(farmId,cameraId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RotateCameraSecretMutationResult = NonNullable<Awaited<ReturnType<typeof rotateCameraSecret>>>
+
+    export type RotateCameraSecretMutationError = ErrorType<unknown>
+
+    /**
+ * @summary New secret for a camera; the old one stops working (admin)
+ */
+export const useRotateCameraSecret = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rotateCameraSecret>>, TError,{farmId: number;cameraId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof rotateCameraSecret>>,
+        TError,
+        {farmId: number;cameraId: number},
+        TContext
+      > => {
+      return useMutation(getRotateCameraSecretMutationOptions(options));
+    }
+
+export const getListCameraEventsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/camera-events`
+}
+
+/**
+ * @summary Latest 50 camera events of the farm
+ */
+export const listCameraEvents = async (farmId: number, options?: RequestInit): Promise<CameraEvent[]> => {
+
+  return customFetch<CameraEvent[]>(getListCameraEventsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCameraEventsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/camera-events`
+    ] as const;
+    }
+
+
+export const getListCameraEventsQueryOptions = <TData = Awaited<ReturnType<typeof listCameraEvents>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCameraEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCameraEventsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCameraEvents>>> = ({ signal }) => listCameraEvents(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCameraEvents>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCameraEventsQueryResult = NonNullable<Awaited<ReturnType<typeof listCameraEvents>>>
+export type ListCameraEventsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Latest 50 camera events of the farm
+ */
+
+export function useListCameraEvents<TData = Awaited<ReturnType<typeof listCameraEvents>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCameraEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCameraEventsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getRenameFarmUrl = (farmId: number,) => {
 

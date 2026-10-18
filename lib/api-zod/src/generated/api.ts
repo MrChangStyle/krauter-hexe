@@ -1740,6 +1740,667 @@ export const RemoveFarmMemberResponse = zod.void()
 
 
 /**
+ * @summary Herds of a farm
+ */
+export const ListHerdsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListHerdsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "notes": zod.string().nullable(),
+  "animalCount": zod.number().describe('Animals in the herd that are not archived.')
+})
+export const ListHerdsResponse = zod.array(ListHerdsResponseItem)
+
+
+/**
+ * @summary Create a herd (caretaker or admin)
+ */
+export const CreateHerdParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createHerdBodyNameMax = 60;
+
+export const createHerdBodyNotesMax = 2000;
+
+
+
+export const CreateHerdBody = zod.object({
+  "name": zod.string().min(1).max(createHerdBodyNameMax),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "notes": zod.string().max(createHerdBodyNotesMax).nullish()
+})
+
+export const CreateHerdResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "notes": zod.string().nullable(),
+  "animalCount": zod.number().describe('Animals in the herd that are not archived.')
+})
+
+
+/**
+ * @summary Change a herd (caretaker or admin)
+ */
+export const UpdateHerdParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "herdId": zod.coerce.number()
+})
+
+export const updateHerdBodyNameMax = 60;
+
+export const updateHerdBodyNotesMax = 2000;
+
+
+
+export const UpdateHerdBody = zod.object({
+  "name": zod.string().min(1).max(updateHerdBodyNameMax),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "notes": zod.string().max(updateHerdBodyNotesMax).nullish()
+})
+
+export const UpdateHerdResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "notes": zod.string().nullable(),
+  "animalCount": zod.number().describe('Animals in the herd that are not archived.')
+})
+
+
+/**
+ * @summary Delete a herd; its animals stay, without herd (caretaker or admin)
+ */
+export const DeleteHerdParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "herdId": zod.coerce.number()
+})
+
+export const DeleteHerdResponse = zod.void()
+
+
+/**
+ * @summary Animals of a farm, archived ones included (archivedAt set)
+ */
+export const ListFarmAnimalsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListFarmAnimalsResponseItem = zod.object({
+  "id": zod.number(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().nullable(),
+  "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const ListFarmAnimalsResponse = zod.array(ListFarmAnimalsResponseItem)
+
+
+/**
+ * @summary Add an animal (caretaker or admin)
+ */
+export const CreateFarmAnimalParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createFarmAnimalBodyNameMax = 60;
+
+export const createFarmAnimalBodyBreedMax = 60;
+
+export const createFarmAnimalBodyRegistrationNumberMax = 40;
+
+export const createFarmAnimalBodyNotesMax = 2000;
+
+
+
+export const CreateFarmAnimalBody = zod.object({
+  "name": zod.string().min(1).max(createFarmAnimalBodyNameMax),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().max(createFarmAnimalBodyBreedMax).nullish(),
+  "birthDate": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string().min(1).max(createFarmAnimalBodyRegistrationNumberMax).describe('Ring or ear tag; unique within the farm.'),
+  "herdId": zod.number().nullish(),
+  "notes": zod.string().max(createFarmAnimalBodyNotesMax).nullish()
+})
+
+export const CreateFarmAnimalResponse = zod.object({
+  "id": zod.number(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().nullable(),
+  "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary One animal
+ */
+export const GetFarmAnimalParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const GetFarmAnimalResponse = zod.object({
+  "id": zod.number(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().nullable(),
+  "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Change an animal (caretaker or admin)
+ */
+export const UpdateFarmAnimalParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const updateFarmAnimalBodyNameMax = 60;
+
+export const updateFarmAnimalBodyBreedMax = 60;
+
+export const updateFarmAnimalBodyRegistrationNumberMax = 40;
+
+export const updateFarmAnimalBodyNotesMax = 2000;
+
+
+
+export const UpdateFarmAnimalBody = zod.object({
+  "name": zod.string().min(1).max(updateFarmAnimalBodyNameMax),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().max(updateFarmAnimalBodyBreedMax).nullish(),
+  "birthDate": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string().min(1).max(updateFarmAnimalBodyRegistrationNumberMax).describe('Ring or ear tag; unique within the farm.'),
+  "herdId": zod.number().nullish(),
+  "notes": zod.string().max(updateFarmAnimalBodyNotesMax).nullish()
+})
+
+export const UpdateFarmAnimalResponse = zod.object({
+  "id": zod.number(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().nullable(),
+  "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Archive or restore an animal (kept for its medical history)
+ */
+export const SetFarmAnimalArchivedParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const SetFarmAnimalArchivedBody = zod.object({
+  "archived": zod.boolean()
+})
+
+export const SetFarmAnimalArchivedResponse = zod.object({
+  "id": zod.number(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().nullable(),
+  "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Upload the animal's photo (replaces the previous one)
+ */
+export const SetFarmAnimalPhotoParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const SetFarmAnimalPhotoBody = zod.object({
+  "imageData": zod.string().describe('JPEG\/PNG\/WebP data URL, already downscaled by the app.')
+})
+
+export const SetFarmAnimalPhotoResponse = zod.object({
+  "id": zod.number(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().nullable(),
+  "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Health records of an animal, newest first
+ */
+export const ListMedicalRecordsParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const ListMedicalRecordsResponseItem = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number(),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "diagnosis": zod.string(),
+  "treatment": zod.string().nullable(),
+  "medication": zod.string().nullable(),
+  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
+  "vet": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const ListMedicalRecordsResponse = zod.array(ListMedicalRecordsResponseItem)
+
+
+/**
+ * @summary Add a health record (caretaker or admin)
+ */
+export const CreateMedicalRecordParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const createMedicalRecordBodyDiagnosisMax = 200;
+
+export const createMedicalRecordBodyTreatmentMax = 2000;
+
+export const createMedicalRecordBodyMedicationMax = 200;
+
+export const createMedicalRecordBodyWithdrawalPeriodDaysMin = 0;
+export const createMedicalRecordBodyWithdrawalPeriodDaysMax = 999;
+
+export const createMedicalRecordBodyVetMax = 100;
+
+export const createMedicalRecordBodyNotesMax = 2000;
+
+
+
+export const CreateMedicalRecordBody = zod.object({
+  "date": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "diagnosis": zod.string().min(1).max(createMedicalRecordBodyDiagnosisMax),
+  "treatment": zod.string().max(createMedicalRecordBodyTreatmentMax).nullish(),
+  "medication": zod.string().max(createMedicalRecordBodyMedicationMax).nullish(),
+  "withdrawalPeriodDays": zod.number().min(createMedicalRecordBodyWithdrawalPeriodDaysMin).max(createMedicalRecordBodyWithdrawalPeriodDaysMax).nullish(),
+  "vet": zod.string().max(createMedicalRecordBodyVetMax).nullish(),
+  "notes": zod.string().max(createMedicalRecordBodyNotesMax).nullish()
+})
+
+export const CreateMedicalRecordResponse = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number(),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "diagnosis": zod.string(),
+  "treatment": zod.string().nullable(),
+  "medication": zod.string().nullable(),
+  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
+  "vet": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Change a health record (caretaker or admin)
+ */
+export const UpdateMedicalRecordParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "recordId": zod.coerce.number()
+})
+
+export const updateMedicalRecordBodyDiagnosisMax = 200;
+
+export const updateMedicalRecordBodyTreatmentMax = 2000;
+
+export const updateMedicalRecordBodyMedicationMax = 200;
+
+export const updateMedicalRecordBodyWithdrawalPeriodDaysMin = 0;
+export const updateMedicalRecordBodyWithdrawalPeriodDaysMax = 999;
+
+export const updateMedicalRecordBodyVetMax = 100;
+
+export const updateMedicalRecordBodyNotesMax = 2000;
+
+
+
+export const UpdateMedicalRecordBody = zod.object({
+  "date": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "diagnosis": zod.string().min(1).max(updateMedicalRecordBodyDiagnosisMax),
+  "treatment": zod.string().max(updateMedicalRecordBodyTreatmentMax).nullish(),
+  "medication": zod.string().max(updateMedicalRecordBodyMedicationMax).nullish(),
+  "withdrawalPeriodDays": zod.number().min(updateMedicalRecordBodyWithdrawalPeriodDaysMin).max(updateMedicalRecordBodyWithdrawalPeriodDaysMax).nullish(),
+  "vet": zod.string().max(updateMedicalRecordBodyVetMax).nullish(),
+  "notes": zod.string().max(updateMedicalRecordBodyNotesMax).nullish()
+})
+
+export const UpdateMedicalRecordResponse = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number(),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "diagnosis": zod.string(),
+  "treatment": zod.string().nullable(),
+  "medication": zod.string().nullable(),
+  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
+  "vet": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a health record entered by mistake (caretaker or admin)
+ */
+export const DeleteMedicalRecordParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "recordId": zod.coerce.number()
+})
+
+export const DeleteMedicalRecordResponse = zod.void()
+
+
+/**
+ * @summary Weight entries of an animal, oldest first
+ */
+export const ListWeightLogsParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const ListWeightLogsResponseItem = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number(),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "weightKg": zod.number(),
+  "createdAt": zod.coerce.date()
+})
+export const ListWeightLogsResponse = zod.array(ListWeightLogsResponseItem)
+
+
+/**
+ * @summary Add a weight entry (caretaker or admin)
+ */
+export const CreateWeightLogParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const createWeightLogBodyWeightKgExclusiveMin = 0;
+export const createWeightLogBodyWeightKgMax = 2000;
+
+
+
+export const CreateWeightLogBody = zod.object({
+  "date": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "weightKg": zod.number().gt(createWeightLogBodyWeightKgExclusiveMin).max(createWeightLogBodyWeightKgMax)
+})
+
+export const CreateWeightLogResponse = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number(),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "weightKg": zod.number(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a weight entry (caretaker or admin)
+ */
+export const DeleteWeightLogParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "weightId": zod.coerce.number()
+})
+
+export const DeleteWeightLogResponse = zod.void()
+
+
+/**
+ * @summary Stall tasks of the farm
+ */
+export const ListFarmTasksParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListFarmTasksResponseItem = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number().nullable(),
+  "animalName": zod.string().nullable(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "notes": zod.string().nullable(),
+  "intervalValue": zod.number(),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().describe('HH:MM, Berlin time'),
+  "isActive": zod.boolean(),
+  "lastCompletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "dueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin)'),
+  "isDue": zod.boolean().describe('Due today or overdue.')
+})
+export const ListFarmTasksResponse = zod.array(ListFarmTasksResponseItem)
+
+
+/**
+ * @summary Add a stall task (caretaker or admin)
+ */
+export const CreateFarmTaskParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createFarmTaskBodyNotesMax = 200;
+
+export const createFarmTaskBodyIntervalValueMax = 365;
+
+export const createFarmTaskBodyReminderTimeRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+
+
+export const CreateFarmTaskBody = zod.object({
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "animalId": zod.number().nullish(),
+  "herdId": zod.number().nullish(),
+  "notes": zod.string().max(createFarmTaskBodyNotesMax).nullish(),
+  "intervalValue": zod.number().min(1).max(createFarmTaskBodyIntervalValueMax),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().regex(createFarmTaskBodyReminderTimeRegExp),
+  "isActive": zod.boolean().optional()
+})
+
+export const CreateFarmTaskResponse = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number().nullable(),
+  "animalName": zod.string().nullable(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "notes": zod.string().nullable(),
+  "intervalValue": zod.number(),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().describe('HH:MM, Berlin time'),
+  "isActive": zod.boolean(),
+  "lastCompletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "dueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin)'),
+  "isDue": zod.boolean().describe('Due today or overdue.')
+})
+
+
+/**
+ * @summary Change a stall task (caretaker or admin)
+ */
+export const UpdateFarmTaskParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "taskId": zod.coerce.number()
+})
+
+export const updateFarmTaskBodyNotesMax = 200;
+
+export const updateFarmTaskBodyIntervalValueMax = 365;
+
+export const updateFarmTaskBodyReminderTimeRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+
+
+export const UpdateFarmTaskBody = zod.object({
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "animalId": zod.number().nullish(),
+  "herdId": zod.number().nullish(),
+  "notes": zod.string().max(updateFarmTaskBodyNotesMax).nullish(),
+  "intervalValue": zod.number().min(1).max(updateFarmTaskBodyIntervalValueMax),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().regex(updateFarmTaskBodyReminderTimeRegExp),
+  "isActive": zod.boolean().optional()
+})
+
+export const UpdateFarmTaskResponse = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number().nullable(),
+  "animalName": zod.string().nullable(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "notes": zod.string().nullable(),
+  "intervalValue": zod.number(),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().describe('HH:MM, Berlin time'),
+  "isActive": zod.boolean(),
+  "lastCompletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "dueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin)'),
+  "isDue": zod.boolean().describe('Due today or overdue.')
+})
+
+
+/**
+ * @summary Delete a stall task (caretaker or admin)
+ */
+export const DeleteFarmTaskParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "taskId": zod.coerce.number()
+})
+
+export const DeleteFarmTaskResponse = zod.void()
+
+
+/**
+ * @summary Mark a stall task as done now (caretaker or admin)
+ */
+export const CompleteFarmTaskParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "taskId": zod.coerce.number()
+})
+
+export const CompleteFarmTaskResponse = zod.object({
+  "id": zod.number(),
+  "animalId": zod.number().nullable(),
+  "animalName": zod.string().nullable(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "notes": zod.string().nullable(),
+  "intervalValue": zod.number(),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().describe('HH:MM, Berlin time'),
+  "isActive": zod.boolean(),
+  "lastCompletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "dueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin)'),
+  "isDue": zod.boolean().describe('Due today or overdue.')
+})
+
+
+/**
+ * @summary Animals and health records for the veterinary office export
+ */
+export const GetFarmExportParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFarmExportResponse = zod.object({
+  "farmName": zod.string(),
+  "animals": zod.array(zod.object({
+  "id": zod.number(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "breed": zod.string().nullable(),
+  "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
+  "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
+  "registrationNumber": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archivedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})),
+  "medicalRecords": zod.array(zod.object({
+  "id": zod.number(),
+  "animalId": zod.number(),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "diagnosis": zod.string(),
+  "treatment": zod.string().nullable(),
+  "medication": zod.string().nullable(),
+  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
+  "vet": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
  * @summary Rename a farm (admin only)
  */
 export const RenameFarmParams = zod.object({

@@ -287,13 +287,15 @@ Entschieden: Name "Little Farming" (auch als Kurzname auf dem Handy), Domain lit
 
 VORGEHENSWEISE (zuerst Phase A1 → A2 → A3, dann Phase B, dann das Farm-Modul; streng sequenziell; nach JEDEM Schritt anhalten, kurz berichten und auf mein
 OK warten; jeder Schritt auf einem eigenen Branch mit Pull Request gegen main)
-- Schritt 1 – Fundament (UMGESETZT; Aufgaben-Erweiterung folgt mit Schritt 4): Drizzle-Schemas (Farm-Ebene + Datenmodell), OpenAPI-Spec,
+- Schritt 1 – Fundament (UMGESETZT; Stall-Aufgaben kamen mit Schritt 4): Drizzle-Schemas (Farm-Ebene + Datenmodell), OpenAPI-Spec,
   Codegen, requireFarm() + Isolationstest. Keine UI.
 - Schritt 2 – Farm & Rollen (UMGESETZT): automatische eigene Farm, Mitglieder verwalten, Farm wechseln,
   Navigationspunkt "Meine Farm" mit leerem Dashboard.
-- Schritt 3 – Tierbestand: CRUD für Tiere/Herden inkl. Foto (Cloudinary, downscaleFile).
-- Schritt 4 – Medizin, Gewicht, Aufgaben: CRUD, Gewichtsdiagramm mit Warnlogik,
-  Stall-Aufgaben mit Push, Veterinäramt-Export (CSV + PDF).
+- Schritt 3 – Tierbestand (UMGESETZT): CRUD für Tiere/Herden inkl. Foto (Cloudinary, downscaleFile);
+  Archivieren statt Löschen, Ring-/Ohrmarke eindeutig je Farm, Gäste nur lesen. Details in replit.md.
+- Schritt 4 – Medizin, Gewicht, Aufgaben (UMGESETZT): CRUD, Gewichtsdiagramm mit Warnlogik,
+  Stall-Aufgaben mit Push, Veterinäramt-Export (CSV + PDF). Entscheidung: eigene Tabelle
+  farm_tasks statt tasks zu erweitern (Begründung in replit.md), derselbe Cron.
 - Schritt 5 – KI: Arterkennung, Haltungs-Wiki, Futteranalyse inkl. Abgleich mit dem
   Pflanzenarchiv.
 - Schritt 6 – IoT: Kamera-Verwaltung (Secret nur einmal anzeigen), Webhook, Relais,

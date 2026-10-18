@@ -1,6 +1,11 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import {
   db,
+  farmAnimalsTable,
+  farmMembershipsTable,
+  farmsTable,
+  farmTasksTable,
+  herdsTable,
   tasksTable,
   careGuidesTable,
   plantsTable,
@@ -35,7 +40,7 @@ function berlinNow(): { hhmm: string; dateKey: string; date: Date } {
 }
 
 // Days since a reference date, counted in Berlin calendar days.
-function berlinDayKey(d: Date): string {
+export function berlinDayKey(d: Date): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: TIME_ZONE,
     year: "numeric",
@@ -50,7 +55,7 @@ function daysBetween(fromKey: string, toKey: string): number {
   return Math.round((to - from) / 86_400_000);
 }
 
-function unitToDays(unit: Task["intervalUnit"]): number {
+export function unitToDays(unit: Task["intervalUnit"]): number {
   if (unit === "Wochen") return 7;
   if (unit === "Monate") return 30;
   return 1;
@@ -59,7 +64,9 @@ function unitToDays(unit: Task["intervalUnit"]): number {
 // Mirrors the client-side isTaskDueNow logic: due when at least one full
 // interval has elapsed (in Berlin calendar days) since the last completion
 // (or creation), evaluated at the task's reminder time.
-function isTaskDue(task: Task, todayKey: string): boolean {
+type Schedule = Pick<Task, "lastCompletedAt" | "createdAt" | "intervalValue" | "intervalUnit">;
+
+export function isTaskDue(task: Schedule, todayKey: string): boolean {
   const ref = task.lastCompletedAt ?? task.createdAt;
   const elapsedDays = daysBetween(berlinDayKey(ref), todayKey);
   return elapsedDays >= task.intervalValue * unitToDays(task.intervalUnit);
@@ -121,6 +128,18 @@ function guideActionsForToday(guide: CareGuide, todayKey: string): string[] {
  *
  * @returns the number of notifications sent
  */
+/** The Berlin day (YYYY-MM-DD) a task is next due – same rule as isTaskDue. */
+export function nextDueDayKey(task: Schedule): string {
+  const ref = berlinDayKey(task.lastCompletedAt ?? task.createdAt);
+  const due = new Date(`${ref}T00:00:00Z`);
+  due.setUTCDate(due.getUTCDate() + task.intervalValue * unitToDays(task.intervalUnit));
+  return due.toISOString().slice(0, 10);
+}
+
+export function berlinTodayKey(): string {
+  return berlinNow().dateKey;
+}
+
 export async function triggerDueNotifications(): Promise<number> {
   const { hhmm, dateKey } = berlinNow();
   let triggered = 0;
@@ -151,6 +170,61 @@ export async function triggerDueNotifications(): Promise<number> {
       .update(tasksTable)
       .set({ lastNotifiedAt: new Date() })
       .where(eq(tasksTable.id, task.id));
+    triggered++;
+  }
+
+  // ── Stall tasks ("Meine Farm") ───────────────────────────────────────────
+  // Shared by the farm: every admin and caretaker gets the reminder (guests
+  // cannot tick tasks off). Same once-per-Berlin-day guard as above.
+  const dueFarmTasks = await db
+    .select({
+      task: farmTasksTable,
+      farmName: farmsTable.name,
+      animalName: farmAnimalsTable.name,
+      herdName: herdsTable.name,
+    })
+    .from(farmTasksTable)
+    .innerJoin(farmsTable, eq(farmsTable.id, farmTasksTable.farmId))
+    .leftJoin(
+      farmAnimalsTable,
+      and(eq(farmAnimalsTable.id, farmTasksTable.animalId), eq(farmAnimalsTable.farmId, farmTasksTable.farmId)),
+    )
+    .leftJoin(
+      herdsTable,
+      and(eq(herdsTable.id, farmTasksTable.herdId), eq(herdsTable.farmId, farmTasksTable.farmId)),
+    )
+    .where(
+      and(eq(farmTasksTable.isActive, true), eq(farmTasksTable.reminderTime, hhmm)),
+    );
+
+  for (const { task, farmName, animalName, herdName } of dueFarmTasks) {
+    const alreadySentToday =
+      task.lastNotifiedAt !== null &&
+      berlinDayKey(task.lastNotifiedAt) === dateKey;
+    if (alreadySentToday || !isTaskDue(task, dateKey)) continue;
+
+    const members = await db
+      .select({ userId: farmMembershipsTable.userId })
+      .from(farmMembershipsTable)
+      .where(
+        and(
+          eq(farmMembershipsTable.farmId, task.farmId),
+          inArray(farmMembershipsTable.role, ["admin", "caretaker"]),
+        ),
+      );
+    const target = animalName ?? herdName;
+    for (const { userId } of members) {
+      await sendPushToUser(userId, {
+        title: "Stall-Aufgabe fällig",
+        body: `${task.actionType}${target ? ` – ${target}` : ""} (${farmName})`,
+        tag: `farm-task-${task.id}`,
+        url: "/farm",
+      });
+    }
+    await db
+      .update(farmTasksTable)
+      .set({ lastNotifiedAt: new Date() })
+      .where(eq(farmTasksTable.id, task.id));
     triggered++;
   }
 

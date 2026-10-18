@@ -1390,6 +1390,583 @@ paths:
           description: Removed.
         "409":
           description: Last member or last admin – not possible.
+  /farms/{farmId}/herds:
+    get:
+      tags: [farm]
+      operationId: listHerds
+      summary: Herds of a farm
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Herds, by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Herd"
+        "404":
+          description: No such farm/entry – or not a member.
+    post:
+      tags: [farm]
+      operationId: createHerd
+      summary: Create a herd (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HerdInput"
+      responses:
+        "201":
+          description: The new herd.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Herd"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/herds/{herdId}:
+    patch:
+      tags: [farm]
+      operationId: updateHerd
+      summary: Change a herd (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: herdId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HerdInput"
+      responses:
+        "200":
+          description: The changed herd.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Herd"
+        "404":
+          description: No such farm/entry – or not a member.
+    delete:
+      tags: [farm]
+      operationId: deleteHerd
+      summary: Delete a herd; its animals stay, without herd (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: herdId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: No such farm/entry – or not a member.
+  /farms/{farmId}/animals:
+    get:
+      tags: [farm]
+      operationId: listFarmAnimals
+      summary: Animals of a farm, archived ones included (archivedAt set)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Animals, by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmAnimal"
+        "404":
+          description: No such farm/entry – or not a member.
+    post:
+      tags: [farm]
+      operationId: createFarmAnimal
+      summary: Add an animal (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmAnimalInput"
+      responses:
+        "201":
+          description: The new animal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+        "400":
+          description: Invalid input.
+        "409":
+          description: Registration number already used on this farm.
+  /farms/{farmId}/animals/{animalId}:
+    get:
+      tags: [farm]
+      operationId: getFarmAnimal
+      summary: One animal
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The animal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+        "404":
+          description: No such farm/entry – or not a member.
+    patch:
+      tags: [farm]
+      operationId: updateFarmAnimal
+      summary: Change an animal (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmAnimalInput"
+      responses:
+        "200":
+          description: The changed animal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+        "409":
+          description: Registration number already used on this farm.
+  /farms/{farmId}/animals/{animalId}/archive:
+    post:
+      tags: [farm]
+      operationId: setFarmAnimalArchived
+      summary: Archive or restore an animal (kept for its medical history)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchiveInput"
+      responses:
+        "200":
+          description: The animal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+  /farms/{farmId}/animals/{animalId}/photo:
+    put:
+      tags: [farm]
+      operationId: setFarmAnimalPhoto
+      summary: Upload the animal's photo (replaces the previous one)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoInput"
+      responses:
+        "200":
+          description: The animal with its new photo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+        "400":
+          description: Not an image.
+        "502":
+          description: Photo storage unavailable.
+  /farms/{farmId}/animals/{animalId}/medical:
+    get:
+      tags: [farm]
+      operationId: listMedicalRecords
+      summary: Health records of an animal, newest first
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The records.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MedicalRecord"
+    post:
+      tags: [farm]
+      operationId: createMedicalRecord
+      summary: Add a health record (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicalRecordInput"
+      responses:
+        "201":
+          description: The new record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicalRecord"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/medical/{recordId}:
+    patch:
+      tags: [farm]
+      operationId: updateMedicalRecord
+      summary: Change a health record (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicalRecordInput"
+      responses:
+        "200":
+          description: The changed record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MedicalRecord"
+        "400":
+          description: Invalid input.
+    delete:
+      tags: [farm]
+      operationId: deleteMedicalRecord
+      summary: Delete a health record entered by mistake (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+  /farms/{farmId}/animals/{animalId}/weights:
+    get:
+      tags: [farm]
+      operationId: listWeightLogs
+      summary: Weight entries of an animal, oldest first
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WeightLog"
+    post:
+      tags: [farm]
+      operationId: createWeightLog
+      summary: Add a weight entry (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WeightLogInput"
+      responses:
+        "201":
+          description: The new entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WeightLog"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/weights/{weightId}:
+    delete:
+      tags: [farm]
+      operationId: deleteWeightLog
+      summary: Delete a weight entry (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: weightId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+  /farms/{farmId}/tasks:
+    get:
+      tags: [farm]
+      operationId: listFarmTasks
+      summary: Stall tasks of the farm
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The tasks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmTask"
+    post:
+      tags: [farm]
+      operationId: createFarmTask
+      summary: Add a stall task (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmTaskInput"
+      responses:
+        "201":
+          description: The new task.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmTask"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/tasks/{taskId}:
+    patch:
+      tags: [farm]
+      operationId: updateFarmTask
+      summary: Change a stall task (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmTaskInput"
+      responses:
+        "200":
+          description: The changed task.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmTask"
+        "400":
+          description: Invalid input.
+    delete:
+      tags: [farm]
+      operationId: deleteFarmTask
+      summary: Delete a stall task (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+  /farms/{farmId}/tasks/{taskId}/complete:
+    post:
+      tags: [farm]
+      operationId: completeFarmTask
+      summary: Mark a stall task as done now (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The task with its next due date.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmTask"
+  /farms/{farmId}/export:
+    get:
+      tags: [farm]
+      operationId: getFarmExport
+      summary: Animals and health records for the veterinary office export
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Everything the export needs; the app filters by period.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmExport"
   /farms/{farmId}:
     patch:
       tags: [farm]
@@ -2828,6 +3405,275 @@ components:
           type: string
         role:
           $ref: "#/components/schemas/FarmRole"
+    FarmSpecies:
+      type: string
+      enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, other]
+    AnimalSex:
+      type: string
+      enum: [female, male, neutered, unknown]
+    Herd:
+      type: object
+      required: [id, name, species, notes, animalCount]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        notes:
+          type: [string, 'null']
+        animalCount:
+          type: integer
+          description: Animals in the herd that are not archived.
+    HerdInput:
+      type: object
+      required: [name, species]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    FarmAnimal:
+      type: object
+      required: [id, herdId, herdName, name, species, breed, birthDate, sex, registrationNumber, imageUrl, notes, archivedAt, createdAt]
+      properties:
+        id:
+          type: integer
+        herdId:
+          type: [integer, 'null']
+        herdName:
+          type: [string, 'null']
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        breed:
+          type: [string, 'null']
+        birthDate:
+          type: [string, 'null']
+          description: YYYY-MM-DD
+        sex:
+          $ref: "#/components/schemas/AnimalSex"
+        registrationNumber:
+          type: string
+        imageUrl:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        archivedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    FarmAnimalInput:
+      type: object
+      required: [name, species, birthDate, sex, registrationNumber]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        breed:
+          type: [string, 'null']
+          maxLength: 60
+        birthDate:
+          type: string
+          description: YYYY-MM-DD, not in the future
+        sex:
+          $ref: "#/components/schemas/AnimalSex"
+        registrationNumber:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: Ring or ear tag; unique within the farm.
+        herdId:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    ArchiveInput:
+      type: object
+      required: [archived]
+      properties:
+        archived:
+          type: boolean
+    PhotoInput:
+      type: object
+      required: [imageData]
+      properties:
+        imageData:
+          type: string
+          description: JPEG/PNG/WebP data URL, already downscaled by the app.
+    MedicalRecord:
+      type: object
+      required: [id, animalId, date, diagnosis, treatment, medication, withdrawalPeriodDays, vet, notes, createdAt]
+      properties:
+        id:
+          type: integer
+        animalId:
+          type: integer
+        date:
+          type: string
+          description: YYYY-MM-DD
+        diagnosis:
+          type: string
+        treatment:
+          type: [string, 'null']
+        medication:
+          type: [string, 'null']
+        withdrawalPeriodDays:
+          type: [integer, 'null']
+          description: Wartezeit in days after the treatment date.
+        vet:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        createdAt:
+          type: string
+          format: date-time
+    MedicalRecordInput:
+      type: object
+      required: [date, diagnosis]
+      properties:
+        date:
+          type: string
+          description: YYYY-MM-DD, not in the future
+        diagnosis:
+          type: string
+          minLength: 1
+          maxLength: 200
+        treatment:
+          type: [string, 'null']
+          maxLength: 2000
+        medication:
+          type: [string, 'null']
+          maxLength: 200
+        withdrawalPeriodDays:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 999
+        vet:
+          type: [string, 'null']
+          maxLength: 100
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    WeightLog:
+      type: object
+      required: [id, animalId, date, weightKg, createdAt]
+      properties:
+        id:
+          type: integer
+        animalId:
+          type: integer
+        date:
+          type: string
+          description: YYYY-MM-DD
+        weightKg:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+    WeightLogInput:
+      type: object
+      required: [date, weightKg]
+      properties:
+        date:
+          type: string
+          description: YYYY-MM-DD, not in the future
+        weightKg:
+          type: number
+          exclusiveMinimum: 0
+          maximum: 2000
+    FarmTaskAction:
+      type: string
+      enum: [Füttern, Tränken, Ausmisten, Eier sammeln, Entwurmen, Impfen, Klauen-/Hufpflege, Gesundheitskontrolle, Sonstiges]
+    FarmTask:
+      type: object
+      required: [id, animalId, animalName, herdId, herdName, actionType, notes, intervalValue, intervalUnit, reminderTime, isActive, lastCompletedAt, createdAt, dueDate, isDue]
+      properties:
+        id:
+          type: integer
+        animalId:
+          type: [integer, 'null']
+        animalName:
+          type: [string, 'null']
+        herdId:
+          type: [integer, 'null']
+        herdName:
+          type: [string, 'null']
+        actionType:
+          $ref: "#/components/schemas/FarmTaskAction"
+        notes:
+          type: [string, 'null']
+        intervalValue:
+          type: integer
+        intervalUnit:
+          $ref: "#/components/schemas/TaskIntervalUnit"
+        reminderTime:
+          type: string
+          description: HH:MM, Berlin time
+        isActive:
+          type: boolean
+        lastCompletedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        dueDate:
+          type: string
+          description: Next due day (YYYY-MM-DD, Berlin)
+        isDue:
+          type: boolean
+          description: Due today or overdue.
+    FarmTaskInput:
+      type: object
+      required: [actionType, intervalValue, intervalUnit, reminderTime]
+      properties:
+        actionType:
+          $ref: "#/components/schemas/FarmTaskAction"
+        animalId:
+          type: [integer, 'null']
+        herdId:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 200
+        intervalValue:
+          type: integer
+          minimum: 1
+          maximum: 365
+        intervalUnit:
+          $ref: "#/components/schemas/TaskIntervalUnit"
+        reminderTime:
+          type: string
+          pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"
+        isActive:
+          type: boolean
+    FarmExport:
+      type: object
+      required: [farmName, animals, medicalRecords]
+      properties:
+        farmName:
+          type: string
+        animals:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmAnimal"
+        medicalRecords:
+          type: array
+          items:
+            $ref: "#/components/schemas/MedicalRecord"
     FarmMember:
       type: object
       required: [userId, displayName, email, role, isMe]

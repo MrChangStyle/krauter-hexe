@@ -19,7 +19,6 @@ import PflanzendocPage from '@/pages/pflanzendoc';
 import PflanzenHubPage from '@/pages/pflanzen-hub';
 import MeinePflanzenPage from '@/pages/meine-pflanzen';
 import SchaedlingePage from '@/pages/schaedlinge';
-import TierePage from '@/pages/tiere';
 import PlantDetailPage from '@/pages/plant-detail';
 import InsectScanPage from '@/pages/insect-scan';
 import InsectDetailPage from '@/pages/insect-detail';
@@ -118,7 +117,7 @@ function Router() {
         <Route path="/lexikon" component={PflanzenPage} />
         <Route path="/meine-pflanzen" component={MeinePflanzenPage} />
         <Route path="/schaedlinge" component={SchaedlingePage} />
-        <Route path="/tiere" component={TierePage} />
+        <Route path="/tiere"><Redirect to="/farm" replace /></Route>
         <Route path="/mehr" component={MehrPage} />
         <Route path="/aufgaben" component={AufgabenPage} />
         <Route path="/farm" component={FarmPage} />

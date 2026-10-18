@@ -25,8 +25,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: "/",         label: "Hof",      icon: Home,           badge: 0,            prefixes: ["/"] },
     { path: "/pflanzen", label: "Pflanzen", icon: Sprout,         badge: 0,            prefixes: ["/pflanzen", "/lexikon", "/pflanze/", "/meine-pflanzen", "/aufgaben", "/pflanzendoc", "/pflege-guide", "/schaedlinge", "/insekten-scanner", "/insekt/", "/kraeuter-hexe"] },
     { path: "#scan",     label: "Scannen",  icon: ScanLine,       badge: 0,            prefixes: [] as string[] },
-    { path: "/tiere",    label: "Tiere",    icon: PawPrint,       badge: 0,            prefixes: ["/tiere"] },
-    { path: "/mehr",     label: "Mehr",     icon: MoreHorizontal, badge: pendingCount, prefixes: ["/mehr", "/farm", "/warteschlange"] },
+    { path: "/farm",     label: "Tiere",    icon: PawPrint,       badge: 0,            prefixes: ["/farm", "/tiere"] },
+    { path: "/mehr",     label: "Mehr",     icon: MoreHorizontal, badge: pendingCount, prefixes: ["/mehr", "/warteschlange"] },
   ];
 
   return (

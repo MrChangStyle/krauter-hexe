@@ -71,7 +71,7 @@ export function ScanSheet({ open, onClose }: { open: boolean; onClose: () => voi
             icon={<PawPrint className="h-5 w-5 text-muted-foreground" />}
             tone="bg-muted"
             label="Tier bestimmen"
-            hint="Art und Rasse · Baustein Tiere kommt"
+            hint="Art und Rasse per Foto · kommt bald"
             locked
           />
           <SheetRow

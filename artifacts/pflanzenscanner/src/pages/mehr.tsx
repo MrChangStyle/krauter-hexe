@@ -1040,7 +1040,7 @@ export default function MehrPage() {
       <ImageRescueCard />
 
       <div className="rounded-2xl border bg-card divide-y overflow-hidden">
-        <MehrLink href="/farm" icon={Tractor} label="Farm & Team" hint="Mitglieder, Rollen und Freigaben" />
+        <MehrLink href="/farm" icon={Tractor} label="Farm & Team" hint="Tiere, Mitglieder, Rollen und Freigaben" />
         <MehrLink href="/warteschlange" icon={WifiOff} label="Offline-Fotos" hint="Fotos, die auf den Scan warten" />
       </div>
 

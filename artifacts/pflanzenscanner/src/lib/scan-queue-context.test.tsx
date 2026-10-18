@@ -43,6 +43,7 @@ vi.mock("@/lib/scan-queue-drain", () => ({
 vi.mock("@workspace/api-client-react", () => ({
   scanPlant: vi.fn(),
   scanInsect: vi.fn(),
+  scanAuto: vi.fn(),
 }));
 
 // Stubs for the scan-queue IDB functions.

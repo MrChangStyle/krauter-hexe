@@ -154,6 +154,67 @@ describe("insect items", () => {
   });
 });
 
+describe("universal scan items", () => {
+  it("reports an insect answer through onInsectSuccess without plant stats", async () => {
+    const item = makePending({ kind: "auto" });
+    const fakeInsect = { id: 9, germanName: "Hummel" } as unknown as import("@workspace/api-client-react").Insect;
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanAuto: vi.fn().mockResolvedValue({ insect: fakeInsect, alreadyInArchive: false }),
+      onInsectSuccess: vi.fn(),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.scanPlant).not.toHaveBeenCalled();
+    expect(deps.scanAuto).toHaveBeenCalledTimes(1);
+    expect(deps.deletePendingScan).toHaveBeenCalledWith(item.id);
+    expect(deps.onInsectSuccess).toHaveBeenCalledWith({
+      itemId: item.id,
+      insect: fakeInsect,
+      alreadyInArchive: false,
+    });
+    expect(stats.added).toBe(0);
+  });
+
+  it("reports a plant answer through onSuccess and counts it", async () => {
+    const item = makePending({ kind: "auto" });
+    const fakePlant = { id: 3, germanName: "Brennnessel" } as unknown as import("@workspace/api-client-react").Plant;
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanAuto: vi.fn().mockResolvedValue({ plant: fakePlant, alreadyInArchive: false }),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.scanPlant).not.toHaveBeenCalled();
+    expect(deps.onSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: item.id, plant: fakePlant, alreadyInArchive: false }),
+    );
+    expect(stats.added).toBe(1);
+  });
+
+  it("discards a photo without a scannable subject and passes the message on", async () => {
+    const item = makePending({ kind: "auto" });
+    const err = Object.assign(new Error("422"), {
+      name: "ApiError",
+      status: 422,
+      data: { code: "TIER_ERKANNT", error: "Das sieht nach einem Tier aus." },
+    });
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanAuto: vi.fn().mockRejectedValue(err),
+      onNoSubject: vi.fn(),
+    });
+
+    await drainQueue(deps);
+
+    expect(deps.deletePendingScan).toHaveBeenCalledWith(item.id);
+    expect(deps.onNoSubject).toHaveBeenCalledWith(item.id, "Das sieht nach einem Tier aus.");
+    expect(deps.markScanError).not.toHaveBeenCalled();
+  });
+});
+
 describe("real connection check", () => {
   it("stops as a network stop without scanning when the server is unreachable", async () => {
     const item = makePending();

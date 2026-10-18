@@ -195,7 +195,17 @@ async function findPlantByBotanicalKey(key: string) {
 }
 type PlantRow = NonNullable<Awaited<ReturnType<typeof findPlantByBotanicalKey>>>;
 
-router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => {
+router.post("/plants/scan", requireApproved, (req, res) => handlePlantScan(req, res));
+
+/**
+ * Plant scan. Also used by the universal scan (POST /scan), which has already
+ * run the quick identification and passes it in as `opts.quick`.
+ */
+export async function handlePlantScan(
+  req: Request,
+  res: Response,
+  opts: { quick?: QuickPlantId } = {},
+): Promise<void> {
   const parsed = ScanPlantBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -391,12 +401,14 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
   // the entry to "essbar bestätigt". Any failure here simply falls through to
   // the full identification below.
   const scanStartedAt = Date.now();
-  let quick: QuickPlantId | null = null;
-  try {
-    quick = await quickIdentifyPlant(parsed.data.image, imageSide);
-    req.log.info({ quickMs: Date.now() - scanStartedAt }, "Quick plant identification done");
-  } catch (err) {
-    req.log.warn({ err }, "Quick plant identification failed, using full identification");
+  let quick: QuickPlantId | null = opts.quick ?? null;
+  if (!quick) {
+    try {
+      quick = await quickIdentifyPlant(parsed.data.image, imageSide);
+      req.log.info({ quickMs: Date.now() - scanStartedAt }, "Quick plant identification done");
+    } catch (err) {
+      req.log.warn({ err }, "Quick plant identification failed, using full identification");
+    }
   }
   if (quick && !quick.istPflanze) {
     res.status(422).json({
@@ -665,7 +677,7 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
       req.log.warn({ err, plantId: plant.id }, "Saving background plant image URLs failed");
     }
   })();
-});
+}
 
 router.get("/plants", requireApproved, async (req, res): Promise<void> => {
   const query = ListPlantsQueryParams.safeParse(req.query);

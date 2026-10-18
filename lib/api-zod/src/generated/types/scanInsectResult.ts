@@ -11,4 +11,6 @@ export interface ScanInsectResult {
   insect: Insect;
   /** True when the scanned insect matched an entry already in the archive (by scientific name); in that case no new entry was created and the existing one is returned. */
   alreadyInArchive: boolean;
+  /** True when this scan's photo was clearly better than the shared one and replaced it. */
+  imageImproved?: boolean | null;
 }

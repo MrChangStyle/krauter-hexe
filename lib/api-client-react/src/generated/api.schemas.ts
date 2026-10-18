@@ -403,6 +403,8 @@ export interface PlantScanResult {
   alreadyInArchive: boolean;
   /** True when alreadyInArchive is true AND the existing entry had no image before this scan — the new photo was automatically attached to the existing entry (Smart Merge). Null/absent for new entries or duplicates that already had an image. */
   imageMerged?: boolean | null;
+  /** True when this scan's photo was clearly better than the shared one and replaced it. */
+  imageImproved?: boolean | null;
 }
 
 export interface DeletePlantInput {
@@ -735,6 +737,8 @@ export interface ScanInsectResult {
   insect: Insect;
   /** True when the scanned insect matched an entry already in the archive (by scientific name); in that case no new entry was created and the existing one is returned. */
   alreadyInArchive: boolean;
+  /** True when this scan's photo was clearly better than the shared one and replaced it. */
+  imageImproved?: boolean | null;
 }
 
 export interface LoginInput {

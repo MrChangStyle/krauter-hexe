@@ -147,7 +147,8 @@ export const ScanPlantResponse = zod.object({
   "createdAt": zod.coerce.date()
 }),
   "alreadyInArchive": zod.boolean().describe('True when the scanned plant matched an entry already in the archive (by botanical name); in that case no new entry was created and the existing one is returned.\n'),
-  "imageMerged": zod.boolean().nullish().describe('True when alreadyInArchive is true AND the existing entry had no image before this scan — the new photo was automatically attached to the existing entry (Smart Merge). Null\/absent for new entries or duplicates that already had an image.\n')
+  "imageMerged": zod.boolean().nullish().describe('True when alreadyInArchive is true AND the existing entry had no image before this scan — the new photo was automatically attached to the existing entry (Smart Merge). Null\/absent for new entries or duplicates that already had an image.\n'),
+  "imageImproved": zod.boolean().nullish().describe('True when this scan\'s photo was clearly better than the shared one and replaced it.\n')
 })
 
 
@@ -1338,7 +1339,8 @@ export const ScanInsectResponse = zod.object({
   "locationRegion": zod.string().nullish().describe('Coarse location region where the scan was taken (e.g. \"München\"). Null when the user did not grant location permission.\n'),
   "createdAt": zod.coerce.date()
 }),
-  "alreadyInArchive": zod.boolean().describe('True when the scanned insect matched an entry already in the archive (by scientific name); in that case no new entry was created and the existing one is returned.\n')
+  "alreadyInArchive": zod.boolean().describe('True when the scanned insect matched an entry already in the archive (by scientific name); in that case no new entry was created and the existing one is returned.\n'),
+  "imageImproved": zod.boolean().nullish().describe('True when this scan\'s photo was clearly better than the shared one and replaced it.\n')
 })
 
 
@@ -1431,7 +1433,8 @@ export const ScanAutoResponse = zod.union([zod.object({
   "createdAt": zod.coerce.date()
 }),
   "alreadyInArchive": zod.boolean().describe('True when the scanned plant matched an entry already in the archive (by botanical name); in that case no new entry was created and the existing one is returned.\n'),
-  "imageMerged": zod.boolean().nullish().describe('True when alreadyInArchive is true AND the existing entry had no image before this scan — the new photo was automatically attached to the existing entry (Smart Merge). Null\/absent for new entries or duplicates that already had an image.\n')
+  "imageMerged": zod.boolean().nullish().describe('True when alreadyInArchive is true AND the existing entry had no image before this scan — the new photo was automatically attached to the existing entry (Smart Merge). Null\/absent for new entries or duplicates that already had an image.\n'),
+  "imageImproved": zod.boolean().nullish().describe('True when this scan\'s photo was clearly better than the shared one and replaced it.\n')
 }),zod.object({
   "insect": zod.object({
   "id": zod.number(),
@@ -1451,7 +1454,8 @@ export const ScanAutoResponse = zod.union([zod.object({
   "locationRegion": zod.string().nullish().describe('Coarse location region where the scan was taken (e.g. \"München\"). Null when the user did not grant location permission.\n'),
   "createdAt": zod.coerce.date()
 }),
-  "alreadyInArchive": zod.boolean().describe('True when the scanned insect matched an entry already in the archive (by scientific name); in that case no new entry was created and the existing one is returned.\n')
+  "alreadyInArchive": zod.boolean().describe('True when the scanned insect matched an entry already in the archive (by scientific name); in that case no new entry was created and the existing one is returned.\n'),
+  "imageImproved": zod.boolean().nullish().describe('True when this scan\'s photo was clearly better than the shared one and replaced it.\n')
 })])
 
 

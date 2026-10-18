@@ -28,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
         <div className="max-w-2xl mx-auto flex items-center justify-between px-4 h-11">
           <span className="flex items-center gap-1.5 text-sm font-semibold text-primary">
             <Leaf className="h-4 w-4" />
-            Kräuterhexe
+            Little Farming
           </span>
           <div className="flex items-center gap-1">
             <UpdateButton />

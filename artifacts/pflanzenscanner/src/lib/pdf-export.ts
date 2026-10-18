@@ -406,7 +406,7 @@ export async function exportPlantPdf(plant: Plant, appUrl?: string): Promise<Blo
   doc.setFontSize(8.5);
   doc.setTextColor(TEXT[0], TEXT[1], TEXT[2]);
   doc.text(
-    "Pflanzensteckbrief erstellt mit der Kräuter-Hexe App",
+    "Pflanzensteckbrief erstellt mit Little Farming (Kräuterhexe)",
     margin + 4,
     y + 5 + 8.5 * PT_TO_MM * 1.3,
     { baseline: "top" },
@@ -438,7 +438,7 @@ export async function exportPlantPdf(plant: Plant, appUrl?: string): Promise<Blo
     doc.setFontSize(8);
     doc.setTextColor(MUTED[0], MUTED[1], MUTED[2]);
     const appNote = appUrl ? ` · ${appUrl}` : "";
-    const left = `Kräuter-Hexe · ${footerDate}${appNote}`;
+    const left = `Little Farming · ${footerDate}${appNote}`;
     const right = pageCount > 1 ? `Seite ${i} / ${pageCount}` : "";
     // Clip the left label so it never runs into the page number on the right.
     const rightW = right ? doc.getTextWidth(right) + 4 : 0;
@@ -741,8 +741,8 @@ export async function exportCategoriesPdf(
   const dateSlug = format(new Date(), "yyyy-MM-dd");
   const filename =
     nonEmpty.length === 1
-      ? `Kraeuterhexe_${VIEW_CATEGORY_LABELS[nonEmpty[0]].replace(/\s+/g, "-")}_${dateSlug}.pdf`
-      : `Kraeuterhexe_Archiv_${dateSlug}.pdf`;
+      ? `LittleFarming_${VIEW_CATEGORY_LABELS[nonEmpty[0]].replace(/\s+/g, "-")}_${dateSlug}.pdf`
+      : `LittleFarming_Archiv_${dateSlug}.pdf`;
   doc.save(filename);
 
   return { categories: nonEmpty.length, plants: totalPlants };
@@ -937,7 +937,7 @@ export async function exportSelectedPlantsPdf(
   }
 
   const dateSlug = format(new Date(), "yyyy-MM-dd");
-  doc.save(`Kraeuterhexe_Beet_${dateSlug}.pdf`);
+  doc.save(`LittleFarming_Beet_${dateSlug}.pdf`);
 
   return { count: plants.length };
 }
@@ -1110,7 +1110,7 @@ export async function exportInsectsPdf(
   }
 
   const dateSlug = format(new Date(), "yyyy-MM-dd");
-  doc.save(`Kraeuterhexe_Insekten_${dateSlug}.pdf`);
+  doc.save(`LittleFarming_Insekten_${dateSlug}.pdf`);
 
   return { count: insects.length };
 }

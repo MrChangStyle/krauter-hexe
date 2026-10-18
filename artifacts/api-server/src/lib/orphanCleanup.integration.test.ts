@@ -6,7 +6,9 @@
  * Skipped unless TEST_DATABASE_URL points at a throwaway database that
  * already has the schema (`DATABASE_URL=<url> pnpm --filter @workspace/db run
  * push`). Run with DATABASE_URL set to the same throwaway URL. The test empties
- * the tables it uses – never point it at real data.
+ * the tables it uses – never point it at real data. Run the integration files
+ * one after another (they share the database):
+ *   TEST_DATABASE_URL=$URL DATABASE_URL=$URL npx vitest run integration --no-file-parallelism
  */
 
 import { beforeEach, describe, expect, it } from "vitest";
@@ -17,7 +19,7 @@ const enabled =
 
 describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", () => {
   const TABLES =
-    "favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, plants, insects, users";
+    "favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, plants, insects, users";
 
   async function load() {
     const { pool } = await import("@workspace/db");
@@ -67,6 +69,10 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
     await pool.query(`INSERT INTO plant_scans (user_id, plant_id) VALUES ($1, $2)`, [userId, plantId]);
     await pool.query(`INSERT INTO insect_scans (user_id, insect_id) VALUES ($1, $2)`, [userId, insectId]);
     await pool.query(`INSERT INTO scan_attempts (user_id, scan_type) VALUES ($1, 'plant')`, [userId]);
+    await pool.query(
+      `INSERT INTO reports (user_id, content_type, content_id, reason) VALUES ($1, 'plant_image', $2, 'falsch')`,
+      [userId, String(plantId)],
+    );
   }
 
   beforeEach(async () => {
@@ -93,6 +99,7 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       plant_scans: 1,
       insect_scans: 1,
       scan_attempts: 1,
+      reports: 1,
       plants: 1,
       insects: 1,
     });
@@ -115,6 +122,7 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       "plant_scans",
       "insect_scans",
       "scan_attempts",
+      "reports",
     ]) {
       expect(await count(table, "user_id = 'gone'")).toBe(0);
       expect(await count(table, "user_id = 'alive'")).toBe(1);

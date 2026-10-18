@@ -27,3 +27,4 @@ export * from "./tasks";
 export * from "./care-guides";
 export * from "./push";
 export * from "./scan-attempts";
+export * from "./reports";

@@ -25,11 +25,12 @@ import {
   plantScansTable,
   plantsTable,
   pushSubscriptionsTable,
+  reportsTable,
   scanAttemptsTable,
   tasksTable,
   usersTable,
 } from '@workspace/db';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 /**
  * Tables whose rows belong to one person and go when that person goes. Shared
@@ -48,6 +49,8 @@ export const PERSONAL_TABLES = [
   { name: 'plant_scans', table: plantScansTable, userId: plantScansTable.userId },
   { name: 'insect_scans', table: insectScansTable, userId: insectScansTable.userId },
   { name: 'scan_attempts', table: scanAttemptsTable, userId: scanAttemptsTable.userId },
+  // Reports this person filed.
+  { name: 'reports', table: reportsTable, userId: reportsTable.userId },
 ] as const;
 
 /** Shared archive tables: entries stay, only the link to the person is cut. */
@@ -84,6 +87,11 @@ export async function deleteAccount(userId: string): Promise<boolean> {
     for (const { table, userId: column } of PERSONAL_TABLES) {
       await tx.delete(table).where(eq(column, userId));
     }
+
+    // Reports ABOUT this person's username have nothing left to moderate.
+    await tx
+      .delete(reportsTable)
+      .where(and(eq(reportsTable.contentType, 'username'), eq(reportsTable.contentId, userId)));
 
     // Shared archive: stays, without the link to the person.
     for (const { table, userId: column } of ARCHIVE_TABLES) {

@@ -49,6 +49,10 @@ export const usersTable = pgTable(
     // the account agreed. Null for accounts from before public registration.
     termsAcceptedAt: timestamp('terms_accepted_at', { withTimezone: true }),
     termsVersion: varchar('terms_version'),
+    // Set when the owner blocks the account through moderation (approved is
+    // set to false at the same time). Lets the app say "gesperrt" instead of
+    // "warte auf Freigabe". Cleared when the owner approves the account again.
+    blockedAt: timestamp('blocked_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

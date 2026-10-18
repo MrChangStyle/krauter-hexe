@@ -107,7 +107,8 @@ router.patch('/users/:id', requireOwner, async (req, res): Promise<void> => {
 
   const [updated] = await db
     .update(usersTable)
-    .set({ approved: body.data.approved })
+    // Approving again also lifts a moderation block.
+    .set(body.data.approved ? { approved: true, blockedAt: null } : { approved: false })
     .where(eq(usersTable.id, params.data.id))
     .returning();
 

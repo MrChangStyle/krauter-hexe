@@ -23,4 +23,9 @@ export interface AuthUser {
   /** @nullable */
   username: string | null;
   leavesCount: number;
+  /**
+     * Set when the owner blocked the account through moderation; the app then says "gesperrt" instead of "warte auf Freigabe".
+     * @nullable
+     */
+  blockedAt?: Date | null;
 }

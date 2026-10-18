@@ -34,6 +34,7 @@ import type {
   CategoryCount,
   CleanupOrphanedDataInput,
   CreateCareGuideInput,
+  CreateReportInput,
   CreateTaskInput,
   DeleteAccountInput,
   DeletePlantInput,
@@ -59,6 +60,9 @@ import type {
   PushTestResult,
   PushUnsubscribeInput,
   RegisterInput,
+  ReportGroup,
+  ResolveReportsInput,
+  ResolveReportsResult,
   ScanInsectInput,
   ScanInsectResult,
   Task,
@@ -4007,6 +4011,226 @@ export function useGetInsectImage<TData = Awaited<ReturnType<typeof getInsectIma
 
 
 
+
+export const getCreateReportUrl = () => {
+
+
+
+
+  return `/api/reports`
+}
+
+/**
+ * Any approved account can report the shared photo of a plant or insect, or a username from the leaderboard. Reporting the same content again while the first report is open changes nothing.
+ * @summary Report a shared photo or a username
+ */
+export const createReport = async (createReportInput: CreateReportInput, options?: RequestInit): Promise<OkResult> => {
+
+  return customFetch<OkResult>(getCreateReportUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(createReportInput)
+  }
+);}
+
+
+
+
+
+export const getCreateReportMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReport>>, TError,{data: BodyType<CreateReportInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createReport>>, TError,{data: BodyType<CreateReportInput>}, TContext> => {
+
+const mutationKey = ['createReport'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReport>>, {data: BodyType<CreateReportInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createReport(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateReportMutationResult = NonNullable<Awaited<ReturnType<typeof createReport>>>
+    export type CreateReportMutationBody = BodyType<CreateReportInput>
+    export type CreateReportMutationError = ErrorType<void>
+
+    /**
+ * @summary Report a shared photo or a username
+ */
+export const useCreateReport = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReport>>, TError,{data: BodyType<CreateReportInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createReport>>,
+        TError,
+        {data: BodyType<CreateReportInput>},
+        TContext
+      > => {
+      return useMutation(getCreateReportMutationOptions(options));
+    }
+
+export const getListReportsUrl = () => {
+
+
+
+
+  return `/api/reports`
+}
+
+/**
+ * @summary Open reports, grouped by content (owner only)
+ */
+export const listReports = async ( options?: RequestInit): Promise<ReportGroup[]> => {
+
+  return customFetch<ReportGroup[]>(getListReportsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListReportsQueryKey = () => {
+    return [
+    `/api/reports`
+    ] as const;
+    }
+
+
+export const getListReportsQueryOptions = <TData = Awaited<ReturnType<typeof listReports>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListReportsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReports>>> = ({ signal }) => listReports({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListReportsQueryResult = NonNullable<Awaited<ReturnType<typeof listReports>>>
+export type ListReportsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Open reports, grouped by content (owner only)
+ */
+
+export function useListReports<TData = Awaited<ReturnType<typeof listReports>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReports>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListReportsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getResolveReportsUrl = () => {
+
+
+
+
+  return `/api/reports/resolve`
+}
+
+/**
+ * @summary Act on all open reports of one content (owner only)
+ */
+export const resolveReports = async (resolveReportsInput: ResolveReportsInput, options?: RequestInit): Promise<ResolveReportsResult> => {
+
+  return customFetch<ResolveReportsResult>(getResolveReportsUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(resolveReportsInput)
+  }
+);}
+
+
+
+
+
+export const getResolveReportsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resolveReports>>, TError,{data: BodyType<ResolveReportsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resolveReports>>, TError,{data: BodyType<ResolveReportsInput>}, TContext> => {
+
+const mutationKey = ['resolveReports'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resolveReports>>, {data: BodyType<ResolveReportsInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  resolveReports(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResolveReportsMutationResult = NonNullable<Awaited<ReturnType<typeof resolveReports>>>
+    export type ResolveReportsMutationBody = BodyType<ResolveReportsInput>
+    export type ResolveReportsMutationError = ErrorType<void>
+
+    /**
+ * @summary Act on all open reports of one content (owner only)
+ */
+export const useResolveReports = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resolveReports>>, TError,{data: BodyType<ResolveReportsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof resolveReports>>,
+        TError,
+        {data: BodyType<ResolveReportsInput>},
+        TContext
+      > => {
+      return useMutation(getResolveReportsMutationOptions(options));
+    }
 
 export const getGetLeaderboardUrl = () => {
 

@@ -138,6 +138,13 @@ export function DatenschutzPage() {
             Abs. 1 lit. a DSGVO).
           </li>
           <li>
+            <strong>Meldungen:</strong> Wenn du ein Foto oder einen
+            Benutzernamen meldest, speichern wir die Meldung mit deinem Konto,
+            dem Grund und deiner Anmerkung, damit wir ihr nachgehen können
+            (Art. 6 Abs. 1 lit. f DSGVO). Die gemeldete Person erfährt nicht,
+            wer gemeldet hat.
+          </li>
+          <li>
             <strong>Technische Daten:</strong> IP-Adresse und Zeitpunkt von
             Anfragen, kurzzeitig zum Schutz vor Missbrauch (z. B. zu viele
             Anmeldeversuche) (Art. 6 Abs. 1 lit. f DSGVO).

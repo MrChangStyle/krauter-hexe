@@ -24,6 +24,7 @@ import {
   recordRegistration,
 } from '../lib/registrationPolicy';
 import { getTurnstileConfig, verifyTurnstileToken } from '../lib/turnstile';
+import { isUsernameAllowed } from '../lib/usernameFilter';
 import { clearAuthCookie, setAuthCookie } from '../lib/auth';
 import {
   hashPassword,
@@ -355,6 +356,10 @@ router.patch('/auth/user', async (req: Request, res: Response): Promise<void> =>
     return;
   }
   const normalized = username.toUpperCase();
+  if (!isUsernameAllowed(normalized)) {
+    res.status(400).json({ error: 'Dieser Benutzername ist nicht erlaubt. Bitte wähle einen anderen.' });
+    return;
+  }
 
   // Case-insensitive uniqueness check (excluding self).
   const [conflict] = await db

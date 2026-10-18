@@ -25,6 +25,7 @@ import {
 } from "@/components/insect-card";
 import { PhotoChoiceCard } from "@/components/photo-choice-card";
 import { ImageLockToggle } from "@/components/image-lock-toggle";
+import { ReportButton } from "@/components/report-button";
 
 export default function InsectDetailPage() {
   const params = useParams();
@@ -130,6 +131,15 @@ export default function InsectDetailPage() {
           locked={insect.imageLocked ?? false}
           quality={insect.imageQuality}
         />
+        {insect.imageUrl && (
+          <div className="-mt-3 flex justify-end">
+            <ReportButton
+              contentType="insect_image"
+              contentId={insect.id}
+              what={<>das Foto von „{insect.germanName}“</>}
+            />
+          </div>
+        )}
         {/* Category + relation badges */}
         <div className="flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">

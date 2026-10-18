@@ -17,7 +17,7 @@ import {
   Crown, ShieldCheck, Hourglass, Trash2, UserCheck, UserX,
   Pin, Camera, Users, WifiOff, Wifi, Loader2, Clock, AlertCircle,
   RefreshCw, ImageOff, TriangleAlert, Bug, Download, BookHeart, ChevronRight,
-  ChevronDown, Leaf, Trophy,
+  ChevronDown, Leaf, Trophy, Tractor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -120,7 +120,7 @@ function StaleBadge({ createdAt, now }: { createdAt: number; now: number }) {
 
 type Tab = "meine-scans" | "mein-beet" | "meine-insekten" | "offline";
 
-function TabButton({
+export function TabButton({
   active,
   onClick,
   icon: Icon,
@@ -149,7 +149,7 @@ function TabButton({
 
 // ── Offline queue tab ────────────────────────────────────────────────────────
 
-function OfflineTab() {
+export function OfflineTab() {
   const now = useNow();
   const {
     pending,
@@ -285,7 +285,7 @@ function OfflineTab() {
 
 // ── My Scans tab ─────────────────────────────────────────────────────────────
 
-function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavorites> }) {
+export function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavorites> }) {
   const { data: plants, isLoading, isError } = useListMyScans({
     query: { queryKey: ["/api/plants/my-scans"] },
   });
@@ -535,7 +535,7 @@ function PdfSelectPanel({
 
 // ── Favourites tab ────────────────────────────────────────────────────────────
 
-function MeinBeetTab({ favorites }: { favorites: ReturnType<typeof useFavorites> }) {
+export function MeinBeetTab({ favorites }: { favorites: ReturnType<typeof useFavorites> }) {
   const { data: allPlants, isLoading: plantsLoading } = useListPlants(undefined, {
     query: { queryKey: ["/api/plants"] },
   });
@@ -602,7 +602,7 @@ function MeinBeetTab({ favorites }: { favorites: ReturnType<typeof useFavorites>
 
 // ── Meine Insekten tab ───────────────────────────────────────────────────────
 
-function MeineInsektenTab() {
+export function MeineInsektenTab() {
   const { data: insects, isLoading, isError } = useListMyInsects({
     query: { queryKey: ["/api/insects/my-scans"] },
   });
@@ -634,7 +634,7 @@ function MeineInsektenTab() {
           Du hast noch keine Insekten gescannt.
         </p>
         <p className="text-xs text-muted-foreground">
-          Nutze den Insekten Scanner im Werkzeug-Bereich.
+          Tippe oben auf „Insekt bestimmen“ oder nutze den Scan-Knopf.
         </p>
       </div>
     );
@@ -693,7 +693,7 @@ function GuideProgress({ guide }: { guide: CareGuide }) {
   );
 }
 
-function PflegeGuidesSection() {
+export function PflegeGuidesSection() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
@@ -826,7 +826,7 @@ function PflegeGuidesSection() {
 
 // ── Pflanzenretter rank card ──────────────────────────────────────────────────
 
-function PflanzenretterCard() {
+export function PflanzenretterCard() {
   const { user: me } = useAuthContext();
   const { data } = useGetLeaderboard();
 
@@ -1018,77 +1018,36 @@ function Benutzerverwaltung() {
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
-export default function UsersPage() {
+/**
+ * "Mehr": account, farm, offline queue, notifications and admin tools.
+ * The plant collections moved to the Pflanzen area (Meine Pflanzen,
+ * Schädlinge & Nützlinge, Pflegeplan).
+ */
+export default function MehrPage() {
   const { user: me } = useAuthContext();
-  const favorites = useFavorites();
-  const [activeTab, setActiveTab] = useState<Tab>("meine-scans");
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-5">
-      {/* Page header */}
       <div>
-        <h1 className="text-xl font-bold">Home</h1>
+        <h1 className="text-xl font-bold">Mehr</h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Deine gescannten Pflanzen, dein Beet und Insekten auf einem Blick.
+          Farm, Konto, Offline-Fotos und Einstellungen.
         </p>
       </div>
 
-      {/* Pflanzenretter rank card */}
       {me?.username && <PflanzenretterCard />}
 
-      {/* Photos that exist only on this device: upload them visibly */}
       <ImageRescueCard />
 
-      {/* Tab switcher */}
-      <div className="grid grid-cols-4 gap-1 bg-muted rounded-xl p-1">
-        <TabButton
-          active={activeTab === "meine-scans"}
-          onClick={() => setActiveTab("meine-scans")}
-          icon={Camera}
-          label="Scans"
-        />
-        <TabButton
-          active={activeTab === "mein-beet"}
-          onClick={() => setActiveTab("mein-beet")}
-          icon={Pin}
-          label="Beet"
-        />
-        <TabButton
-          active={activeTab === "meine-insekten"}
-          onClick={() => setActiveTab("meine-insekten")}
-          icon={Bug}
-          label="Insekten"
-        />
-        <TabButton
-          active={activeTab === "offline"}
-          onClick={() => setActiveTab("offline")}
-          icon={WifiOff}
-          label="Offline"
-        />
+      <div className="rounded-2xl border bg-card divide-y overflow-hidden">
+        <MehrLink href="/farm" icon={Tractor} label="Farm & Team" hint="Tiere, Mitglieder, Rollen und Freigaben" />
+        <MehrLink href="/warteschlange" icon={WifiOff} label="Offline-Fotos" hint="Fotos, die auf den Scan warten" />
       </div>
 
-      {/* Tab content */}
-      {activeTab === "meine-scans" ? (
-        <MyScansTab favorites={favorites} />
-      ) : activeTab === "mein-beet" ? (
-        <MeinBeetTab favorites={favorites} />
-      ) : activeTab === "meine-insekten" ? (
-        <MeineInsektenTab />
-      ) : (
-        <OfflineTab />
-      )}
-
-      {/* Pflege-Guides */}
-      <div className="h-px bg-border" />
-      <PflegeGuidesSection />
-
-      {/* Push notifications */}
       <PushNotificationCard />
 
-      {/* Account: legal links and "Konto löschen" */}
       <AccountCard />
 
-      {/* Owner-only: Benutzerverwaltung */}
       {me?.isOwner && (
         <>
           <div className="h-px bg-border mt-6" />
@@ -1098,5 +1057,28 @@ export default function UsersPage() {
         </>
       )}
     </div>
+  );
+}
+
+function MehrLink({
+  href,
+  icon: Icon,
+  label,
+  hint,
+}: {
+  href: string;
+  icon: React.ElementType;
+  label: string;
+  hint: string;
+}) {
+  return (
+    <Link href={href} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
+      <Icon className="w-5 h-5 text-primary shrink-0" />
+      <span className="flex-1 min-w-0">
+        <span className="block text-sm font-semibold">{label}</span>
+        <span className="block text-xs text-muted-foreground">{hint}</span>
+      </span>
+      <ChevronRight className="w-4 h-4 text-muted-foreground" />
+    </Link>
   );
 }

@@ -436,7 +436,7 @@ export default function PflegeGuideDetailPage() {
     mutation: {
       onSuccess: () => {
         void queryClient.invalidateQueries({ queryKey: getListCareGuidesQueryKey() });
-        setLocation("/benutzer");
+        setLocation("/aufgaben");
       },
     },
   });

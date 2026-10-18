@@ -11,8 +11,9 @@
  * longer point at the person. Photos in "Meine Scans" live only on the device,
  * so there is nothing on Cloudinary that belongs to this account alone.
  *
- * Every new table with a user id MUST be added here, in the same pull request,
- * together with a test (see accountDeletion.test.ts).
+ * Every new table with a user id MUST be added to PERSONAL_TABLES or
+ * ARCHIVE_TABLES below, in the same pull request (accountDeletion.test.ts
+ * fails otherwise).
  */
 
 import {
@@ -29,6 +30,31 @@ import {
   usersTable,
 } from '@workspace/db';
 import { eq } from 'drizzle-orm';
+
+/**
+ * Tables whose rows belong to one person and go when that person goes. Shared
+ * with the one-time cleanup (lib/orphanCleanup.ts) so both always cover the
+ * same tables.
+ */
+export const PERSONAL_TABLES = [
+  { name: 'favorites', table: favoritesTable, userId: favoritesTable.userId },
+  { name: 'tasks', table: tasksTable, userId: tasksTable.userId },
+  { name: 'care_guides', table: careGuidesTable, userId: careGuidesTable.userId },
+  {
+    name: 'push_subscriptions',
+    table: pushSubscriptionsTable,
+    userId: pushSubscriptionsTable.userId,
+  },
+  { name: 'plant_scans', table: plantScansTable, userId: plantScansTable.userId },
+  { name: 'insect_scans', table: insectScansTable, userId: insectScansTable.userId },
+  { name: 'scan_attempts', table: scanAttemptsTable, userId: scanAttemptsTable.userId },
+] as const;
+
+/** Shared archive tables: entries stay, only the link to the person is cut. */
+export const ARCHIVE_TABLES = [
+  { name: 'plants', table: plantsTable, userId: plantsTable.scannedByUserId },
+  { name: 'insects', table: insectsTable, userId: insectsTable.scannedByUserId },
+] as const;
 
 export class OwnerAccountDeletionError extends Error {
   constructor() {
@@ -55,23 +81,14 @@ export async function deleteAccount(userId: string): Promise<boolean> {
     if (user.isOwner) throw new OwnerAccountDeletionError();
 
     // Personal rows: gone.
-    await tx.delete(favoritesTable).where(eq(favoritesTable.userId, userId));
-    await tx.delete(tasksTable).where(eq(tasksTable.userId, userId));
-    await tx.delete(careGuidesTable).where(eq(careGuidesTable.userId, userId));
-    await tx.delete(pushSubscriptionsTable).where(eq(pushSubscriptionsTable.userId, userId));
-    await tx.delete(plantScansTable).where(eq(plantScansTable.userId, userId));
-    await tx.delete(insectScansTable).where(eq(insectScansTable.userId, userId));
-    await tx.delete(scanAttemptsTable).where(eq(scanAttemptsTable.userId, userId));
+    for (const { table, userId: column } of PERSONAL_TABLES) {
+      await tx.delete(table).where(eq(column, userId));
+    }
 
     // Shared archive: stays, without the link to the person.
-    await tx
-      .update(plantsTable)
-      .set({ scannedByUserId: null })
-      .where(eq(plantsTable.scannedByUserId, userId));
-    await tx
-      .update(insectsTable)
-      .set({ scannedByUserId: null })
-      .where(eq(insectsTable.scannedByUserId, userId));
+    for (const { table, userId: column } of ARCHIVE_TABLES) {
+      await tx.update(table).set({ scannedByUserId: null }).where(eq(column, userId));
+    }
 
     await tx.delete(usersTable).where(eq(usersTable.id, userId));
     return true;

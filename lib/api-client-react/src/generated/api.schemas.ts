@@ -754,6 +754,22 @@ export interface LoginInput {
   password: string;
 }
 
+/**
+ * Rows per table name.
+ */
+export type OrphanedDataReportCounts = {[key: string]: number};
+
+export interface OrphanedDataReport {
+  /** Rows per table name. */
+  counts: OrphanedDataReportCounts;
+  total: number;
+}
+
+export interface CleanupOrphanedDataInput {
+  /** Must be true. */
+  confirm: boolean;
+}
+
 export interface DeleteAccountInput {
   /**
      * Current password (accounts that have one).

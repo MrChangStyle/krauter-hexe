@@ -75,6 +75,13 @@ vi.mock("../lib/accounts", () => ({
   promoteFirstOwner: () => Promise.resolve(null),
 }));
 
+// Account deletion is not under test here (see auth.delete.test.ts); its
+// table lists would need the full schema mock.
+vi.mock("../lib/accountDeletion", () => ({
+  OwnerAccountDeletionError: class extends Error {},
+  deleteAccount: () => Promise.resolve(true),
+}));
+
 vi.mock("../lib/password", () => ({
   MIN_PASSWORD_LENGTH: 8,
   hashPassword: () => Promise.resolve("hashed"),

@@ -941,6 +941,53 @@ paths:
           description: Not signed in
         "403":
           description: Signed in but not the owner
+  /users/orphaned-data:
+    get:
+      tags: [users]
+      operationId: getOrphanedData
+      summary: Count data left behind by deleted accounts (owner only)
+      description: >
+        Counts rows that point at an account which no longer exists – left
+        behind when removing an account only deleted the users row. Changes
+        nothing.
+      responses:
+        "200":
+          description: Rows per table
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrphanedDataReport"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+  /users/orphaned-data/cleanup:
+    post:
+      tags: [users]
+      operationId: cleanupOrphanedData
+      summary: Remove data left behind by deleted accounts (owner only)
+      description: >
+        Deletes personal rows of accounts that no longer exist and unlinks
+        their shared archive entries (which stay), in one transaction.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CleanupOrphanedDataInput"
+      responses:
+        "200":
+          description: Rows removed (personal tables) or unlinked (plants, insects)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrphanedDataReport"
+        "400":
+          description: Missing confirmation
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
   /users/{id}:
     patch:
       tags: [users]
@@ -2463,6 +2510,24 @@ components:
           type: string
           minLength: 8
           maxLength: 200
+    OrphanedDataReport:
+      type: object
+      required: [counts, total]
+      properties:
+        counts:
+          type: object
+          additionalProperties:
+            type: integer
+          description: Rows per table name.
+        total:
+          type: integer
+    CleanupOrphanedDataInput:
+      type: object
+      required: [confirm]
+      properties:
+        confirm:
+          type: boolean
+          description: Must be true.
     DeleteAccountInput:
       type: object
       properties:

@@ -32,6 +32,7 @@ import type {
   BackfillToxicityResult,
   CareGuide,
   CategoryCount,
+  CleanupOrphanedDataInput,
   CreateCareGuideInput,
   CreateTaskInput,
   DeleteAccountInput,
@@ -47,6 +48,7 @@ import type {
   LoginInput,
   ManagedUser,
   OkResult,
+  OrphanedDataReport,
   Plant,
   PlantHealthInput,
   PlantHealthResult,
@@ -3108,6 +3110,156 @@ export function useListUsers<TData = Awaited<ReturnType<typeof listUsers>>, TErr
 
 
 
+
+export const getGetOrphanedDataUrl = () => {
+
+
+
+
+  return `/api/users/orphaned-data`
+}
+
+/**
+ * Counts rows that point at an account which no longer exists – left behind when removing an account only deleted the users row. Changes nothing.
+ * @summary Count data left behind by deleted accounts (owner only)
+ */
+export const getOrphanedData = async ( options?: RequestInit): Promise<OrphanedDataReport> => {
+
+  return customFetch<OrphanedDataReport>(getGetOrphanedDataUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetOrphanedDataQueryKey = () => {
+    return [
+    `/api/users/orphaned-data`
+    ] as const;
+    }
+
+
+export const getGetOrphanedDataQueryOptions = <TData = Awaited<ReturnType<typeof getOrphanedData>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrphanedData>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetOrphanedDataQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getOrphanedData>>> = ({ signal }) => getOrphanedData({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getOrphanedData>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetOrphanedDataQueryResult = NonNullable<Awaited<ReturnType<typeof getOrphanedData>>>
+export type GetOrphanedDataQueryError = ErrorType<void>
+
+
+/**
+ * @summary Count data left behind by deleted accounts (owner only)
+ */
+
+export function useGetOrphanedData<TData = Awaited<ReturnType<typeof getOrphanedData>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getOrphanedData>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetOrphanedDataQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCleanupOrphanedDataUrl = () => {
+
+
+
+
+  return `/api/users/orphaned-data/cleanup`
+}
+
+/**
+ * Deletes personal rows of accounts that no longer exist and unlinks their shared archive entries (which stay), in one transaction.
+ * @summary Remove data left behind by deleted accounts (owner only)
+ */
+export const cleanupOrphanedData = async (cleanupOrphanedDataInput: CleanupOrphanedDataInput, options?: RequestInit): Promise<OrphanedDataReport> => {
+
+  return customFetch<OrphanedDataReport>(getCleanupOrphanedDataUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cleanupOrphanedDataInput)
+  }
+);}
+
+
+
+
+
+export const getCleanupOrphanedDataMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cleanupOrphanedData>>, TError,{data: BodyType<CleanupOrphanedDataInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof cleanupOrphanedData>>, TError,{data: BodyType<CleanupOrphanedDataInput>}, TContext> => {
+
+const mutationKey = ['cleanupOrphanedData'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cleanupOrphanedData>>, {data: BodyType<CleanupOrphanedDataInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  cleanupOrphanedData(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CleanupOrphanedDataMutationResult = NonNullable<Awaited<ReturnType<typeof cleanupOrphanedData>>>
+    export type CleanupOrphanedDataMutationBody = BodyType<CleanupOrphanedDataInput>
+    export type CleanupOrphanedDataMutationError = ErrorType<void>
+
+    /**
+ * @summary Remove data left behind by deleted accounts (owner only)
+ */
+export const useCleanupOrphanedData = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cleanupOrphanedData>>, TError,{data: BodyType<CleanupOrphanedDataInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof cleanupOrphanedData>>,
+        TError,
+        {data: BodyType<CleanupOrphanedDataInput>},
+        TContext
+      > => {
+      return useMutation(getCleanupOrphanedDataMutationOptions(options));
+    }
 
 export const getUpdateUserApprovalUrl = (id: string,) => {
 

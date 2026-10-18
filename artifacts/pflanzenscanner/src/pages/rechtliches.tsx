@@ -169,6 +169,14 @@ export function DatenschutzPage() {
           </li>
           <li>Google (nur bei „Mit Google anmelden“)</li>
           <li>Cloudflare Turnstile (Schutz der Registrierung vor Bots)</li>
+          <li>
+            OpenStreetMap Nominatim (Beet-Architekt: Postleitzahl eines Beetes
+            → ungefährer Ort; übermittelt wird nur die Postleitzahl)
+          </li>
+          <li>
+            Bright Sky mit Daten des Deutschen Wetterdienstes (Beet-Architekt:
+            Frosttermine; übermittelt wird nur ein auf etwa 10 km gerundeter Ort)
+          </li>
         </ul>
         <p className="mt-2">
           Einige dieser Anbieter haben ihren Sitz in den USA. Die Übermittlung

@@ -1234,6 +1234,200 @@ export interface CameraEvent {
   createdAt: string;
 }
 
+/**
+ * Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel/Balkon
+ */
+export type BedType = typeof BedType[keyof typeof BedType];
+
+
+export const BedType = {
+  raised: 'raised',
+  bed: 'bed',
+  greenhouse: 'greenhouse',
+  coldframe: 'coldframe',
+  container: 'container',
+} as const;
+
+export type BedOrientation = typeof BedOrientation[keyof typeof BedOrientation];
+
+
+export const BedOrientation = {
+  N: 'N',
+  NE: 'NE',
+  E: 'E',
+  SE: 'SE',
+  S: 'S',
+  SW: 'SW',
+  W: 'W',
+  NW: 'NW',
+} as const;
+
+export type WindProtection = typeof WindProtection[keyof typeof WindProtection];
+
+
+export const WindProtection = {
+  none: 'none',
+  partial: 'partial',
+  good: 'good',
+} as const;
+
+/**
+ * Result of the finger test
+ */
+export type SoilTexture = typeof SoilTexture[keyof typeof SoilTexture];
+
+
+export const SoilTexture = {
+  sandy: 'sandy',
+  loamy: 'loamy',
+  clay: 'clay',
+} as const;
+
+export type FrostSource = typeof FrostSource[keyof typeof FrostSource];
+
+
+export const FrostSource = {
+  default: 'default',
+  climate: 'climate',
+  manual: 'manual',
+} as const;
+
+export interface FrostDates {
+  /** MM-DD */
+  lastFrost: string;
+  /** MM-DD */
+  firstFrost: string;
+}
+
+export interface GardenBed {
+  id: number;
+  name: string;
+  type: BedType;
+  lengthCm: number;
+  widthCm: number;
+  /** @nullable */
+  heightCm: number | null;
+  /** @nullable */
+  postalCode: string | null;
+  /**
+     * Rounded to 0.1°
+     * @nullable
+     */
+  latitude: number | null;
+  /** @nullable */
+  longitude: number | null;
+  /** @nullable */
+  sunHours: number | null;
+  orientation: BedOrientation | null;
+  windProtection: WindProtection | null;
+  soilTexture: SoilTexture | null;
+  /** @nullable */
+  soilPh: number | null;
+  /** MM-DD, typical last spring frost */
+  lastFrost: string;
+  /** MM-DD, typical first autumn frost */
+  firstFrost: string;
+  frostSource: FrostSource;
+  /** @nullable */
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface GardenBedInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+  type: BedType;
+  lengthCm: number;
+  widthCm: number;
+  /** @nullable */
+  heightCm?: number | null;
+  /** @nullable */
+  postalCode?: string | null;
+  /**
+     * From the phone's GPS; wins over the postal code.
+     * @nullable
+     */
+  latitude?: number | null;
+  /** @nullable */
+  longitude?: number | null;
+  /** @nullable */
+  sunHours?: number | null;
+  orientation?: BedOrientation | null;
+  windProtection?: WindProtection | null;
+  soilTexture?: SoilTexture | null;
+  /** @nullable */
+  soilPh?: number | null;
+  /** Own frost dates; null hands them back to the weather history; omitted keeps them. */
+  frostDates?: FrostDates | null;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface WeekRange {
+  /** Weeks relative to the last spring frost (negative = before) */
+  from: number;
+  to: number;
+}
+
+export type CropGroup = typeof CropGroup[keyof typeof CropGroup];
+
+
+export const CropGroup = {
+  vegetable: 'vegetable',
+  herb: 'herb',
+  flower: 'flower',
+  fruit: 'fruit',
+} as const;
+
+export type CropFeeder = typeof CropFeeder[keyof typeof CropFeeder];
+
+
+export const CropFeeder = {
+  heavy: 'heavy',
+  medium: 'medium',
+  light: 'light',
+} as const;
+
+export type CropLight = typeof CropLight[keyof typeof CropLight];
+
+
+export const CropLight = {
+  full: 'full',
+  partial: 'partial',
+  shade: 'shade',
+} as const;
+
+export type CropHarvest = {
+  from: number;
+  to: number;
+};
+
+export interface Crop {
+  key: string;
+  name: string;
+  botanicalName: string;
+  group: CropGroup;
+  family: string;
+  feeder: CropFeeder;
+  spacingCm: number;
+  rowSpacingCm: number;
+  light: CropLight;
+  frostHardy: boolean;
+  sowIndoor: WeekRange | null;
+  directSow: WeekRange | null;
+  plantOut: WeekRange | null;
+  harvest: CropHarvest;
+  good: string[];
+  bad: string[];
+  color: string;
+}
+
 export interface FarmMember {
   userId: string;
   displayName: string;

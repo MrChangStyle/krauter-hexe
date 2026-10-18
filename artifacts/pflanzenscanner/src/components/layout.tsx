@@ -23,7 +23,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   // Kräuter-Hexe) lives under Pflanzen.
   const navItems = [
     { path: "/",         label: "Hof",      icon: Home,           badge: 0,            prefixes: ["/"] },
-    { path: "/pflanzen", label: "Pflanzen", icon: Sprout,         badge: 0,            prefixes: ["/pflanzen", "/lexikon", "/pflanze/", "/meine-pflanzen", "/aufgaben", "/pflanzendoc", "/pflege-guide", "/schaedlinge", "/insekten-scanner", "/insekt/", "/kraeuter-hexe"] },
+    { path: "/pflanzen", label: "Pflanzen", icon: Sprout,         badge: 0,            prefixes: ["/pflanzen", "/lexikon", "/pflanze/", "/meine-pflanzen", "/aufgaben", "/pflanzendoc", "/pflege-guide", "/schaedlinge", "/insekten-scanner", "/insekt/", "/kraeuter-hexe", "/beete"] },
     { path: "#scan",     label: "Scannen",  icon: ScanLine,       badge: 0,            prefixes: [] as string[] },
     { path: "/farm",     label: "Tiere",    icon: PawPrint,       badge: 0,            prefixes: ["/farm", "/tiere"] },
     { path: "/mehr",     label: "Mehr",     icon: MoreHorizontal, badge: pendingCount, prefixes: ["/mehr", "/warteschlange"] },

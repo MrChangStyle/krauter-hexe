@@ -112,16 +112,19 @@ export default function PflanzenHubPage() {
         ))}
       </div>
 
-      <div className="rounded-2xl border-2 border-dashed p-4 flex items-center gap-3">
-        <span className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center shrink-0">
-          <Fence className="w-5 h-5 text-muted-foreground" />
+      <Link
+        href="/beete"
+        className="rounded-2xl border bg-card p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.98] transition-all"
+      >
+        <span className="w-10 h-10 rounded-xl bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 flex items-center justify-center shrink-0">
+          <Fence className="w-5 h-5" />
         </span>
         <span className="flex-1 min-w-0">
           <span className="block text-sm font-semibold">Beet-Architekt</span>
-          <span className="block text-xs text-muted-foreground">Beete planen · Baustein in Arbeit</span>
+          <span className="block text-xs text-muted-foreground">Beete anlegen · Standort, Boden, Frosttermine</span>
         </span>
-        <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-muted-foreground">Bald</span>
-      </div>
+        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
+      </Link>
     </div>
   );
 }

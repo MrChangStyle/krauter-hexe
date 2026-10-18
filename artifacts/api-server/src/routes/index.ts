@@ -21,6 +21,7 @@ import farmHealthRouter from "./farm-health";
 import farmTasksRouter from "./farm-tasks";
 import farmAiRouter from "./farm-ai";
 import farmCamerasRouter from "./farm-cameras";
+import gardenRouter from "./garden";
 
 const router: IRouter = Router();
 
@@ -46,5 +47,6 @@ router.use(farmHealthRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);
+router.use(gardenRouter);
 
 export default router;

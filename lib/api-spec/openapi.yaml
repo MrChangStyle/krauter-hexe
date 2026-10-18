@@ -2264,6 +2264,136 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CameraEvent"
+  /garden/catalog:
+    get:
+      tags: [garden]
+      operationId: getGardenCatalog
+      summary: Crop catalog (Anbaudaten) of the Beet-Architekt
+      responses:
+        "200":
+          description: All crops.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Crop"
+  /farms/{farmId}/beds:
+    get:
+      tags: [garden]
+      operationId: listBeds
+      summary: Beds of the farm
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The beds.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GardenBed"
+    post:
+      tags: [garden]
+      operationId: createBed
+      summary: Add a bed (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GardenBedInput"
+      responses:
+        "201":
+          description: The new bed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenBed"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/beds/{bedId}:
+    get:
+      tags: [garden]
+      operationId: getBed
+      summary: One bed
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The bed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenBed"
+    patch:
+      tags: [garden]
+      operationId: updateBed
+      summary: Change a bed (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GardenBedInput"
+      responses:
+        "200":
+          description: The bed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenBed"
+        "400":
+          description: Invalid input.
+    delete:
+      tags: [garden]
+      operationId: deleteBed
+      summary: Delete a bed (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
   /farms/{farmId}:
     patch:
       tags: [farm]
@@ -4201,6 +4331,198 @@ components:
         createdAt:
           type: string
           format: date-time
+    BedType:
+      type: string
+      description: Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel/Balkon
+      enum: [raised, bed, greenhouse, coldframe, container]
+    BedOrientation:
+      type: string
+      enum: [N, NE, E, SE, S, SW, W, NW]
+    WindProtection:
+      type: string
+      enum: [none, partial, good]
+    SoilTexture:
+      type: string
+      description: Result of the finger test
+      enum: [sandy, loamy, clay]
+    FrostSource:
+      type: string
+      enum: [default, climate, manual]
+    FrostDates:
+      type: object
+      required: [lastFrost, firstFrost]
+      properties:
+        lastFrost:
+          type: string
+          description: MM-DD
+        firstFrost:
+          type: string
+          description: MM-DD
+    GardenBed:
+      type: object
+      required: [id, name, type, lengthCm, widthCm, heightCm, postalCode, latitude, longitude, sunHours, orientation, windProtection, soilTexture, soilPh, lastFrost, firstFrost, frostSource, notes, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        type:
+          $ref: "#/components/schemas/BedType"
+        lengthCm:
+          type: integer
+        widthCm:
+          type: integer
+        heightCm:
+          type: [integer, 'null']
+        postalCode:
+          type: [string, 'null']
+        latitude:
+          type: [number, 'null']
+          description: Rounded to 0.1°
+        longitude:
+          type: [number, 'null']
+        sunHours:
+          type: [integer, 'null']
+        orientation:
+          oneOf:
+            - $ref: "#/components/schemas/BedOrientation"
+            - type: 'null'
+        windProtection:
+          oneOf:
+            - $ref: "#/components/schemas/WindProtection"
+            - type: 'null'
+        soilTexture:
+          oneOf:
+            - $ref: "#/components/schemas/SoilTexture"
+            - type: 'null'
+        soilPh:
+          type: [number, 'null']
+        lastFrost:
+          type: string
+          description: MM-DD, typical last spring frost
+        firstFrost:
+          type: string
+          description: MM-DD, typical first autumn frost
+        frostSource:
+          $ref: "#/components/schemas/FrostSource"
+        notes:
+          type: [string, 'null']
+        createdAt:
+          type: string
+          format: date-time
+    GardenBedInput:
+      type: object
+      required: [name, type, lengthCm, widthCm]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        type:
+          $ref: "#/components/schemas/BedType"
+        lengthCm:
+          type: integer
+        widthCm:
+          type: integer
+        heightCm:
+          type: [integer, 'null']
+        postalCode:
+          type: [string, 'null']
+        latitude:
+          type: [number, 'null']
+          description: From the phone's GPS; wins over the postal code.
+        longitude:
+          type: [number, 'null']
+        sunHours:
+          type: [integer, 'null']
+        orientation:
+          oneOf:
+            - $ref: "#/components/schemas/BedOrientation"
+            - type: 'null'
+        windProtection:
+          oneOf:
+            - $ref: "#/components/schemas/WindProtection"
+            - type: 'null'
+        soilTexture:
+          oneOf:
+            - $ref: "#/components/schemas/SoilTexture"
+            - type: 'null'
+        soilPh:
+          type: [number, 'null']
+        frostDates:
+          description: Own frost dates; null hands them back to the weather history; omitted keeps them.
+          oneOf:
+            - $ref: "#/components/schemas/FrostDates"
+            - type: 'null'
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    WeekRange:
+      type: object
+      required: [from, to]
+      properties:
+        from:
+          type: integer
+          description: Weeks relative to the last spring frost (negative = before)
+        to:
+          type: integer
+    Crop:
+      type: object
+      required: [key, name, botanicalName, group, family, feeder, spacingCm, rowSpacingCm, light, frostHardy, sowIndoor, directSow, plantOut, harvest, good, bad, color]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        botanicalName:
+          type: string
+        group:
+          type: string
+          enum: [vegetable, herb, flower, fruit]
+        family:
+          type: string
+        feeder:
+          type: string
+          enum: [heavy, medium, light]
+        spacingCm:
+          type: integer
+        rowSpacingCm:
+          type: integer
+        light:
+          type: string
+          enum: [full, partial, shade]
+        frostHardy:
+          type: boolean
+        sowIndoor:
+          oneOf:
+            - $ref: "#/components/schemas/WeekRange"
+            - type: 'null'
+        directSow:
+          oneOf:
+            - $ref: "#/components/schemas/WeekRange"
+            - type: 'null'
+        plantOut:
+          oneOf:
+            - $ref: "#/components/schemas/WeekRange"
+            - type: 'null'
+        harvest:
+          type: object
+          required: [from, to]
+          properties:
+            from:
+              type: integer
+            to:
+              type: integer
+        good:
+          type: array
+          items:
+            type: string
+        bad:
+          type: array
+          items:
+            type: string
+        color:
+          type: string
     FarmMember:
       type: object
       required: [userId, displayName, email, role, isMe]

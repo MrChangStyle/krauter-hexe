@@ -43,6 +43,7 @@ import type {
   CreateCareGuideInput,
   CreateReportInput,
   CreateTaskInput,
+  Crop,
   DeleteAccountInput,
   DeleteFarmInput,
   DeletePlantInput,
@@ -57,6 +58,8 @@ import type {
   FarmTaskInput,
   FavoriteIds,
   FeedLog,
+  GardenBed,
+  GardenBedInput,
   GeoReverseInput,
   GeoReverseResult,
   HealthStatus,
@@ -7192,6 +7195,461 @@ export function useListCameraEvents<TData = Awaited<ReturnType<typeof listCamera
 
 
 
+
+export const getGetGardenCatalogUrl = () => {
+
+
+
+
+  return `/api/garden/catalog`
+}
+
+/**
+ * @summary Crop catalog (Anbaudaten) of the Beet-Architekt
+ */
+export const getGardenCatalog = async ( options?: RequestInit): Promise<Crop[]> => {
+
+  return customFetch<Crop[]>(getGetGardenCatalogUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGardenCatalogQueryKey = () => {
+    return [
+    `/api/garden/catalog`
+    ] as const;
+    }
+
+
+export const getGetGardenCatalogQueryOptions = <TData = Awaited<ReturnType<typeof getGardenCatalog>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenCatalog>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGardenCatalogQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGardenCatalog>>> = ({ signal }) => getGardenCatalog({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGardenCatalog>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGardenCatalogQueryResult = NonNullable<Awaited<ReturnType<typeof getGardenCatalog>>>
+export type GetGardenCatalogQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Crop catalog (Anbaudaten) of the Beet-Architekt
+ */
+
+export function useGetGardenCatalog<TData = Awaited<ReturnType<typeof getGardenCatalog>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenCatalog>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGardenCatalogQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListBedsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds`
+}
+
+/**
+ * @summary Beds of the farm
+ */
+export const listBeds = async (farmId: number, options?: RequestInit): Promise<GardenBed[]> => {
+
+  return customFetch<GardenBed[]>(getListBedsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListBedsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/beds`
+    ] as const;
+    }
+
+
+export const getListBedsQueryOptions = <TData = Awaited<ReturnType<typeof listBeds>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBeds>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListBedsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listBeds>>> = ({ signal }) => listBeds(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listBeds>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListBedsQueryResult = NonNullable<Awaited<ReturnType<typeof listBeds>>>
+export type ListBedsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Beds of the farm
+ */
+
+export function useListBeds<TData = Awaited<ReturnType<typeof listBeds>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listBeds>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListBedsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateBedUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds`
+}
+
+/**
+ * @summary Add a bed (caretaker or admin)
+ */
+export const createBed = async (farmId: number,
+    gardenBedInput: GardenBedInput, options?: RequestInit): Promise<GardenBed> => {
+
+  return customFetch<GardenBed>(getCreateBedUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(gardenBedInput)
+  }
+);}
+
+
+
+
+
+export const getCreateBedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBed>>, TError,{farmId: number;data: BodyType<GardenBedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBed>>, TError,{farmId: number;data: BodyType<GardenBedInput>}, TContext> => {
+
+const mutationKey = ['createBed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBed>>, {farmId: number;data: BodyType<GardenBedInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  createBed(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBedMutationResult = NonNullable<Awaited<ReturnType<typeof createBed>>>
+    export type CreateBedMutationBody = BodyType<GardenBedInput>
+    export type CreateBedMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a bed (caretaker or admin)
+ */
+export const useCreateBed = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBed>>, TError,{farmId: number;data: BodyType<GardenBedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBed>>,
+        TError,
+        {farmId: number;data: BodyType<GardenBedInput>},
+        TContext
+      > => {
+      return useMutation(getCreateBedMutationOptions(options));
+    }
+
+export const getGetBedUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}`
+}
+
+/**
+ * @summary One bed
+ */
+export const getBed = async (farmId: number,
+    bedId: number, options?: RequestInit): Promise<GardenBed> => {
+
+  return customFetch<GardenBed>(getGetBedUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBedQueryKey = (farmId: number,
+    bedId: number,) => {
+    return [
+    `/api/farms/${farmId}/beds/${bedId}`
+    ] as const;
+    }
+
+
+export const getGetBedQueryOptions = <TData = Awaited<ReturnType<typeof getBed>>, TError = ErrorType<unknown>>(farmId: number,
+    bedId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBed>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBedQueryKey(farmId,bedId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBed>>> = ({ signal }) => getBed(farmId,bedId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && bedId !== null && bedId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBed>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBedQueryResult = NonNullable<Awaited<ReturnType<typeof getBed>>>
+export type GetBedQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary One bed
+ */
+
+export function useGetBed<TData = Awaited<ReturnType<typeof getBed>>, TError = ErrorType<unknown>>(
+ farmId: number,
+    bedId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBed>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBedQueryOptions(farmId,bedId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateBedUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}`
+}
+
+/**
+ * @summary Change a bed (caretaker or admin)
+ */
+export const updateBed = async (farmId: number,
+    bedId: number,
+    gardenBedInput: GardenBedInput, options?: RequestInit): Promise<GardenBed> => {
+
+  return customFetch<GardenBed>(getUpdateBedUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(gardenBedInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateBedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBed>>, TError,{farmId: number;bedId: number;data: BodyType<GardenBedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateBed>>, TError,{farmId: number;bedId: number;data: BodyType<GardenBedInput>}, TContext> => {
+
+const mutationKey = ['updateBed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBed>>, {farmId: number;bedId: number;data: BodyType<GardenBedInput>}> = (props) => {
+          const {farmId,bedId,data} = props ?? {};
+
+          return  updateBed(farmId,bedId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateBedMutationResult = NonNullable<Awaited<ReturnType<typeof updateBed>>>
+    export type UpdateBedMutationBody = BodyType<GardenBedInput>
+    export type UpdateBedMutationError = ErrorType<void>
+
+    /**
+ * @summary Change a bed (caretaker or admin)
+ */
+export const useUpdateBed = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBed>>, TError,{farmId: number;bedId: number;data: BodyType<GardenBedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateBed>>,
+        TError,
+        {farmId: number;bedId: number;data: BodyType<GardenBedInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateBedMutationOptions(options));
+    }
+
+export const getDeleteBedUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}`
+}
+
+/**
+ * @summary Delete a bed (caretaker or admin)
+ */
+export const deleteBed = async (farmId: number,
+    bedId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteBedUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteBedMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBed>>, TError,{farmId: number;bedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBed>>, TError,{farmId: number;bedId: number}, TContext> => {
+
+const mutationKey = ['deleteBed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBed>>, {farmId: number;bedId: number}> = (props) => {
+          const {farmId,bedId} = props ?? {};
+
+          return  deleteBed(farmId,bedId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBedMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBed>>>
+
+    export type DeleteBedMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a bed (caretaker or admin)
+ */
+export const useDeleteBed = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBed>>, TError,{farmId: number;bedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBed>>,
+        TError,
+        {farmId: number;bedId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteBedMutationOptions(options));
+    }
 
 export const getRenameFarmUrl = (farmId: number,) => {
 

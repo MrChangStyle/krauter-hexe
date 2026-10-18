@@ -1249,7 +1249,192 @@ paths:
           description: Not signed in
         "403":
           description: Not approved
+    post:
+      tags: [farm]
+      operationId: createFarm
+      summary: Create a further farm, run by the account as admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmNameInput"
+      responses:
+        "201":
+          description: The new farm.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmSummary"
+        "409":
+          description: Too many farms as admin.
+  /farms/ensure-own:
+    post:
+      tags: [farm]
+      operationId: ensureOwnFarm
+      summary: Give the account its first farm if it has none, then list its farms
+      responses:
+        "200":
+          description: The account's farms (at least one).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmSummary"
+  /farms/{farmId}/members:
+    get:
+      tags: [farm]
+      operationId: listFarmMembers
+      summary: Members of a farm (email only for admins)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Members, longest-standing first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmMember"
+        "404":
+          description: No such farm – or the account is not a member.
+    post:
+      tags: [farm]
+      operationId: addFarmMember
+      summary: Add an existing account by email (admin only)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddFarmMemberInput"
+      responses:
+        "200":
+          description: The updated member list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmMember"
+        "403":
+          description: Not an admin of this farm.
+        "404":
+          description: No such farm – or the account is not a member.
+        "409":
+          description: Already a member.
+        "429":
+          description: Too many additions today.
+  /farms/{farmId}/members/{userId}:
+    patch:
+      tags: [farm]
+      operationId: changeFarmMemberRole
+      summary: Change a member's role (admin only; a farm keeps at least one admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeFarmRoleInput"
+      responses:
+        "200":
+          description: The updated member list.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmMember"
+        "409":
+          description: Would leave the farm without an admin.
+    delete:
+      tags: [farm]
+      operationId: removeFarmMember
+      summary: Remove a member (admin) or leave the farm (own userId)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Removed.
+        "409":
+          description: Last member or last admin – not possible.
   /farms/{farmId}:
+    patch:
+      tags: [farm]
+      operationId: renameFarm
+      summary: Rename a farm (admin only)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmNameInput"
+      responses:
+        "200":
+          description: The renamed farm.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmSummary"
+    delete:
+      tags: [farm]
+      operationId: deleteFarm
+      summary: Delete a farm with all its animals and records (admin only)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeleteFarmInput"
+      responses:
+        "204":
+          description: Deleted.
+        "400":
+          description: Confirmation name does not match.
     get:
       tags: [farm]
       operationId: getFarm
@@ -2641,6 +2826,50 @@ components:
           type: integer
         name:
           type: string
+        role:
+          $ref: "#/components/schemas/FarmRole"
+    FarmMember:
+      type: object
+      required: [userId, displayName, email, role, isMe]
+      properties:
+        userId:
+          type: string
+        displayName:
+          type: string
+        email:
+          type: [string, 'null']
+          description: Only filled in for admins.
+        role:
+          $ref: "#/components/schemas/FarmRole"
+        isMe:
+          type: boolean
+    FarmNameInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+    DeleteFarmInput:
+      type: object
+      required: [confirmName]
+      properties:
+        confirmName:
+          type: string
+    AddFarmMemberInput:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+          maxLength: 254
+        role:
+          $ref: "#/components/schemas/FarmRole"
+    ChangeFarmRoleInput:
+      type: object
+      required: [role]
+      properties:
         role:
           $ref: "#/components/schemas/FarmRole"
     ReportContentType:

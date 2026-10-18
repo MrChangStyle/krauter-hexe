@@ -777,6 +777,40 @@ export interface FarmSummary {
   role: FarmRole;
 }
 
+export interface FarmMember {
+  userId: string;
+  displayName: string;
+  /**
+     * Only filled in for admins.
+     * @nullable
+     */
+  email: string | null;
+  role: FarmRole;
+  isMe: boolean;
+}
+
+export interface FarmNameInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+}
+
+export interface DeleteFarmInput {
+  confirmName: string;
+}
+
+export interface AddFarmMemberInput {
+  /** @maxLength 254 */
+  email: string;
+  role: FarmRole;
+}
+
+export interface ChangeFarmRoleInput {
+  role: FarmRole;
+}
+
 export type ReportContentType = typeof ReportContentType[keyof typeof ReportContentType];
 
 

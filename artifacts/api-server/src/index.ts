@@ -2,6 +2,7 @@ import app from "./app";
 import { isGoogleAuthConfigured } from "./lib/googleOAuth";
 import { logger } from "./lib/logger";
 import { assertAuthConfigured } from "./lib/token";
+import { upgradeSchema } from "./lib/schemaUpgrade";
 
 // Fail at startup rather than on the first sign-in attempt: without a signing
 // key nobody can log in, and that should be obvious from the deploy log.
@@ -22,6 +23,16 @@ if (Number.isNaN(port) || port <= 0) {
 // container, so a server listening only on localhost is invisible to them and
 // the deploy is marked as failed ("no open ports detected").
 const host = process.env["HOST"] ?? "0.0.0.0";
+
+// Add new columns before serving requests: queries select every column, so a
+// missing one would break every page. On failure the process exits and the
+// host keeps the previous version running.
+try {
+  await upgradeSchema();
+} catch (err) {
+  logger.error({ err }, "Schema upgrade failed");
+  process.exit(1);
+}
 
 app.listen(port, host, (err?: Error) => {
   if (err) {

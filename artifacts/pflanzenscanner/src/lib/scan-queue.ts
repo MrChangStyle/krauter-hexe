@@ -12,8 +12,13 @@
 
 export type PendingScanStatus = "pending" | "scanning" | "error";
 
+/** What a queued photo is sent to. Absent on items queued before insects used the queue = plant. */
+/** "auto" = universal scan: the server decides between plant and insect. */
+export type PendingScanKind = "plant" | "insect" | "auto";
+
 export interface PendingScan {
   id: string;
+  kind?: PendingScanKind;
   /** The captured photo as a data URL. */
   image: string;
   /**
@@ -174,10 +179,12 @@ export async function addPendingScan(
   imageSide?: string,
   localImageId?: string,
   locationRegion?: string,
+  kind: PendingScanKind = "plant",
 ): Promise<PendingScan> {
   const db = await openDb();
   const item: PendingScan = {
     id: crypto.randomUUID(),
+    ...(kind !== "plant" ? { kind } : {}),
     image,
     ...(imageSide ? { imageSide } : {}),
     ...(localImageId ? { localImageId } : {}),

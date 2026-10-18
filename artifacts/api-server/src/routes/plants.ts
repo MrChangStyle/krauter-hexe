@@ -49,6 +49,8 @@ import {
 } from "@workspace/api-zod";
 import {
   identifyPlant,
+  quickIdentifyPlant,
+  type QuickPlantId,
   generateAnimalsForPlant,
   generateSymptomsForPlant,
   generateSymptomApplicationsForPlant,
@@ -180,7 +182,30 @@ router.post("/plants/health-check", requireApproved, async (req, res): Promise<v
   res.json(CheckPlantHealthResponse.parse(result));
 });
 
-router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => {
+// Newest archived entry with this botanical name (case-insensitive).
+async function findPlantByBotanicalKey(key: string) {
+  return (
+    await db
+      .select(plantSelection)
+      .from(plantsTable)
+      .where(sql`lower(${plantsTable.botanicalName}) = ${key}`)
+      .orderBy(desc(plantsTable.createdAt))
+      .limit(1)
+  )[0];
+}
+type PlantRow = NonNullable<Awaited<ReturnType<typeof findPlantByBotanicalKey>>>;
+
+router.post("/plants/scan", requireApproved, (req, res) => handlePlantScan(req, res));
+
+/**
+ * Plant scan. Also used by the universal scan (POST /scan), which has already
+ * run the quick identification and passes it in as `opts.quick`.
+ */
+export async function handlePlantScan(
+  req: Request,
+  res: Response,
+  opts: { quick?: QuickPlantId } = {},
+): Promise<void> {
   const parsed = ScanPlantBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
@@ -279,20 +304,138 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
     scanAttemptId = rateLimit.attemptId;
   }
 
-  // Start the image uploads in parallel with AI identification so we don't pay
-  // the latency twice. Failures are tolerated – the scan still works via
-  // IndexedDB, the photo is then just missing on other devices.
-  const uploadMainPromise = uploadImage(parsed.data.image).catch((e: unknown) => {
-    req.log.warn({ err: e }, "Plant image upload failed");
-    return null as null;
-  });
-  const uploadSidePromise = typeof imageSide === "string"
-    ? uploadImage(imageSide).catch(() => null as null)
-    : Promise.resolve(null as null);
+  // Photos are uploaded to the CDN only once we know they are needed: for a
+  // new species, or for an existing entry that has no shared photo yet.
+  // Uploading every scan up front (in parallel with the AI call) stored a
+  // never-used copy for every duplicate scan, so storage grew per scan
+  // instead of per species. Failures stay non-fatal: the photo still lives in
+  // the device's IndexedDB and can be backed up later.
+  const uploadMain = () =>
+    uploadImage(parsed.data.image).catch((e: unknown) => {
+      req.log.warn({ err: e }, "Plant image upload failed");
+      return null as null;
+    });
+  const uploadSide = () =>
+    typeof imageSide === "string"
+      ? uploadImage(imageSide).catch((e: unknown) => {
+          req.log.warn({ err: e }, "Plant side image upload failed");
+          return null as null;
+        })
+      : Promise.resolve(null as null);
+
+  const localImageId = parsed.data.localImageId ?? null;
+
+  // Answers a scan of a species that is already in the archive: attach a
+  // photo if the shared entry has none, record the scan for "Meine Scans",
+  // and return the existing entry. Used both after the quick identification
+  // (no full fact sheet needed) and after a full identification.
+  const respondDuplicate = async (existing: PlantRow): Promise<void> => {
+    // Duplicate scan (non-upgrade): record it so the existing plant appears
+    // in the current user's "Meine Scans", then return without modifications.
+    //
+    // Smart Merge: if the existing entry has no image yet (imageUrl is null)
+    // but this new scan produced a GCS URL or a new localImageId, attach the
+    // photo now. This handles the "re-install" scenario where the user lost
+    // their local photos and rescans a known plant to restore the image.
+    let returnedPlant = existing;
+    let imageMerged = false;
+    // Upload only what the shared entry is missing. A legacy "/objects/..."
+    // path counts as missing: it can no longer be served.
+    const missingMain = !isServableImageUrl(existing.imageUrl);
+    const missingSide =
+      typeof imageSide === "string" && !isServableImageUrl(existing.imageUrlSide);
+    const [imageUrl, imageUrlSide] = await Promise.all([
+      missingMain ? uploadMain() : Promise.resolve(null as null),
+      missingSide ? uploadSide() : Promise.resolve(null as null),
+    ]);
+    // The shared entry keeps the local photo key of whoever scanned it
+    // first. Overwriting it with every later scanner's key used to point
+    // the entry at a different device each time, which made the original
+    // photo unrecoverable for the device that actually had it.
+    const adoptLocalId = !!localImageId && !existing.localImageId;
+    const needsImageAttach = !!imageUrl || !!imageUrlSide || adoptLocalId;
+
+    if (needsImageAttach) {
+      const updateSet: Record<string, unknown> = {};
+      if (adoptLocalId) {
+        updateSet.localImageId = localImageId;
+      }
+      if (imageUrl) {
+        updateSet.imageUrl = imageUrl;
+        imageMerged = true; // a real CDN photo was newly attached
+      }
+      if (imageUrlSide) {
+        updateSet.imageUrlSide = imageUrlSide;
+      }
+      const [healed] = await db
+        .update(plantsTable)
+        .set(updateSet)
+        .where(eq(plantsTable.id, existing.id))
+        .returning(plantSelection);
+      if (healed) returnedPlant = healed;
+    }
+
+    const [dupScanRow] = await db
+      .insert(plantScansTable)
+      .values({ userId: req.user!.id, plantId: existing.id })
+      .onConflictDoNothing()
+      .returning({ id: plantScansTable.id });
+
+    const dupIsNew = !!dupScanRow;
+    if (dupIsNew) {
+      await db
+        .update(usersTable)
+        .set({ leavesCount: sql`${usersTable.leavesCount} + 1` })
+        .where(eq(usersTable.id, req.user!.id));
+    }
+
+    res
+      .status(201)
+      .json(ScanPlantResponse.parse({ plant: returnedPlant, alreadyInArchive: !dupIsNew, imageMerged: imageMerged || null }));
+  };
+
+  // Step 1: cheap identification. If the species is already archived, the
+  // full fact sheet is not needed at all, which saves most of the AI cost of a
+  // duplicate scan. Exception: a two-photo mushroom scan of an entry without
+  // a side view goes on to the full identification, because it may upgrade
+  // the entry to "essbar bestätigt". Any failure here simply falls through to
+  // the full identification below.
+  const scanStartedAt = Date.now();
+  let quick: QuickPlantId | null = opts.quick ?? null;
+  if (!quick) {
+    try {
+      quick = await quickIdentifyPlant(parsed.data.image, imageSide);
+      req.log.info({ quickMs: Date.now() - scanStartedAt }, "Quick plant identification done");
+    } catch (err) {
+      req.log.warn({ err }, "Quick plant identification failed, using full identification");
+    }
+  }
+  if (quick && !quick.istPflanze) {
+    res.status(422).json({
+      code: "KEIN_PFLANZEN_FOTO",
+      error:
+        "Das Foto zeigt keine Pflanze. Bitte fotografiere eine Pflanze, ein Kraut, einen Pilz oder einen Baum.",
+    });
+    return;
+  }
+  if (quick) {
+    const quickKey = quick.botanicalName.trim().toLowerCase();
+    if (quickKey.length > 0 && quickKey !== UNKNOWN_BOTANICAL_NAME.toLowerCase()) {
+      const known = await findPlantByBotanicalKey(quickKey);
+      const mayUpgradeMushroom = typeof imageSide === "string" && !!known && !known.hasSideImage;
+      if (known && !mayUpgradeMushroom) {
+        await respondDuplicate(known);
+        req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: false }, "Plant scan done");
+        return;
+      }
+    }
+  }
 
   let identification;
+  const fullStartedAt = Date.now();
   try {
     identification = await identifyPlant(parsed.data.image, imageSide);
+    req.log.info({ fullMs: Date.now() - fullStartedAt }, "Full plant identification done");
   } catch (err) {
     req.log.error({ err }, "Plant identification failed");
     // No identification was produced, so this attempt must not count against
@@ -301,9 +444,6 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
     res.status(502).json({ error: "AI-Identifizierung fehlgeschlagen" });
     return;
   }
-
-  // Await the uploads (likely already finished since AI takes longer).
-  const [imageUrl, imageUrlSide] = await Promise.all([uploadMainPromise, uploadSidePromise]);
 
   // Not a plant: reject without archiving.
   if (!identification.istPflanze) {
@@ -319,8 +459,6 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
   // The old image-bytes dedup is no longer performed because new rows do not
   // store image bytes in the database. Botanical name dedup is the reliable
   // path; localImageId dedup catches queue retries of the same captured photo.
-  const localImageId = parsed.data.localImageId ?? null;
-
   const botanicalKey = identification.botanicalName.trim().toLowerCase();
   const hasBotanicalKey =
     botanicalKey.length > 0 &&
@@ -362,6 +500,7 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
         typeof imageSide === "string" &&
         !existing.hasSideImage;
       if (upgradesMushroom) {
+        const [imageUrl, imageUrlSide] = await Promise.all([uploadMain(), uploadSide()]);
         const [updated] = await db
           .update(plantsTable)
           .set({
@@ -441,68 +580,17 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
         return;
       }
 
-      // Duplicate scan (non-upgrade): record it so the existing plant appears
-      // in the current user's "Meine Scans", then return without modifications.
-      //
-      // Smart Merge: if the existing entry has no image yet (imageUrl is null)
-      // but this new scan produced a GCS URL or a new localImageId, attach the
-      // photo now. This handles the "re-install" scenario where the user lost
-      // their local photos and rescans a known plant to restore the image.
-      let returnedPlant = existing;
-      let imageMerged = false;
-      const needsImageAttach =
-        (!existing.imageUrl && imageUrl) ||
-        (!existing.imageUrlSide && imageUrlSide) ||
-        (localImageId && localImageId !== existing.localImageId);
-
-      if (needsImageAttach) {
-        const updateSet: Record<string, unknown> = {};
-        if (localImageId && localImageId !== existing.localImageId) {
-          updateSet.localImageId = localImageId;
-        }
-        if (!existing.imageUrl && imageUrl) {
-          updateSet.imageUrl = imageUrl;
-          imageMerged = true; // a real GCS photo was newly attached
-        }
-        if (!existing.imageUrlSide && imageUrlSide) {
-          updateSet.imageUrlSide = imageUrlSide;
-        }
-        const [healed] = await db
-          .update(plantsTable)
-          .set(updateSet)
-          .where(eq(plantsTable.id, existing.id))
-          .returning(plantSelection);
-        if (healed) returnedPlant = healed;
-      }
-
-      const [dupScanRow] = await db
-        .insert(plantScansTable)
-        .values({ userId: req.user!.id, plantId: existing.id })
-        .onConflictDoNothing()
-        .returning({ id: plantScansTable.id });
-
-      const dupIsNew = !!dupScanRow;
-      if (dupIsNew) {
-        await db
-          .update(usersTable)
-          .set({ leavesCount: sql`${usersTable.leavesCount} + 1` })
-          .where(eq(usersTable.id, req.user!.id));
-      }
-
-      res
-        .status(201)
-        .json(ScanPlantResponse.parse({ plant: returnedPlant, alreadyInArchive: !dupIsNew, imageMerged: imageMerged || null }));
+      await respondDuplicate(existing);
       return;
     }
   }
 
+  // New species: the photos are uploaded to the CDN after the response has
+  // been sent (see the end of this handler). The scanning device already has
+  // them locally (localImageId), so the user does not wait for the upload.
   const [plant] = await db
     .insert(plantsTable)
     .values({
-      // GCS URL is the primary image reference; localImageId kept for offline
-      // fallback on the scanning device (IndexedDB). imageData is never stored.
-      ...(imageUrl ? { imageUrl } : {}),
-      ...(imageUrlSide ? { imageUrlSide } : {}),
       ...(localImageId
         ? { localImageId, hasSideImage: typeof imageSide === "string" }
         : { hasSideImage: typeof imageSide === "string" }),
@@ -570,7 +658,26 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
   });
 
   res.status(201).json(ScanPlantResponse.parse({ plant, alreadyInArchive: false }));
-});
+  req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: true }, "Plant scan done");
+
+  // Background upload (see above). A failed upload only means the entry has
+  // no CDN photo yet; the next scan of the same species heals it.
+  void (async () => {
+    const [imageUrl, imageUrlSide] = await Promise.all([uploadMain(), uploadSide()]);
+    if (!imageUrl && !imageUrlSide) return;
+    try {
+      await db
+        .update(plantsTable)
+        .set({
+          ...(imageUrl ? { imageUrl } : {}),
+          ...(imageUrlSide ? { imageUrlSide } : {}),
+        })
+        .where(eq(plantsTable.id, plant.id));
+    } catch (err) {
+      req.log.warn({ err, plantId: plant.id }, "Saving background plant image URLs failed");
+    }
+  })();
+}
 
 router.get("/plants", requireApproved, async (req, res): Promise<void> => {
   const query = ListPlantsQueryParams.safeParse(req.query);

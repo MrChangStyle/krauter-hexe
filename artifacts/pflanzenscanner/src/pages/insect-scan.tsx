@@ -19,7 +19,8 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useScanInsect, useListInsects, type Insect } from "@workspace/api-client-react";
+import { useListInsects, type Insect } from "@workspace/api-client-react";
+import { useScanQueue } from "@/lib/scan-queue-context";
 import { downscaleFile } from "@/lib/image";
 import { putImage } from "@/lib/image-store";
 import { useToast } from "@/hooks/use-toast";
@@ -336,70 +337,103 @@ function ScanTab() {
   const queryClient = useQueryClient();
   const loc = useLocationRegion();
 
-  // Ref holds the latest execute function so the countdown useEffect always
-  // calls the freshest closure without being in its dependency array.
+  // Insect photos go through the same offline queue as plant photos: the
+  // photo is stored on the device first and sent when there is a real
+  // connection. Without signal (barn, field) nothing is lost; the result
+  // arrives later and shows up in the insect archive.
+  const {
+    enqueue,
+    processQueue,
+    pending,
+    lastDrainAt,
+    rateLimitResetsAt,
+    insectResults,
+    clearInsectResults,
+    notInsectResults,
+    clearNotInsectResults,
+  } = useScanQueue();
+  // Queue item this page is waiting for, and when the wait started.
+  const [waitingId, setWaitingId] = useState<string | null>(null);
+  const [waitingSince, setWaitingSince] = useState<number>(0);
+  // True once a send attempt ended and the photo is still waiting (no
+  // connection, daily limit): the user may leave, the scan finishes later.
+  const [queuedInfo, setQueuedInfo] = useState(false);
+
   const executeAnalysisRef = useRef<((p: ScanPreview) => void) | null>(null);
-
-  const { mutate: scanInsect, isPending: isScanning } = useScanInsect({
-    mutation: {
-      onSuccess(data) {
-        // Seed the list cache so the detail page can find the insect immediately
-        // without waiting for a refetch (avoids "Insekt nicht gefunden" flash).
-        queryClient.setQueryData<Insect[]>(["/api/insects"], (old) => {
-          if (!old) return [data.insect];
-          if (old.some((i) => i.id === data.insect.id)) return old;
-          return [data.insect, ...old];
-        });
-        // Also invalidate so the list refreshes in the background.
-        void queryClient.invalidateQueries({ queryKey: ["/api/insects"] });
-        if (data.alreadyInArchive) {
-          toast({
-            title: "Insekt bereits bekannt",
-            description: `${data.insect.germanName} war bereits im Archiv.`,
-          });
-        }
-        setLocation(`/insekt/${data.insect.id}`);
-      },
-      onError(err) {
-        const apiErr = err as {
-          status?: number;
-          data?: { error?: string; code?: string; resetsAt?: string; limit?: number };
-        } | null;
-        if (apiErr?.status === 429) {
-          const limitText = apiErr?.data?.limit != null ? ` (${apiErr.data.limit} Fotos pro Tag)` : "";
-          toast({
-            title: "Tageslimit erreicht",
-            description: `Du hast heute das Scan-Limit erreicht${limitText}. Dein Kontingent wird um ${formatBerlinTime(apiErr?.data?.resetsAt ?? null)} zurückgesetzt.`,
-            variant: "destructive",
-          });
-          return;
-        }
-        const code = apiErr?.data?.code;
-        if (code === "KEIN_INSEKTEN_FOTO") {
-          setErrorMsg(
-            "Das Foto zeigt kein Insekt. Bitte fotografiere ein Insekt, eine Spinne oder ein anderes Gliedertier.",
-          );
-        } else {
-          setErrorMsg(
-            apiErr?.data?.error ??
-              "Die Identifizierung hat leider nicht geklappt. Bitte versuche es erneut.",
-          );
-        }
-      },
-    },
-  });
-
-  // Keep executeAnalysisRef.current in sync with the latest scanInsect closure.
   executeAnalysisRef.current = (p: ScanPreview): void => {
-    scanInsect({
-      data: {
-        image: p.image,
-        ...(p.localImageId ? { localImageId: p.localImageId } : {}),
-        ...(p.locationRegion ? { locationRegion: p.locationRegion } : {}),
-      },
-    });
+    void (async () => {
+      setErrorMsg(null);
+      setQueuedInfo(false);
+      const id = await enqueue(p.image, undefined, p.localImageId, p.locationRegion, "insect");
+      setWaitingId(id);
+      setWaitingSince(Date.now());
+      processQueue();
+      // The queue does not even try while offline or after the daily limit;
+      // say so right away instead of showing a spinner that never ends.
+      const limited =
+        rateLimitResetsAt !== null && new Date(rateLimitResetsAt).getTime() > Date.now();
+      if (!navigator.onLine || limited) setQueuedInfo(true);
+    })();
   };
 
+  // Safety net: if no answer arrives within 45 s (very weak signal, server
+  // waking up, session expired), tell the user the photo is safe and waiting.
+  useEffect(() => {
+    if (!waitingId || queuedInfo) return;
+    const tid = window.setTimeout(() => setQueuedInfo(true), 45_000);
+    return () => window.clearTimeout(tid);
+  }, [waitingId, queuedInfo]);
+
+  // Result for the photo we are waiting for.
+  useEffect(() => {
+    if (!waitingId) return;
+    const hit = insectResults.find((r) => r.itemId === waitingId);
+    if (!hit) return;
+    setWaitingId(null);
+    clearInsectResults();
+    // Seed the list cache so the detail page finds the insect at once.
+    queryClient.setQueryData<Insect[]>(["/api/insects"], (old) => {
+      if (!old) return [hit.insect];
+      if (old.some((i) => i.id === hit.insect.id)) return old;
+      return [hit.insect, ...old];
+    });
+    if (hit.alreadyInArchive) {
+      toast({
+        title: "Insekt bereits bekannt",
+        description: `${hit.insect.germanName} war bereits im Archiv.`,
+      });
+    }
+    setLocation(`/insekt/${hit.insect.id}`);
+  }, [insectResults, waitingId, clearInsectResults, queryClient, toast, setLocation]);
+
+  // No insect on the photo.
+  useEffect(() => {
+    if (!waitingId) return;
+    if (!notInsectResults.some((r) => r.itemId === waitingId)) return;
+    setWaitingId(null);
+    clearNotInsectResults();
+    setErrorMsg(
+      "Das Foto zeigt kein Insekt. Bitte fotografiere ein Insekt, eine Spinne oder ein anderes Gliedertier.",
+    );
+  }, [notInsectResults, waitingId, clearNotInsectResults]);
+
+  // Permanent failure, or the send attempt ended with the photo still queued.
+  useEffect(() => {
+    if (!waitingId) return;
+    const item = pending.find((i) => i.id === waitingId);
+    if (item?.status === "error" && !item.autoRetry) {
+      setWaitingId(null);
+      setErrorMsg(
+        item.error ?? "Die Identifizierung hat leider nicht geklappt. Bitte versuche es erneut.",
+      );
+      return;
+    }
+    if (item && lastDrainAt != null && lastDrainAt > waitingSince) {
+      setQueuedInfo(true);
+    }
+  }, [pending, lastDrainAt, waitingId, waitingSince]);
+
+  const isScanning = waitingId !== null && !queuedInfo;
   const isLoading = isPreparing || isScanning;
 
   // Countdown: decrement once/second and fire the analysis when it hits 0.
@@ -441,7 +475,7 @@ function ScanTab() {
       image: imageData,
       localImageId,
       phase: "idle",
-      countdown: 5,
+      countdown: 0,
       locationRegion,
     });
   }
@@ -492,6 +526,31 @@ function ScanTab() {
             <p className="text-sm text-muted-foreground mt-1">
               Das dauert meist 5–15 Sekunden.
             </p>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && !preview && queuedInfo && waitingId && (
+        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex gap-3">
+          <Bug className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-sm font-medium">Foto gespeichert</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              {rateLimitResetsAt
+                ? `Dein Tageslimit ist erreicht. Das Insekt wird automatisch bestimmt, sobald es um ${formatBerlinTime(rateLimitResetsAt)} wieder geht.`
+                : "Gerade keine Verbindung zum Server. Das Insekt wird automatisch bestimmt, sobald du wieder Empfang hast, und erscheint dann im Archiv."}
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              className="mt-3"
+              onClick={() => {
+                setWaitingId(null);
+                setQueuedInfo(false);
+              }}
+            >
+              Weiteres Insekt scannen
+            </Button>
           </div>
         </div>
       )}

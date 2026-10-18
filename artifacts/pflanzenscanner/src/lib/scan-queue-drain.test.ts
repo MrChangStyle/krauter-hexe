@@ -107,6 +107,159 @@ describe("offline guard", () => {
   });
 });
 
+describe("insect items", () => {
+  it("sends insect photos to scanInsect, not scanPlant, and reports the result", async () => {
+    const item = makePending({ kind: "insect" });
+    const fakeInsect = { id: 7, germanName: "Marienkäfer" } as unknown as import("@workspace/api-client-react").Insect;
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanInsect: vi.fn().mockResolvedValue({ insect: fakeInsect, alreadyInArchive: true }),
+      onInsectSuccess: vi.fn(),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.scanPlant).not.toHaveBeenCalled();
+    expect(deps.scanInsect).toHaveBeenCalledTimes(1);
+    expect(deps.deletePendingScan).toHaveBeenCalledWith(item.id);
+    expect(deps.onInsectSuccess).toHaveBeenCalledWith({
+      itemId: item.id,
+      insect: fakeInsect,
+      alreadyInArchive: true,
+    });
+    // Plant stats stay untouched so no plant toast fires.
+    expect(stats.duplicates).toBe(0);
+    expect(stats.added).toBe(0);
+  });
+
+  it("discards a photo without an insect and reports it", async () => {
+    const item = makePending({ kind: "insect" });
+    const err = Object.assign(new Error("422"), {
+      name: "ApiError",
+      status: 422,
+      data: { code: "KEIN_INSEKTEN_FOTO" },
+    });
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanInsect: vi.fn().mockRejectedValue(err),
+      onNotInsect: vi.fn(),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.deletePendingScan).toHaveBeenCalledWith(item.id);
+    expect(deps.onNotInsect).toHaveBeenCalledWith(item.id);
+    expect(deps.markScanError).not.toHaveBeenCalled();
+    expect(stats.notPlant).toBe(0);
+  });
+});
+
+describe("universal scan items", () => {
+  it("reports an insect answer through onInsectSuccess without plant stats", async () => {
+    const item = makePending({ kind: "auto" });
+    const fakeInsect = { id: 9, germanName: "Hummel" } as unknown as import("@workspace/api-client-react").Insect;
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanAuto: vi.fn().mockResolvedValue({ insect: fakeInsect, alreadyInArchive: false }),
+      onInsectSuccess: vi.fn(),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.scanPlant).not.toHaveBeenCalled();
+    expect(deps.scanAuto).toHaveBeenCalledTimes(1);
+    expect(deps.deletePendingScan).toHaveBeenCalledWith(item.id);
+    expect(deps.onInsectSuccess).toHaveBeenCalledWith({
+      itemId: item.id,
+      insect: fakeInsect,
+      alreadyInArchive: false,
+    });
+    expect(stats.added).toBe(0);
+  });
+
+  it("reports a plant answer through onSuccess and counts it", async () => {
+    const item = makePending({ kind: "auto" });
+    const fakePlant = { id: 3, germanName: "Brennnessel" } as unknown as import("@workspace/api-client-react").Plant;
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanAuto: vi.fn().mockResolvedValue({ plant: fakePlant, alreadyInArchive: false }),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.scanPlant).not.toHaveBeenCalled();
+    expect(deps.onSuccess).toHaveBeenCalledWith(
+      expect.objectContaining({ itemId: item.id, plant: fakePlant, alreadyInArchive: false }),
+    );
+    expect(stats.added).toBe(1);
+  });
+
+  it("discards a photo without a scannable subject and passes the message on", async () => {
+    const item = makePending({ kind: "auto" });
+    const err = Object.assign(new Error("422"), {
+      name: "ApiError",
+      status: 422,
+      data: { code: "TIER_ERKANNT", error: "Das sieht nach einem Tier aus." },
+    });
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanAuto: vi.fn().mockRejectedValue(err),
+      onNoSubject: vi.fn(),
+    });
+
+    await drainQueue(deps);
+
+    expect(deps.deletePendingScan).toHaveBeenCalledWith(item.id);
+    expect(deps.onNoSubject).toHaveBeenCalledWith(item.id, "Das sieht nach einem Tier aus.");
+    expect(deps.markScanError).not.toHaveBeenCalled();
+  });
+});
+
+describe("real connection check", () => {
+  it("stops as a network stop without scanning when the server is unreachable", async () => {
+    const item = makePending();
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValue([item]),
+      checkConnection: vi.fn().mockResolvedValue(false),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.checkConnection).toHaveBeenCalledTimes(1);
+    expect(deps.scanPlant).not.toHaveBeenCalled();
+    expect(stats.networkStop).toBe(true);
+    expect(deps.lockRef.current).toBe(false);
+  });
+
+  it("scans normally when the server is reachable", async () => {
+    const item = makePending();
+    const deps = makeDeps({
+      getAllPendingScans: vi
+        .fn()
+        .mockResolvedValueOnce([item]) // connection pre-check
+        .mockResolvedValueOnce([item]) // loop iteration 1
+        .mockResolvedValue([]),
+      checkConnection: vi.fn().mockResolvedValue(true),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.scanPlant).toHaveBeenCalledTimes(1);
+    expect(stats.added).toBe(1);
+  });
+
+  it("does not probe the server when the queue is empty", async () => {
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValue([]),
+      checkConnection: vi.fn().mockResolvedValue(true),
+    });
+
+    await drainQueue(deps);
+
+    expect(deps.checkConnection).not.toHaveBeenCalled();
+  });
+});
+
 // ---------------------------------------------------------------------------
 // Happy path
 // ---------------------------------------------------------------------------

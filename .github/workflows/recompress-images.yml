@@ -1,0 +1,68 @@
+name: Bilder verkleinern (einmalig)
+
+# Verkleinert Fotos, die in voller Größe bei Cloudinary liegen
+# (scripts/recompress-cloudinary-images.ts). Nur von Hand starten:
+# zuerst mit "Probelauf" prüfen, dann ohne.
+#
+# Benötigte Repository-Secrets: NEON_DATABASE_URL, CLOUDINARY_URL
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Probelauf (nur anzeigen, nichts ändern)"
+        type: boolean
+        default: true
+      limit:
+        description: "Höchstens so viele Fotos bearbeiten (leer = alle)"
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  recompress:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+      CLOUDINARY_URL: ${{ secrets.CLOUDINARY_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Bilder verkleinern
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          LIMIT: ${{ inputs.limit }}
+        run: |
+          set -o pipefail
+          args=""
+          if [ "$DRY_RUN" = "true" ]; then args="$args --dry-run"; fi
+          if [ -n "$LIMIT" ]; then args="$args --limit $LIMIT"; fi
+          status=0
+          pnpm --filter @workspace/api-server run recompress:images -- $args --out "$GITHUB_WORKSPACE/recompress-backup" 2>&1 | tee ergebnis.txt || status=$?
+          # Ergebnis und Fehler als Hinweise ausgeben, damit sie ohne
+          # Protokoll-Download in der Übersicht des Laufs sichtbar sind.
+          grep -E '^(❌|Probelauf|Fertig|🔎)' ergebnis.txt | head -40 | while IFS= read -r line; do
+            case "$line" in
+              ❌*) echo "::warning title=Bild::${line}" ;;
+              *) echo "::notice title=Ergebnis::${line}" ;;
+            esac
+          done
+          exit $status
+      - name: Sicherungskopien der Originale ablegen
+        # Immer ablegen, auch wenn einzelne Bilder fehlschlagen: genau dann
+        # werden die Originale gebraucht.
+        if: ${{ always() && !inputs.dry_run }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: recompress-originale
+          path: recompress-backup
+          retention-days: 30
+          if-no-files-found: ignore

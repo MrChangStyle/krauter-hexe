@@ -32,10 +32,11 @@ import { useLocationRegion } from "@/lib/use-location-region";
 import { LocationCard } from "@/components/location-card";
 import { putImage } from "@/lib/image-store";
 
-// Which capture the hidden file input is currently serving: the normal
-// single-photo plant scan, the insect scan, or one of the two steps of the
-// Pilz-Scan (Bild 1: von oben, Bild 2: von der Seite).
-type CaptureMode = "plant" | "insect" | "mushroomTop" | "mushroomSide";
+// Which capture the hidden file input is currently serving: the universal
+// scan ("auto": the server decides plant or insect), the normal single-photo
+// plant scan, the insect scan, or one of the two steps of the Pilz-Scan
+// (Bild 1: von oben, Bild 2: von der Seite).
+type CaptureMode = "auto" | "plant" | "insect" | "mushroomTop" | "mushroomSide";
 
 // Prepared scan waiting for the user to confirm (preview step).
 type ScanPreview = {
@@ -260,6 +261,10 @@ export default function ScanPage() {
   // True while the camera/gallery choice card is shown for plant or insect.
   const [showPlantOptions, setShowPlantOptions] = useState(false);
   const [showInsectOptions, setShowInsectOptions] = useState(false);
+  const [showAutoOptions, setShowAutoOptions] = useState(false);
+  // Whether the scan we are waiting for came from the universal button
+  // (changes the spinner label: the subject is not known yet).
+  const [waitingIsAuto, setWaitingIsAuto] = useState(false);
   const mushroomTopRef = useRef<string | null>(null);
   useEffect(() => {
     mushroomTopRef.current = mushroomTop;
@@ -287,6 +292,12 @@ export default function ScanPage() {
     clearResults,
     notPlantResults,
     clearNotPlantResults,
+    insectResults,
+    clearInsectResults,
+    notInsectResults,
+    clearNotInsectResults,
+    noSubjectResults,
+    clearNoSubjectResults,
     pending,
     pendingCount,
   } = useScanQueue();
@@ -309,13 +320,20 @@ export default function ScanPage() {
       });
       return;
     }
-    // plant or mushroomSide: enqueue then track progress.
+    // auto, plant or mushroomSide: enqueue then track progress.
+    const isAuto = p.mode === "auto";
     void (async () => {
       let itemId: string;
       try {
         itemId = p.topImage
           ? await enqueue(p.topImage, p.image, p.localImageId, p.locationRegion)
-          : await enqueue(p.image, undefined, p.localImageId, p.locationRegion);
+          : await enqueue(
+              p.image,
+              undefined,
+              p.localImageId,
+              p.locationRegion,
+              isAuto ? "auto" : "plant",
+            );
       } catch {
         setErrorKind("plant");
         setErrorMsg(
@@ -335,6 +353,7 @@ export default function ScanPage() {
         // server responds synchronously-fast (e.g. 422), the notPlantResults
         // effect already has a waitingForItemId to match against and won't
         // silently accumulate stale results that match the next scan.
+        setWaitingIsAuto(isAuto);
         setWaitingForItemId(itemId);
         processQueue();
       } else {
@@ -446,6 +465,57 @@ export default function ScanPage() {
     );
   }, [notPlantResults, waitingForItemId, clearNotPlantResults]);
 
+  // Universal scan: the server recognised an insect.
+  useEffect(() => {
+    if (!waitingForItemId) return;
+    const match = insectResults.find((r) => r.itemId === waitingForItemId);
+    if (!match) return;
+    clearInsectResults();
+    setWaitingForItemId(null);
+    setScanProgress(100);
+    toast(
+      match.alreadyInArchive
+        ? {
+            title: "Insekt bereits bekannt",
+            description: `${match.insect.germanName} ist bereits in deinem Archiv.`,
+          }
+        : {
+            title: "Neues Insekt entdeckt! 🌿",
+            description: `+1 Blatt für ${match.insect.germanName}.`,
+          },
+    );
+    setLocation(`/insekt/${match.insect.id}`);
+  }, [insectResults, waitingForItemId, clearInsectResults, setLocation, toast]);
+
+  // Universal scan: recognised as insect, but the insect identification found
+  // none after all.
+  useEffect(() => {
+    if (!waitingForItemId) return;
+    const match = notInsectResults.find((r) => r.itemId === waitingForItemId);
+    if (!match) return;
+    clearNotInsectResults();
+    setWaitingForItemId(null);
+    setScanProgress(0);
+    setIsPreparing(false);
+    setErrorKind("plant");
+    setErrorMsg(
+      "Das Motiv konnte nicht sicher bestimmt werden. Bitte fotografiere es noch einmal näher und schärfer.",
+    );
+  }, [notInsectResults, waitingForItemId, clearNotInsectResults]);
+
+  // Universal scan: nothing scannable on the photo, or an animal.
+  useEffect(() => {
+    if (!waitingForItemId) return;
+    const match = noSubjectResults.find((r) => r.itemId === waitingForItemId);
+    if (!match) return;
+    clearNoSubjectResults();
+    setWaitingForItemId(null);
+    setScanProgress(0);
+    setIsPreparing(false);
+    setErrorKind("plant");
+    setErrorMsg(match.message);
+  }, [noSubjectResults, waitingForItemId, clearNoSubjectResults]);
+
   // If the scan we're waiting for keeps failing, don't show a warning: the
   // photo stays silently in the queue (auto-retried in the background,
   // visible unter /warteschlange). We only stop the spinner once the item
@@ -550,7 +620,11 @@ export default function ScanPage() {
         // (PDF export, plant-detail "Bild hinzufügen", etc.).
         image = mode === "insect"
           ? await downscaleFile(file, 1280, 0.72)   // insect: full quality for display
-          : await downscaleScan(file);              // plant/mushroom: 900 px WebP scan
+          : mode === "auto"
+            // Universal scan: may be a small insect, so keep the resolution
+            // of the insect page (detail decides the species).
+            ? await downscaleFile(file, 1600, 0.8)
+            : await downscaleScan(file);            // plant/mushroom: 900 px WebP scan
       } catch {
         if (!isStale()) {
           setIsPreparing(false);
@@ -582,7 +656,7 @@ export default function ScanPage() {
           localImageId,
           mode: "insect",
           phase: "idle",
-          countdown: 5,
+          countdown: 0,
           locationRegion: locationRegionInsect,
         });
         return;
@@ -630,7 +704,7 @@ export default function ScanPage() {
         localImageId,
         mode,
         phase: "idle",
-        countdown: 5,
+        countdown: 0,
         locationRegion,
       });
     })();
@@ -747,9 +821,11 @@ export default function ScanPage() {
               ? "Foto wird vorbereitet…"
               : isInsectScanning
                 ? "Insekt wird bestimmt…"
-                : preparingMode === "insect"
-                  ? "Insekt wird bestimmt…"
-                  : "Pflanze wird analysiert…"}
+                : waitingForItemId && waitingIsAuto
+                  ? "Wird erkannt und bestimmt…"
+                  : preparingMode === "insect"
+                    ? "Insekt wird bestimmt…"
+                    : "Pflanze wird analysiert…"}
           </p>
           {waitingForItemId && (
             <div className="w-full space-y-1.5">
@@ -865,6 +941,41 @@ export default function ScanPage() {
             </div>
           </CardContent>
         </Card>
+      ) : showAutoOptions ? (
+        /* Universal scan source choice: camera or gallery */
+        <Card className="w-full max-w-sm overflow-hidden border-none shadow-xl animate-in fade-in zoom-in-95">
+          <CardContent className="p-6 space-y-5">
+            <div className="flex items-center gap-2 text-3xl" aria-hidden="true">
+              🌿🍄🐞
+            </div>
+            <div className="space-y-1.5">
+              <h2 className="font-serif text-2xl text-foreground">
+                Scannen
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Fotografiere eine Pflanze, einen Pilz oder ein Insekt – die App
+                erkennt selbst, was es ist. Geh möglichst nah heran, das Motiv
+                sollte scharf sein und das Bild gut füllen.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button onClick={() => { setShowAutoOptions(false); openCamera("auto"); }}>
+                <Camera className="w-5 h-5 mr-2" />
+                Kamera öffnen
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => { setShowAutoOptions(false); openGallery("auto"); }}
+              >
+                <ImageIcon className="w-5 h-5 mr-2" />
+                Aus Galerie wählen
+              </Button>
+              <Button variant="ghost" onClick={() => setShowAutoOptions(false)}>
+                Abbrechen
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : showPlantOptions ? (
         /* Plant source choice: camera or gallery */
         <Card className="w-full max-w-sm overflow-hidden border-none shadow-xl animate-in fade-in zoom-in-95">
@@ -970,40 +1081,57 @@ export default function ScanPage() {
           </CardContent>
         </Card>
       ) : !errorMsg ? (
-        /* ── Three scan buttons ──────────────────────────────────────────── */
+        /* ── Universal scan button + targeted scans ─────────────────────── */
         <div className="flex flex-col gap-3 w-full max-w-sm">
 
-          {/* Pflanze */}
+          {/* Scannen: the server decides plant, mushroom or insect */}
           <Button
             size="lg"
-            className="w-full h-14 rounded-2xl text-base shadow-md hover:shadow-lg transition-all"
-            onClick={() => setShowPlantOptions(true)}
+            className="w-full h-auto py-4 rounded-2xl shadow-md hover:shadow-lg transition-all flex-col gap-1"
+            onClick={() => setShowAutoOptions(true)}
           >
-            <Camera className="w-5 h-5 mr-2" />
-            Pflanze
+            <span className="flex items-center text-lg font-semibold">
+              <Camera className="w-6 h-6 mr-2" />
+              Scannen
+            </span>
+            <span className="text-xs font-normal opacity-90">
+              Pflanze, Pilz oder Insekt – wird automatisch erkannt
+            </span>
           </Button>
 
-          {/* Pilz */}
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full h-14 rounded-2xl text-base border-amber-500/50 bg-amber-50/60 hover:bg-amber-100/70 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 text-foreground"
-            onClick={() => setShowMushroomTopHint(true)}
-          >
-            <span className="mr-2 text-xl leading-none" aria-hidden="true">🍄</span>
-            Pilz
-          </Button>
-
-          {/* Insekt */}
-          <Button
-            variant="outline"
-            size="lg"
-            className="w-full h-14 rounded-2xl text-base"
-            onClick={() => setShowInsectOptions(true)}
-          >
-            <Bug className="w-5 h-5 mr-2" />
-            Insekt
-          </Button>
+          <p className="text-xs text-muted-foreground text-center pt-1">
+            Oder gezielt scannen:
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            <Button
+              variant="outline"
+              className="h-auto py-3 rounded-xl flex-col gap-1 text-sm"
+              onClick={() => setShowPlantOptions(true)}
+            >
+              <Leaf className="w-5 h-5 text-primary" />
+              Pflanze
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto py-3 rounded-xl flex-col gap-1 text-sm border-amber-500/50 bg-amber-50/60 hover:bg-amber-100/70 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 text-foreground"
+              onClick={() => setShowMushroomTopHint(true)}
+            >
+              <span className="text-xl leading-none" aria-hidden="true">🍄</span>
+              Pilz
+            </Button>
+            <Button
+              variant="outline"
+              className="h-auto py-3 rounded-xl flex-col gap-1 text-sm"
+              onClick={() => setShowInsectOptions(true)}
+            >
+              <Bug className="w-5 h-5" />
+              Insekt
+            </Button>
+          </div>
+          <p className="text-[11px] text-muted-foreground text-center leading-snug">
+            🍄 Für die Essbarkeit eines Pilzes den Pilz-Scan nutzen: Er
+            fotografiert von oben und von der Seite.
+          </p>
 
           {!isOnline && (
             <div className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground pt-1">

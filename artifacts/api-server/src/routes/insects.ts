@@ -51,215 +51,244 @@ const SERVABLE_IMAGE_MIMES = new Set([
 
 // ── POST /insects/scan ────────────────────────────────────────────────────────
 
-router.post(
-  "/insects/scan",
-  requireApproved,
-  async (req: Request, res: Response): Promise<void> => {
-    const parsed = ScanInsectBody.safeParse(req.body);
-    if (!parsed.success) {
-      res.status(400).json({ error: parsed.error.message });
-      return;
-    }
+router.post("/insects/scan", requireApproved, (req: Request, res: Response) =>
+  handleInsectScan(req, res),
+);
 
-    if (!/^data:image\/[a-z0-9.+-]+;base64,.+/is.test(parsed.data.image)) {
-      res.status(400).json({ error: "image muss eine Bild-Daten-URL sein." });
-      return;
-    }
+/** Insect scan. Also used by the universal scan (POST /scan). */
+export async function handleInsectScan(req: Request, res: Response): Promise<void> {
+  const parsed = ScanInsectBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: parsed.error.message });
+    return;
+  }
 
-    // Cost brake — same reasoning as the plant scan: refuse a photo that keeps
-    // failing, and pause all scanning while the backend fails systematically,
-    // before either the quota or the AI call is spent.
-    const photoKey = parsed.data.localImageId ?? photoFingerprint(parsed.data.image);
-    const brake = checkScanBrake("insect", photoKey);
-    if (brake.blocked) {
-      const retryAfterSeconds = Math.ceil(brake.retryAfterMs / 1_000);
-      res.setHeader("Retry-After", String(retryAfterSeconds));
-      if (brake.reason === "photo") {
-        req.log.warn({ photoKey }, "Insect scan refused: this photo failed repeatedly");
-        res.status(422).json({
-          code: "WIEDERHOLT_FEHLGESCHLAGEN",
-          error:
-            "Dieses Foto konnte mehrmals nicht gespeichert werden. Bitte versuche es später noch einmal oder mache ein neues Foto.",
-        });
-      } else {
-        req.log.warn(
-          { retryAfterSeconds, reason: brake.reason },
-          "Insect scan refused by cost brake",
-        );
-        res.status(503).json({
-          error:
-            "Das Speichern ist gerade gestört. Deine Fotos bleiben erhalten und werden automatisch nachgeholt.",
-        });
-      }
-      return;
-    }
+  if (!/^data:image\/[a-z0-9.+-]+;base64,.+/is.test(parsed.data.image)) {
+    res.status(400).json({ error: "image muss eine Bild-Daten-URL sein." });
+    return;
+  }
 
-    res.on("finish", () => {
-      if (res.statusCode >= 500) recordScanFailure("insect", photoKey);
-      else if (res.statusCode < 400) recordScanSuccess("insect", photoKey);
-    });
-
-    // Aborted connection — counted per photo only, see the plant scan route.
-    res.on("close", () => {
-      if (!res.writableEnded) {
-        req.log.warn({ photoKey }, "Insect scan connection aborted before the response was sent");
-        recordScanAbort(photoKey);
-      }
-    });
-
-    // Per-user daily rate limit: 15 insect scan attempts per Berlin day.
-    // Atomically checks the count and records the attempt in one transaction.
-    // Kept in scope beyond the check so a later failure can refund this exact row.
-    let scanAttemptId: number | null = null;
-    if (req.user) {
-      const rateLimit = await checkAndRecordScanAttempt(req.user.id, "insect", {
-        unlimited: req.user.isOwner,
+  // Cost brake — same reasoning as the plant scan: refuse a photo that keeps
+  // failing, and pause all scanning while the backend fails systematically,
+  // before either the quota or the AI call is spent.
+  const photoKey = parsed.data.localImageId ?? photoFingerprint(parsed.data.image);
+  const brake = checkScanBrake("insect", photoKey);
+  if (brake.blocked) {
+    const retryAfterSeconds = Math.ceil(brake.retryAfterMs / 1_000);
+    res.setHeader("Retry-After", String(retryAfterSeconds));
+    if (brake.reason === "photo") {
+      req.log.warn({ photoKey }, "Insect scan refused: this photo failed repeatedly");
+      res.status(422).json({
+        code: "WIEDERHOLT_FEHLGESCHLAGEN",
+        error:
+          "Dieses Foto konnte mehrmals nicht gespeichert werden. Bitte versuche es später noch einmal oder mache ein neues Foto.",
       });
-      if (!rateLimit.allowed) {
-        // `limit` lets the UI name the exact number the user hit instead of
-        // hard-coding a copy that would silently drift out of sync.
-        res.status(429).json({
-          error: "SCAN_LIMIT_REACHED",
-          resetsAt: rateLimit.resetsAt,
-          limit: rateLimit.limit,
-        });
-        return;
-      }
-      scanAttemptId = rateLimit.attemptId;
+    } else {
+      req.log.warn(
+        { retryAfterSeconds, reason: brake.reason },
+        "Insect scan refused by cost brake",
+      );
+      res.status(503).json({
+        error:
+          "Das Speichern ist gerade gestört. Deine Fotos bleiben erhalten und werden automatisch nachgeholt.",
+      });
     }
+    return;
+  }
 
-    // Start the image upload in parallel with AI identification.
-    const uploadPromise = uploadImage(parsed.data.image).catch((e: unknown) => {
+  res.on("finish", () => {
+    if (res.statusCode >= 500) recordScanFailure("insect", photoKey);
+    else if (res.statusCode < 400) recordScanSuccess("insect", photoKey);
+  });
+
+  // Aborted connection — counted per photo only, see the plant scan route.
+  res.on("close", () => {
+    if (!res.writableEnded) {
+      req.log.warn({ photoKey }, "Insect scan connection aborted before the response was sent");
+      recordScanAbort(photoKey);
+    }
+  });
+
+  // Per-user daily rate limit: 15 insect scan attempts per Berlin day.
+  // Atomically checks the count and records the attempt in one transaction.
+  // Kept in scope beyond the check so a later failure can refund this exact row.
+  let scanAttemptId: number | null = null;
+  if (req.user) {
+    const rateLimit = await checkAndRecordScanAttempt(req.user.id, "insect", {
+      unlimited: req.user.isOwner,
+    });
+    if (!rateLimit.allowed) {
+      // `limit` lets the UI name the exact number the user hit instead of
+      // hard-coding a copy that would silently drift out of sync.
+      res.status(429).json({
+        error: "SCAN_LIMIT_REACHED",
+        resetsAt: rateLimit.resetsAt,
+        limit: rateLimit.limit,
+      });
+      return;
+    }
+    scanAttemptId = rateLimit.attemptId;
+  }
+
+  // The photo is uploaded only when it is needed (new species, or a known
+  // species without a shared photo). Uploading every scan up front stored
+  // an unused copy for every duplicate.
+  const uploadPhoto = () =>
+    uploadImage(parsed.data.image).catch((e: unknown) => {
       req.log.warn({ err: e }, "Insect image upload failed");
       return null as null;
     });
 
-    let identification;
-    try {
-      identification = await identifyInsect(parsed.data.image);
-    } catch (err) {
-      req.log.error({ err }, "Insect identification failed");
-      // Same reasoning as the plant scan: a failed AI call must not consume the
-      // user's daily quota, since the client retries automatically.
-      await refundScanAttempt(scanAttemptId);
-      res.status(502).json({ error: "AI-Identifizierung fehlgeschlagen" });
-      return;
-    }
+  const scanStartedAt = Date.now();
+  let identification;
+  try {
+    identification = await identifyInsect(parsed.data.image, req.log);
+  } catch (err) {
+    req.log.error({ err }, "Insect identification failed");
+    // Same reasoning as the plant scan: a failed AI call must not consume the
+    // user's daily quota, since the client retries automatically.
+    await refundScanAttempt(scanAttemptId);
+    res.status(502).json({ error: "AI-Identifizierung fehlgeschlagen" });
+    return;
+  }
 
-    const imageUrl = await uploadPromise;
+  if (!identification.istInsekt) {
+    res.status(422).json({
+      code: "KEIN_INSEKTEN_FOTO",
+      error:
+        "Das Foto zeigt kein Insekt. Bitte fotografiere ein Insekt, eine Spinne oder ein anderes Gliedertier.",
+    });
+    return;
+  }
 
-    if (!identification.istInsekt) {
-      res.status(422).json({
-        code: "KEIN_INSEKTEN_FOTO",
-        error:
-          "Das Foto zeigt kein Insekt. Bitte fotografiere ein Insekt, eine Spinne oder ein anderes Gliedertier.",
-      });
-      return;
-    }
+  // Deduplicate by scientific name (case-insensitive), same pattern as plants.
+  const scientificKey = identification.scientificName.trim().toLowerCase();
+  const canDedup =
+    scientificKey.length > 0 &&
+    scientificKey !== UNKNOWN_SCIENTIFIC_NAME.toLowerCase();
 
-    // Deduplicate by scientific name (case-insensitive), same pattern as plants.
-    const scientificKey = identification.scientificName.trim().toLowerCase();
-    const canDedup =
-      scientificKey.length > 0 &&
-      scientificKey !== UNKNOWN_SCIENTIFIC_NAME.toLowerCase();
+  if (canDedup) {
+    const [existing] = await db
+      .select(insectPublicColumns)
+      .from(insectsTable)
+      .where(sql`lower(${insectsTable.scientificName}) = ${scientificKey}`)
+      .orderBy(desc(insectsTable.createdAt))
+      .limit(1);
 
-    if (canDedup) {
-      const [existing] = await db
-        .select(insectPublicColumns)
-        .from(insectsTable)
-        .where(sql`lower(${insectsTable.scientificName}) = ${scientificKey}`)
-        .orderBy(desc(insectsTable.createdAt))
-        .limit(1);
-
-      if (existing) {
-        // Image heal: if the client successfully stored a new photo locally,
-        // refresh localImageId so this device/session can display the image.
-        const localImageId = parsed.data.localImageId ?? null;
-        let returnedInsect = existing;
-        if (localImageId && localImageId !== existing.localImageId) {
-          const [healed] = await db
-            .update(insectsTable)
-            .set({ localImageId })
-            .where(eq(insectsTable.id, existing.id))
-            .returning(insectPublicColumns);
-          if (healed) returnedInsect = healed;
-        }
-
-        let insectIsNewToUser = false;
-        if (req.user) {
-          const [existingScanRow] = await db
-            .insert(insectScansTable)
-            .values({ userId: req.user.id, insectId: existing.id })
-            .onConflictDoNothing()
-            .returning({ id: insectScansTable.id });
-
-          insectIsNewToUser = !!existingScanRow;
-          if (insectIsNewToUser) {
-            await db
-              .update(usersTable)
-              .set({ leavesCount: sql`${usersTable.leavesCount} + 1` })
-              .where(eq(usersTable.id, req.user.id));
-          }
-        }
-
-        res
-          .status(201)
-          .json(
-            ScanInsectResponse.parse({ insect: returnedInsect, alreadyInArchive: !insectIsNewToUser }),
-          );
-        return;
+    if (existing) {
+      // Image heal: if the client successfully stored a new photo locally,
+      // refresh localImageId so this device/session can display the image.
+      // Image heal: give the shared entry a photo if it has none yet, and a
+      // local photo key only if it has none (the first scanner's key stays,
+      // so that device can still back its photo up later).
+      const localImageId = parsed.data.localImageId ?? null;
+      let returnedInsect = existing;
+      const healedImageUrl = isServableImageUrl(existing.imageUrl)
+        ? null
+        : await uploadPhoto();
+      const adoptLocalId = !!localImageId && !existing.localImageId;
+      if (healedImageUrl || adoptLocalId) {
+        const [healed] = await db
+          .update(insectsTable)
+          .set({
+            ...(healedImageUrl ? { imageUrl: healedImageUrl } : {}),
+            ...(adoptLocalId ? { localImageId } : {}),
+          })
+          .where(eq(insectsTable.id, existing.id))
+          .returning(insectPublicColumns);
+        if (healed) returnedInsect = healed;
       }
-    }
 
-    // New species — insert then record the scan.
-    const localImageId = parsed.data.localImageId ?? null;
-    const [newInsect] = await db
-      .insert(insectsTable)
-      .values({
-        // GCS URL is the primary image reference; localImageId kept for offline
-        // fallback on the scanning device. imageData never stored.
-        ...(imageUrl ? { imageUrl } : {}),
-        ...(localImageId ? { localImageId } : {}),
-        germanName: identification.germanName,
-        scientificName: identification.scientificName,
-        category: identification.category,
-        relationStatus: identification.relationStatus,
-        affectedPlants: identification.affectedPlants,
-        description: identification.description,
-        treatmentTips: identification.treatmentTips,
-        plantContext: identification.plantContext ?? undefined,
-        scannedByUserId: req.user?.id,
-        ...(parsed.data.locationRegion
-          ? { locationRegion: parsed.data.locationRegion.slice(0, 80) }
-          : {}),
-      })
-      .returning(insectPublicColumns);
+      let insectIsNewToUser = false;
+      if (req.user) {
+        const [existingScanRow] = await db
+          .insert(insectScansTable)
+          .values({ userId: req.user.id, insectId: existing.id })
+          .onConflictDoNothing()
+          .returning({ id: insectScansTable.id });
 
-    if (!newInsect) {
-      res.status(500).json({ error: "Datenbankfehler beim Speichern." });
+        insectIsNewToUser = !!existingScanRow;
+        if (insectIsNewToUser) {
+          await db
+            .update(usersTable)
+            .set({ leavesCount: sql`${usersTable.leavesCount} + 1` })
+            .where(eq(usersTable.id, req.user.id));
+        }
+      }
+
+      res
+        .status(201)
+        .json(
+          ScanInsectResponse.parse({ insect: returnedInsect, alreadyInArchive: !insectIsNewToUser }),
+        );
+      req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: false }, "Insect scan done");
       return;
     }
+  }
 
-    if (req.user) {
-      await db
-        .insert(insectScansTable)
-        .values({ userId: req.user.id, insectId: newInsect.id })
-        .onConflictDoNothing();
+  // New species — insert then record the scan. The photo is uploaded to the
+  // CDN after the response has been sent: the scanning device already has it
+  // locally (localImageId), so the user does not have to wait for the upload.
+  const localImageId = parsed.data.localImageId ?? null;
+  const [newInsect] = await db
+    .insert(insectsTable)
+    .values({
+      ...(localImageId ? { localImageId } : {}),
+      germanName: identification.germanName,
+      scientificName: identification.scientificName,
+      category: identification.category,
+      relationStatus: identification.relationStatus,
+      affectedPlants: identification.affectedPlants,
+      description: identification.description,
+      treatmentTips: identification.treatmentTips,
+      plantContext: identification.plantContext ?? undefined,
+      scannedByUserId: req.user?.id,
+      ...(parsed.data.locationRegion
+        ? { locationRegion: parsed.data.locationRegion.slice(0, 80) }
+        : {}),
+    })
+    .returning(insectPublicColumns);
 
-      // Award one leaf for discovering a new insect species.
+  if (!newInsect) {
+    res.status(500).json({ error: "Datenbankfehler beim Speichern." });
+    return;
+  }
+
+  if (req.user) {
+    await db
+      .insert(insectScansTable)
+      .values({ userId: req.user.id, insectId: newInsect.id })
+      .onConflictDoNothing();
+
+    // Award one leaf for discovering a new insect species.
+    await db
+      .update(usersTable)
+      .set({ leavesCount: sql`${usersTable.leavesCount} + 1` })
+      .where(eq(usersTable.id, req.user.id));
+  }
+
+  res
+    .status(201)
+    .json(
+      ScanInsectResponse.parse({ insect: newInsect, alreadyInArchive: false }),
+    );
+  req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: true }, "Insect scan done");
+
+  // Background upload (see above). Failures only mean the entry has no CDN
+  // photo yet; the next scan of the same species heals it.
+  void (async () => {
+    const imageUrl = await uploadPhoto();
+    if (!imageUrl) return;
+    try {
       await db
-        .update(usersTable)
-        .set({ leavesCount: sql`${usersTable.leavesCount} + 1` })
-        .where(eq(usersTable.id, req.user.id));
+        .update(insectsTable)
+        .set({ imageUrl })
+        .where(eq(insectsTable.id, newInsect.id));
+    } catch (err) {
+      req.log.warn({ err }, "Saving background insect image URL failed");
     }
-
-    res
-      .status(201)
-      .json(
-        ScanInsectResponse.parse({ insect: newInsect, alreadyInArchive: false }),
-      );
-  },
-);
+  })();
+}
 
 // ── GET /insects ──────────────────────────────────────────────────────────────
 

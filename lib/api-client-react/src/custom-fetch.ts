@@ -18,6 +18,49 @@ const DEFAULT_JSON_ACCEPT = "application/json, application/problem+json";
 let _baseUrl: string | null = null;
 let _authTokenGetter: AuthTokenGetter | null = null;
 
+// Long enough for a cold server start (the free host sleeps and needs up to
+// ~60 s to wake) plus an AI identification, short enough that a dead
+// connection does not block the app indefinitely.
+const DEFAULT_REQUEST_TIMEOUT_MS = 90_000;
+let _requestTimeoutMs = DEFAULT_REQUEST_TIMEOUT_MS;
+
+/**
+ * Set the time limit (ms) after which a request that has not received a
+ * response is aborted. Pass `null` to restore the default.
+ */
+export function setRequestTimeout(ms: number | null): void {
+  _requestTimeoutMs = ms != null && ms > 0 ? ms : DEFAULT_REQUEST_TIMEOUT_MS;
+}
+
+/**
+ * An AbortSignal that fires after `ms`, or earlier when the caller's own
+ * signal aborts. Built by hand instead of AbortSignal.any/timeout so it also
+ * works on older iOS Safari versions.
+ */
+function createTimeoutSignal(
+  outer: AbortSignal | undefined,
+  ms: number,
+): { signal: AbortSignal; clear: () => void } {
+  const controller = new AbortController();
+  const onOuterAbort = () => controller.abort(outer?.reason);
+  if (outer) {
+    if (outer.aborted) controller.abort(outer.reason);
+    else outer.addEventListener("abort", onOuterAbort, { once: true });
+  }
+  const timer = setTimeout(() => {
+    const err = new Error(`Request timed out after ${ms} ms`);
+    err.name = "TimeoutError";
+    controller.abort(err);
+  }, ms);
+  return {
+    signal: controller.signal,
+    clear: () => {
+      clearTimeout(timer);
+      outer?.removeEventListener("abort", onOuterAbort);
+    },
+  };
+}
+
 /**
  * Set a base URL that is prepended to every relative request URL
  * (i.e. paths that start with `/`).
@@ -360,7 +403,18 @@ export async function customFetch<T = unknown>(
 
   const requestInfo = { method, url: resolveUrl(input) };
 
-  const response = await fetch(input, { ...init, method, headers });
+  // Every request gets a time limit. Without one, a request on a weak signal
+  // (phone reports "online", but nothing gets through) hangs forever and
+  // blocks everything waiting behind it, e.g. the whole offline scan queue.
+  // The abort surfaces as a non-ApiError, so callers treat it like a
+  // network failure and retry later.
+  const timeout = createTimeoutSignal(init.signal ?? undefined, _requestTimeoutMs);
+  let response: Response;
+  try {
+    response = await fetch(input, { ...init, method, headers, signal: timeout.signal });
+  } finally {
+    timeout.clear();
+  }
 
   if (!response.ok) {
     const errorData = await parseErrorBody(response, method);

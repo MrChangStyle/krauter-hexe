@@ -582,7 +582,7 @@ export default function ScanPage() {
           localImageId,
           mode: "insect",
           phase: "idle",
-          countdown: 5,
+          countdown: 0,
           locationRegion: locationRegionInsect,
         });
         return;
@@ -630,7 +630,7 @@ export default function ScanPage() {
         localImageId,
         mode,
         phase: "idle",
-        countdown: 5,
+        countdown: 0,
         locationRegion,
       });
     })();

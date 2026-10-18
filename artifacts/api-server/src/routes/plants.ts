@@ -390,9 +390,11 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
   // a side view goes on to the full identification, because it may upgrade
   // the entry to "essbar bestätigt". Any failure here simply falls through to
   // the full identification below.
+  const scanStartedAt = Date.now();
   let quick: QuickPlantId | null = null;
   try {
     quick = await quickIdentifyPlant(parsed.data.image, imageSide);
+    req.log.info({ quickMs: Date.now() - scanStartedAt }, "Quick plant identification done");
   } catch (err) {
     req.log.warn({ err }, "Quick plant identification failed, using full identification");
   }
@@ -411,14 +413,17 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
       const mayUpgradeMushroom = typeof imageSide === "string" && !!known && !known.hasSideImage;
       if (known && !mayUpgradeMushroom) {
         await respondDuplicate(known);
+        req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: false }, "Plant scan done");
         return;
       }
     }
   }
 
   let identification;
+  const fullStartedAt = Date.now();
   try {
     identification = await identifyPlant(parsed.data.image, imageSide);
+    req.log.info({ fullMs: Date.now() - fullStartedAt }, "Full plant identification done");
   } catch (err) {
     req.log.error({ err }, "Plant identification failed");
     // No identification was produced, so this attempt must not count against
@@ -568,15 +573,12 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
     }
   }
 
-  const [imageUrl, imageUrlSide] = await Promise.all([uploadMain(), uploadSide()]);
-
+  // New species: the photos are uploaded to the CDN after the response has
+  // been sent (see the end of this handler). The scanning device already has
+  // them locally (localImageId), so the user does not wait for the upload.
   const [plant] = await db
     .insert(plantsTable)
     .values({
-      // GCS URL is the primary image reference; localImageId kept for offline
-      // fallback on the scanning device (IndexedDB). imageData is never stored.
-      ...(imageUrl ? { imageUrl } : {}),
-      ...(imageUrlSide ? { imageUrlSide } : {}),
       ...(localImageId
         ? { localImageId, hasSideImage: typeof imageSide === "string" }
         : { hasSideImage: typeof imageSide === "string" }),
@@ -644,6 +646,25 @@ router.post("/plants/scan", requireApproved, async (req, res): Promise<void> => 
   });
 
   res.status(201).json(ScanPlantResponse.parse({ plant, alreadyInArchive: false }));
+  req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: true }, "Plant scan done");
+
+  // Background upload (see above). A failed upload only means the entry has
+  // no CDN photo yet; the next scan of the same species heals it.
+  void (async () => {
+    const [imageUrl, imageUrlSide] = await Promise.all([uploadMain(), uploadSide()]);
+    if (!imageUrl && !imageUrlSide) return;
+    try {
+      await db
+        .update(plantsTable)
+        .set({
+          ...(imageUrl ? { imageUrl } : {}),
+          ...(imageUrlSide ? { imageUrlSide } : {}),
+        })
+        .where(eq(plantsTable.id, plant.id));
+    } catch (err) {
+      req.log.warn({ err, plantId: plant.id }, "Saving background plant image URLs failed");
+    }
+  })();
 });
 
 router.get("/plants", requireApproved, async (req, res): Promise<void> => {

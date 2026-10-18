@@ -119,10 +119,41 @@ function sleep(ms: number): Promise<void> {
 
 // For insects the more capable model is first – they're harder to identify
 // than plants and the extra latency is worth the accuracy gain.
-const MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
-  { name: "gemini-flash-latest", attempts: 2 },
-  { name: "gemini-flash-lite-latest", attempts: 1 },
+//
+// timeoutMs: a single attempt that takes longer than this is abandoned and the
+// next model is tried. Healthy answers arrive well within it; past it the
+// model is usually overloaded and waiting longer only makes the user wait.
+const MODELS: ReadonlyArray<ModelStep> = [
+  { name: "gemini-flash-latest", attempts: 2, timeoutMs: 35_000 },
+  { name: "gemini-flash-lite-latest", attempts: 1, timeoutMs: 40_000 },
 ];
+
+interface ModelStep {
+  name: string;
+  attempts: number;
+  timeoutMs: number;
+}
+
+/** Minimal logger shape (pino's req.log fits). */
+export interface ScanLogger {
+  info: (obj: object, msg?: string) => void;
+  warn: (obj: object, msg?: string) => void;
+}
+
+class AttemptTimeoutError extends Error {
+  constructor(model: string, ms: number) {
+    super(`AI model ${model} did not answer within ${ms} ms`);
+    this.name = "AttemptTimeoutError";
+  }
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, model: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new AttemptTimeoutError(model, ms)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
 
 const GENERATION_CONFIG = {
   maxOutputTokens: 4096,
@@ -131,23 +162,47 @@ const GENERATION_CONFIG = {
 
 async function runModelChain(
   contents: unknown,
-  models: ReadonlyArray<{ name: string; attempts: number }>,
+  models: ReadonlyArray<ModelStep>,
+  log?: ScanLogger,
 ): Promise<unknown> {
   let lastError: unknown;
   for (const model of models) {
     for (let attempt = 0; attempt < model.attempts; attempt++) {
+      const startedAt = Date.now();
       try {
-        const response = await ai.models.generateContent({
-          model: model.name,
-          contents: contents as never,
-          config: GENERATION_CONFIG,
-        });
+        const response = await withTimeout(
+          ai.models.generateContent({
+            model: model.name,
+            contents: contents as never,
+            config: GENERATION_CONFIG,
+          }),
+          model.timeoutMs,
+          model.name,
+        );
         const raw = response.text;
         if (!raw) throw new Error("Empty response from AI model");
-        return parseJsonLoose(raw);
+        const parsed = parseJsonLoose(raw);
+        log?.info(
+          { model: model.name, attempt: attempt + 1, aiMs: Date.now() - startedAt },
+          "Insect AI answered",
+        );
+        return parsed;
       } catch (err) {
         lastError = err;
-        if (isTransientError(err) && attempt < model.attempts - 1) {
+        const timedOut = err instanceof AttemptTimeoutError;
+        log?.warn(
+          {
+            model: model.name,
+            attempt: attempt + 1,
+            aiMs: Date.now() - startedAt,
+            timedOut,
+            err: String((err as { message?: string } | null)?.message ?? err),
+          },
+          "Insect AI attempt failed",
+        );
+        // A timeout means the model is slow right now: go straight to the next
+        // model instead of retrying the same one.
+        if (!timedOut && isTransientError(err) && attempt < model.attempts - 1) {
           await sleep(800 * (attempt + 1));
         } else {
           break;
@@ -162,6 +217,7 @@ export const UNKNOWN_SCIENTIFIC_NAME = "Unbekannt";
 
 export async function identifyInsect(
   imageDataUrl: string,
+  log?: ScanLogger,
 ): Promise<InsectIdentification> {
   const { mimeType, data } = parseDataUrl(imageDataUrl);
 
@@ -177,7 +233,7 @@ export async function identifyInsect(
     },
   ];
 
-  const parsed = await runModelChain(contents, MODELS);
+  const parsed = await runModelChain(contents, MODELS, log);
   const obj = (parsed ?? {}) as Record<string, unknown>;
 
   // Coerce: some model responses return the string "true" instead of boolean.

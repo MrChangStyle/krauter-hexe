@@ -137,9 +137,10 @@ router.post(
         return null as null;
       });
 
+    const scanStartedAt = Date.now();
     let identification;
     try {
-      identification = await identifyInsect(parsed.data.image);
+      identification = await identifyInsect(parsed.data.image, req.log);
     } catch (err) {
       req.log.error({ err }, "Insect identification failed");
       // Same reasoning as the plant scan: a failed AI call must not consume the
@@ -218,19 +219,18 @@ router.post(
           .json(
             ScanInsectResponse.parse({ insect: returnedInsect, alreadyInArchive: !insectIsNewToUser }),
           );
+        req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: false }, "Insect scan done");
         return;
       }
     }
 
-    // New species — insert then record the scan.
+    // New species — insert then record the scan. The photo is uploaded to the
+    // CDN after the response has been sent: the scanning device already has it
+    // locally (localImageId), so the user does not have to wait for the upload.
     const localImageId = parsed.data.localImageId ?? null;
-    const imageUrl = await uploadPhoto();
     const [newInsect] = await db
       .insert(insectsTable)
       .values({
-        // GCS URL is the primary image reference; localImageId kept for offline
-        // fallback on the scanning device. imageData never stored.
-        ...(imageUrl ? { imageUrl } : {}),
         ...(localImageId ? { localImageId } : {}),
         germanName: identification.germanName,
         scientificName: identification.scientificName,
@@ -270,6 +270,22 @@ router.post(
       .json(
         ScanInsectResponse.parse({ insect: newInsect, alreadyInArchive: false }),
       );
+    req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: true }, "Insect scan done");
+
+    // Background upload (see above). Failures only mean the entry has no CDN
+    // photo yet; the next scan of the same species heals it.
+    void (async () => {
+      const imageUrl = await uploadPhoto();
+      if (!imageUrl) return;
+      try {
+        await db
+          .update(insectsTable)
+          .set({ imageUrl })
+          .where(eq(insectsTable.id, newInsect.id));
+      } catch (err) {
+        req.log.warn({ err }, "Saving background insect image URL failed");
+      }
+    })();
   },
 );
 

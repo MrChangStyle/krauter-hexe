@@ -475,7 +475,7 @@ function ScanTab() {
       image: imageData,
       localImageId,
       phase: "idle",
-      countdown: 5,
+      countdown: 0,
       locationRegion,
     });
   }

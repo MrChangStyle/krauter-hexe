@@ -23,7 +23,7 @@ permissions:
 
 jobs:
   recompress:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
       NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}

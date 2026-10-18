@@ -259,8 +259,8 @@ export async function setArchived(farmId: number, animalId: number, archived: bo
   return getAnimal(farmId, animalId);
 }
 
-const PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
-const MAX_PHOTO_LENGTH = 8 * 1024 * 1024;
+export const PHOTO_RE = /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/;
+export const MAX_PHOTO_LENGTH = 8 * 1024 * 1024;
 
 /**
  * Uploads the animal's photo to Cloudinary and replaces the old one. The old

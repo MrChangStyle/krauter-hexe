@@ -2777,7 +2777,13 @@ export const ListBedsResponseItem = zod.object({
   "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
   "frostSource": zod.enum(['default', 'climate', 'manual']),
   "notes": zod.string().nullable(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "photoUrl": zod.string().nullable(),
+  "photoHeading": zod.number().nullable().describe('Compass heading of the phone when the photo was taken (0–360°)'),
+  "photoCorners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
 })
 export const ListBedsResponse = zod.array(ListBedsResponseItem)
 
@@ -2835,7 +2841,13 @@ export const CreateBedResponse = zod.object({
   "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
   "frostSource": zod.enum(['default', 'climate', 'manual']),
   "notes": zod.string().nullable(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "photoUrl": zod.string().nullable(),
+  "photoHeading": zod.number().nullable().describe('Compass heading of the phone when the photo was taken (0–360°)'),
+  "photoCorners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
 })
 
 
@@ -2866,7 +2878,13 @@ export const GetBedResponse = zod.object({
   "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
   "frostSource": zod.enum(['default', 'climate', 'manual']),
   "notes": zod.string().nullable(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "photoUrl": zod.string().nullable(),
+  "photoHeading": zod.number().nullable().describe('Compass heading of the phone when the photo was taken (0–360°)'),
+  "photoCorners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
 })
 
 
@@ -2924,7 +2942,13 @@ export const UpdateBedResponse = zod.object({
   "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
   "frostSource": zod.enum(['default', 'climate', 'manual']),
   "notes": zod.string().nullable(),
-  "createdAt": zod.coerce.date()
+  "createdAt": zod.coerce.date(),
+  "photoUrl": zod.string().nullable(),
+  "photoHeading": zod.number().nullable().describe('Compass heading of the phone when the photo was taken (0–360°)'),
+  "photoCorners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
 })
 
 
@@ -2937,6 +2961,134 @@ export const DeleteBedParams = zod.object({
 })
 
 export const DeleteBedResponse = zod.void()
+
+
+/**
+ * @summary Photo of the bed for the grid overlay (caretaker or admin); resets the corners
+ */
+export const SetBedPhotoParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const SetBedPhotoBody = zod.object({
+  "imageData": zod.string().describe('JPEG\/PNG\/WebP data URL, already downscaled by the app.'),
+  "heading": zod.number().nullish()
+})
+
+export const SetBedPhotoResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullable(),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number().nullable().describe('Rounded to 0.1°'),
+  "longitude": zod.number().nullable(),
+  "sunHours": zod.number().nullable(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]),
+  "soilPh": zod.number().nullable(),
+  "lastFrost": zod.string().describe('MM-DD, typical last spring frost'),
+  "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
+  "frostSource": zod.enum(['default', 'climate', 'manual']),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "photoUrl": zod.string().nullable(),
+  "photoHeading": zod.number().nullable().describe('Compass heading of the phone when the photo was taken (0–360°)'),
+  "photoCorners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})
+
+
+/**
+ * @summary Remove the bed photo (caretaker or admin)
+ */
+export const RemoveBedPhotoParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const RemoveBedPhotoResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullable(),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number().nullable().describe('Rounded to 0.1°'),
+  "longitude": zod.number().nullable(),
+  "sunHours": zod.number().nullable(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]),
+  "soilPh": zod.number().nullable(),
+  "lastFrost": zod.string().describe('MM-DD, typical last spring frost'),
+  "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
+  "frostSource": zod.enum(['default', 'climate', 'manual']),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "photoUrl": zod.string().nullable(),
+  "photoHeading": zod.number().nullable().describe('Compass heading of the phone when the photo was taken (0–360°)'),
+  "photoCorners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})
+
+
+/**
+ * @summary The four bed corners on the photo (caretaker or admin)
+ */
+export const SetBedPhotoCornersParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const setBedPhotoCornersBodyCornersMin = 4;
+export const setBedPhotoCornersBodyCornersMax = 4;
+
+
+
+export const SetBedPhotoCornersBody = zod.object({
+  "corners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).min(setBedPhotoCornersBodyCornersMin).max(setBedPhotoCornersBodyCornersMax)
+})
+
+export const SetBedPhotoCornersResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullable(),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number().nullable().describe('Rounded to 0.1°'),
+  "longitude": zod.number().nullable(),
+  "sunHours": zod.number().nullable(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]),
+  "soilPh": zod.number().nullable(),
+  "lastFrost": zod.string().describe('MM-DD, typical last spring frost'),
+  "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
+  "frostSource": zod.enum(['default', 'climate', 'manual']),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "photoUrl": zod.string().nullable(),
+  "photoHeading": zod.number().nullable().describe('Compass heading of the phone when the photo was taken (0–360°)'),
+  "photoCorners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})
 
 
 /**

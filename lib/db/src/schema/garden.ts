@@ -1,4 +1,4 @@
-import { doublePrecision, index, integer, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { farmsTable } from "./farm";
 import { plantsTable } from "./plants";
 
@@ -60,6 +60,13 @@ export const gardenBedsTable = pgTable(
     frostSource: frostSourceEnum("frost_source").notNull().default("default"),
     notes: text("notes"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Foto mit Pflanzraster (step 3): Cloudinary URL, compass heading of the
+    // phone when the photo was chosen (0–360°, null when unknown) and the four
+    // bed corners on the photo (0–1 of width/height, in grid order: start of
+    // the grid, along the length, opposite, along the width).
+    photoUrl: text("photo_url"),
+    photoHeading: integer("photo_heading"),
+    photoCorners: jsonb("photo_corners").$type<{ x: number; y: number }[]>(),
   },
   (table) => [index("garden_beds_farm_idx").on(table.farmId)],
 );

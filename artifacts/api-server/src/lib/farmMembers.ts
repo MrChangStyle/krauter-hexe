@@ -14,6 +14,7 @@ import {
   farmAnimalsTable,
   farmMembershipsTable,
   farmsTable,
+  gardenBedsTable,
   usersTable,
   type FarmRole,
 } from '@workspace/db';
@@ -103,7 +104,7 @@ export async function deleteFarm(farmId: number, confirmName: unknown): Promise<
   deleteFarmPhotos(photos);
 }
 
-/** Cloudinary URLs of the animal and camera photos of these farms. */
+/** Cloudinary URLs of the animal, camera and bed photos of these farms. */
 export async function farmPhotoUrls(
   farmIds: number[],
   executor: Pick<typeof db, 'select'> = db,
@@ -117,7 +118,11 @@ export async function farmPhotoUrls(
     .select({ url: cameraEventsTable.imageUrl })
     .from(cameraEventsTable)
     .where(and(inArray(cameraEventsTable.farmId, farmIds), isNotNull(cameraEventsTable.imageUrl)));
-  return [...animals, ...cameraEvents].map((r) => r.url!).filter(Boolean);
+  const beds = await executor
+    .select({ url: gardenBedsTable.photoUrl })
+    .from(gardenBedsTable)
+    .where(and(inArray(gardenBedsTable.farmId, farmIds), isNotNull(gardenBedsTable.photoUrl)));
+  return [...animals, ...cameraEvents, ...beds].map((r) => r.url!).filter(Boolean);
 }
 
 /**

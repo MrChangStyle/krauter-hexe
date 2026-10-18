@@ -13,7 +13,8 @@ import {
 } from '@workspace/db';
 import { and, asc, eq } from 'drizzle-orm';
 
-import { FarmDataError, notFound, text } from './farmAnimals';
+import { FarmDataError, MAX_PHOTO_LENGTH, PHOTO_RE, notFound, text } from './farmAnimals';
+import { deleteImageByUrl, uploadImage } from './imageStorage';
 import { geocodePostalCode, refreshBedFrostDates, roundCoord } from './gardenClimate';
 import { logger } from './logger';
 
@@ -175,6 +176,78 @@ export async function deleteBed(farmId: number, bedId: number): Promise<void> {
   const deleted = await db
     .delete(gardenBedsTable)
     .where(and(eq(gardenBedsTable.id, bedId), eq(gardenBedsTable.farmId, farmId)))
-    .returning({ id: gardenBedsTable.id });
+    .returning({ id: gardenBedsTable.id, photoUrl: gardenBedsTable.photoUrl });
   if (deleted.length === 0) throw notFound();
+  if (deleted[0]!.photoUrl) void deleteImageByUrl(deleted[0]!.photoUrl).catch(() => false);
+}
+
+// ── Foto mit Pflanzraster ────────────────────────────────────────────────────
+
+/** A new photo of the bed; the corners must be marked again on it. */
+export async function setBedPhoto(farmId: number, bedId: number, imageData: unknown, heading: number | null | undefined) {
+  if (typeof imageData !== 'string' || imageData.length > MAX_PHOTO_LENGTH || !PHOTO_RE.test(imageData)) {
+    throw new FarmDataError(400, 'Das ist kein gültiges Foto.');
+  }
+  const photoHeading = heading == null ? null : Math.round(((heading % 360) + 360) % 360);
+  const current = await getBed(farmId, bedId);
+  let url: string;
+  try {
+    url = await uploadImage(imageData);
+  } catch {
+    throw new FarmDataError(502, 'Das Foto konnte gerade nicht gespeichert werden. Bitte versuche es später erneut.');
+  }
+  const [bed] = await db
+    .update(gardenBedsTable)
+    .set({ photoUrl: url, photoHeading, photoCorners: null })
+    .where(and(eq(gardenBedsTable.id, bedId), eq(gardenBedsTable.farmId, farmId)))
+    .returning();
+  if (current.photoUrl && current.photoUrl !== url) void deleteImageByUrl(current.photoUrl).catch(() => false);
+  if (!bed) throw notFound();
+  return bed;
+}
+
+export async function removeBedPhoto(farmId: number, bedId: number) {
+  const current = await getBed(farmId, bedId);
+  const [bed] = await db
+    .update(gardenBedsTable)
+    .set({ photoUrl: null, photoHeading: null, photoCorners: null })
+    .where(and(eq(gardenBedsTable.id, bedId), eq(gardenBedsTable.farmId, farmId)))
+    .returning();
+  if (current.photoUrl) void deleteImageByUrl(current.photoUrl).catch(() => false);
+  return bed!;
+}
+
+type Point = { x: number; y: number };
+
+/** Four points inside the photo forming a convex quadrilateral (in order). */
+export function validCorners(corners: Point[]): boolean {
+  if (corners.length !== 4) return false;
+  if (corners.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y) || p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1)) return false;
+  let sign = 0;
+  for (let i = 0; i < 4; i += 1) {
+    const a = corners[i]!;
+    const b = corners[(i + 1) % 4]!;
+    const c = corners[(i + 2) % 4]!;
+    const cross = (b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x);
+    if (Math.abs(cross) < 1e-4) return false;
+    const s = Math.sign(cross);
+    if (sign === 0) sign = s;
+    else if (s !== sign) return false;
+  }
+  return true;
+}
+
+export async function setBedCorners(farmId: number, bedId: number, corners: Point[]) {
+  const current = await getBed(farmId, bedId);
+  if (!current.photoUrl) throw new FarmDataError(400, 'Für dieses Beet gibt es noch kein Foto.');
+  if (!validCorners(corners)) {
+    throw new FarmDataError(400, 'Die vier Ecken ergeben kein Viereck – bitte der Reihe nach rund ums Beet antippen.');
+  }
+  const rounded = corners.map((p) => ({ x: Math.round(p.x * 10_000) / 10_000, y: Math.round(p.y * 10_000) / 10_000 }));
+  const [bed] = await db
+    .update(gardenBedsTable)
+    .set({ photoCorners: rounded })
+    .where(and(eq(gardenBedsTable.id, bedId), eq(gardenBedsTable.farmId, farmId)))
+    .returning();
+  return bed!;
 }

@@ -41,3 +41,14 @@ describe("frost dates from weather history", () => {
     expect(validMonthDay("5-15")).toBe(false);
   });
 });
+
+describe("bed corners on the photo", async () => {
+  const { validCorners } = await import("./gardenBeds");
+  it("needs four points forming a convex quadrilateral, in order", () => {
+    const square = [{ x: 0.2, y: 0.3 }, { x: 0.8, y: 0.3 }, { x: 0.9, y: 0.9 }, { x: 0.1, y: 0.9 }];
+    expect(validCorners(square)).toBe(true);
+    expect(validCorners([square[0]!, square[2]!, square[1]!, square[3]!])).toBe(false); // crossed
+    expect(validCorners(square.slice(0, 3))).toBe(false);
+    expect(validCorners([{ x: -0.1, y: 0.3 }, ...square.slice(1)])).toBe(false);
+  });
+});

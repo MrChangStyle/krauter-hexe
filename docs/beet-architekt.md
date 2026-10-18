@@ -54,7 +54,7 @@ Vom Inhaber am 18.10.2026 ergänzt:
 2. **Raster von oben (UMGESETZT):** Pflanzen aus Katalog und Archiv in die Felder setzen; feste
    Regeln prüfen Abstand, Nachbarschaft (gute/schlechte Nachbarn) und Standort; Henni
    zeigt den Hinweis.
-3. **Foto mit Pflanzraster:** geführte Aufnahme mit Kompass, Ecken antippen,
+3. **Foto mit Pflanzraster (UMGESETZT):** geführte Aufnahme mit Kompass, Ecken antippen,
    Perspektiv-Raster aufs Foto, Pflanzen ins Foto-Raster setzen.
 4. **Kalender & Fruchtfolge:** Termine aus Anbaudaten und Frostterminen, Monatsübersicht,
    Erinnerungen im Aufgabenplaner mit Push; Belegung je Jahr, Warnung bei gleicher Familie

@@ -32,6 +32,8 @@ import type {
   BackfillSymptomCasingResult,
   BackfillSymptomsResult,
   BackfillToxicityResult,
+  BedCornersInput,
+  BedPhotoInput,
   BedPlanting,
   BedPlantingInput,
   Camera,
@@ -7651,6 +7653,227 @@ export const useDeleteBed = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteBedMutationOptions(options));
+    }
+
+export const getSetBedPhotoUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/photo`
+}
+
+/**
+ * @summary Photo of the bed for the grid overlay (caretaker or admin); resets the corners
+ */
+export const setBedPhoto = async (farmId: number,
+    bedId: number,
+    bedPhotoInput: BedPhotoInput, options?: RequestInit): Promise<GardenBed> => {
+
+  return customFetch<GardenBed>(getSetBedPhotoUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bedPhotoInput)
+  }
+);}
+
+
+
+
+
+export const getSetBedPhotoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setBedPhoto>>, TError,{farmId: number;bedId: number;data: BodyType<BedPhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setBedPhoto>>, TError,{farmId: number;bedId: number;data: BodyType<BedPhotoInput>}, TContext> => {
+
+const mutationKey = ['setBedPhoto'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setBedPhoto>>, {farmId: number;bedId: number;data: BodyType<BedPhotoInput>}> = (props) => {
+          const {farmId,bedId,data} = props ?? {};
+
+          return  setBedPhoto(farmId,bedId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetBedPhotoMutationResult = NonNullable<Awaited<ReturnType<typeof setBedPhoto>>>
+    export type SetBedPhotoMutationBody = BodyType<BedPhotoInput>
+    export type SetBedPhotoMutationError = ErrorType<void>
+
+    /**
+ * @summary Photo of the bed for the grid overlay (caretaker or admin); resets the corners
+ */
+export const useSetBedPhoto = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setBedPhoto>>, TError,{farmId: number;bedId: number;data: BodyType<BedPhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setBedPhoto>>,
+        TError,
+        {farmId: number;bedId: number;data: BodyType<BedPhotoInput>},
+        TContext
+      > => {
+      return useMutation(getSetBedPhotoMutationOptions(options));
+    }
+
+export const getRemoveBedPhotoUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/photo`
+}
+
+/**
+ * @summary Remove the bed photo (caretaker or admin)
+ */
+export const removeBedPhoto = async (farmId: number,
+    bedId: number, options?: RequestInit): Promise<GardenBed> => {
+
+  return customFetch<GardenBed>(getRemoveBedPhotoUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveBedPhotoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBedPhoto>>, TError,{farmId: number;bedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeBedPhoto>>, TError,{farmId: number;bedId: number}, TContext> => {
+
+const mutationKey = ['removeBedPhoto'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeBedPhoto>>, {farmId: number;bedId: number}> = (props) => {
+          const {farmId,bedId} = props ?? {};
+
+          return  removeBedPhoto(farmId,bedId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveBedPhotoMutationResult = NonNullable<Awaited<ReturnType<typeof removeBedPhoto>>>
+
+    export type RemoveBedPhotoMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove the bed photo (caretaker or admin)
+ */
+export const useRemoveBedPhoto = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeBedPhoto>>, TError,{farmId: number;bedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeBedPhoto>>,
+        TError,
+        {farmId: number;bedId: number},
+        TContext
+      > => {
+      return useMutation(getRemoveBedPhotoMutationOptions(options));
+    }
+
+export const getSetBedPhotoCornersUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/photo-corners`
+}
+
+/**
+ * @summary The four bed corners on the photo (caretaker or admin)
+ */
+export const setBedPhotoCorners = async (farmId: number,
+    bedId: number,
+    bedCornersInput: BedCornersInput, options?: RequestInit): Promise<GardenBed> => {
+
+  return customFetch<GardenBed>(getSetBedPhotoCornersUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bedCornersInput)
+  }
+);}
+
+
+
+
+
+export const getSetBedPhotoCornersMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setBedPhotoCorners>>, TError,{farmId: number;bedId: number;data: BodyType<BedCornersInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setBedPhotoCorners>>, TError,{farmId: number;bedId: number;data: BodyType<BedCornersInput>}, TContext> => {
+
+const mutationKey = ['setBedPhotoCorners'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setBedPhotoCorners>>, {farmId: number;bedId: number;data: BodyType<BedCornersInput>}> = (props) => {
+          const {farmId,bedId,data} = props ?? {};
+
+          return  setBedPhotoCorners(farmId,bedId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetBedPhotoCornersMutationResult = NonNullable<Awaited<ReturnType<typeof setBedPhotoCorners>>>
+    export type SetBedPhotoCornersMutationBody = BodyType<BedCornersInput>
+    export type SetBedPhotoCornersMutationError = ErrorType<void>
+
+    /**
+ * @summary The four bed corners on the photo (caretaker or admin)
+ */
+export const useSetBedPhotoCorners = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setBedPhotoCorners>>, TError,{farmId: number;bedId: number;data: BodyType<BedCornersInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setBedPhotoCorners>>,
+        TError,
+        {farmId: number;bedId: number;data: BodyType<BedCornersInput>},
+        TContext
+      > => {
+      return useMutation(getSetBedPhotoCornersMutationOptions(options));
     }
 
 export const getListPlantingsUrl = (farmId: number,

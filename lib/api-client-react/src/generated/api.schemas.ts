@@ -754,6 +754,16 @@ export interface LoginInput {
   password: string;
 }
 
+export interface DeleteAccountInput {
+  /**
+     * Current password (accounts that have one).
+     * @maxLength 200
+     */
+  password?: string;
+  /** The account's email address (accounts without a password). */
+  confirmEmail?: string;
+}
+
 export interface RegisterInput {
   /** @minLength 3 */
   email: string;

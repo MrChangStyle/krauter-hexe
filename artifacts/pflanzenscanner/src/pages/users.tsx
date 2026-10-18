@@ -35,6 +35,7 @@ import { PeckingChicken } from "@/components/pecking-chicken";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
 import { PushNotificationCard } from "@/components/push-notification-card";
+import { AccountCard } from "@/components/account-card";
 import { ImageRescueCard } from "@/components/image-rescue-card";
 import { useFavorites } from "@/lib/use-favorites";
 import {
@@ -1081,6 +1082,9 @@ export default function UsersPage() {
 
       {/* Push notifications */}
       <PushNotificationCard />
+
+      {/* Account: legal links and "Konto löschen" */}
+      <AccountCard />
 
       {/* Owner-only: Benutzerverwaltung */}
       {me?.isOwner && (

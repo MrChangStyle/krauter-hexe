@@ -173,7 +173,8 @@ export function DatenschutzPage() {
       <section>
         <h2>4. Speicherdauer</h2>
         <p>
-          Kontodaten speichern wir, bis du dein Konto löschst. Beim Löschen
+          Kontodaten speichern wir, bis du dein Konto löschst (in der App
+          unter „Home“ → „Dein Konto“). Beim Löschen
           entfernen wir deine persönlichen Daten; Arten, die du dem
           gemeinsamen Archiv hinzugefügt hast, bleiben ohne Bezug zu deiner
           Person erhalten. Daten zum Missbrauchsschutz werden nach spätestens
@@ -237,7 +238,8 @@ export function NutzungsbedingungenPage() {
       <section>
         <h2>5. Konto beenden</h2>
         <p>
-          Du kannst dein Konto jederzeit löschen lassen; schreib uns dazu an
+          Du kannst dein Konto jederzeit selbst löschen: in der App unter
+          „Home“ → „Dein Konto“ → „Konto löschen“. Alternativ schreib uns an
           die im Impressum genannte E-Mail-Adresse.
         </p>
       </section>

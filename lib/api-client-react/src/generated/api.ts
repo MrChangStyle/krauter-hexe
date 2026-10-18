@@ -34,6 +34,7 @@ import type {
   CategoryCount,
   CreateCareGuideInput,
   CreateTaskInput,
+  DeleteAccountInput,
   DeletePlantInput,
   FavoriteIds,
   GeoReverseInput,
@@ -2744,6 +2745,78 @@ export function useGetCurrentAuthUser<TData = Awaited<ReturnType<typeof getCurre
 
 
 
+
+export const getDeleteOwnAccountUrl = () => {
+
+
+
+
+  return `/api/auth/user`
+}
+
+/**
+ * Removes favourites, tasks, care guides, push subscriptions and scan history, unlinks the user from shared archive entries (which stay) and deletes the account. Requires the password, or – for accounts without one (Google only) – the account's email address typed again. The owner account cannot be deleted.
+ * @summary Delete the signed-in account and all of its personal data
+ */
+export const deleteOwnAccount = async (deleteAccountInput: DeleteAccountInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteOwnAccountUrl(),
+  {
+    ...options,
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(deleteAccountInput)
+  }
+);}
+
+
+
+
+
+export const getDeleteOwnAccountMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOwnAccount>>, TError,{data: BodyType<DeleteAccountInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteOwnAccount>>, TError,{data: BodyType<DeleteAccountInput>}, TContext> => {
+
+const mutationKey = ['deleteOwnAccount'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteOwnAccount>>, {data: BodyType<DeleteAccountInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  deleteOwnAccount(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteOwnAccountMutationResult = NonNullable<Awaited<ReturnType<typeof deleteOwnAccount>>>
+    export type DeleteOwnAccountMutationBody = BodyType<DeleteAccountInput>
+    export type DeleteOwnAccountMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete the signed-in account and all of its personal data
+ */
+export const useDeleteOwnAccount = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteOwnAccount>>, TError,{data: BodyType<DeleteAccountInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteOwnAccount>>,
+        TError,
+        {data: BodyType<DeleteAccountInput>},
+        TContext
+      > => {
+      return useMutation(getDeleteOwnAccountMutationOptions(options));
+    }
 
 export const getRegisterAccountUrl = () => {
 

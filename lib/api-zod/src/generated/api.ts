@@ -1178,6 +1178,22 @@ export const GetCurrentAuthUserResponse = zod.object({
 
 
 /**
+ * Removes favourites, tasks, care guides, push subscriptions and scan history, unlinks the user from shared archive entries (which stay) and deletes the account. Requires the password, or – for accounts without one (Google only) – the account's email address typed again. The owner account cannot be deleted.
+ * @summary Delete the signed-in account and all of its personal data
+ */
+export const deleteOwnAccountBodyPasswordMax = 200;
+
+
+
+export const DeleteOwnAccountBody = zod.object({
+  "password": zod.string().max(deleteOwnAccountBodyPasswordMax).optional().describe('Current password (accounts that have one).'),
+  "confirmEmail": zod.string().optional().describe('The account\'s email address (accounts without a password).')
+})
+
+export const DeleteOwnAccountResponse = zod.void()
+
+
+/**
  * Creates a new account and signs it in. If an account with this email already exists but has no password (it predates the switch to email/password sign-in), the password is attached to that account so its scans, leaves and approval status are preserved. The first account ever created becomes the owner and is approved automatically. All others start unapproved, unless the server runs with OPEN_REGISTRATION=true – then new accounts can use the app right away.
  * @summary Create an account (or claim one that has no password yet)
  */

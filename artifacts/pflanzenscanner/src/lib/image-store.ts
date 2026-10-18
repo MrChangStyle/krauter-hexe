@@ -78,6 +78,22 @@ export async function getImage(localImageId: string): Promise<string | null> {
 }
 
 /**
+ * Cheap existence check that does not load the image bytes (a full photo can
+ * be several hundred KB, and the rescue screen checks hundreds of entries).
+ */
+export async function hasImage(localImageId: string): Promise<boolean> {
+  try {
+    const db = await openDb();
+    const key = await promisify(
+      db.transaction(STORE, "readonly").objectStore(STORE).getKey(localImageId),
+    );
+    return key !== undefined;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Delete the image for a given localImageId.
  * Safe to call when the id does not exist.
  */

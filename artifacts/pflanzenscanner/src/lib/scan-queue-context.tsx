@@ -21,6 +21,7 @@ import {
   type PendingScan,
 } from "@/lib/scan-queue";
 import { drainQueue } from "@/lib/scan-queue-drain";
+import { hasRealConnection, resetConnectionCache } from "@/lib/connectivity";
 
 /** Outcome of one successfully scanned queue item. */
 export interface ScanResult {
@@ -181,6 +182,7 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
       stats = await drainQueue({
         lockRef: processingRef,
         getIsOnline,
+        checkConnection: () => hasRealConnection(),
         getAllPendingScans,
         scanPlant,
         deletePendingScan,
@@ -342,6 +344,7 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
     });
 
     const handleOnline = () => {
+      resetConnectionCache();
       setIsOnline(true);
       void processQueue();
     };

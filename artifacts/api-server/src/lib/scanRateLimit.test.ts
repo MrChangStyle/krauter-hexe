@@ -83,6 +83,7 @@ vi.mock("drizzle-orm", () => ({
   },
   and: (...args: unknown[]) => ({ and: args }),
   gte: (column: unknown, value: unknown) => ({ gte: [column, value] }),
+  lt: (column: unknown, value: unknown) => ({ lt: [column, value] }),
   sql: Object.assign(
     (...args: unknown[]) => ({ sql: args }),
     { raw: (s: string) => ({ raw: s }) },

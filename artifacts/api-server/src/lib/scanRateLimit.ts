@@ -10,7 +10,7 @@
  * per Berlin calendar day.
  */
 
-import { gte, and, eq, sql } from "drizzle-orm";
+import { gte, and, eq, lt, sql } from "drizzle-orm";
 import { db, scanAttemptsTable } from "@workspace/db";
 
 /**
@@ -172,5 +172,32 @@ export async function refundScanAttempt(attemptId: number | null): Promise<void>
     await db.delete(scanAttemptsTable).where(eq(scanAttemptsTable.id, attemptId));
   } catch {
     // Quota accounting is best-effort; the caller is already handling an error.
+  }
+}
+
+// Attempts are only needed for today's count. Older rows are dead weight, and
+// without cleanup the table grew by one row per scan forever. Keep a week for
+// troubleshooting, then delete.
+const ATTEMPT_RETENTION_DAYS = 7;
+const CLEANUP_INTERVAL_MS = 60 * 60 * 1000;
+let lastCleanupAt = 0;
+
+/**
+ * Deletes scan attempts older than ATTEMPT_RETENTION_DAYS. Runs at most once
+ * per hour per server process, so it can be called from a frequent job (the
+ * minute-by-minute cron) without cost. Never throws.
+ */
+export async function cleanupOldScanAttempts(now: number = Date.now()): Promise<number> {
+  if (now - lastCleanupAt < CLEANUP_INTERVAL_MS) return 0;
+  lastCleanupAt = now;
+  try {
+    const cutoff = new Date(now - ATTEMPT_RETENTION_DAYS * 24 * 60 * 60 * 1000);
+    const deleted = await db
+      .delete(scanAttemptsTable)
+      .where(lt(scanAttemptsTable.attemptedAt, cutoff))
+      .returning({ id: scanAttemptsTable.id });
+    return deleted.length;
+  } catch {
+    return 0;
   }
 }

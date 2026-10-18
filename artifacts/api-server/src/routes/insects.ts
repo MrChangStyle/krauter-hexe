@@ -128,11 +128,14 @@ router.post(
       scanAttemptId = rateLimit.attemptId;
     }
 
-    // Start the image upload in parallel with AI identification.
-    const uploadPromise = uploadImage(parsed.data.image).catch((e: unknown) => {
-      req.log.warn({ err: e }, "Insect image upload failed");
-      return null as null;
-    });
+    // The photo is uploaded only when it is needed (new species, or a known
+    // species without a shared photo). Uploading every scan up front stored
+    // an unused copy for every duplicate.
+    const uploadPhoto = () =>
+      uploadImage(parsed.data.image).catch((e: unknown) => {
+        req.log.warn({ err: e }, "Insect image upload failed");
+        return null as null;
+      });
 
     let identification;
     try {
@@ -145,8 +148,6 @@ router.post(
       res.status(502).json({ error: "AI-Identifizierung fehlgeschlagen" });
       return;
     }
-
-    const imageUrl = await uploadPromise;
 
     if (!identification.istInsekt) {
       res.status(422).json({
@@ -174,12 +175,22 @@ router.post(
       if (existing) {
         // Image heal: if the client successfully stored a new photo locally,
         // refresh localImageId so this device/session can display the image.
+        // Image heal: give the shared entry a photo if it has none yet, and a
+        // local photo key only if it has none (the first scanner's key stays,
+        // so that device can still back its photo up later).
         const localImageId = parsed.data.localImageId ?? null;
         let returnedInsect = existing;
-        if (localImageId && localImageId !== existing.localImageId) {
+        const healedImageUrl = isServableImageUrl(existing.imageUrl)
+          ? null
+          : await uploadPhoto();
+        const adoptLocalId = !!localImageId && !existing.localImageId;
+        if (healedImageUrl || adoptLocalId) {
           const [healed] = await db
             .update(insectsTable)
-            .set({ localImageId })
+            .set({
+              ...(healedImageUrl ? { imageUrl: healedImageUrl } : {}),
+              ...(adoptLocalId ? { localImageId } : {}),
+            })
             .where(eq(insectsTable.id, existing.id))
             .returning(insectPublicColumns);
           if (healed) returnedInsect = healed;
@@ -213,6 +224,7 @@ router.post(
 
     // New species — insert then record the scan.
     const localImageId = parsed.data.localImageId ?? null;
+    const imageUrl = await uploadPhoto();
     const [newInsect] = await db
       .insert(insectsTable)
       .values({

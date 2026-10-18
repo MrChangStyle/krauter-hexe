@@ -33,7 +33,17 @@ export function useOfflineWarmup(): void {
           // The service worker (CacheFirst) stores the response, so once this
           // succeeds the photo is available offline. If it's already cached,
           // this resolves from the cache without hitting the network.
-          const res = await fetch(plantImageUrl(plant.id));
+          // The UI shows the CDN URL directly when there is one, so that is
+          // the URL the offline cache must hold. CORS mode (the CDN allows
+          // it) keeps the cached copy a normal response instead of an opaque
+          // one, which browsers count with a large storage penalty.
+          const cdnUrl =
+            typeof plant.imageUrl === "string" && /^https?:\/\//i.test(plant.imageUrl)
+              ? plant.imageUrl
+              : null;
+          const res = cdnUrl
+            ? await fetch(cdnUrl, { mode: "cors", credentials: "omit" })
+            : await fetch(plantImageUrl(plant.id));
           if (res.ok) warmed.current.add(plant.id);
         } catch {
           // Offline or a transient failure: try again on a later run.

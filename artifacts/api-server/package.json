@@ -9,6 +9,7 @@
     "start": "node --enable-source-maps ./dist/index.mjs",
     "test": "vitest run",
     "migrate:images": "tsx scripts/migrate-images-to-cloudinary.ts",
+    "recompress:images": "tsx scripts/recompress-cloudinary-images.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

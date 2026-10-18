@@ -26,6 +26,13 @@ export interface DrainDeps {
    */
   lockRef: { current: boolean };
   getIsOnline: () => boolean;
+  /**
+   * Optional real reachability check (asks the server). `getIsOnline` only
+   * reflects navigator.onLine, which stays true on a signal too weak to carry
+   * a request. When this resolves false the drain stops as a network stop
+   * and items stay pending.
+   */
+  checkConnection?: () => Promise<boolean>;
   getAllPendingScans: () => Promise<PendingScan[]>;
   scanPlant: (args: {
     image: string;
@@ -113,6 +120,15 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
   const attemptedThisDrain = new Set<string>();
 
   try {
+    if (deps.checkConnection) {
+      // Only probe when there is something to send; an empty queue must not
+      // cause a request every 5 seconds.
+      const waiting = await deps.getAllPendingScans();
+      if (waiting.length > 0 && !(await deps.checkConnection())) {
+        networkStop = true;
+        return { added, duplicates, failed, notPlant, networkStop };
+      }
+    }
     for (;;) {
       if (!deps.getIsOnline()) {
         networkStop = true;

@@ -104,11 +104,42 @@ export default defineConfig({
             },
           },
           {
+            // Insect photos via the legacy endpoint, same rules as plants.
+            urlPattern: /\/api\/insects\/\d+\/image/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'insect-images',
+              expiration: {
+                maxEntries: 200,
+                maxAgeSeconds: 60 * 60 * 24 * 60, // 60 days
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            // Photos on the image CDN. The app shows these URLs directly, so
+            // without this rule every archive photo was missing offline. A
+            // CDN URL never changes its content (new photo = new URL), so
+            // cache-first is safe.
+            urlPattern: ({ url }) => url.hostname === 'res.cloudinary.com',
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'cdn-images',
+              expiration: {
+                maxEntries: 600,
+                maxAgeSeconds: 60 * 60 * 24 * 90, // 90 days
+                purgeOnQuotaError: true,
+              },
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
             // Archive / detail / category JSON: use the network when it's
             // reachable (so data stays fresh) but fall back to the last known
             // copy when offline or on a weak connection, so the whole archive
-            // stays readable without a signal.
-            urlPattern: /\/api\/(plants|categories)/,
+            // stays readable without a signal. Insects included: their
+            // archive used to be empty offline.
+            urlPattern: /\/api\/(plants|categories|insects)/,
             handler: 'NetworkFirst',
             options: {
               cacheName: 'plant-data',

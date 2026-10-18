@@ -2754,7 +2754,7 @@ export const getRegisterAccountUrl = () => {
 }
 
 /**
- * Creates a new account and signs it in. If an account with this email already exists but has no password (it predates the switch to email/password sign-in), the password is attached to that account so its scans, leaves and approval status are preserved. The first account ever created becomes the owner and is approved automatically; all others start unapproved.
+ * Creates a new account and signs it in. If an account with this email already exists but has no password (it predates the switch to email/password sign-in), the password is attached to that account so its scans, leaves and approval status are preserved. The first account ever created becomes the owner and is approved automatically. All others start unapproved, unless the server runs with OPEN_REGISTRATION=true – then new accounts can use the app right away.
  * @summary Create an account (or claim one that has no password yet)
  */
 export const registerAccount = async (registerInput: RegisterInput, options?: RequestInit): Promise<AuthUserEnvelope> => {

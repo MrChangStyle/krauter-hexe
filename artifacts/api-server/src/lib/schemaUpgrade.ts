@@ -14,6 +14,8 @@ const STATEMENTS = [
   "ALTER TABLE plants ADD COLUMN IF NOT EXISTS image_locked boolean NOT NULL DEFAULT false",
   "ALTER TABLE insects ADD COLUMN IF NOT EXISTS image_quality integer",
   "ALTER TABLE insects ADD COLUMN IF NOT EXISTS image_locked boolean NOT NULL DEFAULT false",
+  "ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at timestamp with time zone",
+  "ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_version varchar",
 ];
 
 export async function upgradeSchema(): Promise<void> {

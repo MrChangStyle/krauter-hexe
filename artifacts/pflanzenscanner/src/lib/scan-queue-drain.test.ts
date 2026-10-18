@@ -736,3 +736,49 @@ describe("retry back-off gate", () => {
     expect(deps.scanPlant).toHaveBeenCalledTimes(1);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Daily limits (429)
+// ---------------------------------------------------------------------------
+
+describe("daily limits", () => {
+  function rejectWith(data: Record<string, unknown>) {
+    return vi.fn().mockRejectedValue({ status: 429, data });
+  }
+
+  it("reports the user's own limit with appWide=false and keeps the item", async () => {
+    const onScanLimitReached = vi.fn();
+    const deps = makeDeps({
+      scanPlant: rejectWith({
+        error: "SCAN_LIMIT_REACHED",
+        resetsAt: "2026-10-19T22:00:00.000Z",
+        limit: 15,
+      }),
+      onScanLimitReached,
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(onScanLimitReached).toHaveBeenCalledWith("2026-10-19T22:00:00.000Z", 15, false);
+    expect(stats.networkStop).toBe(true);
+    expect(deps.deletePendingScan).not.toHaveBeenCalled();
+    expect(deps.markScanError).not.toHaveBeenCalled();
+  });
+
+  it("reports the app-wide budget with appWide=true", async () => {
+    const onScanLimitReached = vi.fn();
+    const deps = makeDeps({
+      scanPlant: rejectWith({
+        error: "SCAN_BUDGET_REACHED",
+        resetsAt: "2026-10-19T22:00:00.000Z",
+        limit: 15,
+      }),
+      onScanLimitReached,
+    });
+
+    await drainQueue(deps);
+
+    expect(onScanLimitReached).toHaveBeenCalledWith("2026-10-19T22:00:00.000Z", 15, true);
+    expect(deps.markScanError).not.toHaveBeenCalled();
+  });
+});

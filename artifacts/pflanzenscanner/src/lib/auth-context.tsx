@@ -7,7 +7,7 @@ import {
   useCallback,
   type ReactNode,
 } from "react";
-import { useAuth, type AuthUser } from "@/lib/use-auth";
+import { useAuth, type AuthUser, type RegisterOptions } from "@/lib/use-auth";
 import { UsernameSetupModal } from "@/components/username-setup-modal";
 import { useQueryClient } from "@tanstack/react-query";
 import { getGetCurrentAuthUserQueryKey } from "@workspace/api-client-react";
@@ -30,7 +30,7 @@ interface AuthContextValue {
   register: (
     email: string,
     password: string,
-    registrationCode?: string,
+    options: RegisterOptions,
   ) => Promise<void>;
   logout: () => void;
   /** Refresh the cached user (e.g. after username is set). */
@@ -180,8 +180,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const register = useCallback(
-    async (email: string, password: string, registrationCode?: string) => {
-      await auth.register(email, password, registrationCode);
+    async (email: string, password: string, options: RegisterOptions) => {
+      await auth.register(email, password, options);
     },
     [auth.register],
   );

@@ -3,8 +3,10 @@
  *
  * The app keeps its own accounts (email + password) instead of delegating to an
  * external identity provider, so it is not tied to any one hosting platform.
- * Access stays private: the first account that registers becomes the owner and
- * is approved automatically, everyone else waits until the owner lets them in.
+ * The first account that registers becomes the owner and is approved
+ * automatically. Everyone else waits until the owner lets them in – unless
+ * OPEN_REGISTRATION=true, then new accounts can use the app right away (see
+ * lib/registrationPolicy.ts for the brakes that come with that).
  */
 
 import { GetCurrentAuthUserResponse } from '@workspace/api-zod';
@@ -13,6 +15,14 @@ import { and, eq, sql, ne } from 'drizzle-orm';
 import { Router, type IRouter, type Request, type Response } from 'express';
 
 import { promoteFirstOwner, publicUserColumns } from '../lib/accounts';
+import {
+  LEGAL_VERSION,
+  addressMayRegister,
+  dailyCapAllowsRegistration,
+  isOpenRegistration,
+  recordRegistration,
+} from '../lib/registrationPolicy';
+import { getTurnstileConfig, verifyTurnstileToken } from '../lib/turnstile';
 import { clearAuthCookie, setAuthCookie } from '../lib/auth';
 import {
   hashPassword,
@@ -24,8 +34,8 @@ import { createAuthToken } from '../lib/token';
 
 const router: IRouter = Router();
 
-// Deliberately permissive: this only catches typos, the real check is that the
-// owner has to approve the account before it can do anything.
+// Deliberately permissive: this only catches typos. Without email sending there
+// is no way to prove ownership of an address anyway.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function normalizeEmail(value: string): string {
@@ -135,6 +145,28 @@ router.post('/auth/register', async (req: Request, res: Response): Promise<void>
     return;
   }
 
+  // Consent to Datenschutzerklärung and Nutzungsbedingungen is required for
+  // every new account; the time and version are stored with it.
+  const { acceptTerms, turnstileToken } = req.body as {
+    acceptTerms?: unknown;
+    turnstileToken?: unknown;
+  };
+  if (acceptTerms !== true) {
+    res.status(400).json({
+      error: 'Bitte stimme der Datenschutzerklärung und den Nutzungsbedingungen zu.',
+    });
+    return;
+  }
+
+  const turnstile = getTurnstileConfig();
+  if (turnstile && !(await verifyTurnstileToken(turnstile, turnstileToken, req.ip))) {
+    recordFailure(key);
+    res.status(400).json({
+      error: 'Die Sicherheitsprüfung hat nicht geklappt. Bitte versuche es erneut.',
+    });
+    return;
+  }
+
   // Shared invitation code. Without it, anyone who guesses a family member's
   // email address could claim their account before they register themselves.
   const requiredCode = process.env['REGISTRATION_CODE'];
@@ -166,7 +198,26 @@ router.post('/auth/register', async (req: Request, res: Response): Promise<void>
     return;
   }
 
+  // Brakes for brand-new accounts only; claiming an existing row creates
+  // nothing. Checked before the (slow) hashing so a flood costs us little.
+  const address = req.ip ?? 'unknown';
+  if (!existing) {
+    if (!addressMayRegister(address)) {
+      res.status(429).json({
+        error: 'Von diesem Anschluss wurden gerade zu viele Konten angelegt. Bitte versuche es später erneut.',
+      });
+      return;
+    }
+    if (!(await dailyCapAllowsRegistration())) {
+      res.status(429).json({
+        error: 'Heute können keine weiteren Konten angelegt werden. Bitte versuche es morgen erneut.',
+      });
+      return;
+    }
+  }
+
   const passwordHash = await hashPassword(password);
+  const consent = { termsAcceptedAt: new Date(), termsVersion: LEGAL_VERSION };
 
   let user;
   if (existing) {
@@ -179,15 +230,16 @@ router.post('/auth/register', async (req: Request, res: Response): Promise<void>
     // Account from before the switch: attach a password, keep everything else.
     [user] = await db
       .update(usersTable)
-      .set({ passwordHash, updatedAt: new Date() })
+      .set({ passwordHash, ...consent, updatedAt: new Date() })
       .where(eq(usersTable.id, existing.id))
       .returning(publicUserColumns);
   } else {
     try {
       [user] = await db
         .insert(usersTable)
-        .values({ email, passwordHash })
+        .values({ email, passwordHash, approved: isOpenRegistration(), ...consent })
         .returning(publicUserColumns);
+      recordRegistration(address);
     } catch (err) {
       const code =
         (err as { code?: string })?.code ??

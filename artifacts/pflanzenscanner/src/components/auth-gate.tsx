@@ -1,6 +1,7 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { Leaf, LogIn, LogOut, Hourglass, RefreshCw, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthContext } from "@/lib/auth-context";
@@ -11,7 +12,9 @@ import {
   readSignInError,
   stripSignInParam,
 } from "@/lib/google-sign-in";
-import { useGoogleSignInAvailable } from "@/lib/use-auth-providers";
+import { useAuthProviders } from "@/lib/use-auth-providers";
+import { LEGAL_PATHS, legalHref } from "@/lib/legal";
+import { TurnstileWidget, type TurnstileHandle } from "@/components/turnstile-widget";
 
 /** Google's four-colour "G", the mark their brand guidelines ask for. */
 function GoogleMark() {
@@ -58,15 +61,45 @@ function BrandMark() {
 
 const MIN_PASSWORD_LENGTH = 8;
 
+/** Link to a legal page in a new tab, so a half-filled form is not lost. */
+function LegalLink({ path, children }: { path: string; children: ReactNode }) {
+  return (
+    <a
+      href={legalHref(path)}
+      target="_blank"
+      rel="noopener"
+      className="underline underline-offset-4 hover:text-foreground"
+    >
+      {children}
+    </a>
+  );
+}
+
+function LegalFooter() {
+  return (
+    <nav className="mt-8 flex gap-4 text-xs text-muted-foreground">
+      <LegalLink path={LEGAL_PATHS.impressum}>Impressum</LegalLink>
+      <LegalLink path={LEGAL_PATHS.datenschutz}>Datenschutz</LegalLink>
+      <LegalLink path={LEGAL_PATHS.nutzungsbedingungen}>Nutzungsbedingungen</LegalLink>
+    </nav>
+  );
+}
+
 function LoginScreen() {
   const { login, register } = useAuthContext();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [registrationCode, setRegistrationCode] = useState("");
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [turnstileFailed, setTurnstileFailed] = useState(false);
+  const turnstileRef = useRef<TurnstileHandle>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const googleAvailable = useGoogleSignInAvailable();
+  const providers = useAuthProviders();
+  const googleAvailable = providers.google;
+  const turnstileSiteKey = providers.turnstileSiteKey;
 
   const isRegister = mode === "register";
 
@@ -97,6 +130,8 @@ function LoginScreen() {
     setError(null);
     setPassword("");
     setRegistrationCode("");
+    setAcceptTerms(false);
+    setTurnstileToken(null);
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -109,12 +144,28 @@ function LoginScreen() {
       setError(`Das Passwort muss mindestens ${MIN_PASSWORD_LENGTH} Zeichen lang sein.`);
       return;
     }
+    if (isRegister && !acceptTerms) {
+      setError("Bitte stimme der Datenschutzerklärung und den Nutzungsbedingungen zu.");
+      return;
+    }
+    if (isRegister && turnstileSiteKey && !turnstileToken) {
+      setError(
+        turnstileFailed
+          ? "Die Sicherheitsprüfung konnte nicht geladen werden. Bitte prüfe deine Verbindung und lade die Seite neu."
+          : "Bitte warte kurz, bis die Sicherheitsprüfung abgeschlossen ist.",
+      );
+      return;
+    }
 
     setError(null);
     setIsSubmitting(true);
     try {
       if (isRegister) {
-        await register(email, password, registrationCode.trim() || undefined);
+        await register(email, password, {
+          acceptTerms,
+          registrationCode: registrationCode.trim() || undefined,
+          turnstileToken: turnstileToken ?? undefined,
+        });
       } else {
         await login(email, password);
       }
@@ -123,6 +174,8 @@ function LoginScreen() {
       setError(
         err instanceof Error ? err.message : "Anmeldung fehlgeschlagen.",
       );
+      // A Turnstile token is single-use: get a fresh one for the next try.
+      if (isRegister) turnstileRef.current?.reset();
       setIsSubmitting(false);
     }
   }
@@ -132,8 +185,12 @@ function LoginScreen() {
       <BrandMark />
       <p className="max-w-xs text-sm text-muted-foreground mb-6">
         {isRegister
-          ? "Lege ein Konto an. Der Besitzer der App schaltet dich anschließend frei."
-          : "Privater Zugang: Bitte melde dich an, um Pflanzen zu scannen und das Archiv zu sehen."}
+          ? providers.openRegistration
+            ? "Lege ein kostenloses Konto an und leg direkt los."
+            : "Lege ein Konto an. Der Besitzer der App schaltet dich anschließend frei."
+          : providers.openRegistration
+            ? "Melde dich an, um Pflanzen zu scannen und das Archiv zu sehen."
+            : "Privater Zugang: Bitte melde dich an, um Pflanzen zu scannen und das Archiv zu sehen."}
       </p>
 
       <form
@@ -168,7 +225,8 @@ function LoginScreen() {
           />
         </div>
 
-        {isRegister && (
+        {/* Public mode needs no invitation; the field would only confuse. */}
+        {isRegister && !providers.openRegistration && (
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="auth-code">
               Einladungscode{" "}
@@ -184,6 +242,36 @@ function LoginScreen() {
               onChange={(e) => setRegistrationCode(e.target.value)}
             />
           </div>
+        )}
+
+        {isRegister && (
+          <div className="flex items-start gap-2.5">
+            <Checkbox
+              id="auth-terms"
+              checked={acceptTerms}
+              onCheckedChange={(checked) => setAcceptTerms(checked === true)}
+              className="mt-0.5"
+            />
+            <Label htmlFor="auth-terms" className="text-xs font-normal leading-snug text-muted-foreground">
+              Ich akzeptiere die{" "}
+              <LegalLink path={LEGAL_PATHS.nutzungsbedingungen}>Nutzungsbedingungen</LegalLink>{" "}
+              und habe die{" "}
+              <LegalLink path={LEGAL_PATHS.datenschutz}>Datenschutzerklärung</LegalLink>{" "}
+              gelesen.
+            </Label>
+          </div>
+        )}
+
+        {isRegister && turnstileSiteKey && (
+          <TurnstileWidget
+            ref={turnstileRef}
+            siteKey={turnstileSiteKey}
+            onToken={(token) => {
+              setTurnstileToken(token);
+              if (token) setTurnstileFailed(false);
+            }}
+            onLoadError={() => setTurnstileFailed(true)}
+          />
         )}
 
         {error && (
@@ -234,6 +322,12 @@ function LoginScreen() {
             <GoogleMark />
             Mit Google anmelden
           </Button>
+          <p className="text-xs text-muted-foreground">
+            Mit der Anmeldung über Google akzeptierst du die{" "}
+            <LegalLink path={LEGAL_PATHS.nutzungsbedingungen}>Nutzungsbedingungen</LegalLink>{" "}
+            und die{" "}
+            <LegalLink path={LEGAL_PATHS.datenschutz}>Datenschutzerklärung</LegalLink>.
+          </p>
         </div>
       )}
 
@@ -246,6 +340,8 @@ function LoginScreen() {
           ? "Ich habe schon ein Konto – anmelden"
           : "Noch kein Konto? Jetzt anlegen"}
       </button>
+
+      <LegalFooter />
     </FullScreenCentered>
   );
 }

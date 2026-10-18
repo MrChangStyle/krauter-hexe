@@ -8,6 +8,16 @@ import { mountWebClient, resolveWebClientDir } from "./lib/webClient";
 
 const app: Express = express();
 
+// The app runs behind the host's proxy (Render), so the client address is in
+// X-Forwarded-For. Trusting exactly the configured number of hops (default 1)
+// makes req.ip the real client for the per-address limits on sign-in and
+// registration, without letting a client spoof it by sending its own header.
+const trustProxyHops = Number(process.env["TRUST_PROXY_HOPS"] ?? "1");
+app.set(
+  "trust proxy",
+  Number.isInteger(trustProxyHops) && trustProxyHops >= 0 ? trustProxyHops : 1,
+);
+
 app.use(
   pinoHttp({
     logger,

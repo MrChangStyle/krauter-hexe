@@ -1178,7 +1178,7 @@ export const GetCurrentAuthUserResponse = zod.object({
 
 
 /**
- * Creates a new account and signs it in. If an account with this email already exists but has no password (it predates the switch to email/password sign-in), the password is attached to that account so its scans, leaves and approval status are preserved. The first account ever created becomes the owner and is approved automatically; all others start unapproved.
+ * Creates a new account and signs it in. If an account with this email already exists but has no password (it predates the switch to email/password sign-in), the password is attached to that account so its scans, leaves and approval status are preserved. The first account ever created becomes the owner and is approved automatically. All others start unapproved, unless the server runs with OPEN_REGISTRATION=true – then new accounts can use the app right away.
  * @summary Create an account (or claim one that has no password yet)
  */
 export const registerAccountBodyEmailMin = 3;
@@ -1186,12 +1186,16 @@ export const registerAccountBodyEmailMin = 3;
 export const registerAccountBodyPasswordMin = 8;
 export const registerAccountBodyPasswordMax = 200;
 
+export const registerAccountBodyTurnstileTokenMax = 2048;
+
 
 
 export const RegisterAccountBody = zod.object({
   "email": zod.string().min(registerAccountBodyEmailMin),
   "password": zod.string().min(registerAccountBodyPasswordMin).max(registerAccountBodyPasswordMax),
-  "registrationCode": zod.string().optional().describe('Shared invitation code. Only required when the server is configured with REGISTRATION_CODE.\n')
+  "registrationCode": zod.string().optional().describe('Shared invitation code. Only required when the server is configured with REGISTRATION_CODE.\n'),
+  "acceptTerms": zod.boolean().describe('Must be true: the user agrees to the Datenschutzerklärung and the Nutzungsbedingungen. Time and version are stored with the account.\n'),
+  "turnstileToken": zod.string().max(registerAccountBodyTurnstileTokenMax).optional().describe('Token from the Cloudflare Turnstile widget. Only required when the server is configured with TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY.\n')
 })
 
 export const RegisterAccountResponse = zod.object({

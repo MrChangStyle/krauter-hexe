@@ -45,6 +45,10 @@ export const usersTable = pgTable(
     isOwner: boolean('is_owner').notNull().default(false),
     username: varchar('username', { length: 8 }).unique(),
     leavesCount: integer('leaves_count').notNull().default(0),
+    // When and to which version of Datenschutzerklärung/Nutzungsbedingungen
+    // the account agreed. Null for accounts from before public registration.
+    termsAcceptedAt: timestamp('terms_accepted_at', { withTimezone: true }),
+    termsVersion: varchar('terms_version'),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),

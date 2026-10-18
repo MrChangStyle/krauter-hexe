@@ -20,6 +20,10 @@ const ERROR_MESSAGES: Record<string, string> = {
     'Google hat die E-Mail-Adresse dieses Kontos nicht bestätigt. Bitte melde dich mit E-Mail und Passwort an.',
   'google-konto-unbekannt':
     'Zu dieser Google-Adresse gibt es hier noch kein Konto. Lege zuerst eines mit E-Mail, Passwort und Einladungscode an – danach klappt auch die Anmeldung mit Google.',
+  'zu-viele-konten':
+    'Von diesem Anschluss wurden gerade zu viele Konten angelegt. Bitte versuche es später erneut.',
+  'registrierung-pausiert':
+    'Heute können keine weiteren Konten angelegt werden. Bitte versuche es morgen erneut.',
 };
 
 /** The query parameter the server uses to report a failed sign-in. */

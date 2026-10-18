@@ -836,8 +836,9 @@ paths:
         already exists but has no password (it predates the switch to
         email/password sign-in), the password is attached to that account so its
         scans, leaves and approval status are preserved. The first account ever
-        created becomes the owner and is approved automatically; all others
-        start unapproved.
+        created becomes the owner and is approved automatically. All others
+        start unapproved, unless the server runs with OPEN_REGISTRATION=true –
+        then new accounts can use the app right away.
       requestBody:
         required: true
         content:
@@ -857,6 +858,10 @@ paths:
           description: Registration code required or wrong.
         "409":
           description: An account with this email already exists.
+        "429":
+          description: >
+            Too many attempts, too many new accounts from this address, or the
+            daily cap for new accounts is reached.
   /auth/login:
     post:
       tags: [Auth]
@@ -2433,7 +2438,7 @@ components:
           maxLength: 200
     RegisterInput:
       type: object
-      required: [email, password]
+      required: [email, password, acceptTerms]
       properties:
         email:
           type: string
@@ -2447,4 +2452,15 @@ components:
           description: >
             Shared invitation code. Only required when the server is configured
             with REGISTRATION_CODE.
+        acceptTerms:
+          type: boolean
+          description: >
+            Must be true: the user agrees to the Datenschutzerklärung and the
+            Nutzungsbedingungen. Time and version are stored with the account.
+        turnstileToken:
+          type: string
+          maxLength: 2048
+          description: >
+            Token from the Cloudflare Turnstile widget. Only required when the
+            server is configured with TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY.
 

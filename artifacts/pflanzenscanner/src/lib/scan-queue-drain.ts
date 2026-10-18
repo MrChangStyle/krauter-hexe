@@ -125,9 +125,14 @@ export interface DrainDeps {
   /**
    * Called when a 429 stops the drain because the user has reached their daily
    * scan limit. `resetsAt` is an ISO timestamp of the next Berlin midnight,
-   * or null if the server didn't include one.
+   * or null if the server didn't include one. `appWide` is true when the app's
+   * shared daily budget (not the user's own limit) was used up.
    */
-  onScanLimitReached: (resetsAt: string | null, limit: number | null) => void;
+  onScanLimitReached: (
+    resetsAt: string | null,
+    limit: number | null,
+    appWide?: boolean,
+  ) => void;
   /**
    * Called after the loop exits without a network stop when there are still
    * pending items in the DB. This lets the tail-drain pick up photos that were
@@ -340,10 +345,18 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
           // automatically after the context's rate-limit gate clears at
           // midnight. Converting to a permanent error here would "poison" the
           // whole queue for the rest of the day and require manual retry.
-          const body = (err as { data?: { resetsAt?: string; limit?: number } } | null)?.data;
+          const body = (
+            err as {
+              data?: { error?: string; resetsAt?: string; limit?: number };
+            } | null
+          )?.data;
           const resetsAt = body?.resetsAt ?? null;
           const limit = body?.limit ?? null;
-          deps.onScanLimitReached(resetsAt, limit);
+          deps.onScanLimitReached(
+            resetsAt,
+            limit,
+            body?.error === "SCAN_BUDGET_REACHED",
+          );
           networkStop = true;
           break;
         }

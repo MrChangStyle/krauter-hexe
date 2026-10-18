@@ -16,4 +16,11 @@ export interface RegisterInput {
   password: string;
   /** Shared invitation code. Only required when the server is configured with REGISTRATION_CODE. */
   registrationCode?: string;
+  /** Must be true: the user agrees to the Datenschutzerklärung and the Nutzungsbedingungen. Time and version are stored with the account. */
+  acceptTerms: boolean;
+  /**
+     * Token from the Cloudflare Turnstile widget. Only required when the server is configured with TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY.
+     * @maxLength 2048
+     */
+  turnstileToken?: string;
 }

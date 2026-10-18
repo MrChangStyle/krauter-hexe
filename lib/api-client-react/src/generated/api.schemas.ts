@@ -1090,6 +1090,43 @@ export interface ArchivePlantStatus {
   details: string;
 }
 
+export type HelpfulPlantUse = typeof HelpfulPlantUse[keyof typeof HelpfulPlantUse];
+
+
+export const HelpfulPlantUse = {
+  medicinal: 'medicinal',
+  feed: 'feed',
+} as const;
+
+export type HelpfulPlantApplicationsItem = {
+  symptom: string;
+  howTo: string;
+};
+
+export interface HelpfulPlant {
+  plantId: number;
+  germanName: string;
+  botanicalName: string;
+  use: HelpfulPlantUse;
+  /** @nullable */
+  benefits: string | null;
+  applications: HelpfulPlantApplicationsItem[];
+}
+
+export type HelpfulPlantsDiet = typeof HelpfulPlantsDiet[keyof typeof HelpfulPlantsDiet];
+
+
+export const HelpfulPlantsDiet = {
+  herbivore: 'herbivore',
+  omnivore: 'omnivore',
+  carnivore: 'carnivore',
+} as const;
+
+export interface HelpfulPlants {
+  diet: HelpfulPlantsDiet;
+  plants: HelpfulPlant[];
+}
+
 export interface FeedItem {
   name: string;
   /** @nullable */

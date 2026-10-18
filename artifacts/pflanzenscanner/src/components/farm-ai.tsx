@@ -1,15 +1,15 @@
 import { useRef, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { BookOpen, Camera, ChevronDown, Leaf, Loader2, Skull, Sparkles, Trash2, Wheat } from "lucide-react";
+import { BookOpen, Camera, ChevronDown, HeartPulse, Leaf, Loader2, Skull, Sparkles, Trash2, Wheat } from "lucide-react";
 import {
   getGetHusbandryGuideQueryKey,
   getListFeedAnalysesQueryKey,
   useAnalyzeFeed,
   useDeleteFeedAnalysis,
+  useGetHelpfulPlants,
   useGetHusbandryGuide,
   useListFeedAnalyses,
-  useListToxicPlants,
   useSuggestFarmAnimalSpecies,
   type FarmSpecies,
   type FeedLog,
@@ -174,46 +174,110 @@ export function HusbandrySection({ farmId, species }: { farmId: number; species:
   );
 }
 
-// ── Poisonous plants from the archive ────────────────────────────────────────
+// ── Helpful plants from the archive ──────────────────────────────────────────
 
 const LEVEL_LABELS = { intolerant: "unverträglich", poisonous: "giftig", lethal: "tödlich" } as const;
 
-function ToxicPlantsBody({ farmId, species }: { farmId: number; species: FarmSpecies }) {
-  const plants = useListToxicPlants(farmId, species);
-  if (plants.isLoading) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
-  const list = plants.data ?? [];
-  if (list.length === 0) {
-    return <p className="text-muted-foreground">Im Pflanzenarchiv ist noch keine Pflanze als giftig für diese Tierart eingetragen.</p>;
+/** Carnivores get medicinal plants only – a cat or dog does not eat greens. */
+export function helpfulTitle(species: FarmSpecies, diet: "herbivore" | "omnivore" | "carnivore"): string {
+  return diet === "carnivore"
+    ? `Heilkräuter für ${SPECIES_LABELS[species]}`
+    : `Heil- und Futterpflanzen für ${SPECIES_LABELS[species]}`;
+}
+
+const CARNIVORES: ReadonlySet<FarmSpecies> = new Set(["cat", "dog"]);
+const FEED_SHOWN = 20;
+
+function HelpfulPlantsBody({ farmId, species }: { farmId: number; species: FarmSpecies }) {
+  const result = useGetHelpfulPlants(farmId, species);
+  const [allFeed, setAllFeed] = useState(false);
+  if (result.isLoading) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+  const plants = result.data?.plants ?? [];
+  const carnivore = result.data?.diet === "carnivore";
+  const medicinal = plants.filter((p) => p.use === "medicinal");
+  const feed = plants.filter((p) => p.use === "feed");
+  const label = SPECIES_LABELS[species];
+  if (plants.length === 0) {
+    return (
+      <p className="text-muted-foreground">
+        Im Pflanzenarchiv ist noch keine Pflanze eingetragen, die für {label} {carnivore ? "als Heilkraut hilft" : "verträglich ist"}. Mit jedem Scan in der Kräuterhexe wächst die Liste.
+      </p>
+    );
   }
   return (
     <>
-      <p className="text-muted-foreground">Aus dem Pflanzenarchiv der Kräuterhexe ({list.length}):</p>
-      <ul className="divide-y divide-border">
-        {list.map((p) => (
-          <li key={p.plantId} className="py-2">
-            <Link href={`/pflanze/${p.plantId}`} className="font-medium underline-offset-4 hover:underline">
-              {p.germanName}
-            </Link>
-            <span className="text-xs italic text-muted-foreground"> {p.botanicalName}</span>
-            {p.toxicityLevel && (
-              <span className="ml-1.5 rounded bg-destructive/10 px-1.5 py-0.5 text-xs font-medium text-destructive">
-                {LEVEL_LABELS[p.toxicityLevel]}
-              </span>
-            )}
-            {p.details && <p className="mt-0.5 line-clamp-3 text-xs text-muted-foreground">{p.details}</p>}
-          </li>
-        ))}
-      </ul>
+      <p className="text-muted-foreground">
+        Aus dem Pflanzenarchiv der Kräuterhexe – nur Pflanzen, die dort als verträglich für {label} gelten.
+        {carnivore && ` ${label === "Katze" ? "Katzen" : "Hunde"} fressen kaum Pflanzen: Heilkräuter nur gezielt und wie beschrieben anwenden.`}
+      </p>
+      {medicinal.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="flex items-center gap-1.5 font-semibold">
+            <HeartPulse className="h-4 w-4 text-primary" />
+            Heilkräuter ({medicinal.length})
+          </h3>
+          <ul className="divide-y divide-border">
+            {medicinal.map((p) => (
+              <li key={p.plantId} className="space-y-1 py-2">
+                <p>
+                  <Link href={`/pflanze/${p.plantId}`} className="font-medium underline-offset-4 hover:underline">
+                    {p.germanName}
+                  </Link>
+                  <span className="text-xs italic text-muted-foreground"> {p.botanicalName}</span>
+                </p>
+                {p.benefits && <p className="text-xs text-muted-foreground">{p.benefits}</p>}
+                {p.applications.length > 0 && (
+                  <ul className="space-y-1">
+                    {p.applications.map((a) => (
+                      <li key={a.symptom} className="rounded-lg bg-muted/60 px-2.5 py-1.5 text-xs">
+                        <span className="font-medium">Bei {a.symptom}:</span> {a.howTo}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {!carnivore && feed.length > 0 && (
+        <div className="space-y-2">
+          <h3 className="flex items-center gap-1.5 font-semibold">
+            <Leaf className="h-4 w-4 text-primary" />
+            Futterpflanzen ({feed.length})
+          </h3>
+          <div className="flex flex-wrap gap-1.5">
+            {(allFeed ? feed : feed.slice(0, FEED_SHOWN)).map((p) => (
+              <Link
+                key={p.plantId}
+                href={`/pflanze/${p.plantId}`}
+                className="rounded-full border border-border bg-background px-2.5 py-1 text-xs hover:bg-muted"
+              >
+                {p.germanName}
+              </Link>
+            ))}
+          </div>
+          {feed.length > FEED_SHOWN && (
+            <button type="button" className="text-xs text-muted-foreground underline underline-offset-4" onClick={() => setAllFeed(!allFeed)}>
+              {allFeed ? "Weniger anzeigen" : `Alle ${feed.length} anzeigen`}
+            </button>
+          )}
+          <p className="text-xs text-muted-foreground">Neues Futter langsam anfüttern und in Maßen geben.</p>
+        </div>
+      )}
       <AiNote />
     </>
   );
 }
 
-export function ToxicPlantsSection({ farmId, species }: { farmId: number; species: FarmSpecies }) {
+export function HelpfulPlantsSection({ farmId, species }: { farmId: number; species: FarmSpecies }) {
   if (!ARCHIVE_SPECIES.has(species)) return null;
   return (
-    <Collapsible icon={<Skull className="h-4 w-4 text-destructive" />} title={`Giftige Pflanzen für ${SPECIES_LABELS[species]}`}>
-      <ToxicPlantsBody farmId={farmId} species={species} />
+    <Collapsible
+      icon={<Leaf className="h-4 w-4 text-primary" />}
+      title={helpfulTitle(species, CARNIVORES.has(species) ? "carnivore" : "herbivore")}
+    >
+      <HelpfulPlantsBody farmId={farmId} species={species} />
     </Collapsible>
   );
 }
@@ -388,11 +452,15 @@ export function FeedSection({ farmId, animalId, canWrite }: { farmId: number; an
           ))}
         </div>
       )}
-      {all.length > 0 && <AiNote />}
-      <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Leaf className="h-3.5 w-3.5" />
-        Giftig gilt, sobald Pflanzenarchiv oder KI es sagen.
-      </p>
+      {all.length > 0 && (
+        <>
+          <AiNote />
+          <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <Leaf className="h-3.5 w-3.5" />
+            Giftig gilt, sobald Pflanzenarchiv oder KI es sagen.
+          </p>
+        </>
+      )}
     </section>
   );
 }

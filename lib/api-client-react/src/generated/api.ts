@@ -22,7 +22,6 @@ import type {
 import type {
   AddFarmMemberInput,
   ArchiveInput,
-  ArchivePlantStatus,
   AuthUserEnvelope,
   BackfillAnimalsResult,
   BackfillEdibleMedicinalResult,
@@ -61,6 +60,7 @@ import type {
   GeoReverseInput,
   GeoReverseResult,
   HealthStatus,
+  HelpfulPlants,
   Herd,
   HerdInput,
   HusbandryGuide,
@@ -6436,22 +6436,22 @@ export function useGetHusbandryGuide<TData = Awaited<ReturnType<typeof getHusban
 
 
 
-export const getListToxicPlantsUrl = (farmId: number,
+export const getGetHelpfulPlantsUrl = (farmId: number,
     species: FarmSpecies,) => {
 
 
 
 
-  return `/api/farms/${farmId}/toxic-plants/${species}`
+  return `/api/farms/${farmId}/helpful-plants/${species}`
 }
 
 /**
- * @summary Archive plants poisonous for a species
+ * @summary Medicinal and feed plants of the archive for a species (carnivores get medicinal plants only)
  */
-export const listToxicPlants = async (farmId: number,
-    species: FarmSpecies, options?: RequestInit): Promise<ArchivePlantStatus[]> => {
+export const getHelpfulPlants = async (farmId: number,
+    species: FarmSpecies, options?: RequestInit): Promise<HelpfulPlants> => {
 
-  return customFetch<ArchivePlantStatus[]>(getListToxicPlantsUrl(farmId,species),
+  return customFetch<HelpfulPlants>(getGetHelpfulPlantsUrl(farmId,species),
   {
     ...options,
     method: 'GET'
@@ -6464,48 +6464,48 @@ export const listToxicPlants = async (farmId: number,
 
 
 
-export const getListToxicPlantsQueryKey = (farmId: number,
+export const getGetHelpfulPlantsQueryKey = (farmId: number,
     species: FarmSpecies,) => {
     return [
-    `/api/farms/${farmId}/toxic-plants/${species}`
+    `/api/farms/${farmId}/helpful-plants/${species}`
     ] as const;
     }
 
 
-export const getListToxicPlantsQueryOptions = <TData = Awaited<ReturnType<typeof listToxicPlants>>, TError = ErrorType<unknown>>(farmId: number,
-    species: FarmSpecies, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listToxicPlants>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getGetHelpfulPlantsQueryOptions = <TData = Awaited<ReturnType<typeof getHelpfulPlants>>, TError = ErrorType<unknown>>(farmId: number,
+    species: FarmSpecies, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHelpfulPlants>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListToxicPlantsQueryKey(farmId,species);
+  const queryKey =  queryOptions?.queryKey ?? getGetHelpfulPlantsQueryKey(farmId,species);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listToxicPlants>>> = ({ signal }) => listToxicPlants(farmId,species, { signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHelpfulPlants>>> = ({ signal }) => getHelpfulPlants(farmId,species, { signal, ...requestOptions });
 
 
 
 
 
-   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && species !== null && species !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listToxicPlants>>, TError, TData> & { queryKey: QueryKey }
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && species !== null && species !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHelpfulPlants>>, TError, TData> & { queryKey: QueryKey }
 }
 
-export type ListToxicPlantsQueryResult = NonNullable<Awaited<ReturnType<typeof listToxicPlants>>>
-export type ListToxicPlantsQueryError = ErrorType<unknown>
+export type GetHelpfulPlantsQueryResult = NonNullable<Awaited<ReturnType<typeof getHelpfulPlants>>>
+export type GetHelpfulPlantsQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Archive plants poisonous for a species
+ * @summary Medicinal and feed plants of the archive for a species (carnivores get medicinal plants only)
  */
 
-export function useListToxicPlants<TData = Awaited<ReturnType<typeof listToxicPlants>>, TError = ErrorType<unknown>>(
+export function useGetHelpfulPlants<TData = Awaited<ReturnType<typeof getHelpfulPlants>>, TError = ErrorType<unknown>>(
  farmId: number,
-    species: FarmSpecies, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listToxicPlants>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+    species: FarmSpecies, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHelpfulPlants>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListToxicPlantsQueryOptions(farmId,species,options)
+  const queryOptions = getGetHelpfulPlantsQueryOptions(farmId,species,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

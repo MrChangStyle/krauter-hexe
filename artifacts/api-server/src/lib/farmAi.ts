@@ -1,7 +1,7 @@
 /**
  * AI features of "Meine Farm" (step 5): species suggestion for an animal
  * photo, the "Haltungs-Wiki" per species, the feed photo analysis and the
- * bridge to the plant archive ("Giftige Pflanzen für diese Tierart").
+ * bridge to the plant archive ("Heil- und Futterpflanzen" for a species).
  *
  * Every model answer is untrusted: it is coerced into fixed shapes here, and
  * the app labels all of it "KI-Einschätzung – ersetzt keinen Tierarzt".
@@ -21,7 +21,7 @@ import {
   type FarmSpecies,
   type ToxicityLevel,
 } from '@workspace/db';
-import { and, asc, desc, eq, or, sql } from 'drizzle-orm';
+import { and, desc, eq, isNotNull, or, sql } from 'drizzle-orm';
 
 import { FarmDataError, getAnimal } from './farmAnimals';
 import { MODELS, TEXT_MODELS, parseDataUrl, runModelChain } from './plantIdentification';
@@ -202,7 +202,15 @@ const archiveColumns = {
   animalToxicityDetails: plantsTable.animalToxicityDetails,
 };
 
-type ArchiveRow = { id: number; germanName: string; botanicalName: string; animals: AnimalsMap; poultryStatus: 'safe' | 'poisonous'; animalToxicityDetails: string };
+type ArchiveRow = {
+  id: number;
+  germanName: string;
+  botanicalName: string;
+  animals: AnimalsMap;
+  poultryStatus: 'safe' | 'poisonous';
+  animalToxicityDetails: string;
+  poultryBenefits?: string;
+};
 
 /** Status of one archive plant for one animal kind; poultry falls back to the legacy columns. */
 export function statusFor(row: ArchiveRow, kind: AnimalKind): ArchivePlantStatus | null {
@@ -234,34 +242,104 @@ export function speciesKey(botanicalName: string): string | null {
   return words.length >= 2 ? `${words[0]} ${words[1]}` : null;
 }
 
-/** Archive plants poisonous for this species, by German name. */
-export async function toxicPlantsFor(species: FarmSpecies): Promise<ArchivePlantStatus[]> {
+// ── Helpful plants ("Heil- und Futterpflanzen") ──────────────────────────────
+
+export type Diet = 'herbivore' | 'omnivore' | 'carnivore';
+
+/** What a species eats – decides whether feed plants make sense at all. */
+export const DIET: Record<FarmSpecies, Diet> = {
+  rabbit: 'herbivore',
+  guineaPig: 'herbivore',
+  horse: 'herbivore',
+  goat: 'herbivore',
+  sheep: 'herbivore',
+  cattle: 'herbivore',
+  poultry: 'omnivore',
+  pig: 'omnivore',
+  cat: 'carnivore',
+  dog: 'carnivore',
+  other: 'omnivore',
+};
+
+export interface HelpfulPlant {
+  plantId: number;
+  germanName: string;
+  botanicalName: string;
+  /** medicinal: helps with complaints of this species; feed: safe to feed. */
+  use: 'medicinal' | 'feed';
+  benefits: string | null;
+  applications: { symptom: string; howTo: string }[];
+}
+
+// Never offered as feed or remedy, whatever an animal entry says.
+const NEVER_HELPFUL = new Set(['poisonous', 'mushroom', 'moss', 'cactus']);
+
+type HelpfulRow = ArchiveRow & {
+  category: string;
+  symptoms: Partial<Record<string, string[]>>;
+  symptomApplications: Partial<Record<string, Record<string, string>>>;
+};
+
+/**
+ * The pure part of helpfulPlantsFor: only plants the archive calls safe for
+ * this animal; a botanical species counts as poisonous as soon as ONE of its
+ * archive entries says so (safety first). Carnivores get medicinal plants
+ * only – a cat does not eat greens.
+ */
+export function pickHelpfulPlants(rows: HelpfulRow[], kind: AnimalKind, diet: Diet): HelpfulPlant[] {
+  const bySpecies = new Map<string, HelpfulRow[]>();
+  for (const row of rows) {
+    const key = speciesKey(row.botanicalName) ?? row.germanName.toLowerCase();
+    bySpecies.set(key, [...(bySpecies.get(key) ?? []), row]);
+  }
+  const out: HelpfulPlant[] = [];
+  for (const group of bySpecies.values()) {
+    const statuses = group.map((r) => statusFor(r, kind));
+    if (statuses.some((st) => !st || st.status !== 'safe')) continue;
+    if (group.some((r) => NEVER_HELPFUL.has(r.category))) continue;
+    const row = group.find((r) => (r.symptoms?.[kind]?.length ?? 0) > 0) ?? group[0]!;
+    const symptoms = row.symptoms?.[kind] ?? [];
+    const howTos = row.symptomApplications?.[kind] ?? {};
+    const applications = symptoms
+      .filter((sym) => typeof howTos[sym] === 'string' && howTos[sym]!.trim())
+      .map((sym) => ({ symptom: sym, howTo: howTos[sym]!.trim() }));
+    const medicinal = symptoms.length > 0;
+    if (!medicinal && diet === 'carnivore') continue;
+    const benefits = row.animals?.[kind]?.benefits?.trim() || (kind === 'poultry' ? row.poultryBenefits?.trim() : '') || null;
+    out.push({
+      plantId: row.id,
+      germanName: row.germanName,
+      botanicalName: row.botanicalName,
+      use: medicinal ? 'medicinal' : 'feed',
+      benefits,
+      applications,
+    });
+  }
+  return out.sort(
+    (a, b) => (a.use === b.use ? a.germanName.localeCompare(b.germanName, 'de') : a.use === 'medicinal' ? -1 : 1),
+  );
+}
+
+/** Medicinal (and, for plant eaters, feed) plants of the archive for a species. */
+export async function helpfulPlantsFor(species: FarmSpecies): Promise<{ diet: Diet; plants: HelpfulPlant[] }> {
+  const diet = DIET[species];
   const kind = archiveKindFor(species);
-  if (!kind) return [];
+  if (!kind) return { diet, plants: [] };
   const rows = (await db
-    .select(archiveColumns)
+    .select({
+      ...archiveColumns,
+      poultryBenefits: plantsTable.poultryBenefits,
+      category: plantsTable.category,
+      symptoms: plantsTable.symptoms,
+      symptomApplications: plantsTable.symptomApplications,
+    })
     .from(plantsTable)
     .where(
       kind === 'poultry'
-        ? or(
-            sql`${plantsTable.animals} -> ${kind} ->> 'status' = 'poisonous'`,
-            and(sql`${plantsTable.animals} -> ${kind} IS NULL`, eq(plantsTable.poultryStatus, 'poisonous')),
-          )
-        : sql`${plantsTable.animals} -> ${kind} ->> 'status' = 'poisonous'`,
-    )
-    .orderBy(asc(plantsTable.germanName))) as ArchiveRow[];
-  // The archive may hold one species more than once; show it once.
-  const seen = new Set<string>();
-  const out: ArchivePlantStatus[] = [];
-  for (const row of rows) {
-    const key = speciesKey(row.botanicalName) ?? row.germanName.toLowerCase();
-    if (seen.has(key)) continue;
-    const status = statusFor(row, kind);
-    if (status?.status !== 'poisonous') continue;
-    seen.add(key);
-    out.push(status);
-  }
-  return out;
+        ? or(sql`${plantsTable.animals} -> ${kind} IS NOT NULL`, isNotNull(plantsTable.poultryStatus))
+        : sql`${plantsTable.animals} -> ${kind} IS NOT NULL`,
+    )) as HelpfulRow[];
+  return { diet, plants: pickHelpfulPlants(rows, kind, diet) };
 }
 
 /**

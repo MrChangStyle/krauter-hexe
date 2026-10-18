@@ -1304,6 +1304,14 @@ export interface PhotoPoint {
   y: number;
 }
 
+export interface BedPhotoAnalysis {
+  shade: string;
+  soil: string;
+  weeds: string;
+  tips: string[];
+  createdAt: string;
+}
+
 export interface GardenBed {
   id: number;
   name: string;
@@ -1348,6 +1356,130 @@ export interface GardenBed {
      * @nullable
      */
   photoCorners: PhotoPoint[] | null;
+  /** KI-Einschätzung of the photo (cleared with a new photo) */
+  photoAnalysis: BedPhotoAnalysis | null;
+}
+
+export interface CornerSuggestion {
+  /** @nullable */
+  corners: PhotoPoint[] | null;
+}
+
+export interface PlantingSuggestionInput {
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  wishes?: string | null;
+}
+
+export type PlantingProposalItemsItem = {
+  cropKey: string;
+  label: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+};
+
+export type PlantingProposalDroppedItem = {
+  label: string;
+  reason: string;
+};
+
+export interface PlantingProposal {
+  items: PlantingProposalItemsItem[];
+  dropped: PlantingProposalDroppedItem[];
+  notes: string;
+}
+
+export interface CropRequestInput {
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  name?: string | null;
+  /** @nullable */
+  plantId?: number | null;
+}
+
+export type CropDraftStatus = typeof CropDraftStatus[keyof typeof CropDraftStatus];
+
+
+export const CropDraftStatus = {
+  draft: 'draft',
+  approved: 'approved',
+} as const;
+
+export type CropGroup = typeof CropGroup[keyof typeof CropGroup];
+
+
+export const CropGroup = {
+  vegetable: 'vegetable',
+  herb: 'herb',
+  flower: 'flower',
+  fruit: 'fruit',
+} as const;
+
+export type CropFeeder = typeof CropFeeder[keyof typeof CropFeeder];
+
+
+export const CropFeeder = {
+  heavy: 'heavy',
+  medium: 'medium',
+  light: 'light',
+} as const;
+
+export type CropLight = typeof CropLight[keyof typeof CropLight];
+
+
+export const CropLight = {
+  full: 'full',
+  partial: 'partial',
+  shade: 'shade',
+} as const;
+
+export interface WeekRange {
+  /** Weeks relative to the last spring frost (negative = before) */
+  from: number;
+  to: number;
+}
+
+export type CropHarvest = {
+  from: number;
+  to: number;
+};
+
+export interface Crop {
+  key: string;
+  name: string;
+  botanicalName: string;
+  group: CropGroup;
+  family: string;
+  feeder: CropFeeder;
+  spacingCm: number;
+  rowSpacingCm: number;
+  light: CropLight;
+  frostHardy: boolean;
+  sowIndoor: WeekRange | null;
+  directSow: WeekRange | null;
+  plantOut: WeekRange | null;
+  harvest: CropHarvest;
+  good: string[];
+  bad: string[];
+  color: string;
+}
+
+export interface CropDraft {
+  crop: Crop;
+  status: CropDraftStatus;
+  createdAt: string;
+}
+
+export interface CropRequestResult {
+  draft: CropDraft;
+  /** The catalog or an earlier draft already had this plant – no AI call was made */
+  existing: boolean;
 }
 
 export interface BedPhotoInput {
@@ -1399,65 +1531,6 @@ export interface GardenBedInput {
      * @nullable
      */
   notes?: string | null;
-}
-
-export interface WeekRange {
-  /** Weeks relative to the last spring frost (negative = before) */
-  from: number;
-  to: number;
-}
-
-export type CropGroup = typeof CropGroup[keyof typeof CropGroup];
-
-
-export const CropGroup = {
-  vegetable: 'vegetable',
-  herb: 'herb',
-  flower: 'flower',
-  fruit: 'fruit',
-} as const;
-
-export type CropFeeder = typeof CropFeeder[keyof typeof CropFeeder];
-
-
-export const CropFeeder = {
-  heavy: 'heavy',
-  medium: 'medium',
-  light: 'light',
-} as const;
-
-export type CropLight = typeof CropLight[keyof typeof CropLight];
-
-
-export const CropLight = {
-  full: 'full',
-  partial: 'partial',
-  shade: 'shade',
-} as const;
-
-export type CropHarvest = {
-  from: number;
-  to: number;
-};
-
-export interface Crop {
-  key: string;
-  name: string;
-  botanicalName: string;
-  group: CropGroup;
-  family: string;
-  feeder: CropFeeder;
-  spacingCm: number;
-  rowSpacingCm: number;
-  light: CropLight;
-  frostHardy: boolean;
-  sowIndoor: WeekRange | null;
-  directSow: WeekRange | null;
-  plantOut: WeekRange | null;
-  harvest: CropHarvest;
-  good: string[];
-  bad: string[];
-  color: string;
 }
 
 export interface BedPlanting {

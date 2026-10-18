@@ -24,6 +24,7 @@ import { and, asc, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound } from './farmAnimals';
 import { cropByKey, type Crop } from './gardenCatalog';
+import { loadApprovedCrops } from './gardenCrops';
 import { validSeason } from './gardenPlanner';
 import { logger } from './logger';
 import { sendPushToUser } from './webPush';
@@ -139,6 +140,7 @@ function withEvents(plantings: SeasonPlanting[], season: number) {
 
 /** Every date of every planting of the farm in a season, sorted by start. */
 export async function farmCalendar(farmId: number, season: number): Promise<CalendarEntry[]> {
+  await loadApprovedCrops();
   const plantings = withEvents(await seasonPlantings(farmId, validSeason(season)), season);
   const checks = await checksOf(farmId, plantings.map((p) => p.planting.id));
   const entries = plantings.flatMap(({ planting, crop, events }) => {
@@ -158,6 +160,7 @@ export async function farmCalendar(farmId: number, season: number): Promise<Cale
 }
 
 export async function setCheck(farmId: number, plantingId: number, kind: GardenEventKind, done: boolean): Promise<void> {
+  await loadApprovedCrops();
   const [planting] = await db
     .select({ id: bedPlantingsTable.id, cropKey: bedPlantingsTable.cropKey })
     .from(bedPlantingsTable)
@@ -239,6 +242,7 @@ export interface FrostWarning {
 
 /** Beds of the farm where frost-tender plants meet a frosty night. */
 export async function farmFrostWarnings(farmId: number, day: string): Promise<FrostWarning[]> {
+  await loadApprovedCrops();
   const season = Number(day.slice(0, 4));
   const plantings = withEvents(await seasonPlantings(farmId, season), season);
   const checks = await checksOf(farmId, plantings.map((p) => p.planting.id));

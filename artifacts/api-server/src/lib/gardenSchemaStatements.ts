@@ -113,4 +113,20 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "planting_checks" ADD CONSTRAINT "planting_checks_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "planting_checks_farm_idx" ON "planting_checks" USING btree ("farm_id")`,
+  // Added with step 5 (KI).
+  `ALTER TABLE "garden_beds" ADD COLUMN IF NOT EXISTS "photo_analysis" jsonb`,
+  `DO $$ BEGIN
+     CREATE TYPE "public"."crop_draft_status" AS ENUM('draft', 'approved');
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE TABLE IF NOT EXISTS "garden_crops" (
+	"key" text PRIMARY KEY NOT NULL,
+	"status" "crop_draft_status" DEFAULT 'draft' NOT NULL,
+	"data" jsonb NOT NULL,
+	"requested_by" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"approved_at" timestamp with time zone
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "garden_crops" ADD CONSTRAINT "garden_crops_requested_by_users_id_fk" FOREIGN KEY ("requested_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
 ];

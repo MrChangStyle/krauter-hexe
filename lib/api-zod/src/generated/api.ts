@@ -2715,6 +2715,153 @@ export const ListCameraEventsResponse = zod.array(ListCameraEventsResponseItem)
 
 
 /**
+ * @summary Ask for Anbaudaten of a plant the catalog does not know – the AI drafts them, the app owner approves (counts as a garden AI request)
+ */
+export const requestCropBodyNameMax = 40;
+
+
+
+export const RequestCropBody = zod.object({
+  "name": zod.string().max(requestCropBodyNameMax).nullish(),
+  "plantId": zod.number().nullish()
+})
+
+export const RequestCropResponse = zod.object({
+  "draft": zod.object({
+  "crop": zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "botanicalName": zod.string(),
+  "group": zod.enum(['vegetable', 'herb', 'flower', 'fruit']),
+  "family": zod.string(),
+  "feeder": zod.enum(['heavy', 'medium', 'light']),
+  "spacingCm": zod.number(),
+  "rowSpacingCm": zod.number(),
+  "light": zod.enum(['full', 'partial', 'shade']),
+  "frostHardy": zod.boolean(),
+  "sowIndoor": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "directSow": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "plantOut": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "harvest": zod.object({
+  "from": zod.number(),
+  "to": zod.number()
+}),
+  "good": zod.array(zod.string()),
+  "bad": zod.array(zod.string()),
+  "color": zod.string()
+}),
+  "status": zod.enum(['draft', 'approved']),
+  "createdAt": zod.string()
+}),
+  "existing": zod.boolean().describe('The catalog or an earlier draft already had this plant – no AI call was made')
+})
+
+
+/**
+ * @summary Open Anbaudaten drafts (app owner)
+ */
+export const ListCropDraftsResponseItem = zod.object({
+  "crop": zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "botanicalName": zod.string(),
+  "group": zod.enum(['vegetable', 'herb', 'flower', 'fruit']),
+  "family": zod.string(),
+  "feeder": zod.enum(['heavy', 'medium', 'light']),
+  "spacingCm": zod.number(),
+  "rowSpacingCm": zod.number(),
+  "light": zod.enum(['full', 'partial', 'shade']),
+  "frostHardy": zod.boolean(),
+  "sowIndoor": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "directSow": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "plantOut": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "harvest": zod.object({
+  "from": zod.number(),
+  "to": zod.number()
+}),
+  "good": zod.array(zod.string()),
+  "bad": zod.array(zod.string()),
+  "color": zod.string()
+}),
+  "status": zod.enum(['draft', 'approved']),
+  "createdAt": zod.string()
+})
+export const ListCropDraftsResponse = zod.array(ListCropDraftsResponseItem)
+
+
+/**
+ * @summary Approve a draft – from now on it counts for everyone (app owner)
+ */
+export const ApproveCropDraftParams = zod.object({
+  "key": zod.coerce.string()
+})
+
+export const ApproveCropDraftResponse = zod.object({
+  "crop": zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "botanicalName": zod.string(),
+  "group": zod.enum(['vegetable', 'herb', 'flower', 'fruit']),
+  "family": zod.string(),
+  "feeder": zod.enum(['heavy', 'medium', 'light']),
+  "spacingCm": zod.number(),
+  "rowSpacingCm": zod.number(),
+  "light": zod.enum(['full', 'partial', 'shade']),
+  "frostHardy": zod.boolean(),
+  "sowIndoor": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "directSow": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "plantOut": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "harvest": zod.object({
+  "from": zod.number(),
+  "to": zod.number()
+}),
+  "good": zod.array(zod.string()),
+  "bad": zod.array(zod.string()),
+  "color": zod.string()
+}),
+  "status": zod.enum(['draft', 'approved']),
+  "createdAt": zod.string()
+})
+
+
+/**
+ * @summary Throw a draft away (app owner)
+ */
+export const RejectCropDraftParams = zod.object({
+  "key": zod.coerce.string()
+})
+
+export const RejectCropDraftResponse = zod.void()
+
+
+/**
  * @summary Crop catalog (Anbaudaten) of the Beet-Architekt
  */
 export const GetGardenCatalogResponseItem = zod.object({
@@ -2783,7 +2930,14 @@ export const ListBedsResponseItem = zod.object({
   "photoCorners": zod.array(zod.object({
   "x": zod.number(),
   "y": zod.number()
-})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "photoAnalysis": zod.union([zod.object({
+  "shade": zod.string(),
+  "soil": zod.string(),
+  "weeds": zod.string(),
+  "tips": zod.array(zod.string()),
+  "createdAt": zod.string()
+}),zod.null()]).describe('KI-Einschätzung of the photo (cleared with a new photo)')
 })
 export const ListBedsResponse = zod.array(ListBedsResponseItem)
 
@@ -2847,7 +3001,14 @@ export const CreateBedResponse = zod.object({
   "photoCorners": zod.array(zod.object({
   "x": zod.number(),
   "y": zod.number()
-})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "photoAnalysis": zod.union([zod.object({
+  "shade": zod.string(),
+  "soil": zod.string(),
+  "weeds": zod.string(),
+  "tips": zod.array(zod.string()),
+  "createdAt": zod.string()
+}),zod.null()]).describe('KI-Einschätzung of the photo (cleared with a new photo)')
 })
 
 
@@ -2884,7 +3045,14 @@ export const GetBedResponse = zod.object({
   "photoCorners": zod.array(zod.object({
   "x": zod.number(),
   "y": zod.number()
-})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "photoAnalysis": zod.union([zod.object({
+  "shade": zod.string(),
+  "soil": zod.string(),
+  "weeds": zod.string(),
+  "tips": zod.array(zod.string()),
+  "createdAt": zod.string()
+}),zod.null()]).describe('KI-Einschätzung of the photo (cleared with a new photo)')
 })
 
 
@@ -2948,7 +3116,14 @@ export const UpdateBedResponse = zod.object({
   "photoCorners": zod.array(zod.object({
   "x": zod.number(),
   "y": zod.number()
-})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "photoAnalysis": zod.union([zod.object({
+  "shade": zod.string(),
+  "soil": zod.string(),
+  "weeds": zod.string(),
+  "tips": zod.array(zod.string()),
+  "createdAt": zod.string()
+}),zod.null()]).describe('KI-Einschätzung of the photo (cleared with a new photo)')
 })
 
 
@@ -3001,7 +3176,14 @@ export const SetBedPhotoResponse = zod.object({
   "photoCorners": zod.array(zod.object({
   "x": zod.number(),
   "y": zod.number()
-})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "photoAnalysis": zod.union([zod.object({
+  "shade": zod.string(),
+  "soil": zod.string(),
+  "weeds": zod.string(),
+  "tips": zod.array(zod.string()),
+  "createdAt": zod.string()
+}),zod.null()]).describe('KI-Einschätzung of the photo (cleared with a new photo)')
 })
 
 
@@ -3038,7 +3220,108 @@ export const RemoveBedPhotoResponse = zod.object({
   "photoCorners": zod.array(zod.object({
   "x": zod.number(),
   "y": zod.number()
-})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "photoAnalysis": zod.union([zod.object({
+  "shade": zod.string(),
+  "soil": zod.string(),
+  "weeds": zod.string(),
+  "tips": zod.array(zod.string()),
+  "createdAt": zod.string()
+}),zod.null()]).describe('KI-Einschätzung of the photo (cleared with a new photo)')
+})
+
+
+/**
+ * @summary KI suggests the four bed corners on the photo, in grid order; the user confirms (caretaker or admin)
+ */
+export const SuggestBedCornersParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const SuggestBedCornersResponse = zod.object({
+  "corners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable()
+})
+
+
+/**
+ * @summary KI-Einschätzung of the bed photo (shade, soil, weeds, tips), stored on the bed (caretaker or admin)
+ */
+export const AnalyzeBedPhotoParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const AnalyzeBedPhotoResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullable(),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number().nullable().describe('Rounded to 0.1°'),
+  "longitude": zod.number().nullable(),
+  "sunHours": zod.number().nullable(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]),
+  "soilPh": zod.number().nullable(),
+  "lastFrost": zod.string().describe('MM-DD, typical last spring frost'),
+  "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
+  "frostSource": zod.enum(['default', 'climate', 'manual']),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date(),
+  "photoUrl": zod.string().nullable(),
+  "photoHeading": zod.number().nullable().describe('Compass heading of the phone when the photo was taken (0–360°)'),
+  "photoCorners": zod.array(zod.object({
+  "x": zod.number(),
+  "y": zod.number()
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "photoAnalysis": zod.union([zod.object({
+  "shade": zod.string(),
+  "soil": zod.string(),
+  "weeds": zod.string(),
+  "tips": zod.array(zod.string()),
+  "createdAt": zod.string()
+}),zod.null()]).describe('KI-Einschätzung of the photo (cleared with a new photo)')
+})
+
+
+/**
+ * @summary KI suggests plantings for the free cells; the fixed rules drop what does not fit. Nothing is saved (caretaker or admin)
+ */
+export const SuggestPlantingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number(),
+  "season": zod.coerce.number()
+})
+
+export const suggestPlantingBodyWishesMax = 300;
+
+
+
+export const SuggestPlantingBody = zod.object({
+  "wishes": zod.string().max(suggestPlantingBodyWishesMax).nullish()
+})
+
+export const SuggestPlantingResponse = zod.object({
+  "items": zod.array(zod.object({
+  "cropKey": zod.string(),
+  "label": zod.string(),
+  "x": zod.number(),
+  "y": zod.number(),
+  "w": zod.number(),
+  "h": zod.number()
+})),
+  "dropped": zod.array(zod.object({
+  "label": zod.string(),
+  "reason": zod.string()
+})),
+  "notes": zod.string()
 })
 
 
@@ -3087,7 +3370,14 @@ export const SetBedPhotoCornersResponse = zod.object({
   "photoCorners": zod.array(zod.object({
   "x": zod.number(),
   "y": zod.number()
-})).nullable().describe('The four bed corners on the photo (0–1), in grid order')
+})).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "photoAnalysis": zod.union([zod.object({
+  "shade": zod.string(),
+  "soil": zod.string(),
+  "weeds": zod.string(),
+  "tips": zod.array(zod.string()),
+  "createdAt": zod.string()
+}),zod.null()]).describe('KI-Einschätzung of the photo (cleared with a new photo)')
 })
 
 

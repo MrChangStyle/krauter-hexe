@@ -38,6 +38,7 @@ import { PushNotificationCard } from "@/components/push-notification-card";
 import { AccountCard } from "@/components/account-card";
 import { OrphanCleanupCard } from "@/components/orphan-cleanup-card";
 import { ModerationCard } from "@/components/moderation-card";
+import { CropDraftsCard } from "@/components/crop-drafts-card";
 import { ImageRescueCard } from "@/components/image-rescue-card";
 import { useFavorites } from "@/lib/use-favorites";
 import {
@@ -1052,6 +1053,7 @@ export default function MehrPage() {
         <>
           <div className="h-px bg-border mt-6" />
           <ModerationCard />
+          <CropDraftsCard />
           <Benutzerverwaltung />
           <OrphanCleanupCard />
         </>

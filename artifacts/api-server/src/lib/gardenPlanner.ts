@@ -11,7 +11,8 @@ import { and, asc, eq, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound } from './farmAnimals';
 import { speciesKey } from './speciesKey';
-import { GARDEN_CATALOG, cropByKey, type Crop } from './gardenCatalog';
+import { cropByKey, fullCatalog, type Crop } from './gardenCatalog';
+import { loadApprovedCrops } from './gardenCrops';
 
 /** Cells along the bed's length (x) and width (y). */
 export function gridSize(bed: { lengthCm: number; widthCm: number }): { cols: number; rows: number } {
@@ -37,7 +38,7 @@ export function overlaps(a: Rect, b: Rect): boolean {
 export function cropForBotanicalName(botanicalName: string): Crop | undefined {
   const key = speciesKey(botanicalName);
   if (!key) return undefined;
-  return GARDEN_CATALOG.find((c) => speciesKey(c.botanicalName) === key);
+  return fullCatalog().find((c) => speciesKey(c.botanicalName) === key);
 }
 
 const plantingColumns = {
@@ -90,6 +91,7 @@ export interface PlantingInput {
 
 export async function addPlanting(farmId: number, bedId: number, season: number, input: PlantingInput) {
   validSeason(season);
+  await loadApprovedCrops();
   // What is planted: a catalog crop, or an archive plant (matched to the
   // catalog when its species is in it, so the rules apply to it too).
   let crop = input.cropKey ? cropByKey(input.cropKey) : undefined;

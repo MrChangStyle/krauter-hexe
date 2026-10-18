@@ -157,6 +157,19 @@ export const GARDEN_CATALOG: readonly Crop[] = [
 
 const BY_KEY = new Map(GARDEN_CATALOG.map((c) => [c.key, c]));
 
+// Crops drafted by the AI and approved by the app owner (step 5, garden_crops).
+// Loaded by lib/gardenCrops.ts; they count like the fixed ones.
+let approved = new Map<string, Crop>();
+
+export function setApprovedCrops(crops: Crop[]): void {
+  approved = new Map(crops.filter((c) => !BY_KEY.has(c.key)).map((c) => [c.key, c]));
+}
+
 export function cropByKey(key: string): Crop | undefined {
-  return BY_KEY.get(key);
+  return BY_KEY.get(key) ?? approved.get(key);
+}
+
+/** The fixed catalog, then the approved crops. */
+export function fullCatalog(): Crop[] {
+  return [...GARDEN_CATALOG, ...approved.values()];
 }

@@ -2715,6 +2715,231 @@ export const ListCameraEventsResponse = zod.array(ListCameraEventsResponseItem)
 
 
 /**
+ * @summary Crop catalog (Anbaudaten) of the Beet-Architekt
+ */
+export const GetGardenCatalogResponseItem = zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "botanicalName": zod.string(),
+  "group": zod.enum(['vegetable', 'herb', 'flower', 'fruit']),
+  "family": zod.string(),
+  "feeder": zod.enum(['heavy', 'medium', 'light']),
+  "spacingCm": zod.number(),
+  "rowSpacingCm": zod.number(),
+  "light": zod.enum(['full', 'partial', 'shade']),
+  "frostHardy": zod.boolean(),
+  "sowIndoor": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "directSow": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "plantOut": zod.union([zod.object({
+  "from": zod.number().describe('Weeks relative to the last spring frost (negative = before)'),
+  "to": zod.number()
+}),zod.null()]),
+  "harvest": zod.object({
+  "from": zod.number(),
+  "to": zod.number()
+}),
+  "good": zod.array(zod.string()),
+  "bad": zod.array(zod.string()),
+  "color": zod.string()
+})
+export const GetGardenCatalogResponse = zod.array(GetGardenCatalogResponseItem)
+
+
+/**
+ * @summary Beds of the farm
+ */
+export const ListBedsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListBedsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullable(),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number().nullable().describe('Rounded to 0.1°'),
+  "longitude": zod.number().nullable(),
+  "sunHours": zod.number().nullable(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]),
+  "soilPh": zod.number().nullable(),
+  "lastFrost": zod.string().describe('MM-DD, typical last spring frost'),
+  "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
+  "frostSource": zod.enum(['default', 'climate', 'manual']),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const ListBedsResponse = zod.array(ListBedsResponseItem)
+
+
+/**
+ * @summary Add a bed (caretaker or admin)
+ */
+export const CreateBedParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createBedBodyNameMax = 60;
+
+export const createBedBodyNotesMax = 2000;
+
+
+
+export const CreateBedBody = zod.object({
+  "name": zod.string().min(1).max(createBedBodyNameMax),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullish(),
+  "postalCode": zod.string().nullish(),
+  "latitude": zod.number().nullish().describe('From the phone\'s GPS; wins over the postal code.'),
+  "longitude": zod.number().nullish(),
+  "sunHours": zod.number().nullish(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]).optional(),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]).optional(),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]).optional(),
+  "soilPh": zod.number().nullish(),
+  "frostDates": zod.union([zod.object({
+  "lastFrost": zod.string().describe('MM-DD'),
+  "firstFrost": zod.string().describe('MM-DD')
+}),zod.null()]).optional().describe('Own frost dates; null hands them back to the weather history; omitted keeps them.'),
+  "notes": zod.string().max(createBedBodyNotesMax).nullish()
+})
+
+export const CreateBedResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullable(),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number().nullable().describe('Rounded to 0.1°'),
+  "longitude": zod.number().nullable(),
+  "sunHours": zod.number().nullable(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]),
+  "soilPh": zod.number().nullable(),
+  "lastFrost": zod.string().describe('MM-DD, typical last spring frost'),
+  "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
+  "frostSource": zod.enum(['default', 'climate', 'manual']),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary One bed
+ */
+export const GetBedParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const GetBedResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullable(),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number().nullable().describe('Rounded to 0.1°'),
+  "longitude": zod.number().nullable(),
+  "sunHours": zod.number().nullable(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]),
+  "soilPh": zod.number().nullable(),
+  "lastFrost": zod.string().describe('MM-DD, typical last spring frost'),
+  "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
+  "frostSource": zod.enum(['default', 'climate', 'manual']),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Change a bed (caretaker or admin)
+ */
+export const UpdateBedParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const updateBedBodyNameMax = 60;
+
+export const updateBedBodyNotesMax = 2000;
+
+
+
+export const UpdateBedBody = zod.object({
+  "name": zod.string().min(1).max(updateBedBodyNameMax),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullish(),
+  "postalCode": zod.string().nullish(),
+  "latitude": zod.number().nullish().describe('From the phone\'s GPS; wins over the postal code.'),
+  "longitude": zod.number().nullish(),
+  "sunHours": zod.number().nullish(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]).optional(),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]).optional(),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]).optional(),
+  "soilPh": zod.number().nullish(),
+  "frostDates": zod.union([zod.object({
+  "lastFrost": zod.string().describe('MM-DD'),
+  "firstFrost": zod.string().describe('MM-DD')
+}),zod.null()]).optional().describe('Own frost dates; null hands them back to the weather history; omitted keeps them.'),
+  "notes": zod.string().max(updateBedBodyNotesMax).nullish()
+})
+
+export const UpdateBedResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
+  "lengthCm": zod.number(),
+  "widthCm": zod.number(),
+  "heightCm": zod.number().nullable(),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number().nullable().describe('Rounded to 0.1°'),
+  "longitude": zod.number().nullable(),
+  "sunHours": zod.number().nullable(),
+  "orientation": zod.union([zod.enum(['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']),zod.null()]),
+  "windProtection": zod.union([zod.enum(['none', 'partial', 'good']),zod.null()]),
+  "soilTexture": zod.union([zod.enum(['sandy', 'loamy', 'clay']).describe('Result of the finger test'),zod.null()]),
+  "soilPh": zod.number().nullable(),
+  "lastFrost": zod.string().describe('MM-DD, typical last spring frost'),
+  "firstFrost": zod.string().describe('MM-DD, typical first autumn frost'),
+  "frostSource": zod.enum(['default', 'climate', 'manual']),
+  "notes": zod.string().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a bed (caretaker or admin)
+ */
+export const DeleteBedParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const DeleteBedResponse = zod.void()
+
+
+/**
  * @summary Rename a farm (admin only)
  */
 export const RenameFarmParams = zod.object({

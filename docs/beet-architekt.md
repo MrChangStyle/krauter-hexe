@@ -33,6 +33,12 @@ Aus der Spezifikation v1:
   Garten = Koralle; Bricolage Grotesque / Manrope; Henni gibt Tipps).
 
 Vom Inhaber am 18.10.2026 ergänzt:
+- **Frosttermine aus echten Wetterdaten, nicht per KI:** Standort per Postleitzahl
+  (OpenStreetMap Nominatim) oder GPS, auf ~10 km gerundet; typischer letzter/erster Frost
+  als Median der letzten 10 Jahre aus DWD-Daten über Bright Sky (kostenlos, auch
+  kommerziell nutzbar mit Quellenangabe), je Standort einmal berechnet; jederzeit von Hand
+  überschreibbar. Damit ist der offene Punkt „Wetterdienst auswählen“ entschieden.
+  Tägliche Frostwarnung aus der Vorhersage mit Push folgt mit dem Kalender (Schritt 4).
 - Beete gehören der **Farm** (geteilt mit den Mitgliedern, Rollen und Isolation wie bei
   den Tieren).
 - Pflanzen kommen aus dem **Pflanzenarchiv plus einem festen Katalog** üblicher Gemüse,
@@ -42,7 +48,7 @@ Vom Inhaber am 18.10.2026 ergänzt:
 
 ## Schritte
 
-1. **Fundament:** Anbaudaten-Katalog (Startbestand), Beete anlegen/bearbeiten/löschen
+1. **Fundament (UMGESETZT):** Anbaudaten-Katalog (Startbestand), Beete anlegen/bearbeiten/löschen
    (Typ, Maße, PLZ mit Frostterminen, Sonne, Ausrichtung, Windschutz), Bodenprofil
    manuell; Seite „Beet-Architekt“ im modernen Design (Kachel in „Pflanzen“ wird aktiv).
 2. **Raster von oben:** Pflanzen aus Katalog und Archiv in die Felder setzen; feste

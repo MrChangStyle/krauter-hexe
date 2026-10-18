@@ -1,6 +1,7 @@
 import { pool } from "@workspace/db";
 import { logger } from "./logger";
 import { FARM_SCHEMA_STATEMENTS } from "./farmSchemaStatements";
+import { GARDEN_SCHEMA_STATEMENTS } from "./gardenSchemaStatements";
 
 /**
  * Small, additive schema changes applied at server start.
@@ -45,6 +46,8 @@ const STATEMENTS = [
   "CREATE INDEX IF NOT EXISTS reports_status_idx ON reports (status)",
   // "Meine Farm" (generated, see farmSchemaStatements.ts).
   ...FARM_SCHEMA_STATEMENTS,
+  // Beet-Architekt (generated, see gardenSchemaStatements.ts).
+  ...GARDEN_SCHEMA_STATEMENTS,
 ];
 
 export async function upgradeSchema(): Promise<void> {

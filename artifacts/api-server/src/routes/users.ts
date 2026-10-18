@@ -7,9 +7,17 @@ import {
   UpdateUserApprovalBody,
   UpdateUserApprovalResponse,
   DeleteUserParams,
+  GetOrphanedDataResponse,
+  CleanupOrphanedDataBody,
+  CleanupOrphanedDataResponse,
 } from '@workspace/api-zod';
 import { requireOwner } from '../middlewares/requireApproved';
 import { OwnerAccountDeletionError, deleteAccount } from '../lib/accountDeletion';
+import {
+  cleanupOrphanedData,
+  findOrphanedData,
+  type OrphanCounts,
+} from '../lib/orphanCleanup';
 
 const router: IRouter = Router();
 
@@ -37,6 +45,36 @@ router.get('/users', requireOwner, async (_req, res): Promise<void> => {
 
   res.json(ListUsersResponse.parse(rows));
 });
+
+// ── Data left behind by deleted accounts ─────────────────────────────────────
+// Before deleteAccount existed, removing an account only deleted the users
+// row. The owner first looks (GET, changes nothing), then confirms (POST).
+
+function report(counts: OrphanCounts) {
+  return {
+    counts,
+    total: Object.values(counts).reduce((sum, n) => sum + n, 0),
+  };
+}
+
+router.get('/users/orphaned-data', requireOwner, async (_req, res): Promise<void> => {
+  res.json(GetOrphanedDataResponse.parse(report(await findOrphanedData())));
+});
+
+router.post(
+  '/users/orphaned-data/cleanup',
+  requireOwner,
+  async (req, res): Promise<void> => {
+    const body = CleanupOrphanedDataBody.safeParse(req.body);
+    if (!body.success || body.data.confirm !== true) {
+      res.status(400).json({ error: 'Bitte bestätige die Bereinigung.' });
+      return;
+    }
+    const counts = await cleanupOrphanedData();
+    req.log.info({ counts }, 'Orphaned account data cleaned up');
+    res.json(CleanupOrphanedDataResponse.parse(report(counts)));
+  },
+);
 
 router.patch('/users/:id', requireOwner, async (req, res): Promise<void> => {
   const params = UpdateUserApprovalParams.safeParse(req.params);

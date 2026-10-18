@@ -1286,6 +1286,30 @@ export const ListUsersResponse = zod.array(ListUsersResponseItem)
 
 
 /**
+ * Counts rows that point at an account which no longer exists – left behind when removing an account only deleted the users row. Changes nothing.
+ * @summary Count data left behind by deleted accounts (owner only)
+ */
+export const GetOrphanedDataResponse = zod.object({
+  "counts": zod.record(zod.string(), zod.number()).describe('Rows per table name.'),
+  "total": zod.number()
+})
+
+
+/**
+ * Deletes personal rows of accounts that no longer exist and unlinks their shared archive entries (which stay), in one transaction.
+ * @summary Remove data left behind by deleted accounts (owner only)
+ */
+export const CleanupOrphanedDataBody = zod.object({
+  "confirm": zod.boolean().describe('Must be true.')
+})
+
+export const CleanupOrphanedDataResponse = zod.object({
+  "counts": zod.record(zod.string(), zod.number()).describe('Rows per table name.'),
+  "total": zod.number()
+})
+
+
+/**
  * Grants or revokes app access for an account. Revoking also deletes all sessions of that account so it is signed out everywhere. The owner account cannot be modified.
  * @summary Approve or revoke an account (owner only)
  */

@@ -25,6 +25,9 @@ import { and, desc, eq, isNotNull, or, sql } from 'drizzle-orm';
 
 import { FarmDataError, getAnimal } from './farmAnimals';
 import { MODELS, TEXT_MODELS, parseDataUrl, runModelChain } from './plantIdentification';
+import { speciesKey } from './speciesKey';
+
+export { speciesKey };
 
 const SPECIES_DE: Record<FarmSpecies, string> = {
   poultry: 'Geflügel (Hühner, Enten, Gänse)',
@@ -236,11 +239,6 @@ export function statusFor(row: ArchiveRow, kind: AnimalKind): ArchivePlantStatus
   };
 }
 
-/** "Taxus baccata L." → "taxus baccata" (genus + species, for matching). */
-export function speciesKey(botanicalName: string): string | null {
-  const words = botanicalName.toLowerCase().replace(/[^a-zäöüß\s-]/g, ' ').split(/\s+/).filter(Boolean);
-  return words.length >= 2 ? `${words[0]} ${words[1]}` : null;
-}
 
 // ── Helpful plants ("Heil- und Futterpflanzen") ──────────────────────────────
 

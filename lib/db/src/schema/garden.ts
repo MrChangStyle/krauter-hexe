@@ -1,5 +1,6 @@
 import { doublePrecision, index, integer, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { farmsTable } from "./farm";
+import { plantsTable } from "./plants";
 
 // Beet-Architekt (docs/beet-architekt.md). Beds belong to a farm and follow
 // its rules: private to the members, every access through requireFarm(),
@@ -61,6 +62,34 @@ export const gardenBedsTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("garden_beds_farm_idx").on(table.farmId)],
+);
+
+/** Edge of one planner cell (cm) – the spec's 30 × 30 cm grid. */
+export const BED_CELL_CM = 30;
+
+// What grows where in a bed, per season (year): a rectangle of cells, from
+// the crop catalog (cropKey) and/or the plant archive (plantId).
+export const bedPlantingsTable = pgTable(
+  "bed_plantings",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    bedId: integer("bed_id")
+      .notNull()
+      .references(() => gardenBedsTable.id, { onDelete: "cascade" }),
+    season: integer("season").notNull(),
+    cropKey: text("crop_key"),
+    plantId: integer("plant_id").references(() => plantsTable.id, { onDelete: "set null" }),
+    label: text("label").notNull(),
+    x: integer("x").notNull(),
+    y: integer("y").notNull(),
+    w: integer("w").notNull().default(1),
+    h: integer("h").notNull().default(1),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("bed_plantings_bed_season_idx").on(table.farmId, table.bedId, table.season)],
 );
 
 // Frost dates per 0.1° grid cell, computed once from weather history (DWD

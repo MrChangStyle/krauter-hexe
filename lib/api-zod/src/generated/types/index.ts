@@ -26,6 +26,8 @@ export * from './backfillSymptomCasingResult';
 export * from './backfillSymptomsResult';
 export * from './backfillToxicityResult';
 export * from './bedOrientation';
+export * from './bedPlanting';
+export * from './bedPlantingInput';
 export * from './bedType';
 export * from './camera';
 export * from './cameraEvent';

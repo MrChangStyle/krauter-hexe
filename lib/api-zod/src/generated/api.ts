@@ -2940,6 +2940,69 @@ export const DeleteBedResponse = zod.void()
 
 
 /**
+ * @summary Plantings of a bed in one season (year)
+ */
+export const ListPlantingsParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number(),
+  "season": zod.coerce.number()
+})
+
+export const ListPlantingsResponseItem = zod.object({
+  "id": zod.number(),
+  "season": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "plantId": zod.number().nullable(),
+  "label": zod.string(),
+  "x": zod.number().describe('Column of the top-left cell (along the bed\'s length)'),
+  "y": zod.number(),
+  "w": zod.number(),
+  "h": zod.number()
+})
+export const ListPlantingsResponse = zod.array(ListPlantingsResponseItem)
+
+
+/**
+ * @summary Put a plant into the grid (caretaker or admin); its size follows the plant spacing
+ */
+export const AddPlantingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number(),
+  "season": zod.coerce.number()
+})
+
+export const AddPlantingBody = zod.object({
+  "cropKey": zod.string().nullish(),
+  "plantId": zod.number().nullish(),
+  "x": zod.number(),
+  "y": zod.number()
+})
+
+export const AddPlantingResponse = zod.object({
+  "id": zod.number(),
+  "season": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "plantId": zod.number().nullable(),
+  "label": zod.string(),
+  "x": zod.number().describe('Column of the top-left cell (along the bed\'s length)'),
+  "y": zod.number(),
+  "w": zod.number(),
+  "h": zod.number()
+})
+
+
+/**
+ * @summary Take a planting out of the grid (caretaker or admin)
+ */
+export const RemovePlantingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "plantingId": zod.coerce.number()
+})
+
+export const RemovePlantingResponse = zod.void()
+
+
+/**
  * @summary Rename a farm (admin only)
  */
 export const RenameFarmParams = zod.object({

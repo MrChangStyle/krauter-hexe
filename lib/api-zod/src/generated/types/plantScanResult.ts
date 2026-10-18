@@ -13,4 +13,6 @@ export interface PlantScanResult {
   alreadyInArchive: boolean;
   /** True when alreadyInArchive is true AND the existing entry had no image before this scan — the new photo was automatically attached to the existing entry (Smart Merge). Null/absent for new entries or duplicates that already had an image. */
   imageMerged?: boolean | null;
+  /** True when this scan's photo was clearly better than the shared one and replaced it. */
+  imageImproved?: boolean | null;
 }

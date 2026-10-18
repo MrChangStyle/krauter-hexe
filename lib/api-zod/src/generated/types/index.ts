@@ -31,6 +31,7 @@ export * from './geoReverseInput';
 export * from './geoReverseResult';
 export * from './healthStatus';
 export * from './humanStatus';
+export * from './imageLockInput';
 export * from './insect';
 export * from './insectCategory';
 export * from './insectRelationStatus';

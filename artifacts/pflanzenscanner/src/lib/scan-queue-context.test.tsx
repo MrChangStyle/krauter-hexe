@@ -36,6 +36,10 @@ const drainQueueMock = vi.fn().mockImplementation(async (deps: DrainDepsCapture)
   return { added: 0, duplicates: 0, failed: 0, networkStop: false };
 });
 
+vi.mock("@/lib/my-photos", () => ({
+  recordScanPhoto: vi.fn().mockResolvedValue(undefined),
+}));
+
 vi.mock("@/lib/scan-queue-drain", () => ({
   drainQueue: (...args: Parameters<typeof drainQueueMock>) => drainQueueMock(...args),
 }));

@@ -1,4 +1,5 @@
 import { ai } from "./geminiClient";
+import { coerceQuality } from "./imageQualityPolicy";
 import {
   PLANT_CATEGORIES,
   HUMAN_STATUSES,
@@ -1018,6 +1019,8 @@ export async function generateSymptomsForPlant(input: {
 export interface QuickPlantId {
   istPflanze: boolean;
   germanName: string;
+  /** Photo rating 1-10 (see imageQualityPolicy); null when not given. */
+  imageQuality?: number | null;
   botanicalName: string;
 }
 
@@ -1026,7 +1029,8 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
 {
   "istPflanze": boolean (Ist auf dem Foto eine Pflanze, ein Pilz, ein Kraut, ein Baum oder Strauch erkennbar? false z.B. bei Tier, Mensch, Gebäude, Gegenstand, leerer Fläche),
   "germanName": string (deutscher Trivialname),
-  "botanicalName": string (botanischer/lateinischer Name der Art, nur Gattung und Art, ohne Autor)
+  "botanicalName": string (botanischer/lateinischer Name der Art, nur Gattung und Art, ohne Autor),
+  "bildqualitaet": number (ganze Zahl 1-10: Wie gut eignet sich das Foto als Referenzbild der Art? Bewerte Schärfe, Licht, ob das Motiv das Bild gut füllt und ob die typischen Erkennungsmerkmale gut sichtbar sind. 1 = unbrauchbar, 5 = durchschnittliches Handyfoto, 10 = Bestimmungsbuch-Qualität)
 }
 Wenn du dir nicht sicher bist, gib deine beste Einschätzung ab.`;
 
@@ -1061,6 +1065,7 @@ export async function quickIdentifyPlant(
     istPflanze: parsed.istPflanze !== false,
     germanName: coerceText(parsed.germanName, "Unbekannte Pflanze"),
     botanicalName: coerceText(parsed.botanicalName, UNKNOWN_BOTANICAL_NAME),
+    imageQuality: coerceQuality(parsed.bildqualitaet),
   };
 }
 
@@ -1080,7 +1085,8 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
 {
   "motiv": "pflanze" | "insekt" | "tier" | "nichts",
   "germanName": string (deutscher Trivialname des Hauptmotivs),
-  "botanicalName": string (nur bei "pflanze": botanischer/lateinischer Artname, nur Gattung und Art, ohne Autor; sonst "")
+  "botanicalName": string (nur bei "pflanze": botanischer/lateinischer Artname, nur Gattung und Art, ohne Autor; sonst ""),
+  "bildqualitaet": number (ganze Zahl 1-10: Wie gut eignet sich das Foto als Referenzbild der Art? Bewerte Schärfe, Licht, ob das Motiv das Bild gut füllt und ob die typischen Erkennungsmerkmale gut sichtbar sind. 1 = unbrauchbar, 5 = durchschnittliches Handyfoto, 10 = Bestimmungsbuch-Qualität)
 }
 Bedeutung von "motiv":
 - "pflanze": Pflanze, Kraut, Blume, Gras, Baum, Strauch, Moos, Kaktus, Pilz, Flechte, Frucht/Blatt einer Pflanze
@@ -1114,6 +1120,7 @@ export async function classifyScanSubject(imageDataUrl: string): Promise<Subject
       istPflanze: subject === "pflanze",
       germanName: coerceText(parsed.germanName, "Unbekannte Pflanze"),
       botanicalName: coerceText(parsed.botanicalName, UNKNOWN_BOTANICAL_NAME),
+      imageQuality: coerceQuality(parsed.bildqualitaet),
     },
   };
 }

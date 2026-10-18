@@ -23,6 +23,8 @@ import {
   INSECT_CATEGORY_LABELS,
   INSECT_RELATION_LABELS,
 } from "@/components/insect-card";
+import { PhotoChoiceCard } from "@/components/photo-choice-card";
+import { ImageLockToggle } from "@/components/image-lock-toggle";
 
 export default function InsectDetailPage() {
   const params = useParams();
@@ -121,6 +123,13 @@ export default function InsectDetailPage() {
       </div>
 
       <div className="px-4 pt-5 space-y-5">
+        <PhotoChoiceCard kind="insect" id={insect.id} />
+        <ImageLockToggle
+          kind="insect"
+          id={insect.id}
+          locked={insect.imageLocked ?? false}
+          quality={insect.imageQuality}
+        />
         {/* Category + relation badges */}
         <div className="flex flex-wrap gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">

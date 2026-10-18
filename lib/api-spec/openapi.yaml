@@ -126,6 +126,36 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Plant"
+  /plants/{id}/image-lock:
+    put:
+      operationId: setPlantImageLock
+      tags: [plants]
+      summary: Lock or unlock the shared photo (admin only)
+      description: >
+        A locked photo is never replaced automatically by a better scan.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImageLockInput"
+      responses:
+        "200":
+          description: Updated entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plant"
+        "403":
+          description: Only the admin may lock photos
+        "404":
+          description: Plant not found
   /plants/{id}:
     get:
       operationId: getPlant
@@ -1045,6 +1075,36 @@ paths:
                   $ref: "#/components/schemas/Insect"
         "401":
           description: Not signed in
+  /insects/{id}/image-lock:
+    put:
+      operationId: setInsectImageLock
+      tags: [insects]
+      summary: Lock or unlock the shared photo (admin only)
+      description: >
+        A locked photo is never replaced automatically by a better scan.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ImageLockInput"
+      responses:
+        "200":
+          description: Updated entry
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Insect"
+        "403":
+          description: Only the admin may lock photos
+        "404":
+          description: Insect not found
   /insects/{id}:
     get:
       operationId: getInsect
@@ -1638,6 +1698,12 @@ components:
             (e.g. "München", "Bayern"). Max 80 characters. The client derives
             this from GPS coordinates via the /geo/reverse endpoint; only the
             plain text name reaches the server — no coordinates are stored.
+    ImageLockInput:
+      type: object
+      required: [locked]
+      properties:
+        locked:
+          type: boolean
     Plant:
       type: object
       required:
@@ -1759,6 +1825,17 @@ components:
             migration (those use the GET /plants/{id}/image endpoint instead).
             When a mushroom side image exists, it is stored under the derived
             key "${localImageId}-side" in the same IndexedDB store.
+        imageQuality:
+          type: integer
+          nullable: true
+          description: >
+            AI rating 1-10 of how well the shared photo shows the species. A
+            later scan with a clearly better photo replaces it, unless
+            imageLocked is set. Null for photos never rated.
+        imageLocked:
+          type: boolean
+          description: >
+            Set by the admin: the shared photo is never replaced automatically.
         imageUrl:
           type: string
           nullable: true
@@ -1804,6 +1881,12 @@ components:
             image before this scan — the new photo was automatically attached
             to the existing entry (Smart Merge). Null/absent for new entries
             or duplicates that already had an image.
+        imageImproved:
+          type: boolean
+          nullable: true
+          description: >
+            True when this scan's photo was clearly better than the shared one
+            and replaced it.
     DeletePlantInput:
       type: object
       required: [password]
@@ -2143,6 +2226,17 @@ components:
             UUID that identifies the photo in the client's local IndexedDB
             image store. Null for entries created before the local-first
             migration (those use GET /insects/{id}/image instead).
+        imageQuality:
+          type: integer
+          nullable: true
+          description: >
+            AI rating 1-10 of how well the shared photo shows the species. A
+            later scan with a clearly better photo replaces it, unless
+            imageLocked is set. Null for photos never rated.
+        imageLocked:
+          type: boolean
+          description: >
+            Set by the admin: the shared photo is never replaced automatically.
         imageUrl:
           type: string
           nullable: true
@@ -2319,6 +2413,12 @@ components:
             True when the scanned insect matched an entry already in the archive
             (by scientific name); in that case no new entry was created and the
             existing one is returned.
+        imageImproved:
+          type: boolean
+          nullable: true
+          description: >
+            True when this scan's photo was clearly better than the shared one
+            and replaced it.
     LoginInput:
       type: object
       required: [email, password]

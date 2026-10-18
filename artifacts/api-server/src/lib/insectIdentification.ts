@@ -1,4 +1,5 @@
 import { ai } from "./geminiClient";
+import { coerceQuality } from "./imageQualityPolicy";
 import {
   INSECT_CATEGORIES,
   INSECT_RELATION_STATUSES,
@@ -27,6 +28,8 @@ export interface InsectIdentification {
    * name of that plant. Null when no host plant is visible.
    */
   plantContext: string | null;
+  /** Photo rating 1-10 (see imageQualityPolicy); null when not given. */
+  imageQuality: number | null;
 }
 
 const SYSTEM_PROMPT = `Du bist ein Entomologe und Biologe, der Insekten und andere Gliedertiere (Arthropoden) anhand von Fotos bestimmt.
@@ -53,7 +56,8 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
   "affectedPlants": string[] (Pflanzennamen auf Deutsch, die das Tier häufig befällt oder besucht; [] wenn keine spezifischen),
   "description": string (Deutsch, 3–5 Sätze: Aussehen, Lebensraum, Lebenszyklus, Verhalten; bei Larve/Ei auch Verwandlung erwähnen),
   "treatmentTips": string (NUR bei "pest": biologische/organische Bekämpfung auf Deutsch, 2–4 Sätze; sonst ""),
-  "plantContext": string | null (Deutscher Name der Pflanze, auf der das Tier sitzt – nur wenn klar erkennbar; sonst null)
+  "plantContext": string | null (Deutscher Name der Pflanze, auf der das Tier sitzt – nur wenn klar erkennbar; sonst null),
+  "bildqualitaet": number (ganze Zahl 1-10: Wie gut eignet sich das Foto als Referenzbild der Art? Bewerte Schärfe, Licht, ob das Tier das Bild gut füllt und ob die typischen Erkennungsmerkmale gut sichtbar sind. 1 = unbrauchbar, 5 = durchschnittliches Handyfoto, 10 = Bestimmungsbuch-Qualität)
 }
 Gib bei Unsicherheit immer deine beste Schätzung ab. Ohne eindeutige Schädlichkeit → "neutral" oder "beneficial".`;
 
@@ -253,6 +257,7 @@ export async function identifyInsect(
       description: "",
       treatmentTips: "",
       plantContext: null,
+      imageQuality: null,
     };
   }
 
@@ -280,5 +285,6 @@ export async function identifyInsect(
       typeof obj.plantContext === "string" && obj.plantContext.trim().length > 0
         ? obj.plantContext.trim()
         : null,
+    imageQuality: coerceQuality(obj.bildqualitaet),
   };
 }

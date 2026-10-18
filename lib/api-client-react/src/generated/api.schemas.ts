@@ -1141,6 +1141,62 @@ export interface FeedLog {
   analysis: FeedAnalysis;
 }
 
+export interface Camera {
+  id: number;
+  name: string;
+  /**
+     * Only sent to admins (may contain an access key).
+     * @nullable
+     */
+  relayUrl: string | null;
+  hasRelay: boolean;
+  cooldownSeconds: number;
+  /** @nullable */
+  lastTriggeredAt: string | null;
+  /** @nullable */
+  lastEventAt: string | null;
+  createdAt: string;
+}
+
+export interface CameraInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  relayUrl?: string | null;
+  /**
+     * @minimum 30
+     * @maximum 86400
+     */
+  cooldownSeconds: number;
+}
+
+export interface CameraWithSecret {
+  camera: Camera;
+  /** Shown once; only its hash is stored. */
+  secret: string;
+}
+
+export interface CameraEvent {
+  id: number;
+  cameraId: number;
+  cameraName: string;
+  /** @nullable */
+  imageUrl: string | null;
+  predatorDetected: boolean;
+  /** @nullable */
+  species: string | null;
+  /** @nullable */
+  confidence: number | null;
+  relayTriggered: boolean;
+  createdAt: string;
+}
+
 export interface FarmMember {
   userId: string;
   displayName: string;

@@ -1,10 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  ChevronRight,
   Loader2,
   LogOut,
   Pencil,
   Plus,
+  Radar,
   Trash2,
   UserPlus,
   Users,
@@ -446,6 +449,18 @@ export default function FarmPage() {
       <FarmAnimalsSection farm={farm} />
 
       <FarmExportCard farm={farm} />
+
+      <Link
+        href="/farm/kameras"
+        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
+      >
+        <Radar className="h-5 w-5 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Wildtier-Radar</span>
+          <span className="block text-sm text-muted-foreground">Kameras, Raubtier-Alarm und Ereignisse</span>
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </Link>
 
       <MembersCard
         farm={farm}

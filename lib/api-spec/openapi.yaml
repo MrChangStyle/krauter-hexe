@@ -2129,6 +2129,143 @@ paths:
       responses:
         "204":
           description: Deleted.
+  /farms/{farmId}/cameras:
+    get:
+      tags: [farm]
+      operationId: listCameras
+      summary: Cameras of the farm (relay URL only for admins)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The cameras.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Camera"
+    post:
+      tags: [farm]
+      operationId: createCamera
+      summary: Add a camera (admin); the secret is returned only here
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CameraInput"
+      responses:
+        "201":
+          description: The camera and its secret.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CameraWithSecret"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/cameras/{cameraId}:
+    patch:
+      tags: [farm]
+      operationId: updateCamera
+      summary: Change a camera (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CameraInput"
+      responses:
+        "200":
+          description: The camera.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Camera"
+        "400":
+          description: Invalid input.
+    delete:
+      tags: [farm]
+      operationId: deleteCamera
+      summary: Delete a camera with its events (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+  /farms/{farmId}/cameras/{cameraId}/secret:
+    post:
+      tags: [farm]
+      operationId: rotateCameraSecret
+      summary: New secret for a camera; the old one stops working (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The camera and its new secret.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CameraWithSecret"
+  /farms/{farmId}/camera-events:
+    get:
+      tags: [farm]
+      operationId: listCameraEvents
+      summary: Latest 50 camera events of the farm
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The events, newest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CameraEvent"
   /farms/{farmId}:
     patch:
       tags: [farm]
@@ -3959,6 +4096,77 @@ components:
           format: date-time
         analysis:
           $ref: "#/components/schemas/FeedAnalysis"
+    Camera:
+      type: object
+      required: [id, name, relayUrl, hasRelay, cooldownSeconds, lastTriggeredAt, lastEventAt, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        relayUrl:
+          type: [string, 'null']
+          description: Only sent to admins (may contain an access key).
+        hasRelay:
+          type: boolean
+        cooldownSeconds:
+          type: integer
+        lastTriggeredAt:
+          type: [string, 'null']
+          format: date-time
+        lastEventAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    CameraInput:
+      type: object
+      required: [name, cooldownSeconds]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        relayUrl:
+          type: [string, 'null']
+          maxLength: 500
+        cooldownSeconds:
+          type: integer
+          minimum: 30
+          maximum: 86400
+    CameraWithSecret:
+      type: object
+      required: [camera, secret]
+      properties:
+        camera:
+          $ref: "#/components/schemas/Camera"
+        secret:
+          type: string
+          description: Shown once; only its hash is stored.
+    CameraEvent:
+      type: object
+      required: [id, cameraId, cameraName, imageUrl, predatorDetected, species, confidence, relayTriggered, createdAt]
+      properties:
+        id:
+          type: integer
+        cameraId:
+          type: integer
+        cameraName:
+          type: string
+        imageUrl:
+          type: [string, 'null']
+        predatorDetected:
+          type: boolean
+        species:
+          type: [string, 'null']
+        confidence:
+          type: [number, 'null']
+        relayTriggered:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
     FarmMember:
       type: object
       required: [userId, displayName, email, role, isMe]

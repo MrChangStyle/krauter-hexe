@@ -298,10 +298,10 @@ OK warten; jeder Schritt auf einem eigenen Branch mit Pull Request gegen main)
   farm_tasks statt tasks zu erweitern (Begründung in replit.md), derselbe Cron.
 - Schritt 5 – KI (UMGESETZT): Arterkennung, Haltungs-Wiki, Futteranalyse inkl. Abgleich mit dem
   Pflanzenarchiv. Details in replit.md.
-- Schritt 6 – IoT: Kamera-Verwaltung (Secret nur einmal anzeigen), Webhook, Relais,
-  Ereignisliste, Push. VOR dem Bau klären: Der kostenlose Render-Tarif schläft nach
-  ~15 Minuten ein (30–60 s Aufwachzeit) – für einen echten Raubtier-Alarm braucht es einen
-  durchgehend laufenden Dienst (bezahlter Tarif) oder eine lokale Auslösung am Relais.
+- Schritt 6 – IoT (UMGESETZT): Kamera-Verwaltung (Secret nur einmal anzeigen), Webhook, Relais,
+  Ereignisliste, Push. Der kostenlose Render-Tarif schläft nach ~15 Minuten ein (30–60 s
+  Aufwachzeit). ENTSCHEIDUNG: vorerst ohne Echtzeit-Anspruch gebaut (Hinweis in der App);
+  bezahlter Tarif oder lokale Auslösung am Relais später. Details in replit.md.
 
 DEFINITION OF DONE pro Schritt: `pnpm run typecheck` fehlerfrei, `pnpm run build` erfolgreich,
 alle Tests grün (alte und neue), bestehende Funktionen stichprobenartig im Browser geprüft,

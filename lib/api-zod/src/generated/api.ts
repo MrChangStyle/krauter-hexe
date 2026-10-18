@@ -2563,6 +2563,153 @@ export const DeleteFeedAnalysisResponse = zod.void()
 
 
 /**
+ * @summary Cameras of the farm (relay URL only for admins)
+ */
+export const ListCamerasParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListCamerasResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "relayUrl": zod.string().nullable().describe('Only sent to admins (may contain an access key).'),
+  "hasRelay": zod.boolean(),
+  "cooldownSeconds": zod.number(),
+  "lastTriggeredAt": zod.coerce.date().nullable(),
+  "lastEventAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+export const ListCamerasResponse = zod.array(ListCamerasResponseItem)
+
+
+/**
+ * @summary Add a camera (admin); the secret is returned only here
+ */
+export const CreateCameraParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createCameraBodyNameMax = 60;
+
+export const createCameraBodyRelayUrlMax = 500;
+
+export const createCameraBodyCooldownSecondsMin = 30;
+export const createCameraBodyCooldownSecondsMax = 86400;
+
+
+
+export const CreateCameraBody = zod.object({
+  "name": zod.string().min(1).max(createCameraBodyNameMax),
+  "relayUrl": zod.string().max(createCameraBodyRelayUrlMax).nullish(),
+  "cooldownSeconds": zod.number().min(createCameraBodyCooldownSecondsMin).max(createCameraBodyCooldownSecondsMax)
+})
+
+export const CreateCameraResponse = zod.object({
+  "camera": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "relayUrl": zod.string().nullable().describe('Only sent to admins (may contain an access key).'),
+  "hasRelay": zod.boolean(),
+  "cooldownSeconds": zod.number(),
+  "lastTriggeredAt": zod.coerce.date().nullable(),
+  "lastEventAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+}),
+  "secret": zod.string().describe('Shown once; only its hash is stored.')
+})
+
+
+/**
+ * @summary Change a camera (admin)
+ */
+export const UpdateCameraParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "cameraId": zod.coerce.number()
+})
+
+export const updateCameraBodyNameMax = 60;
+
+export const updateCameraBodyRelayUrlMax = 500;
+
+export const updateCameraBodyCooldownSecondsMin = 30;
+export const updateCameraBodyCooldownSecondsMax = 86400;
+
+
+
+export const UpdateCameraBody = zod.object({
+  "name": zod.string().min(1).max(updateCameraBodyNameMax),
+  "relayUrl": zod.string().max(updateCameraBodyRelayUrlMax).nullish(),
+  "cooldownSeconds": zod.number().min(updateCameraBodyCooldownSecondsMin).max(updateCameraBodyCooldownSecondsMax)
+})
+
+export const UpdateCameraResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "relayUrl": zod.string().nullable().describe('Only sent to admins (may contain an access key).'),
+  "hasRelay": zod.boolean(),
+  "cooldownSeconds": zod.number(),
+  "lastTriggeredAt": zod.coerce.date().nullable(),
+  "lastEventAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a camera with its events (admin)
+ */
+export const DeleteCameraParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "cameraId": zod.coerce.number()
+})
+
+export const DeleteCameraResponse = zod.void()
+
+
+/**
+ * @summary New secret for a camera; the old one stops working (admin)
+ */
+export const RotateCameraSecretParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "cameraId": zod.coerce.number()
+})
+
+export const RotateCameraSecretResponse = zod.object({
+  "camera": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "relayUrl": zod.string().nullable().describe('Only sent to admins (may contain an access key).'),
+  "hasRelay": zod.boolean(),
+  "cooldownSeconds": zod.number(),
+  "lastTriggeredAt": zod.coerce.date().nullable(),
+  "lastEventAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date()
+}),
+  "secret": zod.string().describe('Shown once; only its hash is stored.')
+})
+
+
+/**
+ * @summary Latest 50 camera events of the farm
+ */
+export const ListCameraEventsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListCameraEventsResponseItem = zod.object({
+  "id": zod.number(),
+  "cameraId": zod.number(),
+  "cameraName": zod.string(),
+  "imageUrl": zod.string().nullable(),
+  "predatorDetected": zod.boolean(),
+  "species": zod.string().nullable(),
+  "confidence": zod.number().nullable(),
+  "relayTriggered": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListCameraEventsResponse = zod.array(ListCameraEventsResponseItem)
+
+
+/**
  * @summary Rename a farm (admin only)
  */
 export const RenameFarmParams = zod.object({

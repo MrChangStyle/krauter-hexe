@@ -9,6 +9,7 @@
  */
 
 import {
+  cameraEventsTable,
   db,
   farmAnimalsTable,
   farmMembershipsTable,
@@ -102,17 +103,21 @@ export async function deleteFarm(farmId: number, confirmName: unknown): Promise<
   deleteFarmPhotos(photos);
 }
 
-/** Cloudinary URLs of the animal photos of these farms. */
+/** Cloudinary URLs of the animal and camera photos of these farms. */
 export async function farmPhotoUrls(
   farmIds: number[],
   executor: Pick<typeof db, 'select'> = db,
 ): Promise<string[]> {
   if (farmIds.length === 0) return [];
-  const rows = await executor
+  const animals = await executor
     .select({ url: farmAnimalsTable.imageUrl })
     .from(farmAnimalsTable)
     .where(and(inArray(farmAnimalsTable.farmId, farmIds), isNotNull(farmAnimalsTable.imageUrl)));
-  return rows.map((r) => r.url!).filter(Boolean);
+  const cameraEvents = await executor
+    .select({ url: cameraEventsTable.imageUrl })
+    .from(cameraEventsTable)
+    .where(and(inArray(cameraEventsTable.farmId, farmIds), isNotNull(cameraEventsTable.imageUrl)));
+  return [...animals, ...cameraEvents].map((r) => r.url!).filter(Boolean);
 }
 
 /**

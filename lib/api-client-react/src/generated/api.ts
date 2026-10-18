@@ -21,6 +21,7 @@ import type {
 
 import type {
   AddFarmMemberInput,
+  ArchiveInput,
   AuthUserEnvelope,
   BackfillAnimalsResult,
   BackfillEdibleMedicinalResult,
@@ -41,6 +42,8 @@ import type {
   DeleteAccountInput,
   DeleteFarmInput,
   DeletePlantInput,
+  FarmAnimal,
+  FarmAnimalInput,
   FarmMember,
   FarmNameInput,
   FarmSummary,
@@ -48,6 +51,8 @@ import type {
   GeoReverseInput,
   GeoReverseResult,
   HealthStatus,
+  Herd,
+  HerdInput,
   ImageLockInput,
   Insect,
   LeaderboardResult,
@@ -56,6 +61,7 @@ import type {
   ManagedUser,
   OkResult,
   OrphanedDataReport,
+  PhotoInput,
   Plant,
   PlantHealthInput,
   PlantHealthResult,
@@ -4531,6 +4537,755 @@ export const useRemoveFarmMember = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getRemoveFarmMemberMutationOptions(options));
+    }
+
+export const getListHerdsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/herds`
+}
+
+/**
+ * @summary Herds of a farm
+ */
+export const listHerds = async (farmId: number, options?: RequestInit): Promise<Herd[]> => {
+
+  return customFetch<Herd[]>(getListHerdsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListHerdsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/herds`
+    ] as const;
+    }
+
+
+export const getListHerdsQueryOptions = <TData = Awaited<ReturnType<typeof listHerds>>, TError = ErrorType<void>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listHerds>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListHerdsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listHerds>>> = ({ signal }) => listHerds(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listHerds>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListHerdsQueryResult = NonNullable<Awaited<ReturnType<typeof listHerds>>>
+export type ListHerdsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Herds of a farm
+ */
+
+export function useListHerds<TData = Awaited<ReturnType<typeof listHerds>>, TError = ErrorType<void>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listHerds>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListHerdsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateHerdUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/herds`
+}
+
+/**
+ * @summary Create a herd (caretaker or admin)
+ */
+export const createHerd = async (farmId: number,
+    herdInput: HerdInput, options?: RequestInit): Promise<Herd> => {
+
+  return customFetch<Herd>(getCreateHerdUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(herdInput)
+  }
+);}
+
+
+
+
+
+export const getCreateHerdMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHerd>>, TError,{farmId: number;data: BodyType<HerdInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createHerd>>, TError,{farmId: number;data: BodyType<HerdInput>}, TContext> => {
+
+const mutationKey = ['createHerd'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createHerd>>, {farmId: number;data: BodyType<HerdInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  createHerd(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateHerdMutationResult = NonNullable<Awaited<ReturnType<typeof createHerd>>>
+    export type CreateHerdMutationBody = BodyType<HerdInput>
+    export type CreateHerdMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a herd (caretaker or admin)
+ */
+export const useCreateHerd = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createHerd>>, TError,{farmId: number;data: BodyType<HerdInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createHerd>>,
+        TError,
+        {farmId: number;data: BodyType<HerdInput>},
+        TContext
+      > => {
+      return useMutation(getCreateHerdMutationOptions(options));
+    }
+
+export const getUpdateHerdUrl = (farmId: number,
+    herdId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/herds/${herdId}`
+}
+
+/**
+ * @summary Change a herd (caretaker or admin)
+ */
+export const updateHerd = async (farmId: number,
+    herdId: number,
+    herdInput: HerdInput, options?: RequestInit): Promise<Herd> => {
+
+  return customFetch<Herd>(getUpdateHerdUrl(farmId,herdId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(herdInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateHerdMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHerd>>, TError,{farmId: number;herdId: number;data: BodyType<HerdInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateHerd>>, TError,{farmId: number;herdId: number;data: BodyType<HerdInput>}, TContext> => {
+
+const mutationKey = ['updateHerd'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateHerd>>, {farmId: number;herdId: number;data: BodyType<HerdInput>}> = (props) => {
+          const {farmId,herdId,data} = props ?? {};
+
+          return  updateHerd(farmId,herdId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateHerdMutationResult = NonNullable<Awaited<ReturnType<typeof updateHerd>>>
+    export type UpdateHerdMutationBody = BodyType<HerdInput>
+    export type UpdateHerdMutationError = ErrorType<void>
+
+    /**
+ * @summary Change a herd (caretaker or admin)
+ */
+export const useUpdateHerd = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateHerd>>, TError,{farmId: number;herdId: number;data: BodyType<HerdInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateHerd>>,
+        TError,
+        {farmId: number;herdId: number;data: BodyType<HerdInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateHerdMutationOptions(options));
+    }
+
+export const getDeleteHerdUrl = (farmId: number,
+    herdId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/herds/${herdId}`
+}
+
+/**
+ * @summary Delete a herd; its animals stay, without herd (caretaker or admin)
+ */
+export const deleteHerd = async (farmId: number,
+    herdId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteHerdUrl(farmId,herdId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteHerdMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHerd>>, TError,{farmId: number;herdId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteHerd>>, TError,{farmId: number;herdId: number}, TContext> => {
+
+const mutationKey = ['deleteHerd'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteHerd>>, {farmId: number;herdId: number}> = (props) => {
+          const {farmId,herdId} = props ?? {};
+
+          return  deleteHerd(farmId,herdId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteHerdMutationResult = NonNullable<Awaited<ReturnType<typeof deleteHerd>>>
+
+    export type DeleteHerdMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a herd; its animals stay, without herd (caretaker or admin)
+ */
+export const useDeleteHerd = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHerd>>, TError,{farmId: number;herdId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteHerd>>,
+        TError,
+        {farmId: number;herdId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteHerdMutationOptions(options));
+    }
+
+export const getListFarmAnimalsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/animals`
+}
+
+/**
+ * @summary Animals of a farm, archived ones included (archivedAt set)
+ */
+export const listFarmAnimals = async (farmId: number, options?: RequestInit): Promise<FarmAnimal[]> => {
+
+  return customFetch<FarmAnimal[]>(getListFarmAnimalsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFarmAnimalsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/animals`
+    ] as const;
+    }
+
+
+export const getListFarmAnimalsQueryOptions = <TData = Awaited<ReturnType<typeof listFarmAnimals>>, TError = ErrorType<void>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFarmAnimals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFarmAnimalsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFarmAnimals>>> = ({ signal }) => listFarmAnimals(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFarmAnimals>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFarmAnimalsQueryResult = NonNullable<Awaited<ReturnType<typeof listFarmAnimals>>>
+export type ListFarmAnimalsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Animals of a farm, archived ones included (archivedAt set)
+ */
+
+export function useListFarmAnimals<TData = Awaited<ReturnType<typeof listFarmAnimals>>, TError = ErrorType<void>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFarmAnimals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFarmAnimalsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateFarmAnimalUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/animals`
+}
+
+/**
+ * @summary Add an animal (caretaker or admin)
+ */
+export const createFarmAnimal = async (farmId: number,
+    farmAnimalInput: FarmAnimalInput, options?: RequestInit): Promise<FarmAnimal> => {
+
+  return customFetch<FarmAnimal>(getCreateFarmAnimalUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmAnimalInput)
+  }
+);}
+
+
+
+
+
+export const getCreateFarmAnimalMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFarmAnimal>>, TError,{farmId: number;data: BodyType<FarmAnimalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createFarmAnimal>>, TError,{farmId: number;data: BodyType<FarmAnimalInput>}, TContext> => {
+
+const mutationKey = ['createFarmAnimal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFarmAnimal>>, {farmId: number;data: BodyType<FarmAnimalInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  createFarmAnimal(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateFarmAnimalMutationResult = NonNullable<Awaited<ReturnType<typeof createFarmAnimal>>>
+    export type CreateFarmAnimalMutationBody = BodyType<FarmAnimalInput>
+    export type CreateFarmAnimalMutationError = ErrorType<void>
+
+    /**
+ * @summary Add an animal (caretaker or admin)
+ */
+export const useCreateFarmAnimal = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFarmAnimal>>, TError,{farmId: number;data: BodyType<FarmAnimalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createFarmAnimal>>,
+        TError,
+        {farmId: number;data: BodyType<FarmAnimalInput>},
+        TContext
+      > => {
+      return useMutation(getCreateFarmAnimalMutationOptions(options));
+    }
+
+export const getGetFarmAnimalUrl = (farmId: number,
+    animalId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/animals/${animalId}`
+}
+
+/**
+ * @summary One animal
+ */
+export const getFarmAnimal = async (farmId: number,
+    animalId: number, options?: RequestInit): Promise<FarmAnimal> => {
+
+  return customFetch<FarmAnimal>(getGetFarmAnimalUrl(farmId,animalId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFarmAnimalQueryKey = (farmId: number,
+    animalId: number,) => {
+    return [
+    `/api/farms/${farmId}/animals/${animalId}`
+    ] as const;
+    }
+
+
+export const getGetFarmAnimalQueryOptions = <TData = Awaited<ReturnType<typeof getFarmAnimal>>, TError = ErrorType<void>>(farmId: number,
+    animalId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmAnimal>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFarmAnimalQueryKey(farmId,animalId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFarmAnimal>>> = ({ signal }) => getFarmAnimal(farmId,animalId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && animalId !== null && animalId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFarmAnimal>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFarmAnimalQueryResult = NonNullable<Awaited<ReturnType<typeof getFarmAnimal>>>
+export type GetFarmAnimalQueryError = ErrorType<void>
+
+
+/**
+ * @summary One animal
+ */
+
+export function useGetFarmAnimal<TData = Awaited<ReturnType<typeof getFarmAnimal>>, TError = ErrorType<void>>(
+ farmId: number,
+    animalId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmAnimal>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFarmAnimalQueryOptions(farmId,animalId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateFarmAnimalUrl = (farmId: number,
+    animalId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/animals/${animalId}`
+}
+
+/**
+ * @summary Change an animal (caretaker or admin)
+ */
+export const updateFarmAnimal = async (farmId: number,
+    animalId: number,
+    farmAnimalInput: FarmAnimalInput, options?: RequestInit): Promise<FarmAnimal> => {
+
+  return customFetch<FarmAnimal>(getUpdateFarmAnimalUrl(farmId,animalId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmAnimalInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateFarmAnimalMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFarmAnimal>>, TError,{farmId: number;animalId: number;data: BodyType<FarmAnimalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFarmAnimal>>, TError,{farmId: number;animalId: number;data: BodyType<FarmAnimalInput>}, TContext> => {
+
+const mutationKey = ['updateFarmAnimal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFarmAnimal>>, {farmId: number;animalId: number;data: BodyType<FarmAnimalInput>}> = (props) => {
+          const {farmId,animalId,data} = props ?? {};
+
+          return  updateFarmAnimal(farmId,animalId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFarmAnimalMutationResult = NonNullable<Awaited<ReturnType<typeof updateFarmAnimal>>>
+    export type UpdateFarmAnimalMutationBody = BodyType<FarmAnimalInput>
+    export type UpdateFarmAnimalMutationError = ErrorType<void>
+
+    /**
+ * @summary Change an animal (caretaker or admin)
+ */
+export const useUpdateFarmAnimal = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFarmAnimal>>, TError,{farmId: number;animalId: number;data: BodyType<FarmAnimalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateFarmAnimal>>,
+        TError,
+        {farmId: number;animalId: number;data: BodyType<FarmAnimalInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateFarmAnimalMutationOptions(options));
+    }
+
+export const getSetFarmAnimalArchivedUrl = (farmId: number,
+    animalId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/animals/${animalId}/archive`
+}
+
+/**
+ * @summary Archive or restore an animal (kept for its medical history)
+ */
+export const setFarmAnimalArchived = async (farmId: number,
+    animalId: number,
+    archiveInput: ArchiveInput, options?: RequestInit): Promise<FarmAnimal> => {
+
+  return customFetch<FarmAnimal>(getSetFarmAnimalArchivedUrl(farmId,animalId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(archiveInput)
+  }
+);}
+
+
+
+
+
+export const getSetFarmAnimalArchivedMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmAnimalArchived>>, TError,{farmId: number;animalId: number;data: BodyType<ArchiveInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setFarmAnimalArchived>>, TError,{farmId: number;animalId: number;data: BodyType<ArchiveInput>}, TContext> => {
+
+const mutationKey = ['setFarmAnimalArchived'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setFarmAnimalArchived>>, {farmId: number;animalId: number;data: BodyType<ArchiveInput>}> = (props) => {
+          const {farmId,animalId,data} = props ?? {};
+
+          return  setFarmAnimalArchived(farmId,animalId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetFarmAnimalArchivedMutationResult = NonNullable<Awaited<ReturnType<typeof setFarmAnimalArchived>>>
+    export type SetFarmAnimalArchivedMutationBody = BodyType<ArchiveInput>
+    export type SetFarmAnimalArchivedMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Archive or restore an animal (kept for its medical history)
+ */
+export const useSetFarmAnimalArchived = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmAnimalArchived>>, TError,{farmId: number;animalId: number;data: BodyType<ArchiveInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setFarmAnimalArchived>>,
+        TError,
+        {farmId: number;animalId: number;data: BodyType<ArchiveInput>},
+        TContext
+      > => {
+      return useMutation(getSetFarmAnimalArchivedMutationOptions(options));
+    }
+
+export const getSetFarmAnimalPhotoUrl = (farmId: number,
+    animalId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/animals/${animalId}/photo`
+}
+
+/**
+ * @summary Upload the animal's photo (replaces the previous one)
+ */
+export const setFarmAnimalPhoto = async (farmId: number,
+    animalId: number,
+    photoInput: PhotoInput, options?: RequestInit): Promise<FarmAnimal> => {
+
+  return customFetch<FarmAnimal>(getSetFarmAnimalPhotoUrl(farmId,animalId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(photoInput)
+  }
+);}
+
+
+
+
+
+export const getSetFarmAnimalPhotoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmAnimalPhoto>>, TError,{farmId: number;animalId: number;data: BodyType<PhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setFarmAnimalPhoto>>, TError,{farmId: number;animalId: number;data: BodyType<PhotoInput>}, TContext> => {
+
+const mutationKey = ['setFarmAnimalPhoto'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setFarmAnimalPhoto>>, {farmId: number;animalId: number;data: BodyType<PhotoInput>}> = (props) => {
+          const {farmId,animalId,data} = props ?? {};
+
+          return  setFarmAnimalPhoto(farmId,animalId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetFarmAnimalPhotoMutationResult = NonNullable<Awaited<ReturnType<typeof setFarmAnimalPhoto>>>
+    export type SetFarmAnimalPhotoMutationBody = BodyType<PhotoInput>
+    export type SetFarmAnimalPhotoMutationError = ErrorType<void>
+
+    /**
+ * @summary Upload the animal's photo (replaces the previous one)
+ */
+export const useSetFarmAnimalPhoto = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmAnimalPhoto>>, TError,{farmId: number;animalId: number;data: BodyType<PhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setFarmAnimalPhoto>>,
+        TError,
+        {farmId: number;animalId: number;data: BodyType<PhotoInput>},
+        TContext
+      > => {
+      return useMutation(getSetFarmAnimalPhotoMutationOptions(options));
     }
 
 export const getRenameFarmUrl = (farmId: number,) => {

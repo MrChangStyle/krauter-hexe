@@ -777,6 +777,122 @@ export interface FarmSummary {
   role: FarmRole;
 }
 
+export type FarmSpecies = typeof FarmSpecies[keyof typeof FarmSpecies];
+
+
+export const FarmSpecies = {
+  poultry: 'poultry',
+  rabbit: 'rabbit',
+  guineaPig: 'guineaPig',
+  cat: 'cat',
+  horse: 'horse',
+  dog: 'dog',
+  goat: 'goat',
+  sheep: 'sheep',
+  cattle: 'cattle',
+  pig: 'pig',
+  other: 'other',
+} as const;
+
+export type AnimalSex = typeof AnimalSex[keyof typeof AnimalSex];
+
+
+export const AnimalSex = {
+  female: 'female',
+  male: 'male',
+  neutered: 'neutered',
+  unknown: 'unknown',
+} as const;
+
+export interface Herd {
+  id: number;
+  name: string;
+  species: FarmSpecies;
+  /** @nullable */
+  notes: string | null;
+  /** Animals in the herd that are not archived. */
+  animalCount: number;
+}
+
+export interface HerdInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+  species: FarmSpecies;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface FarmAnimal {
+  id: number;
+  /** @nullable */
+  herdId: number | null;
+  /** @nullable */
+  herdName: string | null;
+  name: string;
+  species: FarmSpecies;
+  /** @nullable */
+  breed: string | null;
+  /**
+     * YYYY-MM-DD
+     * @nullable
+     */
+  birthDate: string | null;
+  sex: AnimalSex;
+  registrationNumber: string;
+  /** @nullable */
+  imageUrl: string | null;
+  /** @nullable */
+  notes: string | null;
+  /** @nullable */
+  archivedAt: string | null;
+  createdAt: string;
+}
+
+export interface FarmAnimalInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+  species: FarmSpecies;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  breed?: string | null;
+  /** YYYY-MM-DD, not in the future */
+  birthDate: string;
+  sex: AnimalSex;
+  /**
+     * Ring or ear tag; unique within the farm.
+     * @minLength 1
+     * @maxLength 40
+     */
+  registrationNumber: string;
+  /** @nullable */
+  herdId?: number | null;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface ArchiveInput {
+  archived: boolean;
+}
+
+export interface PhotoInput {
+  /** JPEG/PNG/WebP data URL, already downscaled by the app. */
+  imageData: string;
+}
+
 export interface FarmMember {
   userId: string;
   displayName: string;

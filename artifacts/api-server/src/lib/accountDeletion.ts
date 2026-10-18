@@ -34,6 +34,8 @@ import {
 } from '@workspace/db';
 import { and, asc, eq, ne } from 'drizzle-orm';
 
+import { deleteFarmPhotos, farmPhotoUrls } from './farmMembers';
+
 /**
  * Tables whose rows belong to one person and go when that person goes. Shared
  * with the one-time cleanup (lib/orphanCleanup.ts) so both always cover the
@@ -78,7 +80,10 @@ export class OwnerAccountDeletionError extends Error {
  * and the next registration would silently become the new owner.
  */
 export async function deleteAccount(userId: string): Promise<boolean> {
-  return db.transaction(async (tx) => {
+  // Photos of farms that go with this account, removed from Cloudinary only
+  // after the transaction committed.
+  const photosToDelete: string[] = [];
+  const deleted = await db.transaction(async (tx) => {
     const [user] = await tx
       .select({ id: usersTable.id, isOwner: usersTable.isOwner })
       .from(usersTable)
@@ -106,6 +111,7 @@ export async function deleteAccount(userId: string): Promise<boolean> {
         )
         .orderBy(asc(farmMembershipsTable.createdAt), asc(farmMembershipsTable.id));
       if (others.length === 0) {
+        photosToDelete.push(...(await farmPhotoUrls([membership.farmId], tx)));
         await tx.delete(farmsTable).where(eq(farmsTable.id, membership.farmId));
       } else if (membership.role === 'admin' && !others.some((o) => o.role === 'admin')) {
         await tx
@@ -133,4 +139,6 @@ export async function deleteAccount(userId: string): Promise<boolean> {
     await tx.delete(usersTable).where(eq(usersTable.id, userId));
     return true;
   });
+  deleteFarmPhotos(photosToDelete);
+  return deleted;
 }

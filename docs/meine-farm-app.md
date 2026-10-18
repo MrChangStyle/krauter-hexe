@@ -291,7 +291,8 @@ OK warten; jeder Schritt auf einem eigenen Branch mit Pull Request gegen main)
   Codegen, requireFarm() + Isolationstest. Keine UI.
 - Schritt 2 – Farm & Rollen (UMGESETZT): automatische eigene Farm, Mitglieder verwalten, Farm wechseln,
   Navigationspunkt "Meine Farm" mit leerem Dashboard.
-- Schritt 3 – Tierbestand: CRUD für Tiere/Herden inkl. Foto (Cloudinary, downscaleFile).
+- Schritt 3 – Tierbestand (UMGESETZT): CRUD für Tiere/Herden inkl. Foto (Cloudinary, downscaleFile);
+  Archivieren statt Löschen, Ring-/Ohrmarke eindeutig je Farm, Gäste nur lesen. Details in replit.md.
 - Schritt 4 – Medizin, Gewicht, Aufgaben: CRUD, Gewichtsdiagramm mit Warnlogik,
   Stall-Aufgaben mit Push, Veterinäramt-Export (CSV + PDF).
 - Schritt 5 – KI: Arterkennung, Haltungs-Wiki, Futteranalyse inkl. Abgleich mit dem

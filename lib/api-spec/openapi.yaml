@@ -1390,6 +1390,270 @@ paths:
           description: Removed.
         "409":
           description: Last member or last admin – not possible.
+  /farms/{farmId}/herds:
+    get:
+      tags: [farm]
+      operationId: listHerds
+      summary: Herds of a farm
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Herds, by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Herd"
+        "404":
+          description: No such farm/entry – or not a member.
+    post:
+      tags: [farm]
+      operationId: createHerd
+      summary: Create a herd (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HerdInput"
+      responses:
+        "201":
+          description: The new herd.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Herd"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/herds/{herdId}:
+    patch:
+      tags: [farm]
+      operationId: updateHerd
+      summary: Change a herd (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: herdId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HerdInput"
+      responses:
+        "200":
+          description: The changed herd.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Herd"
+        "404":
+          description: No such farm/entry – or not a member.
+    delete:
+      tags: [farm]
+      operationId: deleteHerd
+      summary: Delete a herd; its animals stay, without herd (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: herdId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: No such farm/entry – or not a member.
+  /farms/{farmId}/animals:
+    get:
+      tags: [farm]
+      operationId: listFarmAnimals
+      summary: Animals of a farm, archived ones included (archivedAt set)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Animals, by name.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmAnimal"
+        "404":
+          description: No such farm/entry – or not a member.
+    post:
+      tags: [farm]
+      operationId: createFarmAnimal
+      summary: Add an animal (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmAnimalInput"
+      responses:
+        "201":
+          description: The new animal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+        "400":
+          description: Invalid input.
+        "409":
+          description: Registration number already used on this farm.
+  /farms/{farmId}/animals/{animalId}:
+    get:
+      tags: [farm]
+      operationId: getFarmAnimal
+      summary: One animal
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The animal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+        "404":
+          description: No such farm/entry – or not a member.
+    patch:
+      tags: [farm]
+      operationId: updateFarmAnimal
+      summary: Change an animal (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmAnimalInput"
+      responses:
+        "200":
+          description: The changed animal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+        "409":
+          description: Registration number already used on this farm.
+  /farms/{farmId}/animals/{animalId}/archive:
+    post:
+      tags: [farm]
+      operationId: setFarmAnimalArchived
+      summary: Archive or restore an animal (kept for its medical history)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ArchiveInput"
+      responses:
+        "200":
+          description: The animal.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+  /farms/{farmId}/animals/{animalId}/photo:
+    put:
+      tags: [farm]
+      operationId: setFarmAnimalPhoto
+      summary: Upload the animal's photo (replaces the previous one)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoInput"
+      responses:
+        "200":
+          description: The animal with its new photo.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmAnimal"
+        "400":
+          description: Not an image.
+        "502":
+          description: Photo storage unavailable.
   /farms/{farmId}:
     patch:
       tags: [farm]
@@ -2828,6 +3092,114 @@ components:
           type: string
         role:
           $ref: "#/components/schemas/FarmRole"
+    FarmSpecies:
+      type: string
+      enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, other]
+    AnimalSex:
+      type: string
+      enum: [female, male, neutered, unknown]
+    Herd:
+      type: object
+      required: [id, name, species, notes, animalCount]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        notes:
+          type: [string, 'null']
+        animalCount:
+          type: integer
+          description: Animals in the herd that are not archived.
+    HerdInput:
+      type: object
+      required: [name, species]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    FarmAnimal:
+      type: object
+      required: [id, herdId, herdName, name, species, breed, birthDate, sex, registrationNumber, imageUrl, notes, archivedAt, createdAt]
+      properties:
+        id:
+          type: integer
+        herdId:
+          type: [integer, 'null']
+        herdName:
+          type: [string, 'null']
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        breed:
+          type: [string, 'null']
+        birthDate:
+          type: [string, 'null']
+          description: YYYY-MM-DD
+        sex:
+          $ref: "#/components/schemas/AnimalSex"
+        registrationNumber:
+          type: string
+        imageUrl:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        archivedAt:
+          type: [string, 'null']
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+    FarmAnimalInput:
+      type: object
+      required: [name, species, birthDate, sex, registrationNumber]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        breed:
+          type: [string, 'null']
+          maxLength: 60
+        birthDate:
+          type: string
+          description: YYYY-MM-DD, not in the future
+        sex:
+          $ref: "#/components/schemas/AnimalSex"
+        registrationNumber:
+          type: string
+          minLength: 1
+          maxLength: 40
+          description: Ring or ear tag; unique within the farm.
+        herdId:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    ArchiveInput:
+      type: object
+      required: [archived]
+      properties:
+        archived:
+          type: boolean
+    PhotoInput:
+      type: object
+      required: [imageData]
+      properties:
+        imageData:
+          type: string
+          description: JPEG/PNG/WebP data URL, already downscaled by the app.
     FarmMember:
       type: object
       required: [userId, displayName, email, role, isMe]

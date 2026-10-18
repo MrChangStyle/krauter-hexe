@@ -18,6 +18,7 @@ import { and, isNotNull, sql, type SQL } from 'drizzle-orm';
 import type { PgColumn } from 'drizzle-orm/pg-core';
 
 import { ARCHIVE_TABLES, PERSONAL_TABLES } from './accountDeletion';
+import { deleteFarmPhotos, farmPhotoUrls } from './farmMembers';
 
 /** Rows per table that point at an account which no longer exists. */
 export type OrphanCounts = Record<string, number>;
@@ -64,7 +65,8 @@ export async function findOrphanedData(): Promise<OrphanCounts> {
  * table lost (personal tables) or had unlinked (archive tables).
  */
 export async function cleanupOrphanedData(): Promise<OrphanCounts> {
-  return db.transaction(async (tx) => {
+  const photosToDelete: string[] = [];
+  const result = await db.transaction(async (tx) => {
     const counts: OrphanCounts = {};
     for (const { name, table, userId } of PERSONAL_TABLES) {
       const removed = await tx
@@ -84,12 +86,10 @@ export async function cleanupOrphanedData(): Promise<OrphanCounts> {
     // With the orphaned memberships gone, a farm without any member left is one
     // whose members all had their accounts removed: it goes, cascading to its
     // animals and records. Same set findOrphanedData counted as "farms".
-    const farms = await tx
-      .delete(farmsTable)
-      .where(
-        sql`NOT EXISTS (SELECT 1 FROM ${farmMembershipsTable} WHERE ${farmMembershipsTable.farmId} = ${farmsTable.id})`,
-      )
-      .returning({ id: farmsTable.id });
+    const memberless = sql`NOT EXISTS (SELECT 1 FROM ${farmMembershipsTable} WHERE ${farmMembershipsTable.farmId} = ${farmsTable.id})`;
+    const doomed = await tx.select({ id: farmsTable.id }).from(farmsTable).where(memberless);
+    photosToDelete.push(...(await farmPhotoUrls(doomed.map((f) => f.id), tx)));
+    const farms = await tx.delete(farmsTable).where(memberless).returning({ id: farmsTable.id });
     counts['farms'] = farms.length;
     // A shared farm that just lost its only admin gets its longest-standing
     // member as admin, as deleteAccount would have done.
@@ -105,4 +105,6 @@ export async function cleanupOrphanedData(): Promise<OrphanCounts> {
       )`);
     return counts;
   });
+  deleteFarmPhotos(photosToDelete);
+  return result;
 }

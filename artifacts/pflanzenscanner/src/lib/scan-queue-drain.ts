@@ -7,7 +7,7 @@
  */
 
 import { isRetryDue, type PendingScan } from "@/lib/scan-queue";
-import type { Plant } from "@workspace/api-client-react";
+import type { Insect, Plant } from "@workspace/api-client-react";
 
 export interface DrainScanResult {
   itemId: string;
@@ -15,6 +15,12 @@ export interface DrainScanResult {
   alreadyInArchive: boolean;
   /** True when a photo was newly attached to an existing entry (Smart Merge). */
   imageMerged?: boolean;
+}
+
+export interface DrainInsectResult {
+  itemId: string;
+  insect: Insect;
+  alreadyInArchive: boolean;
 }
 
 export interface DrainDeps {
@@ -40,6 +46,19 @@ export interface DrainDeps {
     localImageId?: string;
     locationRegion?: string;
   }) => Promise<{ plant: Plant; alreadyInArchive: boolean; imageMerged?: boolean | null }>;
+  /**
+   * Sends a queued insect photo. Optional so callers that only queue plants
+   * (and older tests) need not provide it; an insect item without it is
+   * marked as a permanent error instead of being sent to the plant endpoint.
+   */
+  scanInsect?: (args: {
+    image: string;
+    localImageId?: string;
+    locationRegion?: string;
+  }) => Promise<{ insect: Insect; alreadyInArchive: boolean }>;
+  onInsectSuccess?: (result: DrainInsectResult) => void;
+  /** The server found no insect on the photo (HTTP 422 KEIN_INSEKTEN_FOTO). */
+  onNotInsect?: (itemId: string) => void;
   deletePendingScan: (id: string) => Promise<void>;
   markScanError: (
     id: string,
@@ -156,6 +175,29 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
 
       deps.setScanning(item.id, true);
       try {
+        if (item.kind === "insect") {
+          if (!deps.scanInsect) {
+            if (await deps.markScanError(item.id, "Insekten-Scan ist hier nicht verfügbar.", false)) {
+              failed += 1;
+            }
+            continue;
+          }
+          const insectRes = await deps.scanInsect({
+            image: item.image,
+            ...(item.localImageId ? { localImageId: item.localImageId } : {}),
+            ...(item.locationRegion ? { locationRegion: item.locationRegion } : {}),
+          });
+          await deps.deletePendingScan(item.id);
+          deps.onInsectSuccess?.({
+            itemId: item.id,
+            insect: insectRes.insect,
+            alreadyInArchive: insectRes.alreadyInArchive,
+          });
+          // Not counted in the plant stats: those drive plant-specific
+          // toasts ("Pflanze bereits gescannt"). The insect page reports
+          // its own result via onInsectSuccess.
+          continue;
+        }
         const res = await deps.scanPlant({
           image: item.image,
           ...(item.imageSide ? { imageSide: item.imageSide } : {}),
@@ -187,6 +229,15 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
           await deps.deletePendingScan(item.id);
           deps.onNotPlant(item.id);
           notPlant += 1;
+          continue;
+        }
+        if (
+          status === 422 &&
+          (err as { data?: { code?: string } } | null)?.data?.code ===
+            "KEIN_INSEKTEN_FOTO"
+        ) {
+          await deps.deletePendingScan(item.id);
+          deps.onNotInsect?.(item.id);
           continue;
         }
         if (status === 401 || status === 403) {

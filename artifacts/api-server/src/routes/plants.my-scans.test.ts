@@ -261,6 +261,7 @@ vi.mock("@workspace/db", () => {
 
 vi.mock("../lib/plantIdentification", () => ({
   identifyPlant: vi.fn(),
+  quickIdentifyPlant: vi.fn(),
   generateAnimalsForPlant: vi.fn(),
   generateSymptomsForPlant: vi.fn(),
   generateSymptomApplicationsForPlant: vi.fn(),

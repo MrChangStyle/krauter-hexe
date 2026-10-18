@@ -107,6 +107,53 @@ describe("offline guard", () => {
   });
 });
 
+describe("insect items", () => {
+  it("sends insect photos to scanInsect, not scanPlant, and reports the result", async () => {
+    const item = makePending({ kind: "insect" });
+    const fakeInsect = { id: 7, germanName: "Marienkäfer" } as unknown as import("@workspace/api-client-react").Insect;
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanInsect: vi.fn().mockResolvedValue({ insect: fakeInsect, alreadyInArchive: true }),
+      onInsectSuccess: vi.fn(),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.scanPlant).not.toHaveBeenCalled();
+    expect(deps.scanInsect).toHaveBeenCalledTimes(1);
+    expect(deps.deletePendingScan).toHaveBeenCalledWith(item.id);
+    expect(deps.onInsectSuccess).toHaveBeenCalledWith({
+      itemId: item.id,
+      insect: fakeInsect,
+      alreadyInArchive: true,
+    });
+    // Plant stats stay untouched so no plant toast fires.
+    expect(stats.duplicates).toBe(0);
+    expect(stats.added).toBe(0);
+  });
+
+  it("discards a photo without an insect and reports it", async () => {
+    const item = makePending({ kind: "insect" });
+    const err = Object.assign(new Error("422"), {
+      name: "ApiError",
+      status: 422,
+      data: { code: "KEIN_INSEKTEN_FOTO" },
+    });
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanInsect: vi.fn().mockRejectedValue(err),
+      onNotInsect: vi.fn(),
+    });
+
+    const stats = await drainQueue(deps);
+
+    expect(deps.deletePendingScan).toHaveBeenCalledWith(item.id);
+    expect(deps.onNotInsect).toHaveBeenCalledWith(item.id);
+    expect(deps.markScanError).not.toHaveBeenCalled();
+    expect(stats.notPlant).toBe(0);
+  });
+});
+
 describe("real connection check", () => {
   it("stops as a network stop without scanning when the server is unreachable", async () => {
     const item = makePending();

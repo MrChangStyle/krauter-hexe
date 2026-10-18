@@ -183,6 +183,7 @@ function parseJsonLoose(raw: string): unknown {
 async function runModelChain(
   contents: unknown,
   models: ReadonlyArray<{ name: string; attempts: number }>,
+  config: { maxOutputTokens: number; responseMimeType: string } = GENERATION_CONFIG,
 ): Promise<unknown> {
   let lastError: unknown;
   for (const model of models) {
@@ -192,7 +193,7 @@ async function runModelChain(
           model: model.name,
           // The SDK types the contents loosely; our shapes are valid at runtime.
           contents: contents as never,
-          config: GENERATION_CONFIG,
+          config,
         });
         const raw = response.text;
         if (!raw) {
@@ -1001,6 +1002,66 @@ export async function generateSymptomsForPlant(input: {
   ];
   const parsed = await runModelChain(contents, TEXT_MODELS);
   return coerceSymptoms(parsed);
+}
+
+// ---------------------------------------------------------------------------
+// Step 1 of a scan: cheap identification only.
+//
+// Most scans hit a species that is already in the archive. Generating the
+// full fact sheet (up to 4,096 output tokens) for those was paid for and then
+// thrown away. This call asks only "plant or not, which species" with a tiny
+// output budget; the route generates the full fact sheet only when the
+// species is new. Naming rules match SYSTEM_PROMPT so the botanical names
+// line up for the duplicate check.
+// ---------------------------------------------------------------------------
+
+export interface QuickPlantId {
+  istPflanze: boolean;
+  germanName: string;
+  botanicalName: string;
+}
+
+const QUICK_PROMPT = `Du bist ein botanischer Experte, der Pflanzen, Kräuter und Pilze anhand von Fotos bestimmt. \
+Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdown) mit exakt diesen Feldern:
+{
+  "istPflanze": boolean (Ist auf dem Foto eine Pflanze, ein Pilz, ein Kraut, ein Baum oder Strauch erkennbar? false z.B. bei Tier, Mensch, Gebäude, Gegenstand, leerer Fläche),
+  "germanName": string (deutscher Trivialname),
+  "botanicalName": string (botanischer/lateinischer Name der Art, nur Gattung und Art, ohne Autor)
+}
+Wenn du dir nicht sicher bist, gib deine beste Einschätzung ab.`;
+
+const QUICK_CONFIG = {
+  maxOutputTokens: 256,
+  responseMimeType: "application/json",
+} as const;
+
+export async function quickIdentifyPlant(
+  imageDataUrl: string,
+  sideImageDataUrl?: string,
+): Promise<QuickPlantId> {
+  const main = parseDataUrl(imageDataUrl);
+  const side = sideImageDataUrl ? parseDataUrl(sideImageDataUrl) : undefined;
+  const parts = side
+    ? [
+        { text: `${QUICK_PROMPT}\n\nBestimme diesen Fund anhand BEIDER Fotos.` },
+        { text: "Bild 1 - Ansicht von oben:" },
+        { inlineData: { mimeType: main.mimeType, data: main.data } },
+        { text: "Bild 2 - Ansicht von der Seite:" },
+        { inlineData: { mimeType: side.mimeType, data: side.data } },
+      ]
+    : [
+        { text: `${QUICK_PROMPT}\n\nBestimme diese Pflanze.` },
+        { inlineData: { mimeType: main.mimeType, data: main.data } },
+      ];
+  const parsed = (await runModelChain([{ role: "user", parts }], MODELS, QUICK_CONFIG)) as Record<
+    string,
+    unknown
+  >;
+  return {
+    istPflanze: parsed.istPflanze !== false,
+    germanName: coerceText(parsed.germanName, "Unbekannte Pflanze"),
+    botanicalName: coerceText(parsed.botanicalName, UNKNOWN_BOTANICAL_NAME),
+  };
 }
 
 export async function identifyPlant(

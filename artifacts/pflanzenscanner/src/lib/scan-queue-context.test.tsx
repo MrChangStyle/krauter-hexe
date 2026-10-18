@@ -42,6 +42,7 @@ vi.mock("@/lib/scan-queue-drain", () => ({
 
 vi.mock("@workspace/api-client-react", () => ({
   scanPlant: vi.fn(),
+  scanInsect: vi.fn(),
 }));
 
 // Stubs for the scan-queue IDB functions.
@@ -193,7 +194,7 @@ describe("enqueue", () => {
       returnedId = await result.current.enqueue("data:new");
     });
 
-    expect(mockAddPendingScan).toHaveBeenCalledWith("data:new", undefined, undefined, undefined);
+    expect(mockAddPendingScan).toHaveBeenCalledWith("data:new", undefined, undefined, undefined, "plant");
     expect(returnedId).toBe(newItem.id);
   });
 
@@ -210,7 +211,7 @@ describe("enqueue", () => {
       await result.current.enqueue("data:top", "data:side");
     });
 
-    expect(mockAddPendingScan).toHaveBeenCalledWith("data:top", "data:side", undefined, undefined);
+    expect(mockAddPendingScan).toHaveBeenCalledWith("data:top", "data:side", undefined, undefined, "plant");
   });
 
   it("does NOT drain by itself - the scan page drives that", async () => {

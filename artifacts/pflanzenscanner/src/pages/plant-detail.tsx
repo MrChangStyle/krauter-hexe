@@ -249,7 +249,7 @@ export default function PlantDetailPage() {
         <ShieldAlert className="w-16 h-16 text-muted-foreground mb-4" />
         <h2 className="text-xl font-serif mb-2">Pflanze nicht gefunden</h2>
         <p className="text-muted-foreground mb-6">Diese Analyse ist nicht mehr verfügbar.</p>
-        <Button onClick={() => setLocation("/archiv")}>Zurück zum Archiv</Button>
+        <Button onClick={() => setLocation("/lexikon")}>Zurück zum Archiv</Button>
       </div>
     );
   }
@@ -271,7 +271,7 @@ export default function PlantDetailPage() {
           // showing a ghost from the cache.
           void queryClient.invalidateQueries({ queryKey: ["/api/plants"] });
           setPwOpen(false);
-          setLocation("/archiv");
+          setLocation("/lexikon");
         },
         onError: (err) => {
           setPwError(
@@ -342,7 +342,7 @@ export default function PlantDetailPage() {
         variant="ghost"
         size="icon"
         className="fixed top-4 left-4 z-40 bg-black/30 hover:bg-black/50 text-white rounded-full backdrop-blur-sm shadow-md"
-        onClick={() => plant ? setLocation(`/pflanzen?tab=arten&kat=${viewCategoryOf(plant)}`) : setLocation("/pflanzen?tab=arten")}
+        onClick={() => plant ? setLocation(`/lexikon?tab=arten&kat=${viewCategoryOf(plant)}`) : setLocation("/lexikon?tab=arten")}
         aria-label="Zurück"
       >
         <ArrowLeft className="w-5 h-5" />

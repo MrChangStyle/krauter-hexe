@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import FarmPage from '@/pages/farm';
 import NotFound from '@/pages/not-found';
-import { Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
+import { Redirect, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import Layout from '@/components/layout';
 import AuthGate from '@/components/auth-gate';
 import ScanPage from '@/pages/scan';
@@ -15,12 +15,15 @@ import ArchivePage from '@/pages/archive';
 import CategoriesPage from '@/pages/categories';
 import KraeuterHexePage from '@/pages/kraeuter-hexe';
 import PflanzendocPage from '@/pages/pflanzendoc';
-import WerkzeugPage from '@/pages/werkzeug';
+import PflanzenHubPage from '@/pages/pflanzen-hub';
+import MeinePflanzenPage from '@/pages/meine-pflanzen';
+import SchaedlingePage from '@/pages/schaedlinge';
+import TierePage from '@/pages/tiere';
 import PlantDetailPage from '@/pages/plant-detail';
 import InsectScanPage from '@/pages/insect-scan';
 import InsectDetailPage from '@/pages/insect-detail';
 import PendingPage from '@/pages/pending';
-import UsersPage from '@/pages/users';
+import MehrPage from '@/pages/mehr';
 import PflegeGuidesPage from '@/pages/pflege-guides';
 import PflegeGuideDetailPage from '@/pages/pflege-guide-detail';
 import { AuthProvider } from '@/lib/auth-context';
@@ -110,20 +113,25 @@ function Router() {
       <ScrollToTop />
       <Switch>
         <Route path="/" component={ScanPage} />
-        <Route path="/pflanzen" component={PflanzenPage} />
+        <Route path="/pflanzen" component={PflanzenHubPage} />
+        <Route path="/lexikon" component={PflanzenPage} />
+        <Route path="/meine-pflanzen" component={MeinePflanzenPage} />
+        <Route path="/schaedlinge" component={SchaedlingePage} />
+        <Route path="/tiere" component={TierePage} />
+        <Route path="/mehr" component={MehrPage} />
         <Route path="/aufgaben" component={AufgabenPage} />
         <Route path="/farm" component={FarmPage} />
         {/* Legacy redirects — keep old deep links working */}
         <Route path="/insekten">{() => { window.location.replace(import.meta.env.BASE_URL + "insekten-scanner"); return null; }}</Route>
-        <Route path="/archiv">{() => { window.location.replace(import.meta.env.BASE_URL + "pflanzen"); return null; }}</Route>
-        <Route path="/arten">{() => { window.location.replace(import.meta.env.BASE_URL + "pflanzen"); return null; }}</Route>
+        <Route path="/archiv"><Redirect to="/lexikon" replace /></Route>
+        <Route path="/arten"><Redirect to="/lexikon?tab=arten" replace /></Route>
         <Route path="/kraeuter-hexe" component={KraeuterHexePage} />
         <Route path="/pflanzendoc" component={PflanzendocPage} />
-        <Route path="/werkzeug" component={WerkzeugPage} />
+        <Route path="/werkzeug"><Redirect to="/pflanzen" replace /></Route>
         <Route path="/insekten-scanner" component={InsectScanPage} />
         <Route path="/insekt/:id" component={InsectDetailPage} />
         <Route path="/warteschlange" component={PendingPage} />
-        <Route path="/benutzer" component={UsersPage} />
+        <Route path="/benutzer"><Redirect to="/mehr" replace /></Route>
         <Route path="/pflanze/:id" component={PlantDetailPage} />
         <Route path="/pflege-guides" component={PflegeGuidesPage} />
         <Route path="/pflege-guide/:id" component={PflegeGuideDetailPage} />

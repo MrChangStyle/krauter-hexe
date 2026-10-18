@@ -13,6 +13,8 @@ import {
 } from "@workspace/api-client-react";
 import type { Task } from "@workspace/api-client-react";
 import { plantImageUrl } from "@/lib/image";
+import { BackToPflanzen } from "@/components/back-to-pflanzen";
+import { PflegeGuidesSection } from "@/pages/mehr";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -304,16 +306,19 @@ export default function AufgabenPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col flex-1 min-h-0 pb-8">
+      <div className="px-6 pt-4">
+        <BackToPflanzen />
+      </div>
       {/* Header */}
-      <header className="px-6 pt-8 pb-4">
+      <header className="px-6 pt-2 pb-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400">
               <ClipboardList className="w-6 h-6" strokeWidth={1.5} />
             </div>
             <div>
-              <h1 className="text-2xl font-serif font-semibold">Aufgaben</h1>
-              <p className="text-xs text-muted-foreground">Pflegeerinnerungen für deine Pflanzen</p>
+              <h1 className="text-2xl font-serif font-semibold">Pflegeplan</h1>
+              <p className="text-xs text-muted-foreground">Aufgaben und Erinnerungen für deine Pflanzen</p>
             </div>
           </div>
           <Button
@@ -335,6 +340,11 @@ export default function AufgabenPage() {
           </Button>
         </div>
       </header>
+
+      {/* 30-day care guides from the Pflanzendoc belong to the care plan. */}
+      <div className="px-6 pb-4">
+        <PflegeGuidesSection />
+      </div>
 
       {/* Form (create OR edit) */}
       {showForm && (

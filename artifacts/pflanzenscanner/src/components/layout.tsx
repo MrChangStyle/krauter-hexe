@@ -1,5 +1,7 @@
 import { Link, useLocation } from "wouter";
-import { Camera, Leaf as LeafIcon, ClipboardList, Wrench, WifiOff, Users, LogOut, Leaf, Tractor } from "lucide-react";
+import { useState } from "react";
+import { Home, Sprout, ScanLine, PawPrint, MoreHorizontal, WifiOff, LogOut, Leaf } from "lucide-react";
+import { ScanSheet } from "@/components/scan-sheet";
 import { cn } from "@/lib/utils";
 import { useScanQueue } from "@/lib/scan-queue-context";
 import { useAuthContext } from "@/lib/auth-context";
@@ -14,13 +16,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const hasStaleItem = pending.some((item) => now - item.createdAt > STALE_QUEUE_WARNING_MS);
   const { user, logout } = useAuthContext();
 
+  const [scanSheetOpen, setScanSheetOpen] = useState(false);
+
+  // Little Farming navigation: five areas, the scan button in the middle.
+  // Everything around plants (care plan, Pflanzendoc, insects, lexicon,
+  // Kräuter-Hexe) lives under Pflanzen.
   const navItems = [
-    { path: "/",          label: "Scan",     icon: Camera,        badge: 0,            prefixes: ["/"] },
-    { path: "/pflanzen",  label: "Pflanzen", icon: LeafIcon,      badge: 0,            prefixes: ["/pflanzen", "/archiv", "/arten", "/pflanze/"] },
-    { path: "/aufgaben",  label: "Aufgaben", icon: ClipboardList, badge: 0,            prefixes: ["/aufgaben"] },
-    { path: "/farm",      label: "Farm",     icon: Tractor,       badge: 0,            prefixes: ["/farm"] },
-    { path: "/werkzeug",  label: "Werkzeug", icon: Wrench,        badge: 0,            prefixes: ["/werkzeug", "/insekten-scanner", "/insekt/", "/kraeuter-hexe", "/pflanzendoc", "/pflege-guide"] },
-    { path: "/benutzer",  label: "Home",     icon: Users,         badge: pendingCount, prefixes: ["/benutzer"] },
+    { path: "/",         label: "Hof",      icon: Home,           badge: 0,            prefixes: ["/"] },
+    { path: "/pflanzen", label: "Pflanzen", icon: Sprout,         badge: 0,            prefixes: ["/pflanzen", "/lexikon", "/pflanze/", "/meine-pflanzen", "/aufgaben", "/pflanzendoc", "/pflege-guide", "/schaedlinge", "/insekten-scanner", "/insekt/", "/kraeuter-hexe"] },
+    { path: "#scan",     label: "Scannen",  icon: ScanLine,       badge: 0,            prefixes: [] as string[] },
+    { path: "/tiere",    label: "Tiere",    icon: PawPrint,       badge: 0,            prefixes: ["/tiere"] },
+    { path: "/mehr",     label: "Mehr",     icon: MoreHorizontal, badge: pendingCount, prefixes: ["/mehr", "/farm", "/warteschlange"] },
   ];
 
   return (
@@ -60,6 +66,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 px-4 pb-safe pt-2 md:pb-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-16">
           {navItems.map((item) => {
+            if (item.path === "#scan") {
+              return (
+                <button
+                  key="scan"
+                  type="button"
+                  onClick={() => setScanSheetOpen(true)}
+                  aria-label="Scannen"
+                  className="flex w-full h-full items-center justify-center"
+                >
+                  <span className="flex h-14 w-14 -mt-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg ring-4 ring-card active:scale-95 transition-transform">
+                    <ScanLine size={26} strokeWidth={2.4} />
+                  </span>
+                </button>
+              );
+            }
             const isActive =
             item.prefixes.some((prefix) =>
               prefix === "/" ? location === "/" : location.startsWith(prefix),
@@ -100,6 +121,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           })}
         </div>
       </nav>
+      <ScanSheet open={scanSheetOpen} onClose={() => setScanSheetOpen(false)} />
     </div>
   );
 }

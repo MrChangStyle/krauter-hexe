@@ -89,7 +89,7 @@ function ArchivTab({ insects }: { insects: Insect[] }) {
           Noch keine Insekten gescannt.
         </p>
         <p className="text-xs text-muted-foreground">
-          Nutze den Insekten Scanner im Werkzeug-Bereich.
+          Tippe oben auf „Insekt bestimmen“ oder nutze den Scan-Knopf.
         </p>
       </div>
     );

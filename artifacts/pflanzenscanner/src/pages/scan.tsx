@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ReportButton } from "@/components/report-button";
-import { Link, useLocation } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import {
   Camera,
   Leaf,
@@ -282,6 +282,26 @@ export default function ScanPage() {
 
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+
+  // The scan button in the bottom bar opens this page with ?scan=auto or
+  // ?scan=pilz: show the matching start card, then drop the parameter so a
+  // reload or "back" does not reopen it.
+  const search = useSearch();
+  useEffect(() => {
+    const mode = new URLSearchParams(search).get("scan");
+    if (!mode) return;
+    setErrorMsg(null);
+    setShowPlantOptions(false);
+    setShowInsectOptions(false);
+    if (mode === "pilz") {
+      setShowAutoOptions(false);
+      setShowMushroomTopHint(true);
+    } else {
+      setShowMushroomTopHint(false);
+      setShowAutoOptions(true);
+    }
+    setLocation("/", { replace: true });
+  }, [search, setLocation]);
   // When online, we track the queued item and navigate to the result once done.
   const [waitingForItemId, setWaitingForItemId] = useState<string | null>(null);
   // Simulated scan progress (0-100). The server gives no real progress signal,

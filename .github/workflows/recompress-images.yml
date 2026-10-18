@@ -41,12 +41,25 @@ jobs:
           DRY_RUN: ${{ inputs.dry_run }}
           LIMIT: ${{ inputs.limit }}
         run: |
+          set -o pipefail
           args=""
           if [ "$DRY_RUN" = "true" ]; then args="$args --dry-run"; fi
           if [ -n "$LIMIT" ]; then args="$args --limit $LIMIT"; fi
-          pnpm --filter @workspace/api-server run recompress:images -- $args --out "$GITHUB_WORKSPACE/recompress-backup"
+          status=0
+          pnpm --filter @workspace/api-server run recompress:images -- $args --out "$GITHUB_WORKSPACE/recompress-backup" 2>&1 | tee ergebnis.txt || status=$?
+          # Ergebnis und Fehler als Hinweise ausgeben, damit sie ohne
+          # Protokoll-Download in der Übersicht des Laufs sichtbar sind.
+          grep -E '^(❌|Probelauf|Fertig|🔎)' ergebnis.txt | head -40 | while IFS= read -r line; do
+            case "$line" in
+              ❌*) echo "::warning title=Bild::${line}" ;;
+              *) echo "::notice title=Ergebnis::${line}" ;;
+            esac
+          done
+          exit $status
       - name: Sicherungskopien der Originale ablegen
-        if: ${{ !inputs.dry_run }}
+        # Immer ablegen, auch wenn einzelne Bilder fehlschlagen: genau dann
+        # werden die Originale gebraucht.
+        if: ${{ always() && !inputs.dry_run }}
         uses: actions/upload-artifact@v4
         with:
           name: recompress-originale

@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { scanPlant, type Plant } from "@workspace/api-client-react";
+import { scanInsect, scanPlant, type Insect, type Plant } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   addPendingScan,
@@ -32,6 +32,14 @@ export interface ScanResult {
   /** True when a photo was newly attached to an existing entry (Smart Merge). */
   imageMerged?: boolean;
   /** Epoch ms when the scan finished (lets consumers ignore stale results). */
+  finishedAt: number;
+}
+
+/** Outcome of one successfully scanned insect photo. */
+export interface InsectScanResult {
+  itemId: string;
+  insect: Insect;
+  alreadyInArchive: boolean;
   finishedAt: number;
 }
 
@@ -73,6 +81,12 @@ interface ScanQueueContextValue {
   /** Items that were discarded because the photo contained no plant. */
   notPlantResults: NotPlantResult[];
   clearNotPlantResults: () => void;
+  /** Results of queued insect photos, consumed by the insect scan page. */
+  insectResults: InsectScanResult[];
+  clearInsectResults: () => void;
+  /** Insect photos the server discarded because no insect was found. */
+  notInsectResults: NotPlantResult[];
+  clearNotInsectResults: () => void;
   /** Epoch ms when the last drain finished (null until one has run). */
   lastDrainAt: number | null;
   /**
@@ -86,6 +100,7 @@ interface ScanQueueContextValue {
     imageSide?: string,
     localImageId?: string,
     locationRegion?: string,
+    kind?: "plant" | "insect",
   ) => Promise<string>;
   /** Manually kick off processing (e.g. a "scan now" button). */
   processQueue: () => void;
@@ -123,6 +138,8 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
   const [scanningIds, setScanningIds] = useState<Set<string>>(new Set());
   const [results, setResults] = useState<ScanResult[]>([]);
   const [notPlantResults, setNotPlantResults] = useState<NotPlantResult[]>([]);
+  const [insectResults, setInsectResults] = useState<InsectScanResult[]>([]);
+  const [notInsectResults, setNotInsectResults] = useState<NotPlantResult[]>([]);
   const [lastDrainAt, setLastDrainAt] = useState<number | null>(null);
   const [isAuthBlocked, setIsAuthBlocked] = useState(false);
   // ISO timestamp of the next Berlin midnight when the daily scan limit resets.
@@ -185,6 +202,24 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
         checkConnection: () => hasRealConnection(),
         getAllPendingScans,
         scanPlant,
+        scanInsect: (args) => scanInsect(args),
+        onInsectSuccess: (result) => {
+          setIsAuthBlocked(false);
+          setInsectResults((prev) => [
+            ...prev.slice(-19),
+            { ...result, finishedAt: Date.now() },
+          ]);
+          void queryClient.invalidateQueries({ queryKey: ["/api/insects"] });
+          void refresh();
+        },
+        onNotInsect: (itemId) => {
+          setIsAuthBlocked(false);
+          setNotInsectResults((prev) => [
+            ...prev.slice(-19),
+            { itemId, finishedAt: Date.now() },
+          ]);
+          void refresh();
+        },
         deletePendingScan,
         markScanError,
         isNetworkError,
@@ -293,12 +328,13 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
       imageSide?: string,
       localImageId?: string,
       locationRegion?: string,
+      kind: "plant" | "insect" = "plant",
     ) => {
       // A new photo means the user just interacted with the app — they are
       // almost certainly logged in. Clear any stale auth block so the
       // subsequent processQueue() call in scan.tsx isn't silently gated.
       setIsAuthBlocked(false);
-      const item = await addPendingScan(image, imageSide, localImageId, locationRegion);
+      const item = await addPendingScan(image, imageSide, localImageId, locationRegion, kind);
       await refresh();
       // NOTE: processQueue is intentionally NOT called here. The scan page
       // calls processQueue() itself AFTER setting waitingForItemId, which
@@ -399,6 +435,8 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
 
   const clearResults = useCallback(() => setResults([]), []);
   const clearNotPlantResults = useCallback(() => setNotPlantResults([]), []);
+  const clearInsectResults = useCallback(() => setInsectResults([]), []);
+  const clearNotInsectResults = useCallback(() => setNotInsectResults([]), []);
 
   const value: ScanQueueContextValue = {
     pending,
@@ -412,6 +450,10 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
     clearResults,
     notPlantResults,
     clearNotPlantResults,
+    insectResults,
+    clearInsectResults,
+    notInsectResults,
+    clearNotInsectResults,
     lastDrainAt,
     enqueue,
     processQueue: () => {

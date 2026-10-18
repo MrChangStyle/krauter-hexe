@@ -1635,6 +1635,147 @@ export const ListMyFarmsResponse = zod.array(ListMyFarmsResponseItem)
 
 
 /**
+ * @summary Create a further farm, run by the account as admin
+ */
+export const createFarmBodyNameMax = 60;
+
+
+
+export const CreateFarmBody = zod.object({
+  "name": zod.string().min(1).max(createFarmBodyNameMax)
+})
+
+export const CreateFarmResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+})
+
+
+/**
+ * @summary Give the account its first farm if it has none, then list its farms
+ */
+export const EnsureOwnFarmResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+})
+export const EnsureOwnFarmResponse = zod.array(EnsureOwnFarmResponseItem)
+
+
+/**
+ * @summary Members of a farm (email only for admins)
+ */
+export const ListFarmMembersParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListFarmMembersResponseItem = zod.object({
+  "userId": zod.string(),
+  "displayName": zod.string(),
+  "email": zod.string().nullable().describe('Only filled in for admins.'),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "isMe": zod.boolean()
+})
+export const ListFarmMembersResponse = zod.array(ListFarmMembersResponseItem)
+
+
+/**
+ * @summary Add an existing account by email (admin only)
+ */
+export const AddFarmMemberParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const addFarmMemberBodyEmailMax = 254;
+
+
+
+export const AddFarmMemberBody = zod.object({
+  "email": zod.string().max(addFarmMemberBodyEmailMax),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+})
+
+export const AddFarmMemberResponseItem = zod.object({
+  "userId": zod.string(),
+  "displayName": zod.string(),
+  "email": zod.string().nullable().describe('Only filled in for admins.'),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "isMe": zod.boolean()
+})
+export const AddFarmMemberResponse = zod.array(AddFarmMemberResponseItem)
+
+
+/**
+ * @summary Change a member's role (admin only; a farm keeps at least one admin)
+ */
+export const ChangeFarmMemberRoleParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "userId": zod.coerce.string()
+})
+
+export const ChangeFarmMemberRoleBody = zod.object({
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+})
+
+export const ChangeFarmMemberRoleResponseItem = zod.object({
+  "userId": zod.string(),
+  "displayName": zod.string(),
+  "email": zod.string().nullable().describe('Only filled in for admins.'),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "isMe": zod.boolean()
+})
+export const ChangeFarmMemberRoleResponse = zod.array(ChangeFarmMemberRoleResponseItem)
+
+
+/**
+ * @summary Remove a member (admin) or leave the farm (own userId)
+ */
+export const RemoveFarmMemberParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "userId": zod.coerce.string()
+})
+
+export const RemoveFarmMemberResponse = zod.void()
+
+
+/**
+ * @summary Rename a farm (admin only)
+ */
+export const RenameFarmParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const renameFarmBodyNameMax = 60;
+
+
+
+export const RenameFarmBody = zod.object({
+  "name": zod.string().min(1).max(renameFarmBodyNameMax)
+})
+
+export const RenameFarmResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+})
+
+
+/**
+ * @summary Delete a farm with all its animals and records (admin only)
+ */
+export const DeleteFarmParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const DeleteFarmBody = zod.object({
+  "confirmName": zod.string()
+})
+
+export const DeleteFarmResponse = zod.void()
+
+
+/**
  * @summary One farm the account is a member of
  */
 export const GetFarmParams = zod.object({

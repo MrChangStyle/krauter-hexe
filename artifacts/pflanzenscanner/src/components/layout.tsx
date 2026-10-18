@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Camera, Leaf as LeafIcon, ClipboardList, Wrench, WifiOff, Users, LogOut, Leaf } from "lucide-react";
+import { Camera, Leaf as LeafIcon, ClipboardList, Wrench, WifiOff, Users, LogOut, Leaf, Tractor } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useScanQueue } from "@/lib/scan-queue-context";
 import { useAuthContext } from "@/lib/auth-context";
@@ -18,6 +18,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: "/",          label: "Scan",     icon: Camera,        badge: 0,            prefixes: ["/"] },
     { path: "/pflanzen",  label: "Pflanzen", icon: LeafIcon,      badge: 0,            prefixes: ["/pflanzen", "/archiv", "/arten", "/pflanze/"] },
     { path: "/aufgaben",  label: "Aufgaben", icon: ClipboardList, badge: 0,            prefixes: ["/aufgaben"] },
+    { path: "/farm",      label: "Farm",     icon: Tractor,       badge: 0,            prefixes: ["/farm"] },
     { path: "/werkzeug",  label: "Werkzeug", icon: Wrench,        badge: 0,            prefixes: ["/werkzeug", "/insekten-scanner", "/insekt/", "/kraeuter-hexe", "/pflanzendoc", "/pflege-guide"] },
     { path: "/benutzer",  label: "Home",     icon: Users,         badge: pendingCount, prefixes: ["/benutzer"] },
   ];

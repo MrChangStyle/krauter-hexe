@@ -289,7 +289,7 @@ VORGEHENSWEISE (zuerst Phase A1 → A2 → A3, dann Phase B, dann das Farm-Modul
 OK warten; jeder Schritt auf einem eigenen Branch mit Pull Request gegen main)
 - Schritt 1 – Fundament (UMGESETZT; Aufgaben-Erweiterung folgt mit Schritt 4): Drizzle-Schemas (Farm-Ebene + Datenmodell), OpenAPI-Spec,
   Codegen, requireFarm() + Isolationstest. Keine UI.
-- Schritt 2 – Farm & Rollen: automatische eigene Farm, Mitglieder verwalten, Farm wechseln,
+- Schritt 2 – Farm & Rollen (UMGESETZT): automatische eigene Farm, Mitglieder verwalten, Farm wechseln,
   Navigationspunkt "Meine Farm" mit leerem Dashboard.
 - Schritt 3 – Tierbestand: CRUD für Tiere/Herden inkl. Foto (Cloudinary, downscaleFile).
 - Schritt 4 – Medizin, Gewicht, Aufgaben: CRUD, Gewichtsdiagramm mit Warnlogik,

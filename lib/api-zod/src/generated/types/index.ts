@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './addFarmMemberInput';
 export * from './animalInfo';
 export * from './authorizationSessionHeaderParameter';
 export * from './authUser';
@@ -23,12 +24,16 @@ export * from './careGuide';
 export * from './careGuideDailyEntry';
 export * from './careGuideStatus';
 export * from './categoryCount';
+export * from './changeFarmRoleInput';
 export * from './cleanupOrphanedDataInput';
 export * from './createCareGuideInput';
 export * from './createReportInput';
 export * from './createTaskInput';
 export * from './deleteAccountInput';
+export * from './deleteFarmInput';
 export * from './deletePlantInput';
+export * from './farmMember';
+export * from './farmNameInput';
 export * from './farmRole';
 export * from './farmSummary';
 export * from './favoriteIds';

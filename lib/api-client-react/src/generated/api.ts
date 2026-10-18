@@ -62,8 +62,11 @@ import type {
   FarmTaskInput,
   FavoriteIds,
   FeedLog,
+  FrostWarning,
   GardenBed,
   GardenBedInput,
+  GardenCalendarEntry,
+  GardenEventKind,
   GeoReverseInput,
   GeoReverseResult,
   HealthStatus,
@@ -8111,6 +8114,397 @@ export const useRemovePlanting = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getRemovePlantingMutationOptions(options));
     }
+
+export const getCheckGardenEventUrl = (farmId: number,
+    plantingId: number,
+    kind: GardenEventKind,) => {
+
+
+
+
+  return `/api/farms/${farmId}/plantings/${plantingId}/checks/${kind}`
+}
+
+/**
+ * @summary Tick off a date of a planting (caretaker or admin)
+ */
+export const checkGardenEvent = async (farmId: number,
+    plantingId: number,
+    kind: GardenEventKind, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getCheckGardenEventUrl(farmId,plantingId,kind),
+  {
+    ...options,
+    method: 'PUT'
+
+
+  }
+);}
+
+
+
+
+
+export const getCheckGardenEventMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkGardenEvent>>, TError,{farmId: number;plantingId: number;kind: GardenEventKind}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkGardenEvent>>, TError,{farmId: number;plantingId: number;kind: GardenEventKind}, TContext> => {
+
+const mutationKey = ['checkGardenEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkGardenEvent>>, {farmId: number;plantingId: number;kind: GardenEventKind}> = (props) => {
+          const {farmId,plantingId,kind} = props ?? {};
+
+          return  checkGardenEvent(farmId,plantingId,kind,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckGardenEventMutationResult = NonNullable<Awaited<ReturnType<typeof checkGardenEvent>>>
+
+    export type CheckGardenEventMutationError = ErrorType<void>
+
+    /**
+ * @summary Tick off a date of a planting (caretaker or admin)
+ */
+export const useCheckGardenEvent = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkGardenEvent>>, TError,{farmId: number;plantingId: number;kind: GardenEventKind}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof checkGardenEvent>>,
+        TError,
+        {farmId: number;plantingId: number;kind: GardenEventKind},
+        TContext
+      > => {
+      return useMutation(getCheckGardenEventMutationOptions(options));
+    }
+
+export const getUncheckGardenEventUrl = (farmId: number,
+    plantingId: number,
+    kind: GardenEventKind,) => {
+
+
+
+
+  return `/api/farms/${farmId}/plantings/${plantingId}/checks/${kind}`
+}
+
+/**
+ * @summary Undo a ticked-off date (caretaker or admin)
+ */
+export const uncheckGardenEvent = async (farmId: number,
+    plantingId: number,
+    kind: GardenEventKind, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getUncheckGardenEventUrl(farmId,plantingId,kind),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getUncheckGardenEventMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uncheckGardenEvent>>, TError,{farmId: number;plantingId: number;kind: GardenEventKind}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uncheckGardenEvent>>, TError,{farmId: number;plantingId: number;kind: GardenEventKind}, TContext> => {
+
+const mutationKey = ['uncheckGardenEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uncheckGardenEvent>>, {farmId: number;plantingId: number;kind: GardenEventKind}> = (props) => {
+          const {farmId,plantingId,kind} = props ?? {};
+
+          return  uncheckGardenEvent(farmId,plantingId,kind,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UncheckGardenEventMutationResult = NonNullable<Awaited<ReturnType<typeof uncheckGardenEvent>>>
+
+    export type UncheckGardenEventMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Undo a ticked-off date (caretaker or admin)
+ */
+export const useUncheckGardenEvent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uncheckGardenEvent>>, TError,{farmId: number;plantingId: number;kind: GardenEventKind}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof uncheckGardenEvent>>,
+        TError,
+        {farmId: number;plantingId: number;kind: GardenEventKind},
+        TContext
+      > => {
+      return useMutation(getUncheckGardenEventMutationOptions(options));
+    }
+
+export const getGetBedHistoryUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/history`
+}
+
+/**
+ * @summary Plantings of a bed over all seasons, newest first (crop rotation)
+ */
+export const getBedHistory = async (farmId: number,
+    bedId: number, options?: RequestInit): Promise<BedPlanting[]> => {
+
+  return customFetch<BedPlanting[]>(getGetBedHistoryUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBedHistoryQueryKey = (farmId: number,
+    bedId: number,) => {
+    return [
+    `/api/farms/${farmId}/beds/${bedId}/history`
+    ] as const;
+    }
+
+
+export const getGetBedHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getBedHistory>>, TError = ErrorType<unknown>>(farmId: number,
+    bedId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBedHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBedHistoryQueryKey(farmId,bedId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBedHistory>>> = ({ signal }) => getBedHistory(farmId,bedId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && bedId !== null && bedId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBedHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBedHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getBedHistory>>>
+export type GetBedHistoryQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Plantings of a bed over all seasons, newest first (crop rotation)
+ */
+
+export function useGetBedHistory<TData = Awaited<ReturnType<typeof getBedHistory>>, TError = ErrorType<unknown>>(
+ farmId: number,
+    bedId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBedHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBedHistoryQueryOptions(farmId,bedId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetGardenCalendarUrl = (farmId: number,
+    season: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/seasons/${season}/calendar`
+}
+
+/**
+ * @summary Sowing, planting and harvest dates of all plantings of a season, from the crop data and the frost dates
+ */
+export const getGardenCalendar = async (farmId: number,
+    season: number, options?: RequestInit): Promise<GardenCalendarEntry[]> => {
+
+  return customFetch<GardenCalendarEntry[]>(getGetGardenCalendarUrl(farmId,season),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGardenCalendarQueryKey = (farmId: number,
+    season: number,) => {
+    return [
+    `/api/farms/${farmId}/garden/seasons/${season}/calendar`
+    ] as const;
+    }
+
+
+export const getGetGardenCalendarQueryOptions = <TData = Awaited<ReturnType<typeof getGardenCalendar>>, TError = ErrorType<unknown>>(farmId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenCalendar>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGardenCalendarQueryKey(farmId,season);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGardenCalendar>>> = ({ signal }) => getGardenCalendar(farmId,season, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && season !== null && season !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGardenCalendar>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGardenCalendarQueryResult = NonNullable<Awaited<ReturnType<typeof getGardenCalendar>>>
+export type GetGardenCalendarQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Sowing, planting and harvest dates of all plantings of a season, from the crop data and the frost dates
+ */
+
+export function useGetGardenCalendar<TData = Awaited<ReturnType<typeof getGardenCalendar>>, TError = ErrorType<unknown>>(
+ farmId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenCalendar>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGardenCalendarQueryOptions(farmId,season,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetFrostWarningsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/frost-warnings`
+}
+
+/**
+ * @summary Beds where frost-tender plants meet a frosty night (DWD forecast via Bright Sky)
+ */
+export const getFrostWarnings = async (farmId: number, options?: RequestInit): Promise<FrostWarning[]> => {
+
+  return customFetch<FrostWarning[]>(getGetFrostWarningsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFrostWarningsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/garden/frost-warnings`
+    ] as const;
+    }
+
+
+export const getGetFrostWarningsQueryOptions = <TData = Awaited<ReturnType<typeof getFrostWarnings>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFrostWarnings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFrostWarningsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFrostWarnings>>> = ({ signal }) => getFrostWarnings(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFrostWarnings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFrostWarningsQueryResult = NonNullable<Awaited<ReturnType<typeof getFrostWarnings>>>
+export type GetFrostWarningsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Beds where frost-tender plants meet a frosty night (DWD forecast via Bright Sky)
+ */
+
+export function useGetFrostWarnings<TData = Awaited<ReturnType<typeof getFrostWarnings>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFrostWarnings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFrostWarningsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getRenameFarmUrl = (farmId: number,) => {
 

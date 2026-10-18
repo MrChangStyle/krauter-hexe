@@ -37,6 +37,7 @@ describe("planner rules", () => {
     expect(hints.good.map((p) => [p.a.id, p.b.id])).toEqual([[1, 2]]);
     expect(hennyLine(hints, [], false)).toBe("Achtung: tomate und kartoffel vertragen sich nicht – setz sie weiter auseinander.");
     expect(hennyLine({ good: hints.good, bad: [] }, [], false)).toBe("Gute Nachbarn: tomate neben basilikum!");
+    expect(hennyLine({ good: hints.good, bad: [] }, [], false, "2025 stand hier Kartoffel.")).toBe("Fruchtfolge: 2025 stand hier Kartoffel.");
   });
 
   it("warns when a crop wants more sun than the bed gets", () => {

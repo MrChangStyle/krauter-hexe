@@ -13,6 +13,7 @@ import {
   type CareGuide,
 } from "@workspace/db";
 import { logger } from "./logger";
+import { sendGardenDigests } from "./gardenCalendar";
 import { sendPushToUser } from "./webPush";
 
 // All reminder times in the app are entered as German local wall-clock times
@@ -261,6 +262,10 @@ export async function triggerDueNotifications(): Promise<number> {
       .where(eq(careGuidesTable.id, guide.id));
     triggered++;
   }
+
+  // ── Garden (Beet-Architekt) ─────────────────────────────────────────────
+  // One push per farm and day from 07:30: dates starting today, frost warning.
+  triggered += await sendGardenDigests(hhmm, dateKey);
 
   return triggered;
 }

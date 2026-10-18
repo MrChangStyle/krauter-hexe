@@ -4,7 +4,11 @@ import {
   AddPlantingResponse,
   CreateBedBody,
   CreateBedResponse,
+  CheckGardenEventParams,
+  GetBedHistoryResponse,
   GetBedResponse,
+  GetFrostWarningsResponse,
+  GetGardenCalendarResponse,
   GetGardenCatalogResponse,
   ListBedsResponse,
   ListPlantingsResponse,
@@ -31,6 +35,8 @@ import {
 } from '../lib/gardenBeds';
 import { GARDEN_CATALOG } from '../lib/gardenCatalog';
 import { addPlanting, listPlantings, removePlanting } from '../lib/gardenPlanner';
+import { bedHistory, farmCalendar, farmFrostWarnings, setCheck } from '../lib/gardenCalendar';
+import { berlinTodayKey } from '../lib/pushScheduler';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
 // Beet-Architekt: the crop catalog (same for everyone) and the beds of a
@@ -168,5 +174,48 @@ router.delete(
     res.sendStatus(204);
   }),
 );
+
+// ── Kalender & Fruchtfolge ───────────────────────────────────────────────────
+
+router.get(
+  '/farms/:farmId/beds/:bedId/history',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    const bedId = idParam(req, 'bedId');
+    if (bedId === null) return notFound(res);
+    res.json(GetBedHistoryResponse.parse(await bedHistory(req.farm!.farmId, bedId)));
+  }),
+);
+
+router.get(
+  '/farms/:farmId/garden/seasons/:season/calendar',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    const season = idParam(req, 'season');
+    if (season === null) return notFound(res);
+    res.json(GetGardenCalendarResponse.parse(await farmCalendar(req.farm!.farmId, season)));
+  }),
+);
+
+router.get(
+  '/farms/:farmId/garden/frost-warnings',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(GetFrostWarningsResponse.parse(await farmFrostWarnings(req.farm!.farmId, berlinTodayKey())));
+  }),
+);
+
+for (const [method, done] of [['put', true], ['delete', false]] as const) {
+  router[method](
+    '/farms/:farmId/plantings/:plantingId/checks/:kind',
+    requireFarm('caretaker'),
+    handle(async (req, res) => {
+      const params = CheckGardenEventParams.safeParse(req.params);
+      if (!params.success) return notFound(res);
+      await setCheck(req.farm!.farmId, params.data.plantingId, params.data.kind, done);
+      res.sendStatus(204);
+    }),
+  );
+}
 
 export default router;

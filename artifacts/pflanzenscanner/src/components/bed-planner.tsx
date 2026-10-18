@@ -1,10 +1,13 @@
 import { useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, Loader2, Search, Sun, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, History, Loader2, Search, Sun, Trash2 } from "lucide-react";
 import {
+  getGetBedHistoryQueryKey,
+  getGetGardenCalendarQueryKey,
   getGetGardenCatalogQueryKey,
   getListPlantingsQueryKey,
   useAddPlanting,
+  useGetBedHistory,
   useGetGardenCatalog,
   useListPlantings,
   useListPlants,
@@ -18,6 +21,8 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { HenniTip } from "@/components/henni";
 import { BedPhoto } from "@/components/bed-photo";
+import { BedCalendar } from "@/components/bed-calendar";
+import { rotationIssues, rotationText, seasonSummary, type RotationIssue } from "@/lib/garden-calendar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import {
@@ -43,7 +48,7 @@ function errorText(err: unknown, fallback: string): string {
 }
 
 /** What placing a crop at a cell would mean: fits? which neighbours? */
-function preview(crop: Crop, x: number, y: number, cols: number, rows: number, plantings: BedPlanting[]) {
+function preview(crop: Crop, x: number, y: number, cols: number, rows: number, plantings: BedPlanting[], rotation: Rotation) {
   const side = footprint(crop);
   const rect = { x, y, w: side, h: side };
   const around = plantings.filter((p) => p.cropKey && p.cropKey !== crop.key && touching(rect, p));
@@ -52,7 +57,15 @@ function preview(crop: Crop, x: number, y: number, cols: number, rows: number, p
     side,
     bad: around.filter((p) => crop.bad.includes(p.cropKey!)).map((p) => p.label),
     good: around.filter((p) => crop.good.includes(p.cropKey!)).map((p) => p.label),
+    rotation: rotationIssues(rect, crop, rotation.season, rotation.history, rotation.crops)[0],
   };
+}
+
+/** What crop rotation needs: earlier seasons of the bed. */
+interface Rotation {
+  season: number;
+  history: BedPlanting[];
+  crops: Map<string, Crop>;
 }
 
 function CropPicker({
@@ -60,6 +73,7 @@ function CropPicker({
   cell,
   plantings,
   catalog,
+  rotation,
   busy,
   onPick,
   onClose,
@@ -68,6 +82,7 @@ function CropPicker({
   cell: { x: number; y: number };
   plantings: BedPlanting[];
   catalog: Crop[];
+  rotation: Rotation;
   busy: boolean;
   onPick: (choice: { cropKey?: string; plantId?: number }) => void;
   onClose: () => void;
@@ -117,7 +132,7 @@ function CropPicker({
         {tab === "catalog" ? (
           <ul className="space-y-1.5">
             {crops.map((c) => {
-              const p = preview(c, cell.x, cell.y, cols, rows, plantings);
+              const p = preview(c, cell.x, cell.y, cols, rows, plantings, rotation);
               const shady = tooShady(c, light);
               return (
                 <li key={c.key}>
@@ -141,6 +156,12 @@ function CropPicker({
                       {p.fits && p.good.length > 0 && (
                         <span className="block text-xs font-medium text-primary">Guter Nachbar: {p.good.join(", ")}</span>
                       )}
+                      {p.fits && p.rotation && (
+                        <span className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">
+                          <History className="h-3 w-3 shrink-0" />
+                          {p.rotation.kind === "family" ? `${p.rotation.season}: ${p.rotation.label} – gleiche Familie` : `${p.rotation.season}: ${p.rotation.label} – auch Starkzehrer`}
+                        </span>
+                      )}
                       {shady && (
                         <span className="flex items-center gap-1 text-xs text-amber-700 dark:text-amber-400">
                           <Sun className="h-3 w-3" />
@@ -160,7 +181,9 @@ function CropPicker({
           <ul className="space-y-1.5">
             {archivePlants.map((plant) => {
               const crop = bySpecies.get(speciesKey(plant.botanicalName));
-              const p = crop ? preview(crop, cell.x, cell.y, cols, rows, plantings) : { fits: fits({ x: cell.x, y: cell.y, w: 1, h: 1 }, cols, rows, plantings), side: 1, bad: [], good: [] };
+              const p = crop
+                ? preview(crop, cell.x, cell.y, cols, rows, plantings, rotation)
+                : { fits: fits({ x: cell.x, y: cell.y, w: 1, h: 1 }, cols, rows, plantings), side: 1, bad: [], good: [], rotation: undefined };
               return (
                 <li key={plant.id}>
                   <button
@@ -175,6 +198,7 @@ function CropPicker({
                       <span className="block text-xs italic text-muted-foreground">{plant.botanicalName}</span>
                       {!crop && <span className="block text-xs text-muted-foreground">Ohne Anbaudaten – ein Feld, keine Nachbarprüfung.</span>}
                       {p.bad.length > 0 && <span className="block text-xs font-medium text-destructive">Schlechter Nachbar: {p.bad.join(", ")}</span>}
+                      {p.rotation && <span className="block text-xs text-amber-700 dark:text-amber-400">{rotationText(p.rotation)}</span>}
                     </span>
                   </button>
                 </li>
@@ -193,6 +217,7 @@ function PlantingDialog({
   crop,
   plantings,
   crops,
+  rotation,
   canWrite,
   busy,
   onRemove,
@@ -202,6 +227,7 @@ function PlantingDialog({
   crop: Crop | undefined;
   plantings: BedPlanting[];
   crops: Map<string, Crop>;
+  rotation: RotationIssue[];
   canWrite: boolean;
   busy: boolean;
   onRemove: () => void;
@@ -243,6 +269,12 @@ function PlantingDialog({
         )}
         {bad.length > 0 && <p className="text-sm font-medium text-destructive">Verträgt sich nicht mit: {bad.join(", ")}</p>}
         {good.length > 0 && <p className="text-sm font-medium text-primary">Gute Nachbarn: {good.join(", ")}</p>}
+        {rotation.map((issue) => (
+          <p key={`${issue.kind}-${issue.season}-${issue.label}`} className="flex gap-1.5 text-sm text-amber-700 dark:text-amber-400">
+            <History className="mt-0.5 h-4 w-4 shrink-0" />
+            {rotationText(issue)}
+          </p>
+        ))}
         {canWrite && (
           <Button variant="outline" className="gap-1.5 text-destructive hover:text-destructive" disabled={busy} onClick={onRemove}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -264,7 +296,13 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
   const [view, setView] = useState<"grid" | "photo">(bed.photoCorners ? "photo" : "grid");
   const catalog = useGetGardenCatalog({ query: { queryKey: getGetGardenCatalogQueryKey(), staleTime: Infinity } });
   const plantingsQuery = useListPlantings(farmId, bed.id, season);
-  const refresh = () => queryClient.invalidateQueries({ queryKey: getListPlantingsQueryKey(farmId, bed.id, season) });
+  const historyQuery = useGetBedHistory(farmId, bed.id);
+  const refresh = () =>
+    Promise.all([
+      queryClient.invalidateQueries({ queryKey: getListPlantingsQueryKey(farmId, bed.id, season) }),
+      queryClient.invalidateQueries({ queryKey: getGetBedHistoryQueryKey(farmId, bed.id) }),
+      queryClient.invalidateQueries({ queryKey: getGetGardenCalendarQueryKey(farmId, season) }),
+    ]);
   const add = useAddPlanting({
     mutation: {
       onSuccess() {
@@ -293,6 +331,16 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
   const light = bedLight(bed.sunHours);
   const shady = inside.filter((p) => p.cropKey && crops.get(p.cropKey) && tooShady(crops.get(p.cropKey)!, light)).map((p) => p.label);
   const badIds = new Set(hints.bad.flatMap((p) => [p.a.id, p.b.id]));
+  const history = historyQuery.data ?? [];
+  const rotation: Rotation = { season, history, crops };
+  const rotationOf = new Map(
+    inside.map((p) => {
+      const crop = p.cropKey ? crops.get(p.cropKey) : undefined;
+      return [p.id, crop ? rotationIssues(p, crop, season, history, crops) : []] as const;
+    }),
+  );
+  const firstRotation = inside.flatMap((p) => rotationOf.get(p.id) ?? [])[0];
+  const earlier = seasonSummary(history, crops, season).filter((s) => s.labels.length > 0);
   const occupied = (x: number, y: number) => inside.some((p) => x >= p.x && x < p.x + p.w && y >= p.y && y < p.y + p.h);
   const cellPx = cols > 10 ? 34 : undefined;
 
@@ -311,7 +359,7 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
         </div>
       </div>
 
-      <HenniTip>{hennyLine(hints, shady, inside.length === 0)}</HenniTip>
+      <HenniTip>{hennyLine(hints, shady, inside.length === 0, firstRotation ? rotationText(firstRotation) : null)}</HenniTip>
 
       <div role="tablist" aria-label="Ansicht" className="inline-flex rounded-full bg-muted p-1 text-sm">
         {(["grid", "photo"] as const).map((v) => (
@@ -363,7 +411,9 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
                   onClick={() => setSelected(p)}
                   className={cn(
                     "z-10 flex items-center justify-center rounded-md p-0.5 shadow-sm",
-                    badIds.has(p.id) && "ring-2 ring-destructive ring-offset-1 ring-offset-[#5C4330]",
+                    badIds.has(p.id)
+                      ? "ring-2 ring-destructive ring-offset-1 ring-offset-[#5C4330]"
+                      : (rotationOf.get(p.id)?.length ?? 0) > 0 && "ring-2 ring-amber-400 ring-offset-1 ring-offset-[#5C4330]",
                   )}
                   style={{ gridColumn: `${p.x + 1} / span ${p.w}`, gridRow: `${p.y + 1} / span ${p.h}`, background: crop?.color ?? "#7DBB6A" }}
                   aria-label={`${p.label}, ${p.w} × ${p.h} Felder`}
@@ -384,12 +434,35 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
         </p>
       )}
 
+      {earlier.length > 0 && (
+        <div className="rounded-2xl border border-border bg-card p-3 text-sm">
+          <p className="mb-1.5 flex items-center gap-1.5 font-medium">
+            <History className="h-4 w-4 text-primary" />
+            Belegung der letzten Jahre
+          </p>
+          <ul className="space-y-1">
+            {earlier.map((s) => (
+              <li key={s.season} className="grid grid-cols-[3rem_1fr] gap-2">
+                <span className="font-semibold tabular-nums">{s.season}</span>
+                <span className="min-w-0">
+                  {s.labels.join(", ")}
+                  {s.families.length > 0 && <span className="block text-xs text-muted-foreground">{s.families.join(", ")}</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <BedCalendar farmId={farmId} bedId={bed.id} season={season} canWrite={canWrite} plantings={inside} crops={crops} />
+
       {cell && catalog.data && (
         <CropPicker
           bed={bed}
           cell={cell}
           plantings={inside}
           catalog={catalog.data}
+          rotation={rotation}
           busy={add.isPending}
           onPick={(choice) => add.mutate({ farmId, bedId: bed.id, season, data: { ...choice, x: cell.x, y: cell.y } })}
           onClose={() => setCell(null)}
@@ -401,6 +474,7 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
           crop={selected.cropKey ? crops.get(selected.cropKey) : undefined}
           plantings={inside}
           crops={crops}
+          rotation={rotationOf.get(selected.id) ?? []}
           canWrite={canWrite}
           busy={remove.isPending}
           onRemove={() => remove.mutate({ farmId, plantingId: selected.id })}

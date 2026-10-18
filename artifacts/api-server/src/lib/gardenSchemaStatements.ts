@@ -86,4 +86,31 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
   `ALTER TABLE "garden_beds" ADD COLUMN IF NOT EXISTS "photo_url" text`,
   `ALTER TABLE "garden_beds" ADD COLUMN IF NOT EXISTS "photo_heading" integer`,
   `ALTER TABLE "garden_beds" ADD COLUMN IF NOT EXISTS "photo_corners" jsonb`,
+  // Added with step 4 (Kalender & Fruchtfolge).
+  `DO $$ BEGIN
+     CREATE TYPE "public"."garden_event_kind" AS ENUM('sow_indoor', 'direct_sow', 'plant_out', 'harvest');
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE TABLE IF NOT EXISTS "garden_digest_log" (
+	"farm_id" integer NOT NULL,
+	"day" text NOT NULL,
+	"sent_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "garden_digest_log_farm_id_day_pk" PRIMARY KEY("farm_id","day")
+)`,
+  `CREATE TABLE IF NOT EXISTS "planting_checks" (
+	"planting_id" integer NOT NULL,
+	"farm_id" integer NOT NULL,
+	"kind" "garden_event_kind" NOT NULL,
+	"done_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "planting_checks_planting_id_kind_pk" PRIMARY KEY("planting_id","kind")
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "garden_digest_log" ADD CONSTRAINT "garden_digest_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "planting_checks" ADD CONSTRAINT "planting_checks_planting_id_bed_plantings_id_fk" FOREIGN KEY ("planting_id") REFERENCES "public"."bed_plantings"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "planting_checks" ADD CONSTRAINT "planting_checks_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "planting_checks_farm_idx" ON "planting_checks" USING btree ("farm_id")`,
 ];

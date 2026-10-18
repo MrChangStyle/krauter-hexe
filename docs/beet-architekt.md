@@ -56,9 +56,10 @@ Vom Inhaber am 18.10.2026 ergänzt:
    zeigt den Hinweis.
 3. **Foto mit Pflanzraster (UMGESETZT):** geführte Aufnahme mit Kompass, Ecken antippen,
    Perspektiv-Raster aufs Foto, Pflanzen ins Foto-Raster setzen.
-4. **Kalender & Fruchtfolge:** Termine aus Anbaudaten und Frostterminen, Monatsübersicht,
+4. **Kalender & Fruchtfolge (UMGESETZT):** Termine aus Anbaudaten und Frostterminen, Monatsübersicht,
    Erinnerungen im Aufgabenplaner mit Push; Belegung je Jahr, Warnung bei gleicher Familie
-   bzw. Starkzehrer nach Starkzehrer.
+   bzw. Starkzehrer nach Starkzehrer. Dazu die tägliche Frostwarnung aus der DWD-Vorhersage
+   (ab 2 °C Lufttemperatur in der Nacht, nur wenn frostempfindliche Pflanzen draußen sind).
 5. **KI (Modul Garten):** Anbaudaten-Entwurf für neue Pflanzen mit Admin-Freigabe,
    Ecken-Vorschlag und Fotoanalyse (Schatten, Boden, Unkraut), Beet-Vorschlag.
 6. **Garten-Assistent & Hochbeet-Begleiter:** Ziele (Selbstversorgung/Tierfutter), Bedarf

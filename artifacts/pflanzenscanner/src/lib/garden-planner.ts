@@ -76,11 +76,17 @@ export function tooShady(crop: Pick<Crop, "light">, light: BedLight | null): boo
 }
 
 /** Henni's line about the plan: problems first, then praise, else a hint. */
-export function hennyLine(hints: { good: NeighbourPair[]; bad: NeighbourPair[] }, shady: string[], empty: boolean): string {
+export function hennyLine(
+  hints: { good: NeighbourPair[]; bad: NeighbourPair[] },
+  shady: string[],
+  empty: boolean,
+  rotation: string | null = null,
+): string {
   if (hints.bad.length > 0) {
     const { a, b } = hints.bad[0]!;
     return `Achtung: ${a.label} und ${b.label} vertragen sich nicht – setz sie weiter auseinander.`;
   }
+  if (rotation) return `Fruchtfolge: ${rotation}`;
   if (shady.length > 0) return `${shady[0]} braucht mehr Sonne, als dieses Beet bekommt.`;
   if (hints.good.length > 0) {
     const { a, b } = hints.good[0]!;

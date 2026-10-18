@@ -115,3 +115,39 @@ export const frostClimateTable = pgTable(
 );
 
 export type GardenBed = typeof gardenBedsTable.$inferSelect;
+
+// Kalender (step 4): the dates of a planting come from the Anbaudaten and the
+// bed's frost dates and are computed, not stored – only what the user ticked
+// off is kept here.
+export const GARDEN_EVENT_KINDS = ["sow_indoor", "direct_sow", "plant_out", "harvest"] as const;
+export type GardenEventKind = (typeof GARDEN_EVENT_KINDS)[number];
+export const gardenEventKindEnum = pgEnum("garden_event_kind", GARDEN_EVENT_KINDS);
+
+export const plantingChecksTable = pgTable(
+  "planting_checks",
+  {
+    plantingId: integer("planting_id")
+      .notNull()
+      .references(() => bedPlantingsTable.id, { onDelete: "cascade" }),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    kind: gardenEventKindEnum("kind").notNull(),
+    doneAt: timestamp("done_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.plantingId, table.kind] }), index("planting_checks_farm_idx").on(table.farmId)],
+);
+
+// One garden push per farm and Berlin day (dates that start today and the
+// frost warning for the coming night) – the row makes the cron idempotent.
+export const gardenDigestLogTable = pgTable(
+  "garden_digest_log",
+  {
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    day: text("day").notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.farmId, table.day] })],
+);

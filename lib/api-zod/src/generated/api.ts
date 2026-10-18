@@ -3155,6 +3155,92 @@ export const RemovePlantingResponse = zod.void()
 
 
 /**
+ * @summary Tick off a date of a planting (caretaker or admin)
+ */
+export const CheckGardenEventParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "plantingId": zod.coerce.number(),
+  "kind": zod.enum(['sow_indoor', 'direct_sow', 'plant_out', 'harvest'])
+})
+
+export const CheckGardenEventResponse = zod.void()
+
+
+/**
+ * @summary Undo a ticked-off date (caretaker or admin)
+ */
+export const UncheckGardenEventParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "plantingId": zod.coerce.number(),
+  "kind": zod.enum(['sow_indoor', 'direct_sow', 'plant_out', 'harvest'])
+})
+
+export const UncheckGardenEventResponse = zod.void()
+
+
+/**
+ * @summary Plantings of a bed over all seasons, newest first (crop rotation)
+ */
+export const GetBedHistoryParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const GetBedHistoryResponseItem = zod.object({
+  "id": zod.number(),
+  "season": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "plantId": zod.number().nullable(),
+  "label": zod.string(),
+  "x": zod.number().describe('Column of the top-left cell (along the bed\'s length)'),
+  "y": zod.number(),
+  "w": zod.number(),
+  "h": zod.number()
+})
+export const GetBedHistoryResponse = zod.array(GetBedHistoryResponseItem)
+
+
+/**
+ * @summary Sowing, planting and harvest dates of all plantings of a season, from the crop data and the frost dates
+ */
+export const GetGardenCalendarParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "season": zod.coerce.number()
+})
+
+export const GetGardenCalendarResponseItem = zod.object({
+  "plantingId": zod.number(),
+  "bedId": zod.number(),
+  "bedName": zod.string(),
+  "label": zod.string(),
+  "cropKey": zod.string(),
+  "kind": zod.enum(['sow_indoor', 'direct_sow', 'plant_out', 'harvest']),
+  "start": zod.string().describe('First day, YYYY-MM-DD'),
+  "end": zod.string().describe('Last day, YYYY-MM-DD'),
+  "done": zod.boolean(),
+  "open": zod.boolean().describe('Still to do – false when ticked off or no longer needed (sown directly instead of indoors)')
+})
+export const GetGardenCalendarResponse = zod.array(GetGardenCalendarResponseItem)
+
+
+/**
+ * @summary Beds where frost-tender plants meet a frosty night (DWD forecast via Bright Sky)
+ */
+export const GetFrostWarningsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFrostWarningsResponseItem = zod.object({
+  "bedId": zod.number(),
+  "bedName": zod.string(),
+  "night": zod.string().describe('Day the night starts, YYYY-MM-DD'),
+  "minTemp": zod.number().describe('Lowest forecast air temperature (°C)'),
+  "plants": zod.array(zod.string())
+})
+export const GetFrostWarningsResponse = zod.array(GetFrostWarningsResponseItem)
+
+
+/**
  * @summary Rename a farm (admin only)
  */
 export const RenameFarmParams = zod.object({

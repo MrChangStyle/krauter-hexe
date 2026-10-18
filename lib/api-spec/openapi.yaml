@@ -1967,6 +1967,168 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FarmExport"
+  /farms/{farmId}/ai/species:
+    post:
+      tags: [farm]
+      operationId: suggestFarmAnimalSpecies
+      summary: AI suggestion for species and breed from a photo (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoInput"
+      responses:
+        "200":
+          description: The suggestion; the user confirms it.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SpeciesSuggestion"
+        "400":
+          description: Not an image.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: AI unavailable.
+  /farms/{farmId}/husbandry/{species}:
+    get:
+      tags: [farm]
+      operationId: getHusbandryGuide
+      summary: Haltungs-Wiki for a species (generated once, then cached)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: species
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/FarmSpecies"
+      responses:
+        "200":
+          description: The guide.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HusbandryGuide"
+        "400":
+          description: No guide for this species.
+        "502":
+          description: AI unavailable.
+  /farms/{farmId}/toxic-plants/{species}:
+    get:
+      tags: [farm]
+      operationId: listToxicPlants
+      summary: Archive plants poisonous for a species
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: species
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/FarmSpecies"
+      responses:
+        "200":
+          description: Poisonous plants from the plant archive (empty when the archive has no status for this species).
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ArchivePlantStatus"
+  /farms/{farmId}/animals/{animalId}/feed:
+    get:
+      tags: [farm]
+      operationId: listFeedAnalyses
+      summary: Feed analyses of an animal, newest first
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The analyses.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeedLog"
+    post:
+      tags: [farm]
+      operationId: analyzeFeed
+      summary: Analyse a feed photo for an animal (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoInput"
+      responses:
+        "201":
+          description: The stored analysis.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedLog"
+        "400":
+          description: Not an image.
+        "422":
+          description: No feed on the photo.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: AI unavailable.
+  /farms/{farmId}/feed/{logId}:
+    delete:
+      tags: [farm]
+      operationId: deleteFeedAnalysis
+      summary: Delete a feed analysis (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
   /farms/{farmId}:
     patch:
       tags: [farm]
@@ -3674,6 +3836,129 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/MedicalRecord"
+    SpeciesSuggestion:
+      type: object
+      required: [isAnimal, species, breed, confidence]
+      properties:
+        isAnimal:
+          type: boolean
+        species:
+          oneOf:
+            - $ref: "#/components/schemas/FarmSpecies"
+            - type: 'null'
+        breed:
+          type: [string, 'null']
+        confidence:
+          type: number
+          description: 0..1
+    HusbandryGuide:
+      type: object
+      required: [species, summary, nutrition, housing, care, health, lifeExpectancy, createdAt]
+      properties:
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        summary:
+          type: string
+        nutrition:
+          type: string
+        housing:
+          type: string
+        care:
+          type: string
+        health:
+          type: string
+        lifeExpectancy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    ArchivePlantStatus:
+      type: object
+      required: [plantId, germanName, botanicalName, status, toxicityLevel, details]
+      properties:
+        plantId:
+          type: integer
+        germanName:
+          type: string
+        botanicalName:
+          type: string
+        status:
+          type: string
+          enum: [safe, poisonous]
+        toxicityLevel:
+          type: [string, 'null']
+          enum: [intolerant, poisonous, lethal, null]
+        details:
+          type: string
+    FeedItem:
+      type: object
+      required: [name, botanicalName, aiPoisonous, archive, poisonous, note]
+      properties:
+        name:
+          type: string
+        botanicalName:
+          type: [string, 'null']
+        aiPoisonous:
+          type: boolean
+        archive:
+          oneOf:
+            - $ref: "#/components/schemas/ArchivePlantStatus"
+            - type: 'null'
+        poisonous:
+          type: boolean
+          description: Archive OR AI says poisonous (safety first).
+        note:
+          type: [string, 'null']
+    FeedNutrients:
+      type: object
+      required: [protein, fat, fiber, carbohydrates, minerals]
+      properties:
+        protein:
+          type: [string, 'null']
+        fat:
+          type: [string, 'null']
+        fiber:
+          type: [string, 'null']
+        carbohydrates:
+          type: [string, 'null']
+        minerals:
+          type: [string, 'null']
+    FeedAnalysis:
+      type: object
+      required: [isFeed, items, nutrients, assessment, medicalNotes, verdict]
+      properties:
+        isFeed:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedItem"
+        nutrients:
+          $ref: "#/components/schemas/FeedNutrients"
+        assessment:
+          type: string
+        medicalNotes:
+          type: array
+          items:
+            type: string
+        verdict:
+          type: string
+          enum: [good, limited, unsuitable]
+    FeedLog:
+      type: object
+      required: [id, animalId, date, createdAt, analysis]
+      properties:
+        id:
+          type: integer
+        animalId:
+          type: integer
+        date:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        analysis:
+          $ref: "#/components/schemas/FeedAnalysis"
     FarmMember:
       type: object
       required: [userId, displayName, email, role, isMe]

@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MedicalSection, WeightSection } from "@/components/farm-animal-health";
+import { FeedSection, HusbandrySection, SpeciesSuggestionBox, ToxicPlantsSection } from "@/components/farm-ai";
 import { downscaleFile } from "@/lib/image";
 import { SEX_LABELS, SPECIES_LABELS, SPECIES_ORDER, ageText, todayIso } from "@/lib/farm-labels";
 
@@ -154,6 +155,16 @@ function AnimalForm({
   return (
     <form onSubmit={submit} className="space-y-4">
       <PhotoPicker value={photo} onChange={setPhoto} required={photoRequired} />
+      {photo && (
+        <SpeciesSuggestionBox
+          farmId={farmId}
+          photo={photo}
+          onApply={(species, breed) => {
+            set("species", species);
+            if (breed) set("breed", breed);
+          }}
+        />
+      )}
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="animal-name">Name *</Label>
@@ -463,6 +474,9 @@ function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: numb
 
         <MedicalSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
         <WeightSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
+        <FeedSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
+        <ToxicPlantsSection farmId={farmId} species={a.species} />
+        <HusbandrySection farmId={farmId} species={a.species} />
 
         {canWrite && (
           <Button

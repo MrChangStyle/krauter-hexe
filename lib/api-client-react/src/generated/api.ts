@@ -22,6 +22,7 @@ import type {
 import type {
   AddFarmMemberInput,
   ArchiveInput,
+  ArchivePlantStatus,
   AuthUserEnvelope,
   BackfillAnimalsResult,
   BackfillEdibleMedicinalResult,
@@ -47,15 +48,18 @@ import type {
   FarmExport,
   FarmMember,
   FarmNameInput,
+  FarmSpecies,
   FarmSummary,
   FarmTask,
   FarmTaskInput,
   FavoriteIds,
+  FeedLog,
   GeoReverseInput,
   GeoReverseResult,
   HealthStatus,
   Herd,
   HerdInput,
+  HusbandryGuide,
   ImageLockInput,
   Insect,
   LeaderboardResult,
@@ -82,6 +86,7 @@ import type {
   ResolveReportsResult,
   ScanInsectInput,
   ScanInsectResult,
+  SpeciesSuggestion,
   Task,
   UpdateCareGuideInput,
   UpdatePlantInput,
@@ -6272,6 +6277,471 @@ export function useGetFarmExport<TData = Awaited<ReturnType<typeof getFarmExport
 
 
 
+
+export const getSuggestFarmAnimalSpeciesUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/ai/species`
+}
+
+/**
+ * @summary AI suggestion for species and breed from a photo (caretaker or admin)
+ */
+export const suggestFarmAnimalSpecies = async (farmId: number,
+    photoInput: PhotoInput, options?: RequestInit): Promise<SpeciesSuggestion> => {
+
+  return customFetch<SpeciesSuggestion>(getSuggestFarmAnimalSpeciesUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(photoInput)
+  }
+);}
+
+
+
+
+
+export const getSuggestFarmAnimalSpeciesMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof suggestFarmAnimalSpecies>>, TError,{farmId: number;data: BodyType<PhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof suggestFarmAnimalSpecies>>, TError,{farmId: number;data: BodyType<PhotoInput>}, TContext> => {
+
+const mutationKey = ['suggestFarmAnimalSpecies'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof suggestFarmAnimalSpecies>>, {farmId: number;data: BodyType<PhotoInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  suggestFarmAnimalSpecies(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SuggestFarmAnimalSpeciesMutationResult = NonNullable<Awaited<ReturnType<typeof suggestFarmAnimalSpecies>>>
+    export type SuggestFarmAnimalSpeciesMutationBody = BodyType<PhotoInput>
+    export type SuggestFarmAnimalSpeciesMutationError = ErrorType<void>
+
+    /**
+ * @summary AI suggestion for species and breed from a photo (caretaker or admin)
+ */
+export const useSuggestFarmAnimalSpecies = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof suggestFarmAnimalSpecies>>, TError,{farmId: number;data: BodyType<PhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof suggestFarmAnimalSpecies>>,
+        TError,
+        {farmId: number;data: BodyType<PhotoInput>},
+        TContext
+      > => {
+      return useMutation(getSuggestFarmAnimalSpeciesMutationOptions(options));
+    }
+
+export const getGetHusbandryGuideUrl = (farmId: number,
+    species: FarmSpecies,) => {
+
+
+
+
+  return `/api/farms/${farmId}/husbandry/${species}`
+}
+
+/**
+ * @summary Haltungs-Wiki for a species (generated once, then cached)
+ */
+export const getHusbandryGuide = async (farmId: number,
+    species: FarmSpecies, options?: RequestInit): Promise<HusbandryGuide> => {
+
+  return customFetch<HusbandryGuide>(getGetHusbandryGuideUrl(farmId,species),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHusbandryGuideQueryKey = (farmId: number,
+    species: FarmSpecies,) => {
+    return [
+    `/api/farms/${farmId}/husbandry/${species}`
+    ] as const;
+    }
+
+
+export const getGetHusbandryGuideQueryOptions = <TData = Awaited<ReturnType<typeof getHusbandryGuide>>, TError = ErrorType<void>>(farmId: number,
+    species: FarmSpecies, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHusbandryGuide>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHusbandryGuideQueryKey(farmId,species);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHusbandryGuide>>> = ({ signal }) => getHusbandryGuide(farmId,species, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && species !== null && species !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHusbandryGuide>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetHusbandryGuideQueryResult = NonNullable<Awaited<ReturnType<typeof getHusbandryGuide>>>
+export type GetHusbandryGuideQueryError = ErrorType<void>
+
+
+/**
+ * @summary Haltungs-Wiki for a species (generated once, then cached)
+ */
+
+export function useGetHusbandryGuide<TData = Awaited<ReturnType<typeof getHusbandryGuide>>, TError = ErrorType<void>>(
+ farmId: number,
+    species: FarmSpecies, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHusbandryGuide>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetHusbandryGuideQueryOptions(farmId,species,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListToxicPlantsUrl = (farmId: number,
+    species: FarmSpecies,) => {
+
+
+
+
+  return `/api/farms/${farmId}/toxic-plants/${species}`
+}
+
+/**
+ * @summary Archive plants poisonous for a species
+ */
+export const listToxicPlants = async (farmId: number,
+    species: FarmSpecies, options?: RequestInit): Promise<ArchivePlantStatus[]> => {
+
+  return customFetch<ArchivePlantStatus[]>(getListToxicPlantsUrl(farmId,species),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListToxicPlantsQueryKey = (farmId: number,
+    species: FarmSpecies,) => {
+    return [
+    `/api/farms/${farmId}/toxic-plants/${species}`
+    ] as const;
+    }
+
+
+export const getListToxicPlantsQueryOptions = <TData = Awaited<ReturnType<typeof listToxicPlants>>, TError = ErrorType<unknown>>(farmId: number,
+    species: FarmSpecies, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listToxicPlants>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListToxicPlantsQueryKey(farmId,species);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listToxicPlants>>> = ({ signal }) => listToxicPlants(farmId,species, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && species !== null && species !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listToxicPlants>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListToxicPlantsQueryResult = NonNullable<Awaited<ReturnType<typeof listToxicPlants>>>
+export type ListToxicPlantsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Archive plants poisonous for a species
+ */
+
+export function useListToxicPlants<TData = Awaited<ReturnType<typeof listToxicPlants>>, TError = ErrorType<unknown>>(
+ farmId: number,
+    species: FarmSpecies, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listToxicPlants>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListToxicPlantsQueryOptions(farmId,species,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListFeedAnalysesUrl = (farmId: number,
+    animalId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/animals/${animalId}/feed`
+}
+
+/**
+ * @summary Feed analyses of an animal, newest first
+ */
+export const listFeedAnalyses = async (farmId: number,
+    animalId: number, options?: RequestInit): Promise<FeedLog[]> => {
+
+  return customFetch<FeedLog[]>(getListFeedAnalysesUrl(farmId,animalId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFeedAnalysesQueryKey = (farmId: number,
+    animalId: number,) => {
+    return [
+    `/api/farms/${farmId}/animals/${animalId}/feed`
+    ] as const;
+    }
+
+
+export const getListFeedAnalysesQueryOptions = <TData = Awaited<ReturnType<typeof listFeedAnalyses>>, TError = ErrorType<unknown>>(farmId: number,
+    animalId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedAnalyses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFeedAnalysesQueryKey(farmId,animalId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFeedAnalyses>>> = ({ signal }) => listFeedAnalyses(farmId,animalId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && animalId !== null && animalId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFeedAnalyses>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFeedAnalysesQueryResult = NonNullable<Awaited<ReturnType<typeof listFeedAnalyses>>>
+export type ListFeedAnalysesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Feed analyses of an animal, newest first
+ */
+
+export function useListFeedAnalyses<TData = Awaited<ReturnType<typeof listFeedAnalyses>>, TError = ErrorType<unknown>>(
+ farmId: number,
+    animalId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedAnalyses>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFeedAnalysesQueryOptions(farmId,animalId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAnalyzeFeedUrl = (farmId: number,
+    animalId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/animals/${animalId}/feed`
+}
+
+/**
+ * @summary Analyse a feed photo for an animal (caretaker or admin)
+ */
+export const analyzeFeed = async (farmId: number,
+    animalId: number,
+    photoInput: PhotoInput, options?: RequestInit): Promise<FeedLog> => {
+
+  return customFetch<FeedLog>(getAnalyzeFeedUrl(farmId,animalId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(photoInput)
+  }
+);}
+
+
+
+
+
+export const getAnalyzeFeedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeFeed>>, TError,{farmId: number;animalId: number;data: BodyType<PhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof analyzeFeed>>, TError,{farmId: number;animalId: number;data: BodyType<PhotoInput>}, TContext> => {
+
+const mutationKey = ['analyzeFeed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzeFeed>>, {farmId: number;animalId: number;data: BodyType<PhotoInput>}> = (props) => {
+          const {farmId,animalId,data} = props ?? {};
+
+          return  analyzeFeed(farmId,animalId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzeFeedMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeFeed>>>
+    export type AnalyzeFeedMutationBody = BodyType<PhotoInput>
+    export type AnalyzeFeedMutationError = ErrorType<void>
+
+    /**
+ * @summary Analyse a feed photo for an animal (caretaker or admin)
+ */
+export const useAnalyzeFeed = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeFeed>>, TError,{farmId: number;animalId: number;data: BodyType<PhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof analyzeFeed>>,
+        TError,
+        {farmId: number;animalId: number;data: BodyType<PhotoInput>},
+        TContext
+      > => {
+      return useMutation(getAnalyzeFeedMutationOptions(options));
+    }
+
+export const getDeleteFeedAnalysisUrl = (farmId: number,
+    logId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feed/${logId}`
+}
+
+/**
+ * @summary Delete a feed analysis (caretaker or admin)
+ */
+export const deleteFeedAnalysis = async (farmId: number,
+    logId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteFeedAnalysisUrl(farmId,logId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteFeedAnalysisMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFeedAnalysis>>, TError,{farmId: number;logId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFeedAnalysis>>, TError,{farmId: number;logId: number}, TContext> => {
+
+const mutationKey = ['deleteFeedAnalysis'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFeedAnalysis>>, {farmId: number;logId: number}> = (props) => {
+          const {farmId,logId} = props ?? {};
+
+          return  deleteFeedAnalysis(farmId,logId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteFeedAnalysisMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFeedAnalysis>>>
+
+    export type DeleteFeedAnalysisMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a feed analysis (caretaker or admin)
+ */
+export const useDeleteFeedAnalysis = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFeedAnalysis>>, TError,{farmId: number;logId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteFeedAnalysis>>,
+        TError,
+        {farmId: number;logId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteFeedAnalysisMutationOptions(options));
+    }
 
 export const getRenameFarmUrl = (farmId: number,) => {
 

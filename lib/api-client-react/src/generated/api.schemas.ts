@@ -1040,6 +1040,107 @@ export interface FarmExport {
   medicalRecords: MedicalRecord[];
 }
 
+export interface SpeciesSuggestion {
+  isAnimal: boolean;
+  species: FarmSpecies | null;
+  /** @nullable */
+  breed: string | null;
+  /** 0..1 */
+  confidence: number;
+}
+
+export interface HusbandryGuide {
+  species: FarmSpecies;
+  summary: string;
+  nutrition: string;
+  housing: string;
+  care: string;
+  health: string;
+  lifeExpectancy: string;
+  createdAt: string;
+}
+
+export type ArchivePlantStatusStatus = typeof ArchivePlantStatusStatus[keyof typeof ArchivePlantStatusStatus];
+
+
+export const ArchivePlantStatusStatus = {
+  safe: 'safe',
+  poisonous: 'poisonous',
+} as const;
+
+/**
+ * @nullable
+ */
+export type ArchivePlantStatusToxicityLevel = typeof ArchivePlantStatusToxicityLevel[keyof typeof ArchivePlantStatusToxicityLevel] | null;
+
+
+export const ArchivePlantStatusToxicityLevel = {
+  intolerant: 'intolerant',
+  poisonous: 'poisonous',
+  lethal: 'lethal',
+} as const;
+
+export interface ArchivePlantStatus {
+  plantId: number;
+  germanName: string;
+  botanicalName: string;
+  status: ArchivePlantStatusStatus;
+  /** @nullable */
+  toxicityLevel: ArchivePlantStatusToxicityLevel;
+  details: string;
+}
+
+export interface FeedItem {
+  name: string;
+  /** @nullable */
+  botanicalName: string | null;
+  aiPoisonous: boolean;
+  archive: ArchivePlantStatus | null;
+  /** Archive OR AI says poisonous (safety first). */
+  poisonous: boolean;
+  /** @nullable */
+  note: string | null;
+}
+
+export interface FeedNutrients {
+  /** @nullable */
+  protein: string | null;
+  /** @nullable */
+  fat: string | null;
+  /** @nullable */
+  fiber: string | null;
+  /** @nullable */
+  carbohydrates: string | null;
+  /** @nullable */
+  minerals: string | null;
+}
+
+export type FeedAnalysisVerdict = typeof FeedAnalysisVerdict[keyof typeof FeedAnalysisVerdict];
+
+
+export const FeedAnalysisVerdict = {
+  good: 'good',
+  limited: 'limited',
+  unsuitable: 'unsuitable',
+} as const;
+
+export interface FeedAnalysis {
+  isFeed: boolean;
+  items: FeedItem[];
+  nutrients: FeedNutrients;
+  assessment: string;
+  medicalNotes: string[];
+  verdict: FeedAnalysisVerdict;
+}
+
+export interface FeedLog {
+  id: number;
+  animalId: number;
+  date: string;
+  createdAt: string;
+  analysis: FeedAnalysis;
+}
+
 export interface FarmMember {
   userId: string;
   displayName: string;

@@ -6,8 +6,8 @@
  * the counter. The check and the insert are wrapped in a single transaction
  * to prevent concurrent requests from overshooting the cap.
  *
- * Limit: 15 attempts per scan type (plants and insects tracked separately)
- * per Berlin calendar day.
+ * Limit: 15 attempts per scan type (plants, insects and the farm AI features
+ * tracked separately) per Berlin calendar day.
  */
 
 import { gte, and, eq, lt, sql } from "drizzle-orm";
@@ -112,7 +112,7 @@ function getNextBerlinMidnightUTC(): Date {
  */
 export async function checkAndRecordScanAttempt(
   userId: string,
-  scanType: "plant" | "insect",
+  scanType: "plant" | "insect" | "farm",
   options: { unlimited?: boolean } = {},
 ): Promise<RateLimitResult> {
   const resetsAt = getNextBerlinMidnightUTC().toISOString();

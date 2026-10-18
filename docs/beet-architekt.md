@@ -51,7 +51,7 @@ Vom Inhaber am 18.10.2026 ergänzt:
 1. **Fundament (UMGESETZT):** Anbaudaten-Katalog (Startbestand), Beete anlegen/bearbeiten/löschen
    (Typ, Maße, PLZ mit Frostterminen, Sonne, Ausrichtung, Windschutz), Bodenprofil
    manuell; Seite „Beet-Architekt“ im modernen Design (Kachel in „Pflanzen“ wird aktiv).
-2. **Raster von oben:** Pflanzen aus Katalog und Archiv in die Felder setzen; feste
+2. **Raster von oben (UMGESETZT):** Pflanzen aus Katalog und Archiv in die Felder setzen; feste
    Regeln prüfen Abstand, Nachbarschaft (gute/schlechte Nachbarn) und Standort; Henni
    zeigt den Hinweis.
 3. **Foto mit Pflanzraster:** geführte Aufnahme mit Kompass, Ecken antippen,

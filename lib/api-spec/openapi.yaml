@@ -2394,6 +2394,92 @@ paths:
       responses:
         "204":
           description: Deleted.
+  /farms/{farmId}/beds/{bedId}/seasons/{season}/plantings:
+    get:
+      tags: [garden]
+      operationId: listPlantings
+      summary: Plantings of a bed in one season (year)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: season
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The plantings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BedPlanting"
+    post:
+      tags: [garden]
+      operationId: addPlanting
+      summary: Put a plant into the grid (caretaker or admin); its size follows the plant spacing
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: season
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BedPlantingInput"
+      responses:
+        "201":
+          description: The planting.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BedPlanting"
+        "400":
+          description: Unknown plant or no room.
+        "409":
+          description: The cells are taken.
+  /farms/{farmId}/plantings/{plantingId}:
+    delete:
+      tags: [garden]
+      operationId: removePlanting
+      summary: Take a planting out of the grid (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: plantingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Removed.
   /farms/{farmId}:
     patch:
       tags: [farm]
@@ -4523,6 +4609,41 @@ components:
             type: string
         color:
           type: string
+    BedPlanting:
+      type: object
+      required: [id, season, cropKey, plantId, label, x, y, w, h]
+      properties:
+        id:
+          type: integer
+        season:
+          type: integer
+        cropKey:
+          type: [string, 'null']
+        plantId:
+          type: [integer, 'null']
+        label:
+          type: string
+        x:
+          type: integer
+          description: Column of the top-left cell (along the bed's length)
+        y:
+          type: integer
+        w:
+          type: integer
+        h:
+          type: integer
+    BedPlantingInput:
+      type: object
+      required: [x, y]
+      properties:
+        cropKey:
+          type: [string, 'null']
+        plantId:
+          type: [integer, 'null']
+        x:
+          type: integer
+        y:
+          type: integer
     FarmMember:
       type: object
       required: [userId, displayName, email, role, isMe]

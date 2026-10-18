@@ -32,6 +32,8 @@ import type {
   BackfillSymptomCasingResult,
   BackfillSymptomsResult,
   BackfillToxicityResult,
+  BedPlanting,
+  BedPlantingInput,
   Camera,
   CameraEvent,
   CameraInput,
@@ -7649,6 +7651,242 @@ export const useDeleteBed = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getDeleteBedMutationOptions(options));
+    }
+
+export const getListPlantingsUrl = (farmId: number,
+    bedId: number,
+    season: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/seasons/${season}/plantings`
+}
+
+/**
+ * @summary Plantings of a bed in one season (year)
+ */
+export const listPlantings = async (farmId: number,
+    bedId: number,
+    season: number, options?: RequestInit): Promise<BedPlanting[]> => {
+
+  return customFetch<BedPlanting[]>(getListPlantingsUrl(farmId,bedId,season),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPlantingsQueryKey = (farmId: number,
+    bedId: number,
+    season: number,) => {
+    return [
+    `/api/farms/${farmId}/beds/${bedId}/seasons/${season}/plantings`
+    ] as const;
+    }
+
+
+export const getListPlantingsQueryOptions = <TData = Awaited<ReturnType<typeof listPlantings>>, TError = ErrorType<unknown>>(farmId: number,
+    bedId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPlantings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPlantingsQueryKey(farmId,bedId,season);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPlantings>>> = ({ signal }) => listPlantings(farmId,bedId,season, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && bedId !== null && bedId !== undefined && season !== null && season !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPlantings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPlantingsQueryResult = NonNullable<Awaited<ReturnType<typeof listPlantings>>>
+export type ListPlantingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Plantings of a bed in one season (year)
+ */
+
+export function useListPlantings<TData = Awaited<ReturnType<typeof listPlantings>>, TError = ErrorType<unknown>>(
+ farmId: number,
+    bedId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPlantings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPlantingsQueryOptions(farmId,bedId,season,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddPlantingUrl = (farmId: number,
+    bedId: number,
+    season: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/seasons/${season}/plantings`
+}
+
+/**
+ * @summary Put a plant into the grid (caretaker or admin); its size follows the plant spacing
+ */
+export const addPlanting = async (farmId: number,
+    bedId: number,
+    season: number,
+    bedPlantingInput: BedPlantingInput, options?: RequestInit): Promise<BedPlanting> => {
+
+  return customFetch<BedPlanting>(getAddPlantingUrl(farmId,bedId,season),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(bedPlantingInput)
+  }
+);}
+
+
+
+
+
+export const getAddPlantingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addPlanting>>, TError,{farmId: number;bedId: number;season: number;data: BodyType<BedPlantingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addPlanting>>, TError,{farmId: number;bedId: number;season: number;data: BodyType<BedPlantingInput>}, TContext> => {
+
+const mutationKey = ['addPlanting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addPlanting>>, {farmId: number;bedId: number;season: number;data: BodyType<BedPlantingInput>}> = (props) => {
+          const {farmId,bedId,season,data} = props ?? {};
+
+          return  addPlanting(farmId,bedId,season,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddPlantingMutationResult = NonNullable<Awaited<ReturnType<typeof addPlanting>>>
+    export type AddPlantingMutationBody = BodyType<BedPlantingInput>
+    export type AddPlantingMutationError = ErrorType<void>
+
+    /**
+ * @summary Put a plant into the grid (caretaker or admin); its size follows the plant spacing
+ */
+export const useAddPlanting = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addPlanting>>, TError,{farmId: number;bedId: number;season: number;data: BodyType<BedPlantingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addPlanting>>,
+        TError,
+        {farmId: number;bedId: number;season: number;data: BodyType<BedPlantingInput>},
+        TContext
+      > => {
+      return useMutation(getAddPlantingMutationOptions(options));
+    }
+
+export const getRemovePlantingUrl = (farmId: number,
+    plantingId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/plantings/${plantingId}`
+}
+
+/**
+ * @summary Take a planting out of the grid (caretaker or admin)
+ */
+export const removePlanting = async (farmId: number,
+    plantingId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRemovePlantingUrl(farmId,plantingId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemovePlantingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removePlanting>>, TError,{farmId: number;plantingId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removePlanting>>, TError,{farmId: number;plantingId: number}, TContext> => {
+
+const mutationKey = ['removePlanting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removePlanting>>, {farmId: number;plantingId: number}> = (props) => {
+          const {farmId,plantingId} = props ?? {};
+
+          return  removePlanting(farmId,plantingId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemovePlantingMutationResult = NonNullable<Awaited<ReturnType<typeof removePlanting>>>
+
+    export type RemovePlantingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Take a planting out of the grid (caretaker or admin)
+ */
+export const useRemovePlanting = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removePlanting>>, TError,{farmId: number;plantingId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removePlanting>>,
+        TError,
+        {farmId: number;plantingId: number},
+        TContext
+      > => {
+      return useMutation(getRemovePlantingMutationOptions(options));
     }
 
 export const getRenameFarmUrl = (farmId: number,) => {

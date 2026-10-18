@@ -54,8 +54,32 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
 	"notes" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
+  `CREATE TABLE IF NOT EXISTS "bed_plantings" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"bed_id" integer NOT NULL,
+	"season" integer NOT NULL,
+	"crop_key" text,
+	"plant_id" integer,
+	"label" text NOT NULL,
+	"x" integer NOT NULL,
+	"y" integer NOT NULL,
+	"w" integer DEFAULT 1 NOT NULL,
+	"h" integer DEFAULT 1 NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
   `DO $$ BEGIN
      ALTER TABLE "garden_beds" ADD CONSTRAINT "garden_beds_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "bed_plantings" ADD CONSTRAINT "bed_plantings_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "bed_plantings" ADD CONSTRAINT "bed_plantings_bed_id_garden_beds_id_fk" FOREIGN KEY ("bed_id") REFERENCES "public"."garden_beds"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "bed_plantings" ADD CONSTRAINT "bed_plantings_plant_id_plants_id_fk" FOREIGN KEY ("plant_id") REFERENCES "public"."plants"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "garden_beds_farm_idx" ON "garden_beds" USING btree ("farm_id")`,
+  `CREATE INDEX IF NOT EXISTS "bed_plantings_bed_season_idx" ON "bed_plantings" USING btree ("farm_id","bed_id","season")`,
 ];

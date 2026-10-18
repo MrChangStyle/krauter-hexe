@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Fence, Layers, LocateFixed, Loader2, MapPin, Pencil, Snowflake, Sprout, Trash2 } from "lucide-react";
+import { ArrowLeft, Fence, Layers, LocateFixed, Loader2, MapPin, Pencil, Snowflake, Trash2 } from "lucide-react";
 import {
   getGetBedQueryKey,
   getListBedsQueryKey,
@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { BedPlanner } from "@/components/bed-planner";
 import { useToast } from "@/hooks/use-toast";
 import {
   BED_TYPE_LABELS,
@@ -498,15 +499,7 @@ function BedDetailPage({ farmId, bedId }: { farmId: number; bedId: number }) {
           ))}
       </div>
 
-      <section className="rounded-xl border-2 border-dashed border-border p-4 text-sm">
-        <p className="flex items-center gap-2 font-semibold">
-          <Sprout className="h-4 w-4 text-primary" />
-          Pflanzplan
-        </p>
-        <p className="mt-1 text-muted-foreground">
-          Raster mit Pflanzen, Nachbarschafts- und Abstandsprüfung folgt im nächsten Ausbauschritt des Beet-Architekten.
-        </p>
-      </section>
+      <BedPlanner farmId={farmId} bed={b} canWrite={canWrite} />
 
       <Card icon={<MapPin className="h-4 w-4 text-primary" />} title="Standort & Lage">
         <Facts

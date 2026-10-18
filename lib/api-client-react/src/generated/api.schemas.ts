@@ -1428,6 +1428,30 @@ export interface Crop {
   color: string;
 }
 
+export interface BedPlanting {
+  id: number;
+  season: number;
+  /** @nullable */
+  cropKey: string | null;
+  /** @nullable */
+  plantId: number | null;
+  label: string;
+  /** Column of the top-left cell (along the bed's length) */
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface BedPlantingInput {
+  /** @nullable */
+  cropKey?: string | null;
+  /** @nullable */
+  plantId?: number | null;
+  x: number;
+  y: number;
+}
+
 export interface FarmMember {
   userId: string;
   displayName: string;

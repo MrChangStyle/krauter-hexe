@@ -339,6 +339,10 @@ export interface PlantScanInput {
   locationRegion?: string;
 }
 
+export interface ImageLockInput {
+  locked: boolean;
+}
+
 export interface Plant {
   id: number;
   /** Common German name of the plant. */
@@ -380,6 +384,10 @@ export interface Plant {
   hasSideImage: boolean;
   /** UUID that identifies the main photo in the client's local IndexedDB image store. Null for entries created before the local-first migration (those use the GET /plants/{id}/image endpoint instead). When a mushroom side image exists, it is stored under the derived key "${localImageId}-side" in the same IndexedDB store. */
   localImageId?: string | null;
+  /** AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated. */
+  imageQuality?: number | null;
+  /** Set by the admin: the shared photo is never replaced automatically. */
+  imageLocked?: boolean;
   /** Public https URL of the main photo on the image CDN (Cloudinary). Use it directly as an <img> source. Takes priority over localImageId and the legacy image endpoint. Rows scanned before the CDN switch may still hold an internal "/objects/..." path, which is no longer servable and must be ignored by clients. */
   imageUrl?: string | null;
   /** Public https URL of the mushroom side-view photo, same rules as imageUrl. */
@@ -623,6 +631,10 @@ export interface Insect {
   scannedByUserId?: string | null;
   /** UUID that identifies the photo in the client's local IndexedDB image store. Null for entries created before the local-first migration (those use GET /insects/{id}/image instead). */
   localImageId?: string | null;
+  /** AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated. */
+  imageQuality?: number | null;
+  /** Set by the admin: the shared photo is never replaced automatically. */
+  imageLocked?: boolean;
   /** Public https URL of the photo on the image CDN (Cloudinary). Use it directly as an <img> source. Takes priority over localImageId and the legacy image endpoint. */
   imageUrl?: string | null;
   /** Coarse location region where the scan was taken (e.g. "München"). Null when the user did not grant location permission. */

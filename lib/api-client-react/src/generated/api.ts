@@ -39,6 +39,7 @@ import type {
   GeoReverseInput,
   GeoReverseResult,
   HealthStatus,
+  ImageLockInput,
   Insect,
   LeaderboardResult,
   ListPlantsParams,
@@ -391,6 +392,79 @@ export function useListPlants<TData = Awaited<ReturnType<typeof listPlants>>, TE
 
 
 
+
+export const getSetPlantImageLockUrl = (id: number,) => {
+
+
+
+
+  return `/api/plants/${id}/image-lock`
+}
+
+/**
+ * A locked photo is never replaced automatically by a better scan.
+ * @summary Lock or unlock the shared photo (admin only)
+ */
+export const setPlantImageLock = async (id: number,
+    imageLockInput: ImageLockInput, options?: RequestInit): Promise<Plant> => {
+
+  return customFetch<Plant>(getSetPlantImageLockUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(imageLockInput)
+  }
+);}
+
+
+
+
+
+export const getSetPlantImageLockMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPlantImageLock>>, TError,{id: number;data: BodyType<ImageLockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setPlantImageLock>>, TError,{id: number;data: BodyType<ImageLockInput>}, TContext> => {
+
+const mutationKey = ['setPlantImageLock'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setPlantImageLock>>, {id: number;data: BodyType<ImageLockInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  setPlantImageLock(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetPlantImageLockMutationResult = NonNullable<Awaited<ReturnType<typeof setPlantImageLock>>>
+    export type SetPlantImageLockMutationBody = BodyType<ImageLockInput>
+    export type SetPlantImageLockMutationError = ErrorType<void>
+
+    /**
+ * @summary Lock or unlock the shared photo (admin only)
+ */
+export const useSetPlantImageLock = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPlantImageLock>>, TError,{id: number;data: BodyType<ImageLockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setPlantImageLock>>,
+        TError,
+        {id: number;data: BodyType<ImageLockInput>},
+        TContext
+      > => {
+      return useMutation(getSetPlantImageLockMutationOptions(options));
+    }
 
 export const getGetPlantUrl = (id: number,) => {
 
@@ -3256,6 +3330,78 @@ export const useScanInsect = <TError = ErrorType<void>,
       return useMutation(getScanInsectMutationOptions(options));
     }
 
+export const getScanAutoUrl = () => {
+
+
+
+
+  return `/api/scan`
+}
+
+/**
+ * A quick AI call decides what the photo shows; the request is then handled exactly like POST /plants/scan or POST /insects/scan and that endpoint's result is returned (a ScanPlantResult with "plant" or a ScanInsectResult with "insect"). Hand-written client: lib/api-client-react/src/scan-auto.ts.
+ * @summary Universal scan - detects plant, mushroom or insect and scans it
+ */
+export const scanAuto = async (scanInsectInput: ScanInsectInput, options?: RequestInit): Promise<PlantScanResult | ScanInsectResult> => {
+
+  return customFetch<PlantScanResult | ScanInsectResult>(getScanAutoUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(scanInsectInput)
+  }
+);}
+
+
+
+
+
+export const getScanAutoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof scanAuto>>, TError,{data: BodyType<ScanInsectInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof scanAuto>>, TError,{data: BodyType<ScanInsectInput>}, TContext> => {
+
+const mutationKey = ['scanAuto'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof scanAuto>>, {data: BodyType<ScanInsectInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  scanAuto(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ScanAutoMutationResult = NonNullable<Awaited<ReturnType<typeof scanAuto>>>
+    export type ScanAutoMutationBody = BodyType<ScanInsectInput>
+    export type ScanAutoMutationError = ErrorType<void>
+
+    /**
+ * @summary Universal scan - detects plant, mushroom or insect and scans it
+ */
+export const useScanAuto = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof scanAuto>>, TError,{data: BodyType<ScanInsectInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof scanAuto>>,
+        TError,
+        {data: BodyType<ScanInsectInput>},
+        TContext
+      > => {
+      return useMutation(getScanAutoMutationOptions(options));
+    }
+
 export const getListInsectsUrl = () => {
 
 
@@ -3409,6 +3555,79 @@ export function useListMyInsects<TData = Awaited<ReturnType<typeof listMyInsects
 
 
 
+
+export const getSetInsectImageLockUrl = (id: number,) => {
+
+
+
+
+  return `/api/insects/${id}/image-lock`
+}
+
+/**
+ * A locked photo is never replaced automatically by a better scan.
+ * @summary Lock or unlock the shared photo (admin only)
+ */
+export const setInsectImageLock = async (id: number,
+    imageLockInput: ImageLockInput, options?: RequestInit): Promise<Insect> => {
+
+  return customFetch<Insect>(getSetInsectImageLockUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(imageLockInput)
+  }
+);}
+
+
+
+
+
+export const getSetInsectImageLockMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setInsectImageLock>>, TError,{id: number;data: BodyType<ImageLockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setInsectImageLock>>, TError,{id: number;data: BodyType<ImageLockInput>}, TContext> => {
+
+const mutationKey = ['setInsectImageLock'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setInsectImageLock>>, {id: number;data: BodyType<ImageLockInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  setInsectImageLock(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetInsectImageLockMutationResult = NonNullable<Awaited<ReturnType<typeof setInsectImageLock>>>
+    export type SetInsectImageLockMutationBody = BodyType<ImageLockInput>
+    export type SetInsectImageLockMutationError = ErrorType<void>
+
+    /**
+ * @summary Lock or unlock the shared photo (admin only)
+ */
+export const useSetInsectImageLock = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setInsectImageLock>>, TError,{id: number;data: BodyType<ImageLockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setInsectImageLock>>,
+        TError,
+        {id: number;data: BodyType<ImageLockInput>},
+        TContext
+      > => {
+      return useMutation(getSetInsectImageLockMutationOptions(options));
+    }
 
 export const getGetInsectUrl = (id: number,) => {
 

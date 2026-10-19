@@ -1572,6 +1572,11 @@ export interface FarmSummary {
   id: number;
   name: string;
   role: FarmRole;
+  /**
+     * Vertretung – the viewer's last day of access (YYYY-MM-DD)
+     * @nullable
+     */
+  accessUntil?: string | null;
 }
 
 export type AnimalSex = typeof AnimalSex[keyof typeof AnimalSex];
@@ -2561,6 +2566,11 @@ export interface FarmMember {
   email: string | null;
   role: FarmRole;
   isMe: boolean;
+  /**
+     * Vertretung – last day of access (YYYY-MM-DD)
+     * @nullable
+     */
+  accessUntil: string | null;
 }
 
 export interface FarmNameInput {
@@ -2579,10 +2589,59 @@ export interface AddFarmMemberInput {
   /** @maxLength 254 */
   email: string;
   role: FarmRole;
+  /**
+     * Vertretung – last day of access; not for admins
+     * @nullable
+     */
+  accessUntil?: string | null;
 }
 
 export interface ChangeFarmRoleInput {
   role: FarmRole;
+  /**
+     * Vertretung – last day of access; omitted keeps it, null ends the limit
+     * @nullable
+     */
+  accessUntil?: string | null;
+}
+
+export type HandoverContactsItem = {
+  displayName: string;
+};
+
+export type HandoverWithdrawalsItem = {
+  animalName: string;
+  /** @nullable */
+  medication: string | null;
+  until: string;
+};
+
+export type HandoverRecentHealthItem = {
+  animalName: string;
+  date: string;
+  diagnosis: string;
+  /** @nullable */
+  treatment: string | null;
+  /** @nullable */
+  medication: string | null;
+};
+
+export interface Handover {
+  /** @nullable */
+  note: string | null;
+  /** @nullable */
+  accessUntil: string | null;
+  contacts: HandoverContactsItem[];
+  withdrawals: HandoverWithdrawalsItem[];
+  recentHealth: HandoverRecentHealthItem[];
+}
+
+export interface HandoverNoteInput {
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  note?: string | null;
 }
 
 export type ReportContentType = typeof ReportContentType[keyof typeof ReportContentType];

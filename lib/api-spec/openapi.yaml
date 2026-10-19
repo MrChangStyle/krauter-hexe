@@ -1585,6 +1585,48 @@ paths:
           description: Deleted.
         "409":
           description: Used in a health record – archive it instead.
+  /farms/{farmId}/handover:
+    get:
+      tags: [farm]
+      operationId: getHandover
+      summary: Vertretung – note, contacts, running withdrawal periods and recent treatments
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The handover.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Handover"
+  /farms/{farmId}/handover-note:
+    put:
+      tags: [farm]
+      operationId: setHandoverNote
+      summary: The note for whoever looks after the animals (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HandoverNoteInput"
+      responses:
+        "200":
+          description: The handover.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Handover"
   /status:
     get:
       tags: [monitoring]
@@ -5947,6 +5989,9 @@ components:
           type: string
         role:
           $ref: "#/components/schemas/FarmRole"
+        accessUntil:
+          type: [string, 'null']
+          description: Vertretung – the viewer's last day of access (YYYY-MM-DD)
     FarmSpecies:
       type: string
       enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, other]
@@ -7037,7 +7082,7 @@ components:
           type: integer
     FarmMember:
       type: object
-      required: [userId, displayName, email, role, isMe]
+      required: [userId, displayName, email, role, isMe, accessUntil]
       properties:
         userId:
           type: string
@@ -7050,6 +7095,9 @@ components:
           $ref: "#/components/schemas/FarmRole"
         isMe:
           type: boolean
+        accessUntil:
+          type: [string, 'null']
+          description: Vertretung – last day of access (YYYY-MM-DD)
     FarmNameInput:
       type: object
       required: [name]
@@ -7073,12 +7121,68 @@ components:
           maxLength: 254
         role:
           $ref: "#/components/schemas/FarmRole"
+        accessUntil:
+          type: [string, 'null']
+          description: Vertretung – last day of access; not for admins
     ChangeFarmRoleInput:
       type: object
       required: [role]
       properties:
         role:
           $ref: "#/components/schemas/FarmRole"
+        accessUntil:
+          type: [string, 'null']
+          description: Vertretung – last day of access; omitted keeps it, null ends the limit
+    Handover:
+      type: object
+      required: [note, accessUntil, contacts, withdrawals, recentHealth]
+      properties:
+        note:
+          type: [string, 'null']
+        accessUntil:
+          type: [string, 'null']
+        contacts:
+          type: array
+          items:
+            type: object
+            required: [displayName]
+            properties:
+              displayName:
+                type: string
+        withdrawals:
+          type: array
+          items:
+            type: object
+            required: [animalName, medication, until]
+            properties:
+              animalName:
+                type: string
+              medication:
+                type: [string, 'null']
+              until:
+                type: string
+        recentHealth:
+          type: array
+          items:
+            type: object
+            required: [animalName, date, diagnosis, treatment, medication]
+            properties:
+              animalName:
+                type: string
+              date:
+                type: string
+              diagnosis:
+                type: string
+              treatment:
+                type: [string, 'null']
+              medication:
+                type: [string, 'null']
+    HandoverNoteInput:
+      type: object
+      properties:
+        note:
+          type: [string, 'null']
+          maxLength: 2000
     ReportContentType:
       type: string
       enum: [plant_image, insect_image, username]

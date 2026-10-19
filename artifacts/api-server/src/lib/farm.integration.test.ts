@@ -80,8 +80,8 @@ describe.skipIf(!enabled)("Meine Farm (real database)", () => {
   it("lists only the account's own farms, with its role", async () => {
     const res = await get("/farms");
     expect(await res.json()).toEqual([
-      { id: ids.farm1, name: "Hof Anna", role: "admin" },
-      { id: ids.farm3, name: "Annas Garten", role: "admin" },
+      { id: ids.farm1, name: "Hof Anna", role: "admin", accessUntil: null },
+      { id: ids.farm3, name: "Annas Garten", role: "admin", accessUntil: null },
     ]);
   });
 

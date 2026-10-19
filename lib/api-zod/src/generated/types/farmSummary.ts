@@ -11,4 +11,9 @@ export interface FarmSummary {
   id: number;
   name: string;
   role: FarmRole;
+  /**
+     * Vertretung – the viewer's last day of access (YYYY-MM-DD)
+     * @nullable
+     */
+  accessUntil?: string | null;
 }

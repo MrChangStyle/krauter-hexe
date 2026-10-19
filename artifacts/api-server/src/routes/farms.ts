@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Response } from 'express';
 import { db, farmMembershipsTable, farmsTable } from '@workspace/db';
-import { asc, eq } from 'drizzle-orm';
+import { and, asc, eq, gte, isNull, or } from 'drizzle-orm';
 import {
   AddFarmMemberBody,
   AddFarmMemberResponse,
@@ -11,12 +11,17 @@ import {
   DeleteFarmBody,
   EnsureOwnFarmResponse,
   GetFarmResponse,
+  GetHandoverResponse,
   ListFarmMembersResponse,
   ListMyFarmsResponse,
   RenameFarmBody,
   RenameFarmResponse,
+  SetHandoverNoteBody,
+  SetHandoverNoteResponse,
 } from '@workspace/api-zod';
 
+import { handover, setHandoverNote } from '../lib/farmHandover';
+import { berlinDay } from '../lib/monitoring';
 import { requireApproved } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
 import {
@@ -43,10 +48,15 @@ function sendFarmError(res: Response, err: unknown): boolean {
 
 async function myFarms(userId: string) {
   return db
-    .select({ id: farmsTable.id, name: farmsTable.name, role: farmMembershipsTable.role })
+    .select({ id: farmsTable.id, name: farmsTable.name, role: farmMembershipsTable.role, accessUntil: farmMembershipsTable.accessUntil })
     .from(farmMembershipsTable)
     .innerJoin(farmsTable, eq(farmsTable.id, farmMembershipsTable.farmId))
-    .where(eq(farmMembershipsTable.userId, userId))
+    .where(
+      and(
+        eq(farmMembershipsTable.userId, userId),
+        or(isNull(farmMembershipsTable.accessUntil), gte(farmMembershipsTable.accessUntil, berlinDay())),
+      ),
+    )
     .orderBy(asc(farmMembershipsTable.createdAt), asc(farmMembershipsTable.id));
 }
 
@@ -127,7 +137,7 @@ router.post('/farms/:farmId/members', requireFarm('admin'), async (req, res): Pr
     return;
   }
   try {
-    await addMember(req.farm!.farmId, req.farm!.userId, body.data.email, body.data.role);
+    await addMember(req.farm!.farmId, req.farm!.userId, body.data.email, body.data.role, body.data.accessUntil);
     res.json(AddFarmMemberResponse.parse(await listMembers(req.farm!.farmId, req.farm!)));
   } catch (err) {
     if (!sendFarmError(res, err)) throw err;
@@ -144,7 +154,7 @@ router.patch(
       return;
     }
     try {
-      await changeRole(req.farm!.farmId, String(req.params['userId']), body.data.role);
+      await changeRole(req.farm!.farmId, String(req.params['userId']), body.data.role, body.data.accessUntil);
       res.json(ChangeFarmMemberRoleResponse.parse(await listMembers(req.farm!.farmId, req.farm!)));
     } catch (err) {
       if (!sendFarmError(res, err)) throw err;
@@ -165,5 +175,21 @@ router.delete(
     }
   },
 );
+
+// ── Vertretung ────────────────────────────────────────────────────────────────
+
+router.get('/farms/:farmId/handover', requireFarm('guest'), async (req, res): Promise<void> => {
+  res.json(GetHandoverResponse.parse(await handover(req.farm!.farmId, req.farm!.userId)));
+});
+
+router.put('/farms/:farmId/handover-note', requireFarm('admin'), async (req, res): Promise<void> => {
+  const body = SetHandoverNoteBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: 'Die Notiz darf höchstens 2000 Zeichen lang sein.' });
+    return;
+  }
+  await setHandoverNote(req.farm!.farmId, body.data.note);
+  res.json(SetHandoverNoteResponse.parse(await handover(req.farm!.farmId, req.farm!.userId)));
+});
 
 export default router;

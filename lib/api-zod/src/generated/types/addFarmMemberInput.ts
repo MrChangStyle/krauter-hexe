@@ -11,4 +11,9 @@ export interface AddFarmMemberInput {
   /** @maxLength 254 */
   email: string;
   role: FarmRole;
+  /**
+     * Vertretung – last day of access; not for admins
+     * @nullable
+     */
+  accessUntil?: string | null;
 }

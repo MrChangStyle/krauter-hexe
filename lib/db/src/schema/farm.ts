@@ -81,6 +81,11 @@ export const farmsTable = pgTable("farms", {
   handoverNote: text("handover_note"),
   // Hof einrichten: the admins closed the setup checklist.
   setupDismissedAt: timestamp("setup_dismissed_at", { withTimezone: true }),
+  // Pflichten: the farm's registration number from the veterinary office
+  // (Registriernummer nach ViehVerkV), and the last day of an official order
+  // to keep poultry indoors (Aufstallungspflicht wegen Geflügelpest).
+  holdingNumber: text("holding_number"),
+  housingOrderUntil: date("housing_order_until", { mode: "string" }),
 });
 
 export const farmMembershipsTable = pgTable(
@@ -318,3 +323,21 @@ export type Farm = typeof farmsTable.$inferSelect;
 export type FarmMembership = typeof farmMembershipsTable.$inferSelect;
 export type FarmAnimal = typeof farmAnimalsTable.$inferSelect;
 export type FarmTask = typeof farmTasksTable.$inferSelect;
+
+// Pflichten (lib/farmDuties.ts): which duty a farm has ticked off – once
+// ("once", e.g. the registration) or per year ("2027", the stock report as
+// of 1 January).
+export const farmDutyChecksTable = pgTable(
+  "farm_duty_checks",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    dutyKey: text("duty_key").notNull(),
+    period: text("period").notNull(),
+    doneOn: date("done_on", { mode: "string" }).notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique("farm_duty_checks_farm_duty_period_unique").on(table.farmId, table.dutyKey, table.period)],
+);

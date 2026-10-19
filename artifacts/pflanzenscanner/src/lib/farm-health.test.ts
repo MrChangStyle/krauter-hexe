@@ -90,6 +90,7 @@ describe("Wartezeit", () => {
 describe("veterinary office export", () => {
   const data = {
     farmName: "Hof Sonnenblick",
+    holdingNumber: null as string | null,
     animals: [
       animal(),
       animal({ id: 2, name: "Alt", registrationNumber: "DE 0", archivedAt: "2025-12-31T10:00:00Z" }),
@@ -110,6 +111,8 @@ describe("veterinary office export", () => {
   it("writes a CSV Excel opens safely", () => {
     const csv = exportCsv(exportForPeriod(data, { from: "2026-01-01", to: "2026-06-30" }));
     expect(csv.startsWith("﻿Bestandsliste Hof Sonnenblick;1.1.2026 – 30.6.2026\r\n")).toBe(true);
+    const withNumber = exportCsv(exportForPeriod({ ...data, holdingNumber: "276 09 123 456 7890" }, { from: "2026-01-01", to: "2026-06-30" }));
+    expect(withNumber.startsWith("﻿Bestandsliste Hof Sonnenblick;1.1.2026 – 30.6.2026;Registriernummer 276 09 123 456 7890\r\n")).toBe(true);
     expect(csv).toContain("DE 1;Lotte;Ziege;;weiblich;12.4.2023;;\r\n");
     expect(csv).toContain(`2.5.2026;DE 1;Lotte;"Husten; leicht";;"'=HYPERLINK(""x"")";;7;9.5.2026;\r\n`);
   });

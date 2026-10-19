@@ -157,6 +157,14 @@ Plan in `docs/wetter.md` (`lib/farmWeather.ts`, `routes/farm-weather.ts`, card `
 - Quick start: one group with numbered animals (`H-1`, `H-2`, … – free numbers continue after existing ones; birth date and sex unknown, renamed later), a starting ration per species from `START_RATIONS` (a unit test checks each passes the Futterplaner without red) with its feeding reminders, weekly "Ausmisten" and, for poultry, daily "Eier sammeln". Cats and dogs get no ration.
 - The farm routes now reach the Futterplaner (and through it the AI client); tests importing `routes/farms` set `GEMINI_API_KEY` like the others.
 
+## Pflichten & Tierseuchen
+
+Details and sources in `docs/pflichten.md` (`lib/farmDuties.ts`, routes in `routes/farms.ts`, page `/farm/pflichten`; columns `farms.holding_number/housing_order_until`, table `farm_duty_checks`).
+- The duties are a fixed catalog per species (`DUTIES`): `once` (registration, Tierseuchenkasse, dog tax – ticked off once), `yearly` (stock report to the Tierseuchenkasse and HI-Tier as of 1 January, due 15 January – ticked off per year), `rule` and `tip` (text only). Only the farm's species (active animals and groups) are shown; guinea pigs have none.
+- A yearly report is about this year when the farm had such animals on 1 January (entered in the app by then, not archived), else about next year ("upcoming", not tickable yet). The counts on the stock day come from the app's data.
+- Admins tick off and store the registration number (also in the vet export header) and the end of a Geflügelpest housing order (today … one year); the order shows as a banner on the farm page, the handover and the duties page until its last day.
+- `sendDutyDigests()` (push cron, 07:30) on 2 and 12 January to the admins (not stand-ins) of farms with an open report, once per farm and day (`farm_push_log`, topic `duties`).
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

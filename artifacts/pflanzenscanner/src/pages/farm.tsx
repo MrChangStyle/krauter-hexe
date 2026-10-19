@@ -26,7 +26,9 @@ import {
   type FarmRole,
   type FarmSummary,
 } from "@workspace/api-client-react";
+import { FarmDutiesLink } from "@/components/farm-duties-link";
 import { FarmSetupCard } from "@/components/farm-setup-card";
+import { HousingOrderBanner } from "@/components/housing-order-banner";
 import { FarmWeatherCard } from "@/components/farm-weather-card";
 import { deDay } from "@/lib/medicine-labels";
 import { berlinToday } from "@/lib/weather-labels";
@@ -486,6 +488,8 @@ export default function FarmPage() {
         </Link>
       )}
 
+      <HousingOrderBanner farm={farm} link />
+
       <FarmSetupCard farm={farm} onRename={() => openDialog("rename")} />
 
       <div id="wetter" className="scroll-mt-4">
@@ -535,6 +539,8 @@ export default function FarmPage() {
         </span>
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
       </Link>
+
+      <FarmDutiesLink farm={farm} />
 
       <Link
         href="/farm/kameras"

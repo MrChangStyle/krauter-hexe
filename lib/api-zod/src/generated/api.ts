@@ -2339,6 +2339,122 @@ export const SetHandoverNoteResponse = zod.object({
 
 
 /**
+ * @summary Pflichten – what keeping the farm's species means on paper, with what is ticked off
+ */
+export const GetFarmDutiesParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFarmDutiesResponse = zod.object({
+  "holdingNumber": zod.string().nullable(),
+  "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "duties": zod.array(zod.object({
+  "key": zod.string(),
+  "kind": zod.enum(['once', 'yearly', 'rule', 'tip']),
+  "title": zod.string(),
+  "text": zod.string(),
+  "source": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "status": zod.enum(['open', 'done', 'due', 'overdue', 'upcoming', 'info']),
+  "period": zod.string().nullable().describe('\"once\" or the year of the stock report.'),
+  "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
+  "dueOn": zod.string().nullable().describe('YYYY-MM-DD'),
+  "stock": zod.object({
+  "day": zod.string().describe('The stock day (1 January, YYYY-MM-DD).'),
+  "counts": zod.array(zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "count": zod.number()
+})),
+  "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
+}).nullable()
+}))
+})
+
+
+/**
+ * @summary Registration number and the end of a housing order for poultry (admin)
+ */
+export const SetFarmDutySettingsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const setFarmDutySettingsBodyHoldingNumberMax = 30;
+
+
+
+export const SetFarmDutySettingsBody = zod.object({
+  "holdingNumber": zod.string().max(setFarmDutySettingsBodyHoldingNumberMax).nullish(),
+  "housingOrderUntil": zod.string().nullish().describe('YYYY-MM-DD, or null to end the housing order.')
+})
+
+export const SetFarmDutySettingsResponse = zod.object({
+  "holdingNumber": zod.string().nullable(),
+  "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "duties": zod.array(zod.object({
+  "key": zod.string(),
+  "kind": zod.enum(['once', 'yearly', 'rule', 'tip']),
+  "title": zod.string(),
+  "text": zod.string(),
+  "source": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "status": zod.enum(['open', 'done', 'due', 'overdue', 'upcoming', 'info']),
+  "period": zod.string().nullable().describe('\"once\" or the year of the stock report.'),
+  "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
+  "dueOn": zod.string().nullable().describe('YYYY-MM-DD'),
+  "stock": zod.object({
+  "day": zod.string().describe('The stock day (1 January, YYYY-MM-DD).'),
+  "counts": zod.array(zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "count": zod.number()
+})),
+  "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
+}).nullable()
+}))
+})
+
+
+/**
+ * @summary Tick a duty off for its current period, or take the tick back (admin)
+ */
+export const CheckFarmDutyParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "dutyKey": zod.coerce.string()
+})
+
+export const CheckFarmDutyBody = zod.object({
+  "done": zod.boolean()
+})
+
+export const CheckFarmDutyResponse = zod.object({
+  "holdingNumber": zod.string().nullable(),
+  "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "duties": zod.array(zod.object({
+  "key": zod.string(),
+  "kind": zod.enum(['once', 'yearly', 'rule', 'tip']),
+  "title": zod.string(),
+  "text": zod.string(),
+  "source": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "status": zod.enum(['open', 'done', 'due', 'overdue', 'upcoming', 'info']),
+  "period": zod.string().nullable().describe('\"once\" or the year of the stock report.'),
+  "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
+  "dueOn": zod.string().nullable().describe('YYYY-MM-DD'),
+  "stock": zod.object({
+  "day": zod.string().describe('The stock day (1 January, YYYY-MM-DD).'),
+  "counts": zod.array(zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "count": zod.number()
+})),
+  "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
+}).nullable()
+}))
+})
+
+
+/**
  * @summary Hof einrichten – which setup steps are done (read from the data)
  */
 export const GetFarmSetupParams = zod.object({
@@ -3540,6 +3656,7 @@ export const GetFarmExportParams = zod.object({
 
 export const GetFarmExportResponse = zod.object({
   "farmName": zod.string(),
+  "holdingNumber": zod.string().nullable(),
   "animals": zod.array(zod.object({
   "id": zod.number(),
   "herdId": zod.number().nullable(),

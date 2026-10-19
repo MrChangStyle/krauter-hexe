@@ -217,7 +217,7 @@ export async function deleteWeightLog(farmId: number, weightId: number): Promise
  * records. The app picks the period and builds CSV and PDF from this.
  */
 export async function farmExport(farmId: number) {
-  const [farm] = await db.select({ name: farmsTable.name }).from(farmsTable).where(eq(farmsTable.id, farmId));
+  const [farm] = await db.select({ name: farmsTable.name, holdingNumber: farmsTable.holdingNumber }).from(farmsTable).where(eq(farmsTable.id, farmId));
   if (!farm) throw notFound();
   const [animals, medicalRecords] = await Promise.all([
     listAnimals(farmId),
@@ -225,5 +225,5 @@ export async function farmExport(farmId: number) {
       .where(eq(medicalRecordsTable.farmId, farmId))
       .orderBy(asc(medicalRecordsTable.date), asc(medicalRecordsTable.id)),
   ]);
-  return { farmName: farm.name, animals, medicalRecords };
+  return { farmName: farm.name, holdingNumber: farm.holdingNumber, animals, medicalRecords };
 }

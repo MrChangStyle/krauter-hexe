@@ -13,6 +13,7 @@ import {
   type FarmSummary,
 } from "@workspace/api-client-react";
 import { FarmWeatherCard } from "@/components/farm-weather-card";
+import { HousingOrderBanner } from "@/components/housing-order-banner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -103,6 +104,8 @@ function Handover({ farm }: { farm: FarmSummary }) {
           Du vertrittst bis {deDay(h.accessUntil)}. Danach endet dein Zugang zu „{farm.name}“ von selbst.
         </p>
       )}
+
+      <HousingOrderBanner farm={farm} />
 
       <Note key={h.note ?? ""} farm={farm} note={h.note} />
 

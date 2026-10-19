@@ -96,7 +96,13 @@ export async function exportFarmPdf(data: ExportData): Promise<string> {
   doc.setFontSize(10);
   color(TEXT);
   doc.text(
-    `${data.farmName} · Zeitraum ${deDate(data.period.from)} – ${deDate(data.period.to)}`,
+    [
+      data.farmName,
+      data.holdingNumber ? `Registriernummer ${data.holdingNumber}` : null,
+      `Zeitraum ${deDate(data.period.from)} – ${deDate(data.period.to)}`,
+    ]
+      .filter(Boolean)
+      .join(" · "),
     margin,
     y,
     { baseline: "top" },

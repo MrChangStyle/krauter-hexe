@@ -93,6 +93,8 @@ export interface ExportPeriod {
 
 export interface ExportData {
   farmName: string;
+  /** Registriernummer des Betriebs (Pflichten), when the admins entered one. */
+  holdingNumber: string | null;
   period: ExportPeriod;
   /** Animals kept on the farm at some point in the period. */
   animals: FarmAnimal[];
@@ -114,7 +116,7 @@ export function exportForPeriod(data: FarmExport, period: ExportPeriod): ExportD
     .filter((r) => r.date >= period.from && r.date <= period.to && byId.has(r.animalId))
     .sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
     .map((record) => ({ record, animal: byId.get(record.animalId)! }));
-  return { farmName: data.farmName, period, animals, records };
+  return { farmName: data.farmName, holdingNumber: data.holdingNumber, period, animals, records };
 }
 
 export const STOCK_COLUMNS = [
@@ -188,7 +190,11 @@ function csvCell(value: string): string {
 export function exportCsv(data: ExportData): string {
   const line = (cells: readonly string[]) => cells.map(csvCell).join(";");
   const lines = [
-    line([`Bestandsliste ${data.farmName}`, `${deDate(data.period.from)} – ${deDate(data.period.to)}`]),
+    line([
+      `Bestandsliste ${data.farmName}`,
+      `${deDate(data.period.from)} – ${deDate(data.period.to)}`,
+      ...(data.holdingNumber ? [`Registriernummer ${data.holdingNumber}`] : []),
+    ]),
     line(STOCK_COLUMNS),
     ...data.animals.map((a) => line(stockRow(a))),
     "",

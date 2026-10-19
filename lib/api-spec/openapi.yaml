@@ -1627,6 +1627,82 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Handover"
+  /farms/{farmId}/duties:
+    get:
+      tags: [farm]
+      operationId: getFarmDuties
+      summary: Pflichten – what keeping the farm's species means on paper, with what is ticked off
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The duties.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmDuties"
+    put:
+      tags: [farm]
+      operationId: setFarmDutySettings
+      summary: Registration number and the end of a housing order for poultry (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmDutySettingsInput"
+      responses:
+        "200":
+          description: The duties.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmDuties"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/duties/{dutyKey}:
+    put:
+      tags: [farm]
+      operationId: checkFarmDuty
+      summary: Tick a duty off for its current period, or take the tick back (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: dutyKey
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmDutyCheckInput"
+      responses:
+        "200":
+          description: The duties.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmDuties"
+        "400":
+          description: Not yet possible.
+        "404":
+          description: No such duty on this farm.
   /farms/{farmId}/setup:
     get:
       tags: [farm]
@@ -4601,6 +4677,97 @@ components:
         archived:
           type: [boolean, 'null']
           description: true marks it used up or thrown away
+    FarmDuties:
+      type: object
+      required: [holdingNumber, housingOrderUntil, species, duties]
+      properties:
+        holdingNumber:
+          type: string
+          nullable: true
+        housingOrderUntil:
+          type: string
+          nullable: true
+          description: Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.
+        species:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmSpecies"
+        duties:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmDuty"
+    FarmDuty:
+      type: object
+      required: [key, kind, title, text, source, species, status, period, doneOn, dueOn, stock]
+      properties:
+        key:
+          type: string
+        kind:
+          type: string
+          enum: [once, yearly, rule, tip]
+        title:
+          type: string
+        text:
+          type: string
+        source:
+          type: string
+        species:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmSpecies"
+        status:
+          type: string
+          enum: [open, done, due, overdue, upcoming, info]
+        period:
+          type: string
+          nullable: true
+          description: '"once" or the year of the stock report.'
+        doneOn:
+          type: string
+          nullable: true
+          description: YYYY-MM-DD
+        dueOn:
+          type: string
+          nullable: true
+          description: YYYY-MM-DD
+        stock:
+          type: object
+          nullable: true
+          required: [day, counts, current]
+          properties:
+            day:
+              type: string
+              description: The stock day (1 January, YYYY-MM-DD).
+            counts:
+              type: array
+              items:
+                type: object
+                required: [species, count]
+                properties:
+                  species:
+                    $ref: "#/components/schemas/FarmSpecies"
+                  count:
+                    type: integer
+            current:
+              type: boolean
+              description: True when the stock day is still ahead and the counts are today's.
+    FarmDutySettingsInput:
+      type: object
+      properties:
+        holdingNumber:
+          type: string
+          nullable: true
+          maxLength: 30
+        housingOrderUntil:
+          type: string
+          nullable: true
+          description: YYYY-MM-DD, or null to end the housing order.
+    FarmDutyCheckInput:
+      type: object
+      required: [done]
+      properties:
+        done:
+          type: boolean
     FarmSetup:
       type: object
       required: [dismissed, steps]
@@ -6379,10 +6546,13 @@ components:
           type: boolean
     FarmExport:
       type: object
-      required: [farmName, animals, medicalRecords]
+      required: [farmName, holdingNumber, animals, medicalRecords]
       properties:
         farmName:
           type: string
+        holdingNumber:
+          type: string
+          nullable: true
         animals:
           type: array
           items:

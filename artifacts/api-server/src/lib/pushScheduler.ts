@@ -17,6 +17,7 @@ import { sendGardenDigests } from "./gardenCalendar";
 import { sendFeedDigests } from "./feedStock";
 import { sendWeatherDigests } from "./farmWeather";
 import { sendMedicineDigests } from "./medicines";
+import { sendDutyDigests } from "./farmDuties";
 import { removeExpiredMemberships } from "./farmMembers";
 import { sendPushToUser } from "./webPush";
 
@@ -283,6 +284,9 @@ export async function triggerDueNotifications(): Promise<number> {
 
   // ── Arzneimittel-Vorrat: expiry ───────────────────────────────────────────
   triggered += await sendMedicineDigests(hhmm, dateKey);
+
+  // ── Pflichten: stock report in January ────────────────────────────────────
+  triggered += await sendDutyDigests(hhmm, dateKey);
 
   return triggered;
 }

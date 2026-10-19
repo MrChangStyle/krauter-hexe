@@ -604,6 +604,77 @@ export interface MedicineInput {
   archived?: boolean | null;
 }
 
+export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];
+
+
+export const FarmDutyKind = {
+  once: 'once',
+  yearly: 'yearly',
+  rule: 'rule',
+  tip: 'tip',
+} as const;
+
+export type FarmDutyStatus = typeof FarmDutyStatus[keyof typeof FarmDutyStatus];
+
+
+export const FarmDutyStatus = {
+  open: 'open',
+  done: 'done',
+  due: 'due',
+  overdue: 'overdue',
+  upcoming: 'upcoming',
+  info: 'info',
+} as const;
+
+export type FarmDutyStockCountsItem = {
+  species: FarmSpecies;
+  count: number;
+};
+
+export type FarmDutyStock = {
+  /** The stock day (1 January, YYYY-MM-DD). */
+  day: string;
+  counts: FarmDutyStockCountsItem[];
+  /** True when the stock day is still ahead and the counts are today's. */
+  current: boolean;
+} | null;
+
+export interface FarmDuty {
+  key: string;
+  kind: FarmDutyKind;
+  title: string;
+  text: string;
+  source: string;
+  species: FarmSpecies[];
+  status: FarmDutyStatus;
+  /** "once" or the year of the stock report. */
+  period: string | null;
+  /** YYYY-MM-DD */
+  doneOn: string | null;
+  /** YYYY-MM-DD */
+  dueOn: string | null;
+  stock: FarmDutyStock;
+}
+
+export interface FarmDuties {
+  holdingNumber: string | null;
+  /** Last day (YYYY-MM-DD) of a running housing order for poultry; null without one. */
+  housingOrderUntil: string | null;
+  species: FarmSpecies[];
+  duties: FarmDuty[];
+}
+
+export interface FarmDutySettingsInput {
+  /** @maxLength 30 */
+  holdingNumber?: string | null;
+  /** YYYY-MM-DD, or null to end the housing order. */
+  housingOrderUntil?: string | null;
+}
+
+export interface FarmDutyCheckInput {
+  done: boolean;
+}
+
 export type FarmSetupStepsItemKey = typeof FarmSetupStepsItemKey[keyof typeof FarmSetupStepsItemKey];
 
 
@@ -1897,6 +1968,7 @@ export interface FarmTaskInput {
 
 export interface FarmExport {
   farmName: string;
+  holdingNumber: string | null;
   animals: FarmAnimal[];
   medicalRecords: MedicalRecord[];
 }

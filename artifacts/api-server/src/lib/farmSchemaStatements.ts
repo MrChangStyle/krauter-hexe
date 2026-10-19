@@ -29,7 +29,9 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"latitude" double precision,
 	"longitude" double precision,
 	"handover_note" text,
-	"setup_dismissed_at" timestamp with time zone
+	"setup_dismissed_at" timestamp with time zone,
+	"holding_number" text,
+	"housing_order_until" date
 )`,
   // Wetter: where the farm is.
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "postal_code" text`,
@@ -39,6 +41,9 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "handover_note" text`,
   // Hof einrichten.
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "setup_dismissed_at" timestamp with time zone`,
+  // Pflichten.
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "holding_number" text`,
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "housing_order_until" date`,
   `CREATE TABLE IF NOT EXISTS "farm_memberships" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,
@@ -239,4 +244,16 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "medicines_farm_idx" ON "medicines" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "weight_logs_farm_animal_idx" ON "weight_logs" USING btree ("farm_id","animal_id")`,
+  `CREATE TABLE IF NOT EXISTS "farm_duty_checks" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"duty_key" text NOT NULL,
+	"period" text NOT NULL,
+	"done_on" date NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "farm_duty_checks_farm_duty_period_unique" UNIQUE("farm_id","duty_key","period")
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_duty_checks" ADD CONSTRAINT "farm_duty_checks_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
 ];

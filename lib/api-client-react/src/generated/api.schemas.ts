@@ -888,6 +888,119 @@ export interface SeedOverview {
   plan: SeedOverviewPlan;
 }
 
+export type FarmProduct = typeof FarmProduct[keyof typeof FarmProduct];
+
+
+export const FarmProduct = {
+  eggs: 'eggs',
+  milk: 'milk',
+  meat: 'meat',
+  wool: 'wool',
+} as const;
+
+export interface YieldInput {
+  product: FarmProduct;
+  /** YYYY-MM-DD, not in the future */
+  date: string;
+  amount: number;
+  /** @nullable */
+  herdId?: number | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  note?: string | null;
+}
+
+export interface YieldEntry {
+  id: number;
+  product: FarmProduct;
+  date: string;
+  amount: number;
+  unit: string;
+  /** @nullable */
+  herdId: number | null;
+  /** @nullable */
+  herdName: string | null;
+  /** @nullable */
+  note: string | null;
+}
+
+export interface YieldGardenLine {
+  key: string;
+  name: string;
+  kitchenKg: number;
+  fodderKg: number;
+  pricePerKg: number;
+  value: number;
+}
+
+export interface YieldAnimalLine {
+  product: FarmProduct;
+  unit: string;
+  amount: number;
+  price: number;
+  value: number;
+}
+
+export interface YieldMonth {
+  month: number;
+  garden: number;
+  animals: number;
+}
+
+export type YieldSummaryGarden = {
+  kg: number;
+  value: number;
+  lines: YieldGardenLine[];
+};
+
+export type YieldSummaryAnimals = {
+  value: number;
+  lines: YieldAnimalLine[];
+};
+
+export interface YieldSummary {
+  year: number;
+  garden: YieldSummaryGarden;
+  animals: YieldSummaryAnimals;
+  months: YieldMonth[];
+  total: number;
+}
+
+export interface LayingRate {
+  hens: number;
+  eggs: number;
+  perHenDay: number;
+}
+
+export interface FeedCostEstimate {
+  perMonth: number;
+  complete: boolean;
+}
+
+export interface YieldOverview {
+  entries: YieldEntry[];
+  summary: YieldSummary;
+  previousTotal: number;
+  laying: null | LayingRate;
+  feedCost: null | FeedCostEstimate;
+}
+
+export interface PriceItem {
+  key: string;
+  label: string;
+  unit: string;
+  eur: number;
+  own: boolean;
+}
+
+export interface PriceInput {
+  key: string;
+  /** @nullable */
+  eur: number | null;
+}
+
 export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];
 
 

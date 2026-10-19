@@ -1942,6 +1942,121 @@ paths:
           description: Invalid input.
         "404":
           description: Not found.
+  /farms/{farmId}/yield-overview/{year}:
+    get:
+      tags: [farm]
+      operationId: getYieldOverview
+      summary: Ertrag & Bilanz – entries, garden and animal yields of a year with their value
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: year
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The overview.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/YieldOverview"
+        "400":
+          description: Invalid year.
+  /farms/{farmId}/yields:
+    post:
+      tags: [farm]
+      operationId: addYield
+      summary: Enter eggs, milk, meat or wool (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/YieldInput"
+      responses:
+        "204":
+          description: Saved.
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/yields/{yieldId}:
+    delete:
+      tags: [farm]
+      operationId: deleteYield
+      summary: Delete an entry (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: yieldId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: Not found.
+  /farms/{farmId}/prices:
+    get:
+      tags: [farm]
+      operationId: listFarmPrices
+      summary: Prices for the value of the yields (defaults or the farm's own)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The prices.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PriceItem"
+    put:
+      tags: [farm]
+      operationId: setFarmPrice
+      summary: Set a price, or null for the default (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PriceInput"
+      responses:
+        "200":
+          description: The prices.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PriceItem"
+        "400":
+          description: Invalid input.
   /farms/{farmId}/duties:
     get:
       tags: [farm]
@@ -5283,6 +5398,179 @@ components:
               type: array
               items:
                 $ref: "#/components/schemas/SeedPlanItem"
+    FarmProduct:
+      type: string
+      enum: [eggs, milk, meat, wool]
+    YieldInput:
+      type: object
+      required: [product, date, amount]
+      properties:
+        product:
+          $ref: "#/components/schemas/FarmProduct"
+        date:
+          type: string
+          description: YYYY-MM-DD, not in the future
+        amount:
+          type: number
+        herdId:
+          type: [integer, 'null']
+        note:
+          type: [string, 'null']
+          maxLength: 500
+    YieldEntry:
+      type: object
+      required: [id, product, date, amount, unit, herdId, herdName, note]
+      properties:
+        id:
+          type: integer
+        product:
+          $ref: "#/components/schemas/FarmProduct"
+        date:
+          type: string
+        amount:
+          type: number
+        unit:
+          type: string
+        herdId:
+          type: [integer, 'null']
+        herdName:
+          type: [string, 'null']
+        note:
+          type: [string, 'null']
+    YieldGardenLine:
+      type: object
+      required: [key, name, kitchenKg, fodderKg, pricePerKg, value]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        kitchenKg:
+          type: number
+        fodderKg:
+          type: number
+        pricePerKg:
+          type: number
+        value:
+          type: number
+    YieldAnimalLine:
+      type: object
+      required: [product, unit, amount, price, value]
+      properties:
+        product:
+          $ref: "#/components/schemas/FarmProduct"
+        unit:
+          type: string
+        amount:
+          type: number
+        price:
+          type: number
+        value:
+          type: number
+    YieldMonth:
+      type: object
+      required: [month, garden, animals]
+      properties:
+        month:
+          type: integer
+        garden:
+          type: number
+        animals:
+          type: number
+    YieldSummary:
+      type: object
+      required: [year, garden, animals, months, total]
+      properties:
+        year:
+          type: integer
+        garden:
+          type: object
+          required: [kg, value, lines]
+          properties:
+            kg:
+              type: number
+            value:
+              type: number
+            lines:
+              type: array
+              items:
+                $ref: "#/components/schemas/YieldGardenLine"
+        animals:
+          type: object
+          required: [value, lines]
+          properties:
+            value:
+              type: number
+            lines:
+              type: array
+              items:
+                $ref: "#/components/schemas/YieldAnimalLine"
+        months:
+          type: array
+          items:
+            $ref: "#/components/schemas/YieldMonth"
+        total:
+          type: number
+    YieldOverview:
+      type: object
+      required: [entries, summary, previousTotal, laying, feedCost]
+      properties:
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/YieldEntry"
+        summary:
+          $ref: "#/components/schemas/YieldSummary"
+        previousTotal:
+          type: number
+        laying:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/LayingRate"
+        feedCost:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/FeedCostEstimate"
+    LayingRate:
+      type: object
+      required: [hens, eggs, perHenDay]
+      properties:
+        hens:
+          type: integer
+        eggs:
+          type: number
+        perHenDay:
+          type: number
+    FeedCostEstimate:
+      type: object
+      required: [perMonth, complete]
+      properties:
+        perMonth:
+          type: number
+        complete:
+          type: boolean
+    PriceItem:
+      type: object
+      required: [key, label, unit, eur, own]
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        unit:
+          type: string
+        eur:
+          type: number
+        own:
+          type: boolean
+    PriceInput:
+      type: object
+      required: [key, eur]
+      properties:
+        key:
+          type: string
+        eur:
+          type: [number, 'null']
     FarmDuties:
       type: object
       required: [holdingNumber, housingOrderUntil, species, duties]

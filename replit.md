@@ -180,6 +180,13 @@ Details in `docs/saatgut.md` (`lib/seeds.ts`, `routes/farm-seeds.ts`, page `/bee
 - `seedStatus()` is pure: use-by date, else harvest year + `SEED_LIFE` years of the crop; a test from the last 365 days wins (≥ 70 % ok, ≥ 50 % check, below weak).
 - `GET /farms/:id/seeds` returns the lots and the plan: crops of `bed_plantings` from this season on without seed in stock (`missing`, Pflanzgut marked `vegetative`) or with only old/weak seed (`check`).
 
+## Ertrag & Bilanz
+
+Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page `/farm/ertrag`; tables `farm_yields`, `farm_prices`).
+- Animal products (eggs, milk, meat, wool) are entered on the page; garden harvests come from `harvest_logs`. `GET /farms/:id/yield-overview/:year` (the year is a path parameter: a path and a query parameter on one operation make the zod codegen export the same name twice).
+- Values use `DEFAULT_PRICES` or the farm's own (`PUT /farms/:id/prices`, `eur: null` resets); fodder harvest counts at 0.30 €/kg. `summarize()` is pure.
+- For the running year the overview adds the laying rate (eggs of the last 30 days per hen and day) and the Futterplaner's monthly feed costs; the farm routes reach the AI client through `feedStock`, so tests set `GEMINI_API_KEY`.
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

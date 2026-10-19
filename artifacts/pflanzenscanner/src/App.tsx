@@ -60,6 +60,7 @@ import UebergabePage from '@/pages/uebergabe';
 import PflichtenPage from '@/pages/pflichten';
 import ZuchtPage from '@/pages/zucht';
 import SaatgutPage from '@/pages/saatgut';
+import ErtragPage from '@/pages/ertrag';
 import { StatusBanner } from '@/components/status-banner';
 
 const queryClient = new QueryClient({
@@ -144,6 +145,7 @@ function Router() {
         <Route path="/farm/uebergabe" component={UebergabePage} />
         <Route path="/farm/pflichten" component={PflichtenPage} />
         <Route path="/farm/zucht" component={ZuchtPage} />
+        <Route path="/farm/ertrag" component={ErtragPage} />
         <Route path="/farm/:farmId/tier/:animalId" component={FarmAnimalPage} />
         <Route path="/beete" component={BeetePage} />
         <Route path="/beete/kalender" component={GartenKalenderPage} />

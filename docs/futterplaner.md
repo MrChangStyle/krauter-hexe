@@ -58,7 +58,8 @@ Für den Bau festgelegt:
    Wintervorrat 1. November bis 31. März mit den Winterrationen (sonst ganzjährig), abzüglich
    dessen, was bei Winterbeginn noch da ist; Heu auch in Kleinballen (15 kg). Möhren, Futterrüben
    und Kürbis aus den Winterrationen ersetzen im Garten-Assistenten den Faustwert fürs
-   Lagerfutter. Erinnerung per Push zum Nachkaufen fehlt noch.
+   Lagerfutter. Push „Futter nachkaufen“ um 07:30 an Admins und Betreuer – je Futtermittel am
+   Nachkauf-Tag und am Tag, bevor es leer ist (nicht täglich).
 5. **Tipps und Rezepte (UMGESETZT):** geprüfte Rezepte mit Admin-Freigabe (z. B. fermentiertes
    Futter für Hühner mit Hygieneregeln), Keimfutter, Jahreskalender der Futterpflanzen aus dem
    Garten. Umgesetzt als Seite „Tipps & Rezepte“: vier mitgelieferte Rezepte (fermentiertes

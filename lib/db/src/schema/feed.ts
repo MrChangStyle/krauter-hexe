@@ -1,4 +1,4 @@
-import { date, doublePrecision, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { farmAnimalsTable, farmsTable, herdsTable } from "./farm";
 import { usersTable } from "./auth";
@@ -128,4 +128,17 @@ export const feedRecipesTable = pgTable(
     reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
   },
   (table) => [index("feed_recipes_status_idx").on(table.status)],
+);
+
+// One "Futter nachkaufen" push per farm and day, like the garden digest.
+export const feedDigestLogTable = pgTable(
+  "feed_digest_log",
+  {
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    day: text("day").notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.farmId, table.day] })],
 );

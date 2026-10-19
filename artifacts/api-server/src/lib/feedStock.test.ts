@@ -5,7 +5,7 @@ vi.hoisted(() => {
   process.env["GEMINI_API_KEY"] ??= "test-key";
 });
 
-const { stockOverview, winterWindow } = await import("./feedStock");
+const { feedDigestMessage, stockOverview, winterWindow } = await import("./feedStock");
 
 type R = Parameters<typeof stockOverview>[1][number];
 const item = (feedKey: string, name: string, grams: number) => ({ feedKey, feedId: null, name, grams });
@@ -64,5 +64,19 @@ describe("Vorrat", () => {
     expect(winterWindow("2026-12-10")).toEqual({ from: "2026-12-10", to: "2027-03-31" });
     expect(winterWindow("2027-02-01")).toEqual({ from: "2027-02-01", to: "2027-03-31" });
     expect(winterWindow("2026-04-01")).toEqual({ from: "2026-11-01", to: "2027-03-31" });
+  });
+});
+
+describe("Push Futter nachkaufen", () => {
+  const line = (over: object) => ({ name: "Wiesenheu", dailyKg: 1.8, daysLeft: 7, emptyOn: "2026-10-26", reorderOn: "2026-10-19", ...over }) as Parameters<typeof feedDigestMessage>[0][number];
+
+  it("comes on the day to buy more and the day before it is empty – not every day", () => {
+    expect(feedDigestMessage([line({})], "2026-10-19")).toEqual({ title: "Futter nachkaufen", body: "Wiesenheu reicht noch 7 Tage (bis 26.10.)." });
+    expect(feedDigestMessage([line({})], "2026-10-22")).toBeNull();
+    expect(feedDigestMessage([line({ daysLeft: 1 }), line({ name: "Hafer", reorderOn: "2026-10-25", emptyOn: "2026-11-01" })], "2026-10-25")).toEqual({
+      title: "Futter nachkaufen",
+      body: "Wiesenheu ist morgen leer. Hafer reicht noch 7 Tage (bis 01.11.).",
+    });
+    expect(feedDigestMessage([line({ dailyKg: 0 })], "2026-10-19")).toBeNull();
   });
 });

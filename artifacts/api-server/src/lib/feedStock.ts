@@ -8,14 +8,16 @@
  * is that amount minus the daily use of the rations in effect since then.
  */
 
-import { db, farmFeedsTable, feedStocksTable } from '@workspace/db';
-import { and, eq } from 'drizzle-orm';
+import { db, farmFeedsTable, farmMembershipsTable, feedDigestLogTable, feedStocksTable } from '@workspace/db';
+import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound } from './farmAnimals';
 import { feedByKey, type FeedCategory } from './feedCatalog';
 import { evaluatedRations, type RationEvaluation } from './feedPlanner';
 import { activeSeason, addDays, daysBetween, seasonOf, type Season } from './feedSeason';
+import { logger } from './logger';
 import { berlinDay } from './monitoring';
+import { sendPushToUser } from './webPush';
 
 /** Days before the stock runs out when "nachkaufen" is due. */
 export const REORDER_LEAD_DAYS = 7;
@@ -315,4 +317,62 @@ export async function removeStock(farmId: number, stockId: number): Promise<void
     .where(and(eq(feedStocksTable.id, stockId), eq(feedStocksTable.farmId, farmId)))
     .returning({ id: feedStocksTable.id });
   if (deleted.length === 0) throw notFound();
+}
+
+// ── Push "Futter nachkaufen" ─────────────────────────────────────────────────
+
+/** Same morning time as the garden push. */
+export const FEED_DIGEST_TIME = '07:30';
+
+const dm = (day: string) => `${day.slice(8, 10)}.${day.slice(5, 7)}.`;
+
+/**
+ * At most two pushes per feed and stock: on the day to buy more (7 days
+ * before it runs out) and the day before it is empty.
+ */
+export function feedDigestMessage(stocks: StockLine[], today: string): { title: string; body: string } | null {
+  const parts: string[] = [];
+  for (const s of stocks) {
+    if (!s.emptyOn || s.dailyKg <= 0) continue;
+    if (addDays(s.emptyOn, -1) === today) parts.push(`${s.name} ist morgen leer.`);
+    else if (s.reorderOn === today) parts.push(`${s.name} reicht noch ${s.daysLeft} Tage (bis ${dm(s.emptyOn)}).`);
+  }
+  if (parts.length === 0) return null;
+  return { title: 'Futter nachkaufen', body: parts.join(' ') };
+}
+
+/** Sends the push to the admins and caretakers of every farm with stock (once per farm and day). Never throws. */
+export async function sendFeedDigests(hhmm: string, day: string): Promise<number> {
+  if (hhmm < FEED_DIGEST_TIME) return 0;
+  let sent = 0;
+  try {
+    const farms = await db
+      .selectDistinct({ farmId: feedStocksTable.farmId })
+      .from(feedStocksTable)
+      .where(sql`NOT EXISTS (SELECT 1 FROM ${feedDigestLogTable} WHERE ${feedDigestLogTable.farmId} = ${feedStocksTable.farmId} AND ${feedDigestLogTable.day} = ${day})`);
+    if (farms.length === 0) return 0;
+    await db.delete(feedDigestLogTable).where(lt(feedDigestLogTable.day, addDays(day, -14)));
+    for (const { farmId } of farms) {
+      // Claim the day first, so parallel cron calls cannot send twice.
+      const claimed = await db.insert(feedDigestLogTable).values({ farmId, day }).onConflictDoNothing().returning();
+      if (claimed.length === 0) continue;
+      try {
+        const message = feedDigestMessage((await feedStock(farmId)).stocks, day);
+        if (!message) continue;
+        const members = await db
+          .select({ userId: farmMembershipsTable.userId })
+          .from(farmMembershipsTable)
+          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
+        for (const { userId } of members) {
+          await sendPushToUser(userId, { ...message, tag: `feed-${farmId}-${day}`, url: '/farm/futter/vorrat' });
+        }
+        sent += 1;
+      } catch (err) {
+        logger.warn({ err, farmId }, 'Feed push failed');
+      }
+    }
+  } catch (err) {
+    logger.error({ err }, 'Feed pushes failed');
+  }
+  return sent;
 }

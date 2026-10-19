@@ -3636,6 +3636,11 @@ export const GetGardenPlanResponse = zod.object({
   "kitchenCoverage": zod.number().nullable().describe('Percent of the kitchen need the kitchen beds cover'),
   "fodderCoverage": zod.number().nullable(),
   "manageableM2": zod.number().nullable().describe('Area the given hours per week can look after'),
+  "learned": zod.union([zod.null(),zod.object({
+  "season": zod.number(),
+  "kitchenKgPerM2": zod.number().nullable(),
+  "fodderKgPerM2": zod.number().nullable()
+})]).describe('Own yields (latest season with harvests) the plan was computed with'),
   "beds": zod.array(zod.object({
   "bedId": zod.number(),
   "name": zod.string(),
@@ -3646,6 +3651,76 @@ export const GetGardenPlanResponse = zod.object({
 })),
   "tips": zod.array(zod.string())
 })
+
+
+/**
+ * @summary Harvests of a season, newest first
+ */
+export const ListHarvestsParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "season": zod.coerce.number()
+})
+
+export const ListHarvestsResponseItem = zod.object({
+  "id": zod.number(),
+  "plantingId": zod.number().nullable(),
+  "bedId": zod.number().nullable(),
+  "season": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "label": zod.string(),
+  "cells": zod.number().describe('Cells (30 × 30 cm) of the planting when harvested'),
+  "harvestedOn": zod.string().describe('YYYY-MM-DD'),
+  "amountKg": zod.number(),
+  "use": zod.enum(['kitchen', 'fodder']),
+  "note": zod.string().nullable()
+})
+export const ListHarvestsResponse = zod.array(ListHarvestsResponseItem)
+
+
+/**
+ * @summary Log a harvest of a planting (caretaker or admin)
+ */
+export const AddHarvestParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "plantingId": zod.coerce.number()
+})
+
+export const addHarvestBodyHarvestedOnRegExp = new RegExp('^\\d{4}-\\d{2}-\\d{2}$');
+export const addHarvestBodyNoteMax = 300;
+
+
+
+export const AddHarvestBody = zod.object({
+  "harvestedOn": zod.string().regex(addHarvestBodyHarvestedOnRegExp),
+  "amountKg": zod.number(),
+  "use": zod.enum(['kitchen', 'fodder']),
+  "note": zod.string().max(addHarvestBodyNoteMax).nullish()
+})
+
+export const AddHarvestResponse = zod.object({
+  "id": zod.number(),
+  "plantingId": zod.number().nullable(),
+  "bedId": zod.number().nullable(),
+  "season": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "label": zod.string(),
+  "cells": zod.number().describe('Cells (30 × 30 cm) of the planting when harvested'),
+  "harvestedOn": zod.string().describe('YYYY-MM-DD'),
+  "amountKg": zod.number(),
+  "use": zod.enum(['kitchen', 'fodder']),
+  "note": zod.string().nullable()
+})
+
+
+/**
+ * @summary Delete a logged harvest (caretaker or admin)
+ */
+export const RemoveHarvestParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "harvestId": zod.coerce.number()
+})
+
+export const RemoveHarvestResponse = zod.void()
 
 
 /**

@@ -69,8 +69,10 @@ Vom Inhaber am 18.10.2026 ergänzt:
    aus dem Tier-Modul, Aufteilung auf die Beete, Schichtaufbau mit Materialmengen,
    Auffüllen, letzte Pflanztermine. Alles nach festen Faustwerten (Fläche pro Person und
    Richtung, Grünfutter je Tierart, Ertrag je m², Zeit je m²); die KI füllt auf Wunsch ein
-   Beet mit den passenden Wünschen (Beet-Vorschlag aus Schritt 5). Offen für später:
-   eingetragene Ernten verbessern den Plan im Folgejahr („Optimieren“).
+   Beet mit den passenden Wünschen (Beet-Vorschlag aus Schritt 5).
+7. **Ernten (UMGESETZT):** Ernte je Pflanzung eintragen (Datum, kg, Küche oder Tierfutter);
+   der Garten-Assistent rechnet mit den eigenen Erträgen der letzten Saison mit Ernten statt
+   mit den Faustwerten („Optimieren“ aus der Spezifikation). Offen: Wirtschaftlichkeits-Tracker.
 
 Definition of Done je Schritt wie beim Farm-Modul: Typecheck, Build, alle Tests grün
 (neue inkl. Isolation gegen echtes Postgres), Browser-Test in Handybreite, replit.md

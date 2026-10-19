@@ -8,6 +8,7 @@
 import type { GardenGoals } from './gardenGoals';
 import type { GardenPlanBedsItem } from './gardenPlanBedsItem';
 import type { GardenPlanFodder } from './gardenPlanFodder';
+import type { GardenPlanLearned } from './gardenPlanLearned';
 
 export interface GardenPlan {
   goals: GardenGoals;
@@ -28,6 +29,8 @@ export interface GardenPlan {
      * @nullable
      */
   manageableM2: number | null;
+  /** Own yields (latest season with harvests) the plan was computed with */
+  learned: GardenPlanLearned;
   beds: GardenPlanBedsItem[];
   tips: string[];
 }

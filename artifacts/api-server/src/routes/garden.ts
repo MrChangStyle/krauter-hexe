@@ -1,6 +1,9 @@
 import { Router, type IRouter } from 'express';
 import {
+  AddHarvestBody,
+  AddHarvestResponse,
   AddPlantingBody,
+  ListHarvestsResponse,
   AnalyzeBedPhotoResponse,
   ApproveCropDraftResponse,
   ListCropDraftsResponse,
@@ -52,6 +55,7 @@ import { addPlanting, listPlantings, removePlanting } from '../lib/gardenPlanner
 import { bedHistory, farmCalendar, farmFrostWarnings, setCheck } from '../lib/gardenCalendar';
 import { berlinTodayKey } from '../lib/pushScheduler';
 import { gardenPlan, getGoals, saveGoals } from '../lib/gardenAssistant';
+import { addHarvest, listHarvests, removeHarvest } from '../lib/gardenHarvests';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Beet-Architekt: the crop catalog (same for everyone) and the beds of a
@@ -293,6 +297,41 @@ router.get(
     const season = idParam(req, 'season');
     if (season === null) return notFound(res);
     res.json(GetGardenCalendarResponse.parse(await farmCalendar(req.farm!.farmId, season)));
+  }),
+);
+
+// ── Ernten ───────────────────────────────────────────────────────────────────
+
+router.get(
+  '/farms/:farmId/garden/seasons/:season/harvests',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    const season = idParam(req, 'season');
+    if (season === null) return notFound(res);
+    res.json(ListHarvestsResponse.parse(await listHarvests(req.farm!.farmId, season)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/plantings/:plantingId/harvests',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const plantingId = idParam(req, 'plantingId');
+    if (plantingId === null) return notFound(res);
+    const body = AddHarvestBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.status(201).json(AddHarvestResponse.parse(await addHarvest(req.farm!.farmId, plantingId, body.data)));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/harvests/:harvestId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const harvestId = idParam(req, 'harvestId');
+    if (harvestId === null) return notFound(res);
+    await removeHarvest(req.farm!.farmId, harvestId);
+    res.sendStatus(204);
   }),
 );
 

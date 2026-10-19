@@ -18,6 +18,7 @@ import { and, asc, count, eq, isNull } from 'drizzle-orm';
 
 import { FarmDataError } from './farmAnimals';
 import { cropByKey } from './gardenCatalog';
+import { latestYields, type Yields } from './gardenHarvests';
 
 export interface GardenGoals {
   people: number;
@@ -92,11 +93,13 @@ const SEASON_DAYS = 180;
 const WINTER_DAYS = 150;
 /** Yield per m² and season (kg): leafy greens, and roots for winter. */
 const GREENS_KG_M2 = 3;
+/** Typical kitchen harvest per m² behind the kitchen areas above. */
+const KITCHEN_KG_M2 = 3;
 const ROOTS_KG_M2 = 4;
 /** Hours per week a 10 m² bed takes in the season (sowing, weeding, watering). */
 const M2_PER_WEEKLY_HOUR = 10;
 
-const round = (n: number, step = 1) => Math.round(n / step) * step;
+const round = (n: number, step = 1) => Math.round(n * (1 / step)) / (1 / step);
 
 export interface AnimalCount {
   species: FarmSpecies;
@@ -126,6 +129,8 @@ export interface GardenPlan {
   kitchenCoverage: number | null;
   fodderCoverage: number | null;
   manageableM2: number | null;
+  /** Own yields the plan was computed with (latest season with harvests). */
+  learned: { season: number; kitchenKgPerM2: number | null; fodderKgPerM2: number | null } | null;
   beds: { bedId: number; name: string; areaM2: number; role: 'kitchen' | 'fodder'; crops: string[]; wishes: string }[];
   tips: string[];
 }
@@ -133,15 +138,19 @@ export interface GardenPlan {
 const names = (keys: string[]) => keys.flatMap((k) => (cropByKey(k) ? [cropByKey(k)!.name] : []));
 
 /** The plan from goals, animals and beds – pure, so it can be tested as is. */
-export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: BedArea[]): GardenPlan {
-  const kitchenNeedM2 = round(goals.people * goals.directions.reduce((s, d) => s + KITCHEN_M2[d], 0));
+export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: BedArea[], yields: Yields | null = null): GardenPlan {
+  // Own harvests replace the rules of thumb – within sensible bounds.
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+  const kitchenFactor = yields?.kitchenKgPerM2 ? clamp(KITCHEN_KG_M2 / yields.kitchenKgPerM2, 0.5, 2) : 1;
+  const greensKgM2 = yields?.fodderKgPerM2 ? clamp(yields.fodderKgPerM2, 0.5, 15) : GREENS_KG_M2;
+  const kitchenNeedM2 = round(goals.people * goals.directions.reduce((s, d) => s + KITCHEN_M2[d], 0) * kitchenFactor);
   const fed = animals
     .filter((a) => a.count > 0)
     .map((a) => ({ ...a, perDayKg: round(a.count * FODDER_KG_PER_DAY[a.species], 0.01) }));
   const perDayKg = round(fed.reduce((s, a) => s + a.perDayKg, 0), 0.01);
   const summerKg = round(perDayKg * SEASON_DAYS);
   const winterKg = round(perDayKg * 0.5 * WINTER_DAYS);
-  const fodderNeedM2 = round(summerKg / GREENS_KG_M2 + winterKg / ROOTS_KG_M2);
+  const fodderNeedM2 = round(summerKg / greensKgM2 + winterKg / ROOTS_KG_M2);
 
   const areas = beds.map((b) => ({ ...b, areaM2: round((b.lengthCm * b.widthCm) / 10_000, 0.1) }));
   const availableM2 = round(areas.reduce((s, b) => s + b.areaM2, 0), 0.1);
@@ -188,6 +197,16 @@ export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: Bed
   const pct = (have: number, need: number) => (need > 0 ? Math.min(100, Math.round((have / need) * 100)) : null);
   const manageableM2 = goals.hoursPerWeek === null ? null : goals.hoursPerWeek * M2_PER_WEEKLY_HOUR;
   const tips: string[] = [];
+  const learned = yields && (yields.kitchenKgPerM2 || yields.fodderKgPerM2) ? yields : null;
+  if (learned) {
+    const parts = [
+      learned.kitchenKgPerM2 ? `Küche ${learned.kitchenKgPerM2.toLocaleString('de-DE')} kg/m² (Faustwert ${KITCHEN_KG_M2})` : null,
+      learned.fodderKgPerM2 ? `Tierfutter ${learned.fodderKgPerM2.toLocaleString('de-DE')} kg/m² (Faustwert ${GREENS_KG_M2})` : null,
+    ].filter(Boolean);
+    tips.push(`Gerechnet mit euren Ernten ${learned.season}: ${parts.join(', ')}.`);
+    const best = learned.crops.find((c) => c.m2 >= 0.27);
+    if (best) tips.push(`Am meisten pro m² brachte ${best.label}: ${best.kgPerM2.toLocaleString('de-DE')} kg/m².`);
+  }
   if (beds.length === 0) tips.push('Leg zuerst deine Beete an – dann teilt der Assistent sie auf.');
   const totalNeed = kitchenNeedM2 + (goals.animalShare > 0 ? fodderNeedM2 : 0);
   if (beds.length > 0 && availableM2 < totalNeed) {
@@ -217,6 +236,7 @@ export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: Bed
     kitchenCoverage: pct(kitchenM2, kitchenNeedM2),
     fodderCoverage: goals.animalShare > 0 ? pct(fodderM2, fodderNeedM2) : null,
     manageableM2,
+    learned: learned ? { season: learned.season, kitchenKgPerM2: learned.kitchenKgPerM2, fodderKgPerM2: learned.fodderKgPerM2 } : null,
     beds: plannedBeds,
     tips,
   };
@@ -258,5 +278,5 @@ export async function gardenPlan(farmId: number): Promise<GardenPlan> {
     .from(gardenBedsTable)
     .where(eq(gardenBedsTable.farmId, farmId))
     .orderBy(asc(gardenBedsTable.name), asc(gardenBedsTable.id));
-  return planGarden(goals, animals, beds);
+  return planGarden(goals, animals, beds, await latestYields(farmId, new Date().getFullYear()));
 }

@@ -53,6 +53,7 @@ import { useMedicinalReviewBackfill } from '@/lib/use-medicinal-review-backfill'
 import { useEdibleMedicinalBackfill } from '@/lib/use-edible-medicinal-backfill';
 import { ErrorBoundary } from '@/components/error-boundary';
 import FutterplanerPage from '@/pages/futterplaner';
+import FutterVorratPage from '@/pages/futter-vorrat';
 import { StatusBanner } from '@/components/status-banner';
 
 const queryClient = new QueryClient({
@@ -131,6 +132,7 @@ function Router() {
         <Route path="/farm" component={FarmPage} />
         <Route path="/farm/kameras" component={FarmCamerasPage} />
         <Route path="/farm/futter" component={FutterplanerPage} />
+        <Route path="/farm/futter/vorrat" component={FutterVorratPage} />
         <Route path="/farm/:farmId/tier/:animalId" component={FarmAnimalPage} />
         <Route path="/beete" component={BeetePage} />
         <Route path="/beete/kalender" component={GartenKalenderPage} />

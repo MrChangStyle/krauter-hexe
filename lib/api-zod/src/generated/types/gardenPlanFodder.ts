@@ -12,5 +12,7 @@ export type GardenPlanFodder = {
   perDayKg: number;
   summerKg: number;
   winterKg: number;
+  /** The winter amount comes from the Futterplaner's winter rations */
+  winterFromRations: boolean;
   needM2: number;
 };

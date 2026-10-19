@@ -1250,6 +1250,90 @@ paths:
                 $ref: "#/components/schemas/FeedRemindersResult"
         "409":
           description: Not the ration in effect.
+  /farms/{farmId}/feed-stock:
+    get:
+      tags: [feed]
+      operationId: getFeedStock
+      summary: Vorrat, Kosten und Wintervorrat (fixed rules, from the rations in effect)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The overview.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedStockOverview"
+    put:
+      tags: [feed]
+      operationId: countFeedStock
+      summary: Set what is on hand now ("Bestand gezählt"), optionally package size and price (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedStockCountInput"
+      responses:
+        "200":
+          description: The overview.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedStockOverview"
+  /farms/{farmId}/feed-stock/purchase:
+    post:
+      tags: [feed]
+      operationId: buyFeed
+      summary: Add a purchase to the stock; updates the price per kg (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedPurchaseInput"
+      responses:
+        "200":
+          description: The overview.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedStockOverview"
+  /farms/{farmId}/feed-stock/{stockId}:
+    delete:
+      tags: [feed]
+      operationId: removeFeedStock
+      summary: Forget the stock of a feed (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: stockId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
   /status:
     get:
       tags: [monitoring]
@@ -3754,6 +3838,150 @@ components:
           enum: [toxic, foreignMineral, copper, ionophore, withdrawal]
         text:
           type: string
+    FeedStockLine:
+      type: object
+      required: [id, feedKey, feedId, name, category, stockKg, countedOn, packageKg, pricePerKg, dailyKg, daysLeft, emptyOn, reorderOn, status]
+      properties:
+        id:
+          type: [integer, 'null']
+        feedKey:
+          type: [string, 'null']
+        feedId:
+          type: [integer, 'null']
+        name:
+          type: string
+        category:
+          $ref: "#/components/schemas/FeedCategory"
+        stockKg:
+          type: [number, 'null']
+          description: Left today (kg); null = never counted
+        countedOn:
+          type: [string, 'null']
+        packageKg:
+          type: [number, 'null']
+        pricePerKg:
+          type: [number, 'null']
+        dailyKg:
+          type: number
+        daysLeft:
+          type: [integer, 'null']
+        emptyOn:
+          type: [string, 'null']
+        reorderOn:
+          type: [string, 'null']
+        status:
+          type: string
+          enum: [ok, soon, empty, unused, unknown]
+    FeedCostLine:
+      type: object
+      required: [target, perAnimalMonth, perMonth, missingPrices]
+      properties:
+        target:
+          type: object
+          required: [kind, id, name, count]
+          properties:
+            kind:
+              type: string
+              enum: [animal, herd]
+            id:
+              type: integer
+            name:
+              type: string
+            count:
+              type: integer
+        perAnimalMonth:
+          type: number
+        perMonth:
+          type: number
+        missingPrices:
+          type: array
+          items:
+            type: string
+    FeedWinterLine:
+      type: object
+      required: [feedKey, feedId, name, category, neededKg, stockKg, missingKg, gardenCrop]
+      properties:
+        feedKey:
+          type: [string, 'null']
+        feedId:
+          type: [integer, 'null']
+        name:
+          type: string
+        category:
+          $ref: "#/components/schemas/FeedCategory"
+        neededKg:
+          type: number
+        stockKg:
+          type: number
+          description: Expected on hand when the winter starts
+        missingKg:
+          type: number
+        gardenCrop:
+          type: [string, 'null']
+    FeedStockOverview:
+      type: object
+      required: [stocks, costs, winter]
+      properties:
+        stocks:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedStockLine"
+        costs:
+          type: object
+          required: [lines, perMonth, complete]
+          properties:
+            lines:
+              type: array
+              items:
+                $ref: "#/components/schemas/FeedCostLine"
+            perMonth:
+              type: number
+            complete:
+              type: boolean
+        winter:
+          type: object
+          required: [from, to, days, lines, gardenKg]
+          properties:
+            from:
+              type: string
+            to:
+              type: string
+            days:
+              type: integer
+            lines:
+              type: array
+              items:
+                $ref: "#/components/schemas/FeedWinterLine"
+            gardenKg:
+              type: number
+    FeedStockCountInput:
+      type: object
+      required: [stockKg]
+      properties:
+        feedKey:
+          type: [string, 'null']
+        feedId:
+          type: [integer, 'null']
+        stockKg:
+          type: number
+        packageKg:
+          type: [number, 'null']
+        pricePerPackage:
+          type: [number, 'null']
+    FeedPurchaseInput:
+      type: object
+      required: [packages, packageKg]
+      properties:
+        feedKey:
+          type: [string, 'null']
+        feedId:
+          type: [integer, 'null']
+        packages:
+          type: number
+        packageKg:
+          type: number
+        pricePerPackage:
+          type: [number, 'null']
     RationSeason:
       type: string
       enum: [all, summer, winter]
@@ -6001,7 +6229,7 @@ components:
           type: number
         fodder:
           type: object
-          required: [animals, perDayKg, summerKg, winterKg, needM2]
+          required: [animals, perDayKg, summerKg, winterKg, winterFromRations, needM2]
           properties:
             animals:
               type: array
@@ -6021,6 +6249,9 @@ components:
               type: number
             winterKg:
               type: number
+            winterFromRations:
+              type: boolean
+              description: The winter amount comes from the Futterplaner's winter rations
             needM2:
               type: number
         availableM2:

@@ -316,6 +316,57 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     expect(await note()).toBe("Futterplaner (je Tier und Fütterung): Wiesenheu 1,6 kg, Futterrüben 1,5 kg");
   });
 
+  it("keeps the stock, says when to buy more, adds costs and plans the winter", async () => {
+    fixedDay = "2026-10-09";
+    await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 120 }], times: ["morgens"] });
+    await ration({ animalId: ids.hase, stage: "maintenance", items: [{ feedKey: "heu", grams: 120 }, { feedKey: "moehre", grams: 50 }], times: ["morgens"] });
+    await ration({ animalId: ids.hase, season: "winter", stage: "winter", items: [{ feedKey: "heu", grams: 140 }, { feedKey: "moehre", grams: 80 }], times: ["morgens"] });
+    const empty = (await api("GET", `/farms/${farm.anna}/feed-stock`)).data;
+    expect(empty.stocks.map((s: any) => [s.name, s.status])).toEqual([
+      ["Legehennen-Alleinfutter", "unknown"],
+      ["Möhren", "unknown"],
+      ["Wiesenheu", "unknown"],
+    ]);
+    // Two sacks of 25 kg for 18 € each: 0,72 €/kg.
+    const bought = (await api("POST", `/farms/${farm.anna}/feed-stock/purchase`, { feedKey: "legehennen", packages: 2, packageKg: 25, pricePerPackage: 18 })).data;
+    expect(bought.stocks.find((s: any) => s.feedKey === "legehennen")).toMatchObject({ stockKg: 50, packageKg: 25, pricePerKg: 0.72, dailyKg: 0.24, daysLeft: 208, status: "ok" });
+    // Ten days later: 2,4 kg eaten; counting sets the stock, a purchase adds to what is left.
+    fixedDay = "2026-10-19";
+    expect((await api("GET", `/farms/${farm.anna}/feed-stock`)).data.stocks.find((s: any) => s.feedKey === "legehennen").stockKg).toBe(47.6);
+    await api("PUT", `/farms/${farm.anna}/feed-stock`, { feedKey: "heu", stockKg: 1.5, packageKg: 12.5, pricePerPackage: 5 });
+    const after = (await api("POST", `/farms/${farm.anna}/feed-stock/purchase`, { feedKey: "legehennen", packages: 1, packageKg: 25 })).data;
+    expect(after.stocks.find((s: any) => s.feedKey === "legehennen")).toMatchObject({ stockKg: 72.6, pricePerKg: 0.72, countedOn: "2026-10-19" });
+    expect(after.stocks[0]).toMatchObject({ name: "Wiesenheu", status: "soon", stockKg: 1.5, daysLeft: 12, emptyOn: "2026-10-31", reorderOn: "2026-10-24", pricePerKg: 0.4 });
+    expect(after.costs).toMatchObject({
+      perMonth: 6.72,
+      complete: false,
+      lines: [
+        { target: { name: "Legehennen", count: 2 }, perAnimalMonth: 2.63, perMonth: 5.26, missingPrices: [] },
+        { target: { name: "Hoppel", count: 1 }, perAnimalMonth: 1.46, perMonth: 1.46, missingPrices: ["Möhren"] },
+      ],
+    });
+    expect(after.winter).toMatchObject({ from: "2026-11-01", to: "2027-03-31", days: 151, gardenKg: 12.1 });
+    expect(after.winter.lines.find((l: any) => l.feedKey === "moehre")).toMatchObject({ neededKg: 12.1, stockKg: 0, missingKg: 12.1, gardenCrop: "moehre" });
+    // The Garten-Assistent takes the winter need of storable vegetables from the rations.
+    const { gardenPlan } = await import("./gardenAssistant");
+    await q("INSERT INTO garden_goals (farm_id, people, animal_share, directions) VALUES ($1, 2, 30, '[\"vegetables\"]')", [farm.anna]);
+    const plan = await gardenPlan(farm.anna);
+    expect(plan.fodder).toMatchObject({ winterKg: 12, winterFromRations: true });
+    expect(plan.tips).toContain("Laut Futterplaner brauchen deine Tiere im Winter etwa 12 kg Möhre – kühl und dunkel lagern.");
+
+    expect((await api("PUT", `/farms/${farm.anna}/feed-stock`, { feedKey: "gibtsnicht", stockKg: 2 })).status).toBe(400);
+    expect((await api("POST", `/farms/${farm.anna}/feed-stock/purchase`, { feedKey: "heu", packages: 0, packageKg: 12 })).status).toBe(400);
+    as = "gast";
+    expect((await api("GET", `/farms/${farm.anna}/feed-stock`)).status).toBe(200);
+    expect((await api("PUT", `/farms/${farm.anna}/feed-stock`, { feedKey: "heu", stockKg: 5 })).status).toBe(403);
+    as = "bert";
+    expect((await api("GET", `/farms/${farm.anna}/feed-stock`)).status).toBe(404);
+    as = "anna";
+    const heuId = after.stocks[0].id;
+    expect((await api("DELETE", `/farms/${farm.bert}/feed-stock/${heuId}`)).status).toBe(404);
+    expect((await api("DELETE", `/farms/${farm.anna}/feed-stock/${heuId}`)).status).toBe(204);
+  });
+
   it("lets guests read, keeps farms apart", async () => {
     await ration({ animalId: ids.hase, stage: "maintenance", items: [{ feedKey: "heu", grams: 120 }], times: [] });
     as = "gast";

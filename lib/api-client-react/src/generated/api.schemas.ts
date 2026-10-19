@@ -264,6 +264,127 @@ export interface FeedWarning {
   text: string;
 }
 
+export type FeedStockLineStatus = typeof FeedStockLineStatus[keyof typeof FeedStockLineStatus];
+
+
+export const FeedStockLineStatus = {
+  ok: 'ok',
+  soon: 'soon',
+  empty: 'empty',
+  unused: 'unused',
+  unknown: 'unknown',
+} as const;
+
+export interface FeedStockLine {
+  /** @nullable */
+  id: number | null;
+  /** @nullable */
+  feedKey: string | null;
+  /** @nullable */
+  feedId: number | null;
+  name: string;
+  category: FeedCategory;
+  /**
+     * Left today (kg); null = never counted
+     * @nullable
+     */
+  stockKg: number | null;
+  /** @nullable */
+  countedOn: string | null;
+  /** @nullable */
+  packageKg: number | null;
+  /** @nullable */
+  pricePerKg: number | null;
+  dailyKg: number;
+  /** @nullable */
+  daysLeft: number | null;
+  /** @nullable */
+  emptyOn: string | null;
+  /** @nullable */
+  reorderOn: string | null;
+  status: FeedStockLineStatus;
+}
+
+export type FeedCostLineTargetKind = typeof FeedCostLineTargetKind[keyof typeof FeedCostLineTargetKind];
+
+
+export const FeedCostLineTargetKind = {
+  animal: 'animal',
+  herd: 'herd',
+} as const;
+
+export type FeedCostLineTarget = {
+  kind: FeedCostLineTargetKind;
+  id: number;
+  name: string;
+  count: number;
+};
+
+export interface FeedCostLine {
+  target: FeedCostLineTarget;
+  perAnimalMonth: number;
+  perMonth: number;
+  missingPrices: string[];
+}
+
+export interface FeedWinterLine {
+  /** @nullable */
+  feedKey: string | null;
+  /** @nullable */
+  feedId: number | null;
+  name: string;
+  category: FeedCategory;
+  neededKg: number;
+  /** Expected on hand when the winter starts */
+  stockKg: number;
+  missingKg: number;
+  /** @nullable */
+  gardenCrop: string | null;
+}
+
+export type FeedStockOverviewCosts = {
+  lines: FeedCostLine[];
+  perMonth: number;
+  complete: boolean;
+};
+
+export type FeedStockOverviewWinter = {
+  from: string;
+  to: string;
+  days: number;
+  lines: FeedWinterLine[];
+  gardenKg: number;
+};
+
+export interface FeedStockOverview {
+  stocks: FeedStockLine[];
+  costs: FeedStockOverviewCosts;
+  winter: FeedStockOverviewWinter;
+}
+
+export interface FeedStockCountInput {
+  /** @nullable */
+  feedKey?: string | null;
+  /** @nullable */
+  feedId?: number | null;
+  stockKg: number;
+  /** @nullable */
+  packageKg?: number | null;
+  /** @nullable */
+  pricePerPackage?: number | null;
+}
+
+export interface FeedPurchaseInput {
+  /** @nullable */
+  feedKey?: string | null;
+  /** @nullable */
+  feedId?: number | null;
+  packages: number;
+  packageKg: number;
+  /** @nullable */
+  pricePerPackage?: number | null;
+}
+
 export interface FeedRemindersResult {
   created: number;
   updated: number;
@@ -2024,6 +2145,8 @@ export type GardenPlanFodder = {
   perDayKg: number;
   summerKg: number;
   winterKg: number;
+  /** The winter amount comes from the Futterplaner's winter rations */
+  winterFromRations: boolean;
   needM2: number;
 };
 

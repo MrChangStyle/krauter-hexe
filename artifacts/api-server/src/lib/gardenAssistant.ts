@@ -18,6 +18,7 @@ import { and, asc, count, eq, isNull } from 'drizzle-orm';
 
 import { FarmDataError } from './farmAnimals';
 import { cropByKey } from './gardenCatalog';
+import { winterGardenNeed } from './feedStock';
 import { latestYields, type Yields } from './gardenHarvests';
 
 export interface GardenGoals {
@@ -121,6 +122,8 @@ export interface GardenPlan {
     perDayKg: number;
     summerKg: number;
     winterKg: number;
+    /** The winter amount comes from the Futterplaner's winter rations, not from the rule of thumb. */
+    winterFromRations: boolean;
     needM2: number;
   };
   availableM2: number;
@@ -137,8 +140,20 @@ export interface GardenPlan {
 
 const names = (keys: string[]) => keys.flatMap((k) => (cropByKey(k) ? [cropByKey(k)!.name] : []));
 
+/** Storable vegetables the Futterplaner's winter rations need (kg, garden crop keys). */
+export interface RationWinter {
+  kg: number;
+  crops: string[];
+}
+
 /** The plan from goals, animals and beds – pure, so it can be tested as is. */
-export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: BedArea[], yields: Yields | null = null): GardenPlan {
+export function planGarden(
+  goals: GardenGoals,
+  animals: AnimalCount[],
+  beds: BedArea[],
+  yields: Yields | null = null,
+  rationWinter: RationWinter | null = null,
+): GardenPlan {
   // Own harvests replace the rules of thumb – within sensible bounds.
   const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
   const kitchenFactor = yields?.kitchenKgPerM2 ? clamp(KITCHEN_KG_M2 / yields.kitchenKgPerM2, 0.5, 2) : 1;
@@ -149,7 +164,7 @@ export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: Bed
     .map((a) => ({ ...a, perDayKg: round(a.count * FODDER_KG_PER_DAY[a.species], 0.01) }));
   const perDayKg = round(fed.reduce((s, a) => s + a.perDayKg, 0), 0.01);
   const summerKg = round(perDayKg * SEASON_DAYS);
-  const winterKg = round(perDayKg * 0.5 * WINTER_DAYS);
+  const winterKg = rationWinter ? round(rationWinter.kg) : round(perDayKg * 0.5 * WINTER_DAYS);
   const fodderNeedM2 = round(summerKg / greensKgM2 + winterKg / ROOTS_KG_M2);
 
   const areas = beds.map((b) => ({ ...b, areaM2: round((b.lengthCm * b.widthCm) / 10_000, 0.1) }));
@@ -177,7 +192,7 @@ export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: Bed
   const kitchenM2 = round(availableM2 - fodderM2, 0.1);
 
   const kitchenCrops = [...new Set(goals.directions.flatMap((d) => KITCHEN_CROPS[d]))];
-  const fodderCrops = [...new Set(fed.filter((a) => a.perDayKg > 0).flatMap((a) => FODDER_CROPS[a.species]))];
+  const fodderCrops = [...new Set([...(rationWinter?.crops ?? []), ...fed.filter((a) => a.perDayKg > 0).flatMap((a) => FODDER_CROPS[a.species])])];
   const eaters = fed.filter((a) => FODDER_KG_PER_DAY[a.species] > 0).map((a) => SPECIES_DE[a.species]);
   const plannedBeds = areas.map((b) => {
     const fodder = fodderIds.has(b.id);
@@ -221,7 +236,11 @@ export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: Bed
     tips.push(fed.length > 0 ? 'Deine Tiere brauchen kein Grünfutter aus dem Beet.' : 'Im Tier-Modul sind noch keine Tiere eingetragen.');
   }
   if (winterKg > 0 && goals.animalShare > 0) {
-    tips.push(`Für den Winter etwa ${winterKg} kg Lagerfutter einplanen (Möhren, Rote Bete, Pastinaken) – kühl und dunkel lagern.`);
+    tips.push(
+      rationWinter
+        ? `Laut Futterplaner brauchen deine Tiere im Winter etwa ${winterKg.toLocaleString('de-DE')} kg ${names(rationWinter.crops).join(', ')} – kühl und dunkel lagern.`
+        : `Für den Winter etwa ${winterKg} kg Lagerfutter einplanen (Möhren, Rote Bete, Pastinaken) – kühl und dunkel lagern.`,
+    );
   }
   const noGreens = fed.filter((a) => FODDER_KG_PER_DAY[a.species] === 0).map((a) => SPECIES_DE[a.species]);
   if (noGreens.length > 0 && goals.animalShare > 0) tips.push(`${noGreens.join(', ')}: Futter kommt von Weide, Heu oder aus dem Napf, nicht aus dem Beet.`);
@@ -229,7 +248,7 @@ export function planGarden(goals: GardenGoals, animals: AnimalCount[], beds: Bed
   return {
     goals,
     kitchenNeedM2,
-    fodder: { animals: fed, perDayKg, summerKg, winterKg, needM2: fodderNeedM2 },
+    fodder: { animals: fed, perDayKg, summerKg, winterKg, winterFromRations: rationWinter !== null, needM2: fodderNeedM2 },
     availableM2,
     kitchenM2,
     fodderM2,
@@ -278,5 +297,5 @@ export async function gardenPlan(farmId: number): Promise<GardenPlan> {
     .from(gardenBedsTable)
     .where(eq(gardenBedsTable.farmId, farmId))
     .orderBy(asc(gardenBedsTable.name), asc(gardenBedsTable.id));
-  return planGarden(goals, animals, beds, await latestYields(farmId, new Date().getFullYear()));
+  return planGarden(goals, animals, beds, await latestYields(farmId, new Date().getFullYear()), await winterGardenNeed(farmId));
 }

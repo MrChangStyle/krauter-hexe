@@ -50,8 +50,14 @@ Für den Bau festgelegt:
    zur Jahreszeit (Frost, Wasser, Grünfutter, Weide und Hufrehe). „Erinnern“ legt tägliche
    Stall-Aufgaben „Füttern“ je Fütterungszeit an. Kälte wird über die Jahreszeit berücksichtigt;
    echte Frostwarnungen aus der Wettervorhersage kommen mit dem Wetter-Ausbau.
-4. **Vorrat und Kosten (Premium):** Sackgröße und Kaufdatum → wann nachkaufen; Wintervorrat-
-   Rechner (Heu und Lagerfutter bis zum Frühjahr, an den Garten-Assistenten); Kosten pro Tier
-   und Monat.
+4. **Vorrat und Kosten (Premium) (UMGESETZT):** Sackgröße und Kaufdatum → wann nachkaufen;
+   Wintervorrat-Rechner (Heu und Lagerfutter bis zum Frühjahr, an den Garten-Assistenten); Kosten
+   pro Tier und Monat. Umgesetzt als Seite „Vorrat & Kosten“: Bestand je Futtermittel (gezählt
+   oder gekauft), Rest heute = Bestand − Tagesverbrauch der geltenden Rationen seit dem Tag;
+   „bald leer“ ab 14 Tagen, nachkaufen 7 Tage vor leer. Preis je kg aus dem letzten Einkauf.
+   Wintervorrat 1. November bis 31. März mit den Winterrationen (sonst ganzjährig), abzüglich
+   dessen, was bei Winterbeginn noch da ist; Heu auch in Kleinballen (15 kg). Möhren, Futterrüben
+   und Kürbis aus den Winterrationen ersetzen im Garten-Assistenten den Faustwert fürs
+   Lagerfutter. Erinnerung per Push zum Nachkaufen fehlt noch.
 5. **Tipps und Rezepte:** geprüfte Rezepte mit Admin-Freigabe (z. B. fermentiertes Futter für
    Hühner mit Hygieneregeln), Keimfutter, Jahreskalender der Futterpflanzen aus dem Garten.

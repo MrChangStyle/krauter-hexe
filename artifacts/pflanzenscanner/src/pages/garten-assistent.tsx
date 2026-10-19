@@ -191,9 +191,10 @@ function Assistant({ farm }: { farm: FarmSummary }) {
                   </li>
                 ))}
               </ul>
-              {p.fodder.summerKg > 0 && (
+              {(p.fodder.summerKg > 0 || p.fodder.winterKg > 0) && (
                 <p className="text-xs text-muted-foreground">
                   Saison: etwa {kg(p.fodder.summerKg)} frisch · Winter: etwa {kg(p.fodder.winterKg)} Lagerfutter
+                  {p.fodder.winterFromRations && " (aus den Winterrationen im Futterplaner)"}
                 </p>
               )}
             </section>

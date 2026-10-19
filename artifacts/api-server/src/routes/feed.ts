@@ -2,8 +2,13 @@ import { Router, type IRouter } from 'express';
 import {
   AddFarmFeedBody,
   AddFarmFeedResponse,
+  BuyFeedBody,
+  BuyFeedResponse,
+  CountFeedStockBody,
+  CountFeedStockResponse,
   CreateFeedRemindersResponse,
   GetFeedReferenceResponse,
+  GetFeedStockResponse,
   ListFarmFeedsResponse,
   ListRationsResponse,
   ReadFeedLabelBody,
@@ -16,6 +21,7 @@ import { requireApproved } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
 import { checkImage } from '../lib/farmAi';
 import { readFeedLabel } from '../lib/feedLabel';
+import { buyFeed, countStock, feedStock, removeStock } from '../lib/feedStock';
 import { addFarmFeed, feedReference, feedReminders, listFarmFeeds, listRations, removeFarmFeed, removeRation, saveRation } from '../lib/feedPlanner';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
@@ -108,6 +114,47 @@ router.delete(
     const rationId = idParam(req, 'rationId');
     if (rationId === null) return notFound(res);
     await removeRation(req.farm!.farmId, rationId);
+    res.sendStatus(204);
+  }),
+);
+
+// Vorrat und Kosten (Premium, marked in the app; no lock while there is no payment).
+
+router.get(
+  '/farms/:farmId/feed-stock',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(GetFeedStockResponse.parse(await feedStock(req.farm!.farmId)));
+  }),
+);
+
+router.put(
+  '/farms/:farmId/feed-stock',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = CountFeedStockBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(CountFeedStockResponse.parse(await countStock(req.farm!.farmId, body.data)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/feed-stock/purchase',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = BuyFeedBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(BuyFeedResponse.parse(await buyFeed(req.farm!.farmId, body.data)));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/feed-stock/:stockId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const stockId = idParam(req, 'stockId');
+    if (stockId === null) return notFound(res);
+    await removeStock(req.farm!.farmId, stockId);
     res.sendStatus(204);
   }),
 );

@@ -73,8 +73,11 @@ import type {
   FavoriteIds,
   FeedLabelReading,
   FeedLog,
+  FeedPurchaseInput,
   FeedReference,
   FeedRemindersResult,
+  FeedStockCountInput,
+  FeedStockOverview,
   FrostWarning,
   GardenBed,
   GardenBedInput,
@@ -4133,6 +4136,300 @@ export const useCreateFeedReminders = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getCreateFeedRemindersMutationOptions(options));
+    }
+
+export const getGetFeedStockUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feed-stock`
+}
+
+/**
+ * @summary Vorrat, Kosten und Wintervorrat (fixed rules, from the rations in effect)
+ */
+export const getFeedStock = async (farmId: number, options?: RequestInit): Promise<FeedStockOverview> => {
+
+  return customFetch<FeedStockOverview>(getGetFeedStockUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFeedStockQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/feed-stock`
+    ] as const;
+    }
+
+
+export const getGetFeedStockQueryOptions = <TData = Awaited<ReturnType<typeof getFeedStock>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFeedStock>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFeedStockQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFeedStock>>> = ({ signal }) => getFeedStock(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFeedStock>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFeedStockQueryResult = NonNullable<Awaited<ReturnType<typeof getFeedStock>>>
+export type GetFeedStockQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Vorrat, Kosten und Wintervorrat (fixed rules, from the rations in effect)
+ */
+
+export function useGetFeedStock<TData = Awaited<ReturnType<typeof getFeedStock>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFeedStock>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFeedStockQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCountFeedStockUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feed-stock`
+}
+
+/**
+ * @summary Set what is on hand now ("Bestand gezählt"), optionally package size and price (caretaker or admin)
+ */
+export const countFeedStock = async (farmId: number,
+    feedStockCountInput: FeedStockCountInput, options?: RequestInit): Promise<FeedStockOverview> => {
+
+  return customFetch<FeedStockOverview>(getCountFeedStockUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(feedStockCountInput)
+  }
+);}
+
+
+
+
+
+export const getCountFeedStockMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof countFeedStock>>, TError,{farmId: number;data: BodyType<FeedStockCountInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof countFeedStock>>, TError,{farmId: number;data: BodyType<FeedStockCountInput>}, TContext> => {
+
+const mutationKey = ['countFeedStock'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof countFeedStock>>, {farmId: number;data: BodyType<FeedStockCountInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  countFeedStock(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CountFeedStockMutationResult = NonNullable<Awaited<ReturnType<typeof countFeedStock>>>
+    export type CountFeedStockMutationBody = BodyType<FeedStockCountInput>
+    export type CountFeedStockMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Set what is on hand now ("Bestand gezählt"), optionally package size and price (caretaker or admin)
+ */
+export const useCountFeedStock = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof countFeedStock>>, TError,{farmId: number;data: BodyType<FeedStockCountInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof countFeedStock>>,
+        TError,
+        {farmId: number;data: BodyType<FeedStockCountInput>},
+        TContext
+      > => {
+      return useMutation(getCountFeedStockMutationOptions(options));
+    }
+
+export const getBuyFeedUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feed-stock/purchase`
+}
+
+/**
+ * @summary Add a purchase to the stock; updates the price per kg (caretaker or admin)
+ */
+export const buyFeed = async (farmId: number,
+    feedPurchaseInput: FeedPurchaseInput, options?: RequestInit): Promise<FeedStockOverview> => {
+
+  return customFetch<FeedStockOverview>(getBuyFeedUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(feedPurchaseInput)
+  }
+);}
+
+
+
+
+
+export const getBuyFeedMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof buyFeed>>, TError,{farmId: number;data: BodyType<FeedPurchaseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof buyFeed>>, TError,{farmId: number;data: BodyType<FeedPurchaseInput>}, TContext> => {
+
+const mutationKey = ['buyFeed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof buyFeed>>, {farmId: number;data: BodyType<FeedPurchaseInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  buyFeed(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BuyFeedMutationResult = NonNullable<Awaited<ReturnType<typeof buyFeed>>>
+    export type BuyFeedMutationBody = BodyType<FeedPurchaseInput>
+    export type BuyFeedMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Add a purchase to the stock; updates the price per kg (caretaker or admin)
+ */
+export const useBuyFeed = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof buyFeed>>, TError,{farmId: number;data: BodyType<FeedPurchaseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof buyFeed>>,
+        TError,
+        {farmId: number;data: BodyType<FeedPurchaseInput>},
+        TContext
+      > => {
+      return useMutation(getBuyFeedMutationOptions(options));
+    }
+
+export const getRemoveFeedStockUrl = (farmId: number,
+    stockId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feed-stock/${stockId}`
+}
+
+/**
+ * @summary Forget the stock of a feed (caretaker or admin)
+ */
+export const removeFeedStock = async (farmId: number,
+    stockId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRemoveFeedStockUrl(farmId,stockId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveFeedStockMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFeedStock>>, TError,{farmId: number;stockId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeFeedStock>>, TError,{farmId: number;stockId: number}, TContext> => {
+
+const mutationKey = ['removeFeedStock'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeFeedStock>>, {farmId: number;stockId: number}> = (props) => {
+          const {farmId,stockId} = props ?? {};
+
+          return  removeFeedStock(farmId,stockId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveFeedStockMutationResult = NonNullable<Awaited<ReturnType<typeof removeFeedStock>>>
+
+    export type RemoveFeedStockMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Forget the stock of a feed (caretaker or admin)
+ */
+export const useRemoveFeedStock = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFeedStock>>, TError,{farmId: number;stockId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeFeedStock>>,
+        TError,
+        {farmId: number;stockId: number},
+        TContext
+      > => {
+      return useMutation(getRemoveFeedStockMutationOptions(options));
     }
 
 export const getGetAppStatusUrl = () => {

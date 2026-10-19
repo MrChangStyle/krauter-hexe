@@ -1,4 +1,4 @@
-import type { FeedCategory, LifeStage, NutrientCheck, RationSeason } from "@workspace/api-client-react";
+import type { FeedCategory, FeedStockLine, LifeStage, NutrientCheck, RationSeason } from "@workspace/api-client-react";
 
 export const STAGE_LABELS: Record<LifeStage, string> = {
   maintenance: "Erhaltung",
@@ -74,4 +74,27 @@ export function shortDate(day: string): string {
 
 export function shareText(share: number): string {
   return `${Math.round(share * 100)} %`;
+}
+
+export const STOCK_STATUS: Record<FeedStockLine["status"], { label: string; tone: string }> = {
+  empty: { label: "Leer", tone: "bg-red-600 text-white" },
+  soon: { label: "Bald leer", tone: "bg-amber-400 text-amber-950" },
+  unknown: { label: "Nicht erfasst", tone: "bg-muted text-muted-foreground" },
+  ok: { label: "Reicht", tone: "bg-emerald-600 text-white" },
+  unused: { label: "Nicht in Ration", tone: "bg-muted text-muted-foreground" },
+};
+
+export function euro(n: number): string {
+  return `${n.toLocaleString("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+}
+
+export function kg(n: number): string {
+  if (n > 0 && n < 1) return `${Math.round(n * 1000)} g`;
+  return `${n.toLocaleString("de-DE", { maximumFractionDigits: n < 10 ? 1 : 0 })} kg`;
+}
+
+/** Small bales of hay or straw (about 15 kg) for an amount of roughage. */
+export const BALE_KG = 15;
+export function bales(kgAmount: number): number {
+  return Math.ceil(kgAmount / BALE_KG);
 }

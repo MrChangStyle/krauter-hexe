@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, CalendarDays, ChevronRight, Compass, Fence, Loader2, MapPin, Plus } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronRight, Compass, Fence, Loader2, MapPin, Plus, Sprout } from "lucide-react";
 import { FrostWarnings } from "@/components/garden-overview";
 import { PremiumBadge } from "@/components/premium-badge";
 import { useEnsureOwnFarm, useListBeds, type FarmSummary } from "@workspace/api-client-react";
@@ -64,6 +64,18 @@ function BedList({ farm }: { farm: FarmSummary }) {
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>
       )}
+
+      <Link
+        href="/beete/saatgut"
+        className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm transition-colors hover:bg-muted/50"
+      >
+        <Sprout className="h-5 w-5 text-primary" />
+        <span className="flex-1">
+          <span className="block font-medium">Saatgut</span>
+          <span className="block text-xs text-muted-foreground">Vorrat, Keimfähigkeit, was für den Beetplan fehlt</span>
+        </span>
+        <ChevronRight className="h-4 w-4 text-muted-foreground" />
+      </Link>
 
       {beds.isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

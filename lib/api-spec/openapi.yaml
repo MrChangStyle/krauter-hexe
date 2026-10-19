@@ -1813,6 +1813,135 @@ paths:
                 $ref: "#/components/schemas/Lineage"
         "400":
           description: Invalid parents.
+  /farms/{farmId}/seeds:
+    get:
+      tags: [farm]
+      operationId: getSeedOverview
+      summary: Saatgut – the farm's seeds with how long they germinate, and what the bed plan still needs
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Seeds and plan.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SeedOverview"
+    post:
+      tags: [farm]
+      operationId: createSeed
+      summary: Add seed (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeedInput"
+      responses:
+        "201":
+          description: The seed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seed"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/seeds/{seedId}:
+    put:
+      tags: [farm]
+      operationId: updateSeed
+      summary: Change a seed, its amount, or archive it (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: seedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SeedInput"
+      responses:
+        "200":
+          description: The seed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seed"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    delete:
+      tags: [farm]
+      operationId: deleteSeed
+      summary: Delete a seed (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: seedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: Not found.
+  /farms/{farmId}/seeds/{seedId}/test:
+    post:
+      tags: [farm]
+      operationId: recordGerminationTest
+      summary: Record a germination test (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: seedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GerminationTestInput"
+      responses:
+        "200":
+          description: The seed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Seed"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
   /farms/{farmId}/duties:
     get:
       tags: [farm]
@@ -5022,6 +5151,138 @@ components:
           type: [integer, 'null']
         fatherId:
           type: [integer, 'null']
+    Seed:
+      type: object
+      required: [id, cropKey, cropName, name, variety, amount, unit, source, harvestYear, useBy, openPollinated, testSown, testGerminated, testedOn, notes, archived, status, goodUntil, germinationRate, saving]
+      properties:
+        id:
+          type: integer
+        cropKey:
+          type: [string, 'null']
+        cropName:
+          type: [string, 'null']
+        name:
+          type: string
+        variety:
+          type: [string, 'null']
+        amount:
+          type: number
+        unit:
+          $ref: "#/components/schemas/SeedUnit"
+        source:
+          $ref: "#/components/schemas/SeedSource"
+        harvestYear:
+          type: [integer, 'null']
+        useBy:
+          type: [string, 'null']
+          description: YYYY-MM-DD from the packet
+        openPollinated:
+          type: [boolean, 'null']
+        testSown:
+          type: [integer, 'null']
+        testGerminated:
+          type: [integer, 'null']
+        testedOn:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        archived:
+          type: boolean
+        status:
+          type: string
+          enum: [ok, check, old, weak, empty, archived]
+        goodUntil:
+          type: [integer, 'null']
+          description: Last year the seed germinates well (from use-by or harvest year).
+        germinationRate:
+          type: [number, 'null']
+        saving:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/SeedSaving"
+    SeedSaving:
+      type: string
+      enum: [easy, isolate, biennial, vegetative]
+    SeedUnit:
+      type: string
+      enum: [Tüten, g, Korn]
+    SeedSource:
+      type: string
+      enum: [bought, saved, swapped]
+    SeedInput:
+      type: object
+      required: [amount, unit]
+      properties:
+        cropKey:
+          type: [string, 'null']
+        name:
+          type: [string, 'null']
+          maxLength: 60
+        variety:
+          type: [string, 'null']
+          maxLength: 60
+        amount:
+          type: number
+          minimum: 0
+        unit:
+          $ref: "#/components/schemas/SeedUnit"
+        source:
+          $ref: "#/components/schemas/SeedSource"
+        harvestYear:
+          type: [integer, 'null']
+        useBy:
+          type: [string, 'null']
+          description: YYYY-MM-DD
+        openPollinated:
+          type: [boolean, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+        archived:
+          type: boolean
+    GerminationTestInput:
+      type: object
+      required: [sown, germinated, testedOn]
+      properties:
+        sown:
+          type: integer
+        germinated:
+          type: integer
+        testedOn:
+          type: string
+          description: YYYY-MM-DD
+    SeedPlanItem:
+      type: object
+      required: [cropKey, name, vegetative]
+      properties:
+        cropKey:
+          type: string
+        name:
+          type: string
+        vegetative:
+          type: boolean
+    SeedOverview:
+      type: object
+      required: [seeds, plan]
+      properties:
+        seeds:
+          type: array
+          items:
+            $ref: "#/components/schemas/Seed"
+        plan:
+          type: object
+          required: [season, missing, check]
+          properties:
+            season:
+              type: integer
+            missing:
+              type: array
+              items:
+                $ref: "#/components/schemas/SeedPlanItem"
+            check:
+              type: array
+              items:
+                $ref: "#/components/schemas/SeedPlanItem"
     FarmDuties:
       type: object
       required: [holdingNumber, housingOrderUntil, species, duties]

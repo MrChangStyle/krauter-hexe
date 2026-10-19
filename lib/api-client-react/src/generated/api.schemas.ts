@@ -749,6 +749,145 @@ export interface LineageInput {
   fatherId: number | null;
 }
 
+export type SeedStatus = typeof SeedStatus[keyof typeof SeedStatus];
+
+
+export const SeedStatus = {
+  ok: 'ok',
+  check: 'check',
+  old: 'old',
+  weak: 'weak',
+  empty: 'empty',
+  archived: 'archived',
+} as const;
+
+export type SeedUnit = typeof SeedUnit[keyof typeof SeedUnit];
+
+
+export const SeedUnit = {
+  Tüten: 'Tüten',
+  g: 'g',
+  Korn: 'Korn',
+} as const;
+
+export type SeedSource = typeof SeedSource[keyof typeof SeedSource];
+
+
+export const SeedSource = {
+  bought: 'bought',
+  saved: 'saved',
+  swapped: 'swapped',
+} as const;
+
+export type SeedSaving = typeof SeedSaving[keyof typeof SeedSaving];
+
+
+export const SeedSaving = {
+  easy: 'easy',
+  isolate: 'isolate',
+  biennial: 'biennial',
+  vegetative: 'vegetative',
+} as const;
+
+export interface Seed {
+  id: number;
+  /** @nullable */
+  cropKey: string | null;
+  /** @nullable */
+  cropName: string | null;
+  name: string;
+  /** @nullable */
+  variety: string | null;
+  amount: number;
+  unit: SeedUnit;
+  source: SeedSource;
+  /** @nullable */
+  harvestYear: number | null;
+  /**
+     * YYYY-MM-DD from the packet
+     * @nullable
+     */
+  useBy: string | null;
+  /** @nullable */
+  openPollinated: boolean | null;
+  /** @nullable */
+  testSown: number | null;
+  /** @nullable */
+  testGerminated: number | null;
+  /** @nullable */
+  testedOn: string | null;
+  /** @nullable */
+  notes: string | null;
+  archived: boolean;
+  status: SeedStatus;
+  /**
+     * Last year the seed germinates well (from use-by or harvest year).
+     * @nullable
+     */
+  goodUntil: number | null;
+  /** @nullable */
+  germinationRate: number | null;
+  saving: null | SeedSaving;
+}
+
+export interface SeedInput {
+  /** @nullable */
+  cropKey?: string | null;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  name?: string | null;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  variety?: string | null;
+  /** @minimum 0 */
+  amount: number;
+  unit: SeedUnit;
+  source?: SeedSource;
+  /** @nullable */
+  harvestYear?: number | null;
+  /**
+     * YYYY-MM-DD
+     * @nullable
+     */
+  useBy?: string | null;
+  /** @nullable */
+  openPollinated?: boolean | null;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+  archived?: boolean;
+}
+
+export interface GerminationTestInput {
+  sown: number;
+  germinated: number;
+  /** YYYY-MM-DD */
+  testedOn: string;
+}
+
+export interface SeedPlanItem {
+  cropKey: string;
+  name: string;
+  vegetative: boolean;
+}
+
+export type SeedOverviewPlan = {
+  season: number;
+  missing: SeedPlanItem[];
+  check: SeedPlanItem[];
+};
+
+export interface SeedOverview {
+  seeds: Seed[];
+  plan: SeedOverviewPlan;
+}
+
 export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];
 
 

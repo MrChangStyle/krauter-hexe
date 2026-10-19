@@ -102,6 +102,7 @@ import type {
   GardenPlan,
   GeoReverseInput,
   GeoReverseResult,
+  GerminationTestInput,
   Handover,
   HandoverNoteInput,
   Harvest,
@@ -147,6 +148,9 @@ import type {
   ResolveReportsResult,
   ScanInsectInput,
   ScanInsectResult,
+  Seed,
+  SeedInput,
+  SeedOverview,
   SpeciesSuggestion,
   Task,
   UpdateCareGuideInput,
@@ -6088,6 +6092,376 @@ export const useSetLineage = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSetLineageMutationOptions(options));
+    }
+
+export const getGetSeedOverviewUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/seeds`
+}
+
+/**
+ * @summary Saatgut – the farm's seeds with how long they germinate, and what the bed plan still needs
+ */
+export const getSeedOverview = async (farmId: number, options?: RequestInit): Promise<SeedOverview> => {
+
+  return customFetch<SeedOverview>(getGetSeedOverviewUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSeedOverviewQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/seeds`
+    ] as const;
+    }
+
+
+export const getGetSeedOverviewQueryOptions = <TData = Awaited<ReturnType<typeof getSeedOverview>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSeedOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSeedOverviewQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSeedOverview>>> = ({ signal }) => getSeedOverview(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSeedOverview>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSeedOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof getSeedOverview>>>
+export type GetSeedOverviewQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Saatgut – the farm's seeds with how long they germinate, and what the bed plan still needs
+ */
+
+export function useGetSeedOverview<TData = Awaited<ReturnType<typeof getSeedOverview>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSeedOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSeedOverviewQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateSeedUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/seeds`
+}
+
+/**
+ * @summary Add seed (caretaker)
+ */
+export const createSeed = async (farmId: number,
+    seedInput: SeedInput, options?: RequestInit): Promise<Seed> => {
+
+  return customFetch<Seed>(getCreateSeedUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(seedInput)
+  }
+);}
+
+
+
+
+
+export const getCreateSeedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSeed>>, TError,{farmId: number;data: BodyType<SeedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createSeed>>, TError,{farmId: number;data: BodyType<SeedInput>}, TContext> => {
+
+const mutationKey = ['createSeed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createSeed>>, {farmId: number;data: BodyType<SeedInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  createSeed(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateSeedMutationResult = NonNullable<Awaited<ReturnType<typeof createSeed>>>
+    export type CreateSeedMutationBody = BodyType<SeedInput>
+    export type CreateSeedMutationError = ErrorType<void>
+
+    /**
+ * @summary Add seed (caretaker)
+ */
+export const useCreateSeed = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createSeed>>, TError,{farmId: number;data: BodyType<SeedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createSeed>>,
+        TError,
+        {farmId: number;data: BodyType<SeedInput>},
+        TContext
+      > => {
+      return useMutation(getCreateSeedMutationOptions(options));
+    }
+
+export const getUpdateSeedUrl = (farmId: number,
+    seedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/seeds/${seedId}`
+}
+
+/**
+ * @summary Change a seed, its amount, or archive it (caretaker)
+ */
+export const updateSeed = async (farmId: number,
+    seedId: number,
+    seedInput: SeedInput, options?: RequestInit): Promise<Seed> => {
+
+  return customFetch<Seed>(getUpdateSeedUrl(farmId,seedId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(seedInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateSeedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSeed>>, TError,{farmId: number;seedId: number;data: BodyType<SeedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateSeed>>, TError,{farmId: number;seedId: number;data: BodyType<SeedInput>}, TContext> => {
+
+const mutationKey = ['updateSeed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateSeed>>, {farmId: number;seedId: number;data: BodyType<SeedInput>}> = (props) => {
+          const {farmId,seedId,data} = props ?? {};
+
+          return  updateSeed(farmId,seedId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateSeedMutationResult = NonNullable<Awaited<ReturnType<typeof updateSeed>>>
+    export type UpdateSeedMutationBody = BodyType<SeedInput>
+    export type UpdateSeedMutationError = ErrorType<void>
+
+    /**
+ * @summary Change a seed, its amount, or archive it (caretaker)
+ */
+export const useUpdateSeed = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateSeed>>, TError,{farmId: number;seedId: number;data: BodyType<SeedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateSeed>>,
+        TError,
+        {farmId: number;seedId: number;data: BodyType<SeedInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateSeedMutationOptions(options));
+    }
+
+export const getDeleteSeedUrl = (farmId: number,
+    seedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/seeds/${seedId}`
+}
+
+/**
+ * @summary Delete a seed (caretaker)
+ */
+export const deleteSeed = async (farmId: number,
+    seedId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteSeedUrl(farmId,seedId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteSeedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSeed>>, TError,{farmId: number;seedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSeed>>, TError,{farmId: number;seedId: number}, TContext> => {
+
+const mutationKey = ['deleteSeed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSeed>>, {farmId: number;seedId: number}> = (props) => {
+          const {farmId,seedId} = props ?? {};
+
+          return  deleteSeed(farmId,seedId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSeedMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSeed>>>
+
+    export type DeleteSeedMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a seed (caretaker)
+ */
+export const useDeleteSeed = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSeed>>, TError,{farmId: number;seedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSeed>>,
+        TError,
+        {farmId: number;seedId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteSeedMutationOptions(options));
+    }
+
+export const getRecordGerminationTestUrl = (farmId: number,
+    seedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/seeds/${seedId}/test`
+}
+
+/**
+ * @summary Record a germination test (caretaker)
+ */
+export const recordGerminationTest = async (farmId: number,
+    seedId: number,
+    germinationTestInput: GerminationTestInput, options?: RequestInit): Promise<Seed> => {
+
+  return customFetch<Seed>(getRecordGerminationTestUrl(farmId,seedId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(germinationTestInput)
+  }
+);}
+
+
+
+
+
+export const getRecordGerminationTestMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordGerminationTest>>, TError,{farmId: number;seedId: number;data: BodyType<GerminationTestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordGerminationTest>>, TError,{farmId: number;seedId: number;data: BodyType<GerminationTestInput>}, TContext> => {
+
+const mutationKey = ['recordGerminationTest'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordGerminationTest>>, {farmId: number;seedId: number;data: BodyType<GerminationTestInput>}> = (props) => {
+          const {farmId,seedId,data} = props ?? {};
+
+          return  recordGerminationTest(farmId,seedId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecordGerminationTestMutationResult = NonNullable<Awaited<ReturnType<typeof recordGerminationTest>>>
+    export type RecordGerminationTestMutationBody = BodyType<GerminationTestInput>
+    export type RecordGerminationTestMutationError = ErrorType<void>
+
+    /**
+ * @summary Record a germination test (caretaker)
+ */
+export const useRecordGerminationTest = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordGerminationTest>>, TError,{farmId: number;seedId: number;data: BodyType<GerminationTestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof recordGerminationTest>>,
+        TError,
+        {farmId: number;seedId: number;data: BodyType<GerminationTestInput>},
+        TContext
+      > => {
+      return useMutation(getRecordGerminationTestMutationOptions(options));
     }
 
 export const getGetFarmDutiesUrl = (farmId: number,) => {

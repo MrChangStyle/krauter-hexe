@@ -141,6 +141,35 @@ export const farmAnimalsTable = pgTable(
   ],
 );
 
+// Arzneimittel-Vorrat: medicines on the farm, with batch, expiry and the
+// withdrawal periods from the package insert. Used up or thrown away → archived
+// (the health records keep pointing at it).
+export const medicinesTable = pgTable(
+  "medicines",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    activeIngredient: text("active_ingredient"),
+    // "ml", "g", "Stück", … – the unit of amount and dose.
+    unit: text("unit").notNull(),
+    amount: doublePrecision("amount").notNull(),
+    batch: text("batch"),
+    expiresOn: date("expires_on", { mode: "string" }),
+    withdrawalMeatDays: integer("withdrawal_meat_days"),
+    withdrawalMilkDays: integer("withdrawal_milk_days"),
+    withdrawalEggsDays: integer("withdrawal_eggs_days"),
+    vet: text("vet"),
+    receivedOn: date("received_on", { mode: "string" }),
+    notes: text("notes"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("medicines_farm_idx").on(table.farmId)],
+);
+
 export const medicalRecordsTable = pgTable(
   "medical_records",
   {
@@ -161,6 +190,11 @@ export const medicalRecordsTable = pgTable(
     vet: text("vet"),
     notes: text("notes"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // From the Arzneimittel-Vorrat: which medicine, how much was given (in its
+    // unit, taken off the stock) and its batch – what the Bestandsbuch needs.
+    medicineId: integer("medicine_id").references(() => medicinesTable.id, { onDelete: "set null" }),
+    dose: doublePrecision("dose"),
+    batch: text("batch"),
   },
   (table) => [index("medical_records_farm_animal_idx").on(table.farmId, table.animalId)],
 );

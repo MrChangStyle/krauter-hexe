@@ -135,6 +135,7 @@ export const MEDICAL_COLUMNS = [
   "Diagnose",
   "Behandlung",
   "Medikament",
+  "Menge, Charge",
   "Wartezeit (Tage)",
   "Wartezeit bis",
   "Tierarzt",
@@ -153,6 +154,12 @@ export function stockRow(a: FarmAnimal): string[] {
   ];
 }
 
+/** "12,5 g, Ch. CH-4711" – amount from the Arzneimittel-Vorrat and its batch. */
+export function doseText(r: Pick<MedicalRecord, "dose" | "doseUnit" | "batch">): string {
+  const dose = r.dose == null ? null : `${r.dose.toLocaleString("de-DE")}${r.doseUnit ? ` ${r.doseUnit}` : ""}`;
+  return [dose, r.batch && `Ch. ${r.batch}`].filter(Boolean).join(", ");
+}
+
 export function medicalRow({ record: r, animal: a }: ExportData["records"][number]): string[] {
   return [
     deDate(r.date),
@@ -161,6 +168,7 @@ export function medicalRow({ record: r, animal: a }: ExportData["records"][numbe
     r.diagnosis,
     r.treatment ?? "",
     r.medication ?? "",
+    doseText(r),
     r.withdrawalPeriodDays == null ? "" : String(r.withdrawalPeriodDays),
     deDate(withdrawalEnd(r)),
     r.vet ?? "",

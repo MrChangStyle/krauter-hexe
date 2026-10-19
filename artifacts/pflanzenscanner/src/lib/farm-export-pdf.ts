@@ -20,7 +20,7 @@ const BRAND: RGB = [21, 128, 61]; // green-700
 
 // Relative column widths; scaled to the page.
 const STOCK_WIDTHS = [16, 14, 11, 14, 10, 11, 12, 11];
-const MEDICAL_WIDTHS = [9, 13, 11, 19, 21, 15, 8, 9, 12];
+const MEDICAL_WIDTHS = [9, 12, 10, 17, 18, 13, 11, 7, 9, 11];
 
 /**
  * Stock list and health history for the veterinary office, A4 landscape.

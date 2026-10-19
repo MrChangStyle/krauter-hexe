@@ -6,18 +6,20 @@
  * filters by it, so an id from another farm is simply "not found".
  */
 
-import { db, farmAnimalsTable, farmsTable, medicalRecordsTable, weightLogsTable } from '@workspace/db';
+import { db, farmAnimalsTable, farmsTable, medicalRecordsTable, medicinesTable, weightLogsTable, type FarmSpecies } from '@workspace/db';
 import { and, asc, desc, eq } from 'drizzle-orm';
 
 import { FarmDataError, listAnimals, notFound, text, validDate } from './farmAnimals';
+import { adjustStock, usableMedicine, withdrawalFor } from './medicines';
 
 /** Throws 404 unless the animal belongs to this farm. Archived ones count. */
-async function assertAnimal(farmId: number, animalId: number): Promise<void> {
+async function assertAnimal(farmId: number, animalId: number): Promise<{ species: FarmSpecies }> {
   const [animal] = await db
-    .select({ id: farmAnimalsTable.id })
+    .select({ species: farmAnimalsTable.species })
     .from(farmAnimalsTable)
     .where(and(eq(farmAnimalsTable.id, animalId), eq(farmAnimalsTable.farmId, farmId)));
   if (!animal) throw notFound();
+  return animal;
 }
 
 // ── Health records ───────────────────────────────────────────────────────────
@@ -32,8 +34,27 @@ const medicalColumns = {
   withdrawalPeriodDays: medicalRecordsTable.withdrawalPeriodDays,
   vet: medicalRecordsTable.vet,
   notes: medicalRecordsTable.notes,
+  medicineId: medicalRecordsTable.medicineId,
+  dose: medicalRecordsTable.dose,
+  batch: medicalRecordsTable.batch,
+  // Unit of the dose, from the medicine (records without one: null).
+  doseUnit: medicinesTable.unit,
   createdAt: medicalRecordsTable.createdAt,
 };
+
+/** Records with the unit of their medicine. */
+function selectRecords() {
+  return db
+    .select(medicalColumns)
+    .from(medicalRecordsTable)
+    .leftJoin(medicinesTable, and(eq(medicinesTable.id, medicalRecordsTable.medicineId), eq(medicinesTable.farmId, medicalRecordsTable.farmId)));
+}
+
+async function recordById(farmId: number, recordId: number) {
+  const [record] = await selectRecords().where(and(eq(medicalRecordsTable.id, recordId), eq(medicalRecordsTable.farmId, farmId)));
+  if (!record) throw notFound();
+  return record;
+}
 
 export interface MedicalInput {
   date: unknown;
@@ -43,6 +64,9 @@ export interface MedicalInput {
   withdrawalPeriodDays?: number | null;
   vet?: unknown;
   notes?: unknown;
+  /** From the Arzneimittel-Vorrat, with the amount given (its unit). */
+  medicineId?: number | null;
+  dose?: number | null;
 }
 
 function medicalValues(input: MedicalInput) {
@@ -63,40 +87,82 @@ function medicalValues(input: MedicalInput) {
 
 export async function listMedicalRecords(farmId: number, animalId: number) {
   await assertAnimal(farmId, animalId);
-  return db
-    .select(medicalColumns)
-    .from(medicalRecordsTable)
+  return selectRecords()
     .where(and(eq(medicalRecordsTable.farmId, farmId), eq(medicalRecordsTable.animalId, animalId)))
     .orderBy(desc(medicalRecordsTable.date), desc(medicalRecordsTable.id));
 }
 
+/**
+ * A medicine from the stock: the dose is required; the name, its batch and the
+ * withdrawal period for the species fill in what the user left empty. A new
+ * use must not be used up, thrown away or past its expiry on the day given.
+ */
+async function withMedicine(
+  farmId: number,
+  species: FarmSpecies,
+  input: MedicalInput,
+  values: ReturnType<typeof medicalValues>,
+  previous: { medicineId: number | null; batch: string | null } | null,
+) {
+  if (input.medicineId == null) return { ...values, medicineId: null, dose: null, batch: null };
+  const medicine = await usableMedicine(farmId, input.medicineId);
+  const dose = Number(input.dose);
+  if (!Number.isFinite(dose) || dose <= 0 || dose > 100_000) throw new FarmDataError(400, `Bitte gib die Menge in ${medicine.unit} an.`);
+  const same = previous?.medicineId === medicine.id;
+  if (!same) {
+    if (medicine.archivedAt) throw new FarmDataError(400, `${medicine.name} ist als aufgebraucht oder entsorgt markiert.`);
+    if (medicine.expiresOn && medicine.expiresOn < values.date) throw new FarmDataError(400, `${medicine.name} war am ${values.date.split('-').reverse().join('.')} schon abgelaufen.`);
+  }
+  return {
+    ...values,
+    medication: values.medication ?? medicine.name,
+    withdrawalPeriodDays: values.withdrawalPeriodDays ?? withdrawalFor(medicine, species),
+    medicineId: medicine.id,
+    dose: Math.round(dose * 100) / 100,
+    batch: same ? previous!.batch : medicine.batch,
+  };
+}
+
 export async function createMedicalRecord(farmId: number, animalId: number, input: MedicalInput) {
-  const values = medicalValues(input);
-  await assertAnimal(farmId, animalId);
+  const { species } = await assertAnimal(farmId, animalId);
+  const values = await withMedicine(farmId, species, input, medicalValues(input), null);
   const [record] = await db
     .insert(medicalRecordsTable)
     .values({ farmId, animalId, ...values })
-    .returning(medicalColumns);
-  return record!;
+    .returning({ id: medicalRecordsTable.id });
+  if (values.medicineId !== null) await adjustStock(farmId, values.medicineId, -values.dose!);
+  return recordById(farmId, record!.id);
 }
 
 export async function updateMedicalRecord(farmId: number, recordId: number, input: MedicalInput) {
-  const values = medicalValues(input);
-  const [record] = await db
+  const [old] = await db
+    .select({ animalId: medicalRecordsTable.animalId, medicineId: medicalRecordsTable.medicineId, dose: medicalRecordsTable.dose, batch: medicalRecordsTable.batch })
+    .from(medicalRecordsTable)
+    .where(and(eq(medicalRecordsTable.id, recordId), eq(medicalRecordsTable.farmId, farmId)));
+  if (!old) throw notFound();
+  const { species } = await assertAnimal(farmId, old.animalId);
+  const values = await withMedicine(farmId, species, input, medicalValues(input), old);
+  const updated = await db
     .update(medicalRecordsTable)
     .set(values)
     .where(and(eq(medicalRecordsTable.id, recordId), eq(medicalRecordsTable.farmId, farmId)))
-    .returning(medicalColumns);
-  if (!record) throw notFound();
-  return record;
+    .returning({ id: medicalRecordsTable.id });
+  if (updated.length === 0) throw notFound();
+  // Put the old dose back, take the new one out.
+  if (old.medicineId !== null && old.dose) await adjustStock(farmId, old.medicineId, old.dose);
+  if (values.medicineId !== null) await adjustStock(farmId, values.medicineId, -values.dose!);
+  return recordById(farmId, recordId);
 }
 
 export async function deleteMedicalRecord(farmId: number, recordId: number): Promise<void> {
   const deleted = await db
     .delete(medicalRecordsTable)
     .where(and(eq(medicalRecordsTable.id, recordId), eq(medicalRecordsTable.farmId, farmId)))
-    .returning({ id: medicalRecordsTable.id });
+    .returning({ medicineId: medicalRecordsTable.medicineId, dose: medicalRecordsTable.dose });
   if (deleted.length === 0) throw notFound();
+  // A record entered by mistake gives its dose back to the stock.
+  const [d] = deleted;
+  if (d!.medicineId !== null && d!.dose) await adjustStock(farmId, d!.medicineId, d!.dose);
 }
 
 // ── Weights ──────────────────────────────────────────────────────────────────
@@ -155,9 +221,7 @@ export async function farmExport(farmId: number) {
   if (!farm) throw notFound();
   const [animals, medicalRecords] = await Promise.all([
     listAnimals(farmId),
-    db
-      .select(medicalColumns)
-      .from(medicalRecordsTable)
+    selectRecords()
       .where(eq(medicalRecordsTable.farmId, farmId))
       .orderBy(asc(medicalRecordsTable.date), asc(medicalRecordsTable.id)),
   ]);

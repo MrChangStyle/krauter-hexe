@@ -40,4 +40,11 @@ export interface MedicalRecordInput {
      * @nullable
      */
   notes?: string | null;
+  /**
+     * A medicine from the stock; its dose is taken off the stock
+     * @nullable
+     */
+  medicineId?: number | null;
+  /** @nullable */
+  dose?: number | null;
 }

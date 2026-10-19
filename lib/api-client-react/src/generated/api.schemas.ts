@@ -532,6 +532,78 @@ export interface FarmWeather {
   warnings: WeatherWarning[];
 }
 
+export type MedicineStatus = typeof MedicineStatus[keyof typeof MedicineStatus];
+
+
+export const MedicineStatus = {
+  ok: 'ok',
+  expiresSoon: 'expiresSoon',
+  expired: 'expired',
+  empty: 'empty',
+  archived: 'archived',
+} as const;
+
+export interface Medicine {
+  id: number;
+  name: string;
+  /** @nullable */
+  activeIngredient: string | null;
+  unit: string;
+  amount: number;
+  /** @nullable */
+  batch: string | null;
+  /** @nullable */
+  expiresOn: string | null;
+  /** @nullable */
+  withdrawalMeatDays: number | null;
+  /** @nullable */
+  withdrawalMilkDays: number | null;
+  /** @nullable */
+  withdrawalEggsDays: number | null;
+  /** @nullable */
+  vet: string | null;
+  /** @nullable */
+  receivedOn: string | null;
+  /** @nullable */
+  notes: string | null;
+  archived: boolean;
+  status: MedicineStatus;
+  /** @nullable */
+  daysLeft: number | null;
+  uses: number;
+}
+
+export interface MedicineInput {
+  /** @maxLength 100 */
+  name: string;
+  /** @nullable */
+  activeIngredient?: string | null;
+  /** @maxLength 20 */
+  unit: string;
+  amount: number;
+  /** @nullable */
+  batch?: string | null;
+  /** @nullable */
+  expiresOn?: string | null;
+  /** @nullable */
+  withdrawalMeatDays?: number | null;
+  /** @nullable */
+  withdrawalMilkDays?: number | null;
+  /** @nullable */
+  withdrawalEggsDays?: number | null;
+  /** @nullable */
+  vet?: string | null;
+  /** @nullable */
+  receivedOn?: string | null;
+  /** @nullable */
+  notes?: string | null;
+  /**
+     * true marks it used up or thrown away
+     * @nullable
+     */
+  archived?: boolean | null;
+}
+
 export interface FeedRemindersResult {
   created: number;
   updated: number;
@@ -1620,6 +1692,26 @@ export interface MedicalRecord {
   vet: string | null;
   /** @nullable */
   notes: string | null;
+  /**
+     * From the Arzneimittel-Vorrat
+     * @nullable
+     */
+  medicineId: number | null;
+  /**
+     * Amount given, in the medicine's unit
+     * @nullable
+     */
+  dose: number | null;
+  /**
+     * Batch (Charge) of the medicine
+     * @nullable
+     */
+  batch: string | null;
+  /**
+     * Unit of the dose (from the medicine)
+     * @nullable
+     */
+  doseUnit: string | null;
   createdAt: string;
 }
 
@@ -1657,6 +1749,13 @@ export interface MedicalRecordInput {
      * @nullable
      */
   notes?: string | null;
+  /**
+     * A medicine from the stock; its dose is taken off the stock
+     * @nullable
+     */
+  medicineId?: number | null;
+  /** @nullable */
+  dose?: number | null;
 }
 
 export interface WeightLog {

@@ -137,6 +137,13 @@ Plan in `docs/wetter.md` (`lib/farmWeather.ts`, `routes/farm-weather.ts`, card `
 - `weatherWarnings()` is pure: frost/hard frost/heat/storm/heavy rain by the species on the farm (no animals → none), plus a watering hint when beds are planted this season.
 - `sendWeatherDigests()` (push cron, 07:30) claims farm and day in `weather_digest_log` with the warning kinds and pushes only kinds that did not go out the day before; farms with nothing to warn about are claimed with `[]` so the cron does not ask again; a failed forecast is retried on the next call.
 
+## Arzneimittel-Vorrat
+
+`lib/medicines.ts`, routes in `routes/farm-health.ts`, page `/farm/arzneimittel`; table `medicines`, columns `medical_records.medicine_id/dose/batch`, table `farm_push_log` (generic once-a-day push per farm and topic).
+- A medicine holds amount and unit, batch, expiry and withdrawal periods for meat, milk and eggs. Used up or thrown away → archived (`archivedAt`); deleting is refused (409) once a health record used it.
+- A health record may pick a medicine: the dose is required and comes off the stock (`adjustStock`, never below 0); an empty medication name and withdrawal period are filled from the medicine – the withdrawal for the animal's species is the longest of what it gives (`withdrawalFor`: poultry eggs/meat, ruminants milk/meat). A new use of an archived medicine, or one expired on the treatment date, is refused. Editing books the old dose back and the new one out; deleting a record gives its dose back. Records return `doseUnit` (joined from the medicine), the vet export has a column "Menge, Charge".
+- `sendMedicineDigests()` (push cron, 07:30): 30 days before and on the expiry day, once per farm and day (`farm_push_log`, topic `medicines`).
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

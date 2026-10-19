@@ -84,6 +84,8 @@ export * from './feedAnalysis';
 export * from './feedAnalysisVerdict';
 export * from './feedCategory';
 export * from './feedItem';
+export * from './feedLabelReading';
+export * from './feedLabelReadingLabel';
 export * from './feedLog';
 export * from './feedNutrients';
 export * from './feedReference';

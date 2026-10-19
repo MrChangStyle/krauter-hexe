@@ -15,8 +15,10 @@ export const FEED_SCHEMA_STATEMENTS: readonly string[] = [
 	"values" jsonb NOT NULL,
 	"for_species" jsonb,
 	"botanical_name" text,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"additives" jsonb
 )`,
+  `ALTER TABLE "farm_feeds" ADD COLUMN IF NOT EXISTS "additives" jsonb`,
   `CREATE TABLE IF NOT EXISTS "feed_rations" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

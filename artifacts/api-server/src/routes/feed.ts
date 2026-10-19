@@ -5,17 +5,22 @@ import {
   GetFeedReferenceResponse,
   ListFarmFeedsResponse,
   ListRationsResponse,
+  ReadFeedLabelBody,
+  ReadFeedLabelResponse,
   SaveRationBody,
   SaveRationResponse,
 } from '@workspace/api-zod';
 
 import { requireApproved } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
+import { checkImage } from '../lib/farmAi';
+import { readFeedLabel } from '../lib/feedLabel';
 import { addFarmFeed, feedReference, listFarmFeeds, listRations, removeFarmFeed, removeRation, saveRation } from '../lib/feedPlanner';
-import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
+import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Futterplaner: the feed list (same for everyone) and a farm's own feeds and
-// rations (read: every member; write: caretaker or admin).
+// rations (read: every member; write: caretaker or admin). Reading a label
+// with the AI counts against the farm's daily AI limit and saves nothing.
 
 const router: IRouter = Router();
 
@@ -41,6 +46,18 @@ router.post(
     const body = AddFarmFeedBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
     res.status(201).json(AddFarmFeedResponse.parse(await addFarmFeed(req.farm!.farmId, body.data)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/feeds/label',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = ReadFeedLabelBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    checkImage(body.data.imageData);
+    const reading = await withAiQuota(req, res, 'farm', () => readFeedLabel(body.data.imageData));
+    if (reading) res.json(ReadFeedLabelResponse.parse(reading));
   }),
 );
 

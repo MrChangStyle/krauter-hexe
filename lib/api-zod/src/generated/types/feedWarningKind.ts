@@ -13,5 +13,6 @@ export const FeedWarningKind = {
   toxic: 'toxic',
   foreignMineral: 'foreignMineral',
   copper: 'copper',
+  ionophore: 'ionophore',
   withdrawal: 'withdrawal',
 } as const;

@@ -17,4 +17,6 @@ export interface FarmFeed {
   forSpecies: string[] | null;
   /** @nullable */
   botanicalName: string | null;
+  /** @nullable */
+  additives: string[] | null;
 }

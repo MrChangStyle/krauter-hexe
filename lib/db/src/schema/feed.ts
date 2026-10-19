@@ -32,6 +32,8 @@ export const farmFeedsTable = pgTable(
     forSpecies: jsonb("for_species").$type<string[]>(),
     botanicalName: text("botanical_name"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Additives as printed on the label (Futterplaner step 2).
+    additives: jsonb("additives").$type<string[]>(),
   },
   (table) => [index("farm_feeds_farm_idx").on(table.farmId)],
 );

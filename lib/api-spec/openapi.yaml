@@ -1112,6 +1112,34 @@ paths:
                 $ref: "#/components/schemas/FarmFeed"
         "400":
           description: Values out of range.
+  /farms/{farmId}/feeds/label:
+    post:
+      tags: [feed]
+      operationId: readFeedLabel
+      summary: Read a feed label photo with the AI (caretaker or admin; counts against the farm AI limit). Nothing is saved – the user confirms the values.
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PhotoInput"
+      responses:
+        "200":
+          description: The values read from the label.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedLabelReading"
+        "422":
+          description: No readable label on the photo.
+        "429":
+          description: Daily AI limit reached.
   /farms/{farmId}/feeds/{feedId}:
     delete:
       tags: [feed]
@@ -3529,7 +3557,7 @@ components:
                 type: boolean
     FarmFeed:
       type: object
-      required: [id, name, category, values, forSpecies, botanicalName]
+      required: [id, name, category, values, forSpecies, botanicalName, additives]
       properties:
         id:
           type: integer
@@ -3545,6 +3573,51 @@ components:
             type: string
         botanicalName:
           type: [string, 'null']
+        additives:
+          type: [array, 'null']
+          items:
+            type: string
+    FeedLabelReading:
+      type: object
+      description: What the AI read from a label (as fed). Missing or implausible values are null and must be typed in.
+      required: [name, category, forSpecies, dryMatter, label, additives, ionophores]
+      properties:
+        name:
+          type: [string, 'null']
+        category:
+          $ref: "#/components/schemas/FeedCategory"
+        forSpecies:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmSpecies"
+        dryMatter:
+          type: [number, 'null']
+          description: "% – from moisture, only when printed"
+        label:
+          type: object
+          required: [crudeProtein, crudeFat, crudeFibre, calcium, phosphorus, copper]
+          properties:
+            crudeProtein:
+              type: [number, 'null']
+            crudeFat:
+              type: [number, 'null']
+            crudeFibre:
+              type: [number, 'null']
+            calcium:
+              type: [number, 'null']
+            phosphorus:
+              type: [number, 'null']
+            copper:
+              type: [number, 'null']
+        additives:
+          type: array
+          items:
+            type: string
+        ionophores:
+          type: array
+          description: Coccidiostats found in the additives (Monensin & Co.) – deadly for horses
+          items:
+            type: string
     LabelValues:
       type: object
       description: As printed on the label (as fed) – crude nutrients, calcium and phosphorus in %, copper in mg/kg
@@ -3582,6 +3655,12 @@ components:
             $ref: "#/components/schemas/FarmSpecies"
         botanicalName:
           type: [string, 'null']
+        additives:
+          type: [array, 'null']
+          maxItems: 30
+          items:
+            type: string
+            maxLength: 120
     RationItem:
       type: object
       required: [grams]
@@ -3640,7 +3719,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [toxic, foreignMineral, copper, withdrawal]
+          enum: [toxic, foreignMineral, copper, ionophore, withdrawal]
         text:
           type: string
     RationEvaluation:

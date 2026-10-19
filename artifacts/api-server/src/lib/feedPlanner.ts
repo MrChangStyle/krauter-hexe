@@ -2,7 +2,8 @@
  * Futterplaner, step 1 (docs/futterplaner.md): a farm's own feeds, the daily
  * ration of an animal or a herd, and its check against the need of the
  * species and life stage – with the warnings that cannot be dismissed (toxic
- * plants, mineral feed for another species, a running withdrawal period).
+ * plants, mineral feed for another species, coccidiostats outside poultry, a
+ * running withdrawal period).
  * Fixed rules only; no AI.
  */
 
@@ -21,6 +22,7 @@ import { and, asc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { archiveKindFor, statusFor } from './farmAi';
+import { ionophoresIn } from './feedLabel';
 import { FEED_CATALOG, feedByKey, type FeedCategory, type FeedValues } from './feedCatalog';
 import { FEED_NEEDS, LIFE_STAGES, checkRation, needFor, type LifeStage, type NutrientCheck } from './feedNeeds';
 import { berlinDay } from './monitoring';
@@ -63,6 +65,7 @@ export interface FarmFeedInput {
   label: LabelValues;
   forSpecies?: string[] | null;
   botanicalName?: unknown;
+  additives?: string[] | null;
 }
 
 const r2 = (x: number) => Math.round(x * 100) / 100;
@@ -83,6 +86,11 @@ export function fromLabel(dryMatter: number, label: LabelValues): FeedValues {
 
 export async function listFarmFeeds(farmId: number) {
   return db.select().from(farmFeedsTable).where(eq(farmFeedsTable.farmId, farmId)).orderBy(asc(farmFeedsTable.name));
+}
+
+function cleanAdditives(raw: string[] | null | undefined): string[] | null {
+  const list = (raw ?? []).map((a) => a.replace(/\s+/g, ' ').trim().slice(0, 120)).filter(Boolean).slice(0, 30);
+  return list.length ? list : null;
 }
 
 export async function addFarmFeed(farmId: number, input: FarmFeedInput) {
@@ -106,6 +114,7 @@ export async function addFarmFeed(farmId: number, input: FarmFeedInput) {
       values: fromLabel(dm, l),
       forSpecies: forSpecies?.length ? forSpecies : null,
       botanicalName: text(input.botanicalName, 80, 'Der botanische Name'),
+      additives: cleanAdditives(input.additives),
     })
     .returning();
   return row!;
@@ -221,7 +230,7 @@ export async function listRations(farmId: number) {
 // ── Evaluation ───────────────────────────────────────────────────────────────
 
 export interface Warning {
-  kind: 'toxic' | 'foreignMineral' | 'copper' | 'withdrawal';
+  kind: 'toxic' | 'foreignMineral' | 'copper' | 'ionophore' | 'withdrawal';
   text: string;
 }
 
@@ -291,6 +300,18 @@ interface ResolvedItem {
   values: FeedValues;
   forSpecies: string[] | null;
   botanicalName: string | null;
+  additives: string[] | null;
+}
+
+/** Feeds with a coccidiostat like Monensin – deadly for horses, meant for poultry only. */
+function ionophoreWarnings(species: FarmSpecies, items: ResolvedItem[]): Warning[] {
+  if (species === 'poultry') return [];
+  return items.flatMap((r) => {
+    const found = ionophoresIn(r.additives ?? []);
+    if (found.length === 0) return [];
+    const harm = species === 'horse' ? 'schon kleine Mengen sind für Pferde tödlich' : `nur für Geflügel bestimmt, für ${SPECIES_DE[species]} gefährlich`;
+    return [{ kind: 'ionophore' as const, text: `${r.name} enthält ${found.join(', ')} (Kokzidiostatikum) – ${harm}.` }];
+  });
 }
 
 export interface RationEvaluation {
@@ -323,8 +344,8 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
     const resolved = row.items.flatMap((i): ResolvedItem[] => {
       const catalog = i.feedKey ? feedByKey(i.feedKey) : undefined;
       const mine = i.feedId != null ? own.get(i.feedId) : undefined;
-      if (catalog) return [{ ref: { feedKey: catalog.key, feedId: null }, name: catalog.name, grams: i.grams, values: catalog as FeedValues, forSpecies: catalog.forSpecies as string[] | null, botanicalName: catalog.botanicalName }];
-      if (mine) return [{ ref: { feedKey: null, feedId: mine.id }, name: mine.name, grams: i.grams, values: mine.values, forSpecies: mine.forSpecies, botanicalName: mine.botanicalName }];
+      if (catalog) return [{ ref: { feedKey: catalog.key, feedId: null }, name: catalog.name, grams: i.grams, values: catalog as FeedValues, forSpecies: catalog.forSpecies as string[] | null, botanicalName: catalog.botanicalName, additives: null }];
+      if (mine) return [{ ref: { feedKey: null, feedId: mine.id }, name: mine.name, grams: i.grams, values: mine.values, forSpecies: mine.forSpecies, botanicalName: mine.botanicalName, additives: mine.additives }];
       return [];
     });
     const stage = row.stage as LifeStage;
@@ -338,6 +359,7 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
           kind: 'foreignMineral' as const,
           text: `${r.name} ist für ${r.forSpecies!.map((s) => SPECIES_DE[s as FarmSpecies] ?? s).join(', ')} gemacht, nicht für ${SPECIES_DE[target.species]}${target.species === 'sheep' ? ' – zu viel Kupfer ist für Schafe giftig.' : '.'}`,
         })),
+      ...ionophoreWarnings(target.species, resolved),
       ...(result?.checks.filter((c) => c.nutrient === 'copper' && c.severe).map((c) => ({ kind: 'copper' as const, text: `Kupfer ${c.value} mg/kg Trockenmasse – über ${c.max} ist für Schafe giftig.` })) ?? []),
       ...(await withdrawals(farmId, target.animalIds, today)),
     ];

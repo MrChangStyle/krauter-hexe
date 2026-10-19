@@ -125,6 +125,7 @@ Plan and steps in `docs/futterplaner.md`. Fixed rules, no AI (`lib/feedCatalog.t
 - **One ration per animal or herd** (partial unique indexes); a herd ration is per animal, group totals use the active members. Cats and dogs get no ration check.
 - **Warnings cannot be dismissed**: plants the archive marks toxic for the species, mineral feed made for another species and copper over the limit (sheep), running withdrawal periods from the medical records. No kitchen scraps are suggested (VO (EG) 1069/2009 notice on the page).
 - A feed in use cannot be deleted (409).
+- **Etikett per KI** (`lib/feedLabel.ts`, `POST /farms/:id/feeds/label`, farm AI limit): the model reads the label, the answer is coerced (implausible numbers → null, moisture → dry matter) and **nothing is saved** – the values fill the own-feed form and the user confirms them. Additives are stored with the feed (`farm_feeds.additives`); ionophore coccidiostats (Monensin, Salinomycin, …) give an `ionophore` warning for every species except poultry.
 
 ## Installation (Android/PWA)
 

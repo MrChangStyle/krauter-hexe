@@ -93,6 +93,8 @@ import type {
   GardenPlan,
   GeoReverseInput,
   GeoReverseResult,
+  Handover,
+  HandoverNoteInput,
   Harvest,
   HarvestInput,
   HealthStatus,
@@ -5398,6 +5400,155 @@ export const useDeleteMedicine = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteMedicineMutationOptions(options));
+    }
+
+export const getGetHandoverUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/handover`
+}
+
+/**
+ * @summary Vertretung – note, contacts, running withdrawal periods and recent treatments
+ */
+export const getHandover = async (farmId: number, options?: RequestInit): Promise<Handover> => {
+
+  return customFetch<Handover>(getGetHandoverUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHandoverQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/handover`
+    ] as const;
+    }
+
+
+export const getGetHandoverQueryOptions = <TData = Awaited<ReturnType<typeof getHandover>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHandover>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHandoverQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHandover>>> = ({ signal }) => getHandover(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHandover>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetHandoverQueryResult = NonNullable<Awaited<ReturnType<typeof getHandover>>>
+export type GetHandoverQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Vertretung – note, contacts, running withdrawal periods and recent treatments
+ */
+
+export function useGetHandover<TData = Awaited<ReturnType<typeof getHandover>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHandover>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetHandoverQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetHandoverNoteUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/handover-note`
+}
+
+/**
+ * @summary The note for whoever looks after the animals (admin)
+ */
+export const setHandoverNote = async (farmId: number,
+    handoverNoteInput: HandoverNoteInput, options?: RequestInit): Promise<Handover> => {
+
+  return customFetch<Handover>(getSetHandoverNoteUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(handoverNoteInput)
+  }
+);}
+
+
+
+
+
+export const getSetHandoverNoteMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setHandoverNote>>, TError,{farmId: number;data: BodyType<HandoverNoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setHandoverNote>>, TError,{farmId: number;data: BodyType<HandoverNoteInput>}, TContext> => {
+
+const mutationKey = ['setHandoverNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setHandoverNote>>, {farmId: number;data: BodyType<HandoverNoteInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  setHandoverNote(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetHandoverNoteMutationResult = NonNullable<Awaited<ReturnType<typeof setHandoverNote>>>
+    export type SetHandoverNoteMutationBody = BodyType<HandoverNoteInput>
+    export type SetHandoverNoteMutationError = ErrorType<unknown>
+
+    /**
+ * @summary The note for whoever looks after the animals (admin)
+ */
+export const useSetHandoverNote = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setHandoverNote>>, TError,{farmId: number;data: BodyType<HandoverNoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setHandoverNote>>,
+        TError,
+        {farmId: number;data: BodyType<HandoverNoteInput>},
+        TContext
+      > => {
+      return useMutation(getSetHandoverNoteMutationOptions(options));
     }
 
 export const getGetAppStatusUrl = () => {

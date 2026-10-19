@@ -5,7 +5,9 @@
  * - a farm always keeps at least one admin while it has members,
  * - a farm's last member cannot just leave – the farm is deleted instead
  *   (explicitly, with its name typed as confirmation),
- * - members are existing, approved, not blocked accounts, added by email.
+ * - members are existing, approved, not blocked accounts, added by email,
+ * - a Vertretung (stand-in) is a caretaker or guest with a last day of access;
+ *   admins never expire, so a farm cannot lose its admin by a date.
  */
 
 import {
@@ -18,9 +20,11 @@ import {
   usersTable,
   type FarmRole,
 } from '@workspace/db';
-import { and, asc, count, eq, inArray, isNotNull, sql } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, lt, sql } from 'drizzle-orm';
 
+import { addDays } from './feedSeason';
 import { deleteImageByUrl } from './imageStorage';
+import { berlinDay } from './monitoring';
 
 export class FarmError extends Error {
   constructor(
@@ -141,6 +145,27 @@ export interface FarmMember {
   email: string | null;
   role: FarmRole;
   isMe: boolean;
+  /** Vertretung: last day of access, or null. */
+  accessUntil: string | null;
+}
+
+/** A stand-in's last day: today up to a year ahead; never for admins. */
+export function accessUntilValue(raw: string | null | undefined, role: FarmRole, today = berlinDay()): string | null {
+  if (raw == null || raw === '') return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw) || raw < today || raw > addDays(today, 365)) {
+    throw new FarmError(400, 'Die Vertretung endet frühestens heute und höchstens in einem Jahr.');
+  }
+  if (role === 'admin') throw new FarmError(400, 'Eine Vertretung ist Betreuer oder Gast, kein Admin.');
+  return raw;
+}
+
+/** Memberships whose last day has passed – gone, like a member who left. */
+export async function removeExpiredMemberships(today = berlinDay()): Promise<number> {
+  const removed = await db
+    .delete(farmMembershipsTable)
+    .where(and(isNotNull(farmMembershipsTable.accessUntil), lt(farmMembershipsTable.accessUntil, today)))
+    .returning({ id: farmMembershipsTable.id });
+  return removed.length;
 }
 
 function displayNameOf(u: {
@@ -161,6 +186,7 @@ export async function listMembers(
     .select({
       userId: farmMembershipsTable.userId,
       role: farmMembershipsTable.role,
+      accessUntil: farmMembershipsTable.accessUntil,
       firstName: usersTable.firstName,
       lastName: usersTable.lastName,
       username: usersTable.username,
@@ -176,6 +202,7 @@ export async function listMembers(
     email: viewer.role === 'admin' ? r.email : null,
     role: r.role,
     isMe: r.userId === viewer.userId,
+    accessUntil: r.accessUntil,
   }));
 }
 
@@ -193,7 +220,9 @@ export async function addMember(
   actorId: string,
   rawEmail: unknown,
   role: FarmRole,
+  rawAccessUntil?: string | null,
 ): Promise<void> {
+  const accessUntil = accessUntilValue(rawAccessUntil, role);
   const now = Date.now();
   const recent = (invitesByActor.get(actorId) ?? []).filter((t) => now - t < DAY_MS);
   if (recent.length >= MAX_INVITES_PER_DAY) {
@@ -217,7 +246,7 @@ export async function addMember(
 
   const inserted = await db
     .insert(farmMembershipsTable)
-    .values({ farmId, userId: user.id, role })
+    .values({ farmId, userId: user.id, role, accessUntil })
     .onConflictDoNothing()
     .returning({ id: farmMembershipsTable.id });
   if (inserted.length === 0) throw new FarmError(409, 'Diese Person gehört schon zur Farm.');
@@ -233,8 +262,12 @@ async function adminsOf(tx: Tx, farmId: number): Promise<string[]> {
   return rows.map((r) => r.userId);
 }
 
-/** Changes a member's role, never leaving the farm without an admin. */
-export async function changeRole(farmId: number, targetUserId: string, role: FarmRole): Promise<void> {
+/**
+ * Changes a member's role – and the end of a Vertretung (undefined: as it is;
+ * becoming admin ends it) – never leaving the farm without an admin.
+ */
+export async function changeRole(farmId: number, targetUserId: string, role: FarmRole, rawAccessUntil?: string | null): Promise<void> {
+  const accessUntil = rawAccessUntil === undefined ? undefined : accessUntilValue(rawAccessUntil, role);
   await db.transaction(async (tx) => {
     await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('farm-members'), ${farmId})`);
     const [target] = await tx
@@ -250,7 +283,7 @@ export async function changeRole(farmId: number, targetUserId: string, role: Far
     }
     await tx
       .update(farmMembershipsTable)
-      .set({ role })
+      .set({ role, ...(role === 'admin' ? { accessUntil: null } : accessUntil !== undefined && { accessUntil }) })
       .where(and(eq(farmMembershipsTable.farmId, farmId), eq(farmMembershipsTable.userId, targetUserId)));
   });
 }

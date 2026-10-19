@@ -2,6 +2,7 @@ import { type NextFunction, type Request, type Response } from 'express';
 import { db, farmMembershipsTable, type FarmRole } from '@workspace/db';
 import { and, eq } from 'drizzle-orm';
 
+import { berlinDay } from '../lib/monitoring';
 import { requireApproved } from './requireApproved';
 
 /**
@@ -51,11 +52,12 @@ export function requireFarm(minRole: FarmRole) {
         return;
       }
       const userId = req.user!.id;
-      db.select({ role: farmMembershipsTable.role })
+      db.select({ role: farmMembershipsTable.role, accessUntil: farmMembershipsTable.accessUntil })
         .from(farmMembershipsTable)
         .where(and(eq(farmMembershipsTable.farmId, farmId), eq(farmMembershipsTable.userId, userId)))
         .then(([membership]) => {
-          if (!membership) {
+          // A Vertretung past its last day is no member any more.
+          if (!membership || (membership.accessUntil !== null && membership.accessUntil < berlinDay())) {
             res.status(404).json({ error: 'Farm nicht gefunden.' });
             return;
           }

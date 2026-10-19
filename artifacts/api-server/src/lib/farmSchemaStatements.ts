@@ -27,20 +27,25 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"postal_code" text,
 	"latitude" double precision,
-	"longitude" double precision
+	"longitude" double precision,
+	"handover_note" text
 )`,
   // Wetter: where the farm is.
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "postal_code" text`,
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "latitude" double precision`,
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "longitude" double precision`,
+  // Vertretung.
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "handover_note" text`,
   `CREATE TABLE IF NOT EXISTS "farm_memberships" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,
 	"user_id" text NOT NULL,
 	"role" "farm_role" DEFAULT 'caretaker' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"access_until" date,
 	CONSTRAINT "farm_memberships_user_farm_unique" UNIQUE("user_id","farm_id")
 )`,
+  `ALTER TABLE "farm_memberships" ADD COLUMN IF NOT EXISTS "access_until" date`,
   `CREATE TABLE IF NOT EXISTS "herds" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

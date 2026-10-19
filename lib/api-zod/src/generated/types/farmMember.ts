@@ -17,4 +17,9 @@ export interface FarmMember {
   email: string | null;
   role: FarmRole;
   isMe: boolean;
+  /**
+     * Vertretung – last day of access (YYYY-MM-DD)
+     * @nullable
+     */
+  accessUntil: string | null;
 }

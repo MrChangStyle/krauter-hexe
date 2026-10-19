@@ -144,6 +144,12 @@ Plan in `docs/wetter.md` (`lib/farmWeather.ts`, `routes/farm-weather.ts`, card `
 - A health record may pick a medicine: the dose is required and comes off the stock (`adjustStock`, never below 0); an empty medication name and withdrawal period are filled from the medicine – the withdrawal for the animal's species is the longest of what it gives (`withdrawalFor`: poultry eggs/meat, ruminants milk/meat). A new use of an archived medicine, or one expired on the treatment date, is refused. Editing books the old dose back and the new one out; deleting a record gives its dose back. Records return `doseUnit` (joined from the medicine), the vet export has a column "Menge, Charge".
 - `sendMedicineDigests()` (push cron, 07:30): 30 days before and on the expiry day, once per farm and day (`farm_push_log`, topic `medicines`).
 
+## Vertretung (Übergabe)
+
+`lib/farmHandover.ts`, `farm_memberships.access_until`, `farms.handover_note`, page `/farm/uebergabe`.
+- A stand-in is a caretaker or guest with a last day of access (`accessUntilValue`: today … one year; never an admin – becoming admin clears it, so a date can never leave a farm without its admin). `requireFarm` and the farm list treat a membership past that day as gone at once; the push cron deletes them (`removeExpiredMemberships`) before sending anything, so stand-ins get no reminders afterwards.
+- The handover page combines the admins' note, today's due stall tasks (existing task endpoints, tick off), running withdrawal periods, the farm weather, treatments of the last 14 days and the admins' names. A stand-in sees a banner on the farm page.
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

@@ -9,4 +9,9 @@ import type { FarmRole } from './farmRole';
 
 export interface ChangeFarmRoleInput {
   role: FarmRole;
+  /**
+     * Vertretung – last day of access; omitted keeps it, null ends the limit
+     * @nullable
+     */
+  accessUntil?: string | null;
 }

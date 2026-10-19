@@ -11,7 +11,7 @@ import {
   Trash2,
   UserPlus,
   Users,
-  X, Wheat, Pill } from "lucide-react";
+  X, Wheat, Pill, Handshake } from "lucide-react";
 import {
   getListFarmMembersQueryKey,
   useAddFarmMember,
@@ -27,6 +27,8 @@ import {
   type FarmSummary,
 } from "@workspace/api-client-react";
 import { FarmWeatherCard } from "@/components/farm-weather-card";
+import { deDay } from "@/lib/medicine-labels";
+import { berlinToday } from "@/lib/weather-labels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -143,6 +145,8 @@ function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () => void }
   const members = useListFarmMembers(farm.id);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<FarmRole>("caretaker");
+  // Vertretung: last day of access (empty: no end). Not for admins.
+  const [until, setUntil] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
 
   const setList = (list: FarmMember[]) =>
@@ -153,6 +157,7 @@ function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () => void }
       onSuccess(list) {
         setList(list);
         setEmail("");
+        setUntil("");
         setAddError(null);
         toast({ title: "Mitglied hinzugefügt" });
       },
@@ -185,7 +190,7 @@ function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () => void }
   function submitAdd(event: FormEvent) {
     event.preventDefault();
     if (!email.trim()) return;
-    add.mutate({ farmId: farm.id, data: { email: email.trim(), role } });
+    add.mutate({ farmId: farm.id, data: { email: email.trim(), role, accessUntil: role !== "admin" && until ? until : null } });
   }
 
   const me = members.data?.find((m) => m.isMe);
@@ -209,6 +214,27 @@ function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () => void }
                   {m.isMe && <span className="font-normal text-muted-foreground"> (du)</span>}
                 </p>
                 {m.email && <p className="truncate text-xs text-muted-foreground">{m.email}</p>}
+                {m.accessUntil && (
+                  <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
+                    Vertretung bis {deDay(m.accessUntil)}
+                    {isAdmin && (
+                      <>
+                        {" · "}
+                        <label className="sr-only" htmlFor={`until-${m.userId}`}>{`Vertretung von ${m.displayName} bis`}</label>
+                        <input
+                          id={`until-${m.userId}`}
+                          type="date"
+                          className="rounded border border-input bg-background px-1 text-xs"
+                          value={m.accessUntil}
+                          min={berlinToday()}
+                          onChange={(e) =>
+                            e.target.value && change.mutate({ farmId: farm.id, userId: m.userId, data: { role: m.role, accessUntil: e.target.value } })
+                          }
+                        />
+                      </>
+                    )}
+                  </p>
+                )}
               </div>
               {isAdmin ? (
                 <select
@@ -280,8 +306,17 @@ function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () => void }
               Hinzufügen
             </Button>
           </div>
+          {role !== "admin" && (
+            <div className="flex items-center gap-2">
+              <Label htmlFor="member-until" className="text-xs">
+                Vertretung bis (freiwillig)
+              </Label>
+              <Input id="member-until" type="date" className="h-8 w-40" min={berlinToday()} value={until} onChange={(e) => setUntil(e.target.value)} />
+            </div>
+          )}
           <p className="text-xs text-muted-foreground">
             {FARM_ROLE_LABELS[role]}: {FARM_ROLE_HINTS[role]}
+            {role !== "admin" && until && ` Der Zugang endet nach dem ${deDay(until)} von selbst.`}
           </p>
           {addError && (
             <p role="alert" className="text-xs text-destructive">
@@ -444,6 +479,12 @@ export default function FarmPage() {
         </div>
       </div>
 
+      {farm.accessUntil && (
+        <Link href="/farm/uebergabe" className="block rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+          Du vertrittst hier bis {deDay(farm.accessUntil)}. <span className="underline">Zur Übergabe</span> – was heute zu tun ist und was du wissen musst.
+        </Link>
+      )}
+
       <FarmWeatherCard farm={farm} />
 
       <FarmTasksSection farm={farm} />
@@ -460,6 +501,18 @@ export default function FarmPage() {
         <span className="min-w-0 flex-1">
           <span className="block font-semibold">Futterplaner</span>
           <span className="block text-sm text-muted-foreground">Rationen, Bedarf, Ampel und Warnungen</span>
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </Link>
+
+      <Link
+        href="/farm/uebergabe"
+        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
+      >
+        <Handshake className="h-5 w-5 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Übergabe & Vertretung</span>
+          <span className="block text-sm text-muted-foreground">Was jemand wissen muss, der die Tiere ein paar Tage versorgt</span>
         </span>
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
       </Link>

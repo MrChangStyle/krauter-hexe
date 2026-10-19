@@ -77,6 +77,8 @@ export const farmsTable = pgTable("farms", {
   postalCode: text("postal_code"),
   latitude: doublePrecision("latitude"),
   longitude: doublePrecision("longitude"),
+  // Vertretung: what someone looking after the animals needs to know (keys, vet, quirks).
+  handoverNote: text("handover_note"),
 });
 
 export const farmMembershipsTable = pgTable(
@@ -91,6 +93,9 @@ export const farmMembershipsTable = pgTable(
     userId: text("user_id").notNull(),
     role: farmRoleEnum("role").notNull().default("caretaker"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Vertretung: last day of access (Berlin date); null = no end. Expired
+    // memberships count as gone and are removed by the minute cron.
+    accessUntil: date("access_until", { mode: "string" }),
   },
   (table) => [
     unique("farm_memberships_user_farm_unique").on(table.userId, table.farmId),

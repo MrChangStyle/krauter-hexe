@@ -17,6 +17,7 @@ import { sendGardenDigests } from "./gardenCalendar";
 import { sendFeedDigests } from "./feedStock";
 import { sendWeatherDigests } from "./farmWeather";
 import { sendMedicineDigests } from "./medicines";
+import { removeExpiredMemberships } from "./farmMembers";
 import { sendPushToUser } from "./webPush";
 
 // All reminder times in the app are entered as German local wall-clock times
@@ -147,6 +148,10 @@ export function berlinTodayKey(): string {
 export async function triggerDueNotifications(): Promise<number> {
   const { hhmm, dateKey } = berlinNow();
   let triggered = 0;
+
+  // Vertretung: a stand-in past their last day is no member any more – before
+  // any push, so nobody gets reminders for a farm they left.
+  await removeExpiredMemberships(dateKey);
 
   // ── Task reminders ────────────────────────────────────────────────────────
   const dueTasks = await db

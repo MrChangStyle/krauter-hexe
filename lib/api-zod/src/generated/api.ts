@@ -2275,6 +2275,70 @@ export const DeleteMedicineResponse = zod.void()
 
 
 /**
+ * @summary Vertretung – note, contacts, running withdrawal periods and recent treatments
+ */
+export const GetHandoverParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetHandoverResponse = zod.object({
+  "note": zod.string().nullable(),
+  "accessUntil": zod.string().nullable(),
+  "contacts": zod.array(zod.object({
+  "displayName": zod.string()
+})),
+  "withdrawals": zod.array(zod.object({
+  "animalName": zod.string(),
+  "medication": zod.string().nullable(),
+  "until": zod.string()
+})),
+  "recentHealth": zod.array(zod.object({
+  "animalName": zod.string(),
+  "date": zod.string(),
+  "diagnosis": zod.string(),
+  "treatment": zod.string().nullable(),
+  "medication": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary The note for whoever looks after the animals (admin)
+ */
+export const SetHandoverNoteParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const setHandoverNoteBodyNoteMax = 2000;
+
+
+
+export const SetHandoverNoteBody = zod.object({
+  "note": zod.string().max(setHandoverNoteBodyNoteMax).nullish()
+})
+
+export const SetHandoverNoteResponse = zod.object({
+  "note": zod.string().nullable(),
+  "accessUntil": zod.string().nullable(),
+  "contacts": zod.array(zod.object({
+  "displayName": zod.string()
+})),
+  "withdrawals": zod.array(zod.object({
+  "animalName": zod.string(),
+  "medication": zod.string().nullable(),
+  "until": zod.string()
+})),
+  "recentHealth": zod.array(zod.object({
+  "animalName": zod.string(),
+  "date": zod.string(),
+  "diagnosis": zod.string(),
+  "treatment": zod.string().nullable(),
+  "medication": zod.string().nullable()
+}))
+})
+
+
+/**
  * @summary The notice shown to everyone during a disruption (no sign-in needed)
  */
 export const GetAppStatusResponse = zod.object({
@@ -2648,7 +2712,8 @@ export const GetInsectImageResponse = zod.unknown()
 export const ListMyFarmsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
 })
 export const ListMyFarmsResponse = zod.array(ListMyFarmsResponseItem)
 
@@ -2667,7 +2732,8 @@ export const CreateFarmBody = zod.object({
 export const CreateFarmResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
 })
 
 
@@ -2677,7 +2743,8 @@ export const CreateFarmResponse = zod.object({
 export const EnsureOwnFarmResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
 })
 export const EnsureOwnFarmResponse = zod.array(EnsureOwnFarmResponseItem)
 
@@ -2694,7 +2761,8 @@ export const ListFarmMembersResponseItem = zod.object({
   "displayName": zod.string(),
   "email": zod.string().nullable().describe('Only filled in for admins.'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "isMe": zod.boolean()
+  "isMe": zod.boolean(),
+  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)')
 })
 export const ListFarmMembersResponse = zod.array(ListFarmMembersResponseItem)
 
@@ -2712,7 +2780,8 @@ export const addFarmMemberBodyEmailMax = 254;
 
 export const AddFarmMemberBody = zod.object({
   "email": zod.string().max(addFarmMemberBodyEmailMax),
-  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "accessUntil": zod.string().nullish().describe('Vertretung – last day of access; not for admins')
 })
 
 export const AddFarmMemberResponseItem = zod.object({
@@ -2720,7 +2789,8 @@ export const AddFarmMemberResponseItem = zod.object({
   "displayName": zod.string(),
   "email": zod.string().nullable().describe('Only filled in for admins.'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "isMe": zod.boolean()
+  "isMe": zod.boolean(),
+  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)')
 })
 export const AddFarmMemberResponse = zod.array(AddFarmMemberResponseItem)
 
@@ -2734,7 +2804,8 @@ export const ChangeFarmMemberRoleParams = zod.object({
 })
 
 export const ChangeFarmMemberRoleBody = zod.object({
-  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "accessUntil": zod.string().nullish().describe('Vertretung – last day of access; omitted keeps it, null ends the limit')
 })
 
 export const ChangeFarmMemberRoleResponseItem = zod.object({
@@ -2742,7 +2813,8 @@ export const ChangeFarmMemberRoleResponseItem = zod.object({
   "displayName": zod.string(),
   "email": zod.string().nullable().describe('Only filled in for admins.'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "isMe": zod.boolean()
+  "isMe": zod.boolean(),
+  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)')
 })
 export const ChangeFarmMemberRoleResponse = zod.array(ChangeFarmMemberRoleResponseItem)
 
@@ -4798,7 +4870,8 @@ export const RenameFarmBody = zod.object({
 export const RenameFarmResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
 })
 
 
@@ -4826,7 +4899,8 @@ export const GetFarmParams = zod.object({
 export const GetFarmResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.')
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
 })
 
 

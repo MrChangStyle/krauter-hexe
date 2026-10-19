@@ -32,3 +32,4 @@ export * from "./farm";
 export * from "./garden";
 export * from "./monitoring";
 export * from "./feed";
+export * from "./weather";

@@ -78,6 +78,17 @@ const STATEMENTS = [
 	"value" integer DEFAULT 0 NOT NULL,
 	CONSTRAINT "usage_daily_day_metric_pk" PRIMARY KEY("day","metric")
 )`,
+  // Wetter: one push per farm and day (schema/weather.ts).
+  `CREATE TABLE IF NOT EXISTS "weather_digest_log" (
+	"farm_id" integer NOT NULL,
+	"day" text NOT NULL,
+	"kinds" jsonb NOT NULL,
+	"sent_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "weather_digest_log_farm_id_day_pk" PRIMARY KEY("farm_id","day")
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "weather_digest_log" ADD CONSTRAINT "weather_digest_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
 ];
 
 export async function upgradeSchema(): Promise<void> {

@@ -463,6 +463,75 @@ export interface FeedCalendar {
   months: FeedCalendarMonthsItem[];
 }
 
+export type FarmLocationSource = typeof FarmLocationSource[keyof typeof FarmLocationSource];
+
+
+export const FarmLocationSource = {
+  farm: 'farm',
+  bed: 'bed',
+} as const;
+
+export interface FarmLocation {
+  source: FarmLocationSource;
+  /** @nullable */
+  postalCode: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+export interface FarmLocationInput {
+  /** @nullable */
+  postalCode?: string | null;
+  /** @nullable */
+  latitude?: number | null;
+  /** @nullable */
+  longitude?: number | null;
+}
+
+export type DayForecastIcon = typeof DayForecastIcon[keyof typeof DayForecastIcon];
+
+
+export const DayForecastIcon = {
+  sun: 'sun',
+  cloud: 'cloud',
+  rain: 'rain',
+  snow: 'snow',
+  storm: 'storm',
+} as const;
+
+export interface DayForecast {
+  date: string;
+  minTemp: number;
+  maxTemp: number;
+  precipitationMm: number;
+  maxGustKmh: number;
+  icon: DayForecastIcon;
+}
+
+export type WeatherWarningKind = typeof WeatherWarningKind[keyof typeof WeatherWarningKind];
+
+
+export const WeatherWarningKind = {
+  hardFrost: 'hardFrost',
+  frost: 'frost',
+  heat: 'heat',
+  storm: 'storm',
+  rain: 'rain',
+  dry: 'dry',
+} as const;
+
+export interface WeatherWarning {
+  kind: WeatherWarningKind;
+  date: string;
+  text: string;
+}
+
+export interface FarmWeather {
+  location: null | FarmLocation;
+  days: DayForecast[];
+  warnings: WeatherWarning[];
+}
+
 export interface FeedRemindersResult {
   created: number;
   updated: number;

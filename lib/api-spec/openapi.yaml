@@ -1449,6 +1449,50 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FeedCalendar"
+  /farms/{farmId}/weather:
+    get:
+      tags: [farm]
+      operationId: getFarmWeather
+      summary: Forecast for three days (DWD via Bright Sky) and fixed warnings for the animals and the garden
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The weather; without a location no days.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmWeather"
+  /farms/{farmId}/location:
+    put:
+      tags: [farm]
+      operationId: setFarmLocation
+      summary: Where the farm is – postal code or the phone's position, rounded to about 10 km (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmLocationInput"
+      responses:
+        "200":
+          description: The weather at the new location.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmWeather"
+        "422":
+          description: Postal code not found.
   /status:
     get:
       tags: [monitoring]
@@ -4220,6 +4264,72 @@ components:
                 type: array
                 items:
                   $ref: "#/components/schemas/CalendarCrop"
+    FarmLocation:
+      type: object
+      required: [source, postalCode, latitude, longitude]
+      properties:
+        source:
+          type: string
+          enum: [farm, bed]
+        postalCode:
+          type: [string, 'null']
+        latitude:
+          type: number
+        longitude:
+          type: number
+    FarmLocationInput:
+      type: object
+      properties:
+        postalCode:
+          type: [string, 'null']
+        latitude:
+          type: [number, 'null']
+        longitude:
+          type: [number, 'null']
+    DayForecast:
+      type: object
+      required: [date, minTemp, maxTemp, precipitationMm, maxGustKmh, icon]
+      properties:
+        date:
+          type: string
+        minTemp:
+          type: number
+        maxTemp:
+          type: number
+        precipitationMm:
+          type: number
+        maxGustKmh:
+          type: number
+        icon:
+          type: string
+          enum: [sun, cloud, rain, snow, storm]
+    WeatherWarning:
+      type: object
+      required: [kind, date, text]
+      properties:
+        kind:
+          type: string
+          enum: [hardFrost, frost, heat, storm, rain, dry]
+        date:
+          type: string
+        text:
+          type: string
+    FarmWeather:
+      type: object
+      required: [location, days, warnings]
+      properties:
+        location:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/FarmLocation"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayForecast"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/WeatherWarning"
     RationSeason:
       type: string
       enum: [all, summer, winter]

@@ -130,6 +130,13 @@ Plan and steps in `docs/futterplaner.md`. Fixed rules, no AI (`lib/feedCatalog.t
 - **Tipps & Rezepte** (`lib/feedRecipes.ts`, `lib/feedCalendar.ts`, `/farm/futter/tipps`, table `feed_recipes`): built-in recipes live in the code (`b:<key>`), sent-in ones in the table (`u:<id>`, status pending/approved/rejected) and are visible to others only after the app owner approves them (`/admin/feed-recipes`, card in Mehr); `recipeFlags()` marks scraps and poisonous ingredients for the owner, it does not block. The fodder calendar uses the garden catalog's harvest months, `FODDER_CROPS` of the Garten-Assistent and this season's `bed_plantings`.
 - **Etikett per KI** (`lib/feedLabel.ts`, `POST /farms/:id/feeds/label`, farm AI limit): the model reads the label, the answer is coerced (implausible numbers → null, moisture → dry matter) and **nothing is saved** – the values fill the own-feed form and the user confirms them. Additives are stored with the feed (`farm_feeds.additives`); ionophore coccidiostats (Monensin, Salinomycin, …) give an `ionophore` warning for every species except poultry.
 
+## Wetter für den Hof
+
+Plan in `docs/wetter.md` (`lib/farmWeather.ts`, `routes/farm-weather.ts`, card `components/farm-weather-card.tsx`; columns `farms.postal_code/latitude/longitude`, table `weather_digest_log`).
+- Location: the farm's own (admin sets postal code or GPS, rounded to 0.1°), else the first bed with one. Forecast: Bright Sky (DWD), three Berlin days from hourly records, cached an hour per rounded position; an unreachable service gives no days, never an error.
+- `weatherWarnings()` is pure: frost/hard frost/heat/storm/heavy rain by the species on the farm (no animals → none), plus a watering hint when beds are planted this season.
+- `sendWeatherDigests()` (push cron, 07:30) claims farm and day in `weather_digest_log` with the warning kinds and pushes only kinds that did not go out the day before; farms with nothing to warn about are claimed with `[]` so the cron does not ask again; a failed forecast is retried on the next call.
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

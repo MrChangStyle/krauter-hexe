@@ -1,0 +1,67 @@
+import { describe, expect, it, vi } from "vitest";
+
+vi.hoisted(() => {
+  process.env["DATABASE_URL"] ??= "postgres://unused@127.0.0.1:1/unused";
+});
+
+const { daysFromHours, weatherWarnings } = await import("./farmWeather");
+
+type Day = Parameters<typeof weatherWarnings>[0][number];
+const day = (date: string, over: Partial<Day> = {}): Day => ({ date, minTemp: 5, maxTemp: 15, precipitationMm: 2, maxGustKmh: 30, icon: "cloud", ...over });
+
+/** 24 hourly records of one day with Bright Sky's fields. */
+function hours(date: string, temp: (h: number) => number, extra: (h: number) => object = () => ({})) {
+  return Array.from({ length: 24 }, (_, h) => ({
+    timestamp: `${date}T${String(h).padStart(2, "0")}:00:00+01:00`,
+    temperature: temp(h),
+    precipitation: 0,
+    wind_gust_speed: 20,
+    icon: "clear-day",
+    ...extra(h),
+  }));
+}
+
+describe("forecast", () => {
+  it("sums up the hours of each Berlin day", () => {
+    const records = [
+      ...hours("2026-12-01", (h) => -4 + h * 0.5, (h) => (h >= 10 && h <= 14 ? { icon: "snow", precipitation: 0.4 } : {})),
+      ...hours("2026-12-02", () => 3, (h) => ({ icon: "cloudy", wind_gust_speed: h === 15 ? 82.4 : 30 })),
+      ...hours("2026-12-03", () => 2).slice(0, 6),
+    ];
+    expect(daysFromHours(records, "2026-12-01")).toEqual([
+      { date: "2026-12-01", minTemp: -4, maxTemp: 7.5, precipitationMm: 2, maxGustKmh: 20, icon: "snow" },
+      { date: "2026-12-02", minTemp: 3, maxTemp: 3, precipitationMm: 0, maxGustKmh: 82, icon: "cloud" },
+    ]);
+  });
+});
+
+describe("weather warnings", () => {
+  it("warns about frost for the animals, with what to do", () => {
+    const w = weatherWarnings([day("2026-12-01", { minTemp: -1 }), day("2026-12-02", { minTemp: -4.5 })], ["poultry", "guineaPig"], false);
+    expect(w).toEqual([
+      {
+        kind: "frost",
+        date: "2026-12-02",
+        text: "Frost bis −4,5 °C (morgen): Tränken frostfrei halten – mehrmals am Tag frisches Wasser, Einstreu dicker. Meerschweinchen frostfrei unterbringen.",
+      },
+    ]);
+    expect(weatherWarnings([day("2026-12-01", { minTemp: -12 })], ["rabbit"], false)[0]).toMatchObject({ kind: "hardFrost", text: expect.stringMatching(/^Strenger Frost bis −12 °C \(heute\).*Kaninchen/) });
+  });
+
+  it("knows that rabbits suffer from heat earlier", () => {
+    const warm = [day("2026-07-01", { maxTemp: 28.5 }), day("2026-07-02")];
+    expect(weatherWarnings(warm, ["poultry"], false)).toEqual([]);
+    expect(weatherWarnings(warm, ["rabbit", "goat"], false)[0]!.text).toMatch(/^Hitze bis 28,5 °C \(heute\).*Kaninchen und Meerschweinchen.*Weidetiere/);
+  });
+
+  it("warns about storm and heavy rain, and tells the garden to water when it is hot and dry", () => {
+    const w = weatherWarnings([day("2026-07-01", { maxTemp: 31, precipitationMm: 0 }), day("2026-07-02", { maxGustKmh: 90, precipitationMm: 0.5 })], ["sheep"], true);
+    expect(w.map((x) => [x.kind, x.date])).toEqual([["heat", "2026-07-01"], ["storm", "2026-07-02"], ["dry", "2026-07-01"]]);
+    expect(weatherWarnings([day("2026-07-01", { precipitationMm: 25 }), day("2026-07-02")], ["horse"], true).map((x) => x.kind)).toEqual(["rain"]);
+  });
+
+  it("says nothing about animals on a farm without animals, and nothing on mild days", () => {
+    expect(weatherWarnings([day("2026-12-01", { minTemp: -5 }), day("2026-12-02")], [], true)).toEqual([]);
+    expect(weatherWarnings([day("2026-05-01"), day("2026-05-02")], ["cattle"], true)).toEqual([]);
+  });
+});

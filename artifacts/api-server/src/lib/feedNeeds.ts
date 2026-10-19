@@ -59,7 +59,7 @@ export const FEED_NEEDS: Partial<Record<FarmSpecies, Partial<Record<LifeStage, N
     winter: n(3, 0.14, [12, 16], [18, 30], [4, 10], [3, 6], 0.3),
   },
   guineaPig: {
-    maintenance: n(1, 0.05, [14, 18], [12, 20], [5, 10], [3, 6], 0.1),
+    maintenance: n(1, 0.05, [14, 18], [15, 28], [5, 10], [3, 6], 0.1),
     pregnancy: n(1.2, 0.07, [18, 20], [10, 16], [8, 12], [4, 7], 0.15),
     growth: n(0.6, 0.04, [18, 20], [10, 16], [6, 10], [4, 7], 0.08),
   },

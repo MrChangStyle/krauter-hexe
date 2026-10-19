@@ -67,6 +67,8 @@ import type {
   FarmLocationInput,
   FarmMember,
   FarmNameInput,
+  FarmSetup,
+  FarmSetupDismissInput,
   FarmSpecies,
   FarmSummary,
   FarmTask,
@@ -126,6 +128,8 @@ import type {
   PushSubscriptionInput,
   PushTestResult,
   PushUnsubscribeInput,
+  QuickStartInput,
+  QuickStartResult,
   RationEvaluation,
   RationInput,
   RegisterInput,
@@ -5549,6 +5553,227 @@ export const useSetHandoverNote = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getSetHandoverNoteMutationOptions(options));
+    }
+
+export const getGetFarmSetupUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/setup`
+}
+
+/**
+ * @summary Hof einrichten – which setup steps are done (read from the data)
+ */
+export const getFarmSetup = async (farmId: number, options?: RequestInit): Promise<FarmSetup> => {
+
+  return customFetch<FarmSetup>(getGetFarmSetupUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFarmSetupQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/setup`
+    ] as const;
+    }
+
+
+export const getGetFarmSetupQueryOptions = <TData = Awaited<ReturnType<typeof getFarmSetup>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmSetup>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFarmSetupQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFarmSetup>>> = ({ signal }) => getFarmSetup(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFarmSetup>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFarmSetupQueryResult = NonNullable<Awaited<ReturnType<typeof getFarmSetup>>>
+export type GetFarmSetupQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Hof einrichten – which setup steps are done (read from the data)
+ */
+
+export function useGetFarmSetup<TData = Awaited<ReturnType<typeof getFarmSetup>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmSetup>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFarmSetupQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getDismissFarmSetupUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/setup`
+}
+
+/**
+ * @summary Hide or show the setup checklist for the farm (admin)
+ */
+export const dismissFarmSetup = async (farmId: number,
+    farmSetupDismissInput: FarmSetupDismissInput, options?: RequestInit): Promise<FarmSetup> => {
+
+  return customFetch<FarmSetup>(getDismissFarmSetupUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmSetupDismissInput)
+  }
+);}
+
+
+
+
+
+export const getDismissFarmSetupMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof dismissFarmSetup>>, TError,{farmId: number;data: BodyType<FarmSetupDismissInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof dismissFarmSetup>>, TError,{farmId: number;data: BodyType<FarmSetupDismissInput>}, TContext> => {
+
+const mutationKey = ['dismissFarmSetup'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof dismissFarmSetup>>, {farmId: number;data: BodyType<FarmSetupDismissInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  dismissFarmSetup(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DismissFarmSetupMutationResult = NonNullable<Awaited<ReturnType<typeof dismissFarmSetup>>>
+    export type DismissFarmSetupMutationBody = BodyType<FarmSetupDismissInput>
+    export type DismissFarmSetupMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Hide or show the setup checklist for the farm (admin)
+ */
+export const useDismissFarmSetup = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof dismissFarmSetup>>, TError,{farmId: number;data: BodyType<FarmSetupDismissInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof dismissFarmSetup>>,
+        TError,
+        {farmId: number;data: BodyType<FarmSetupDismissInput>},
+        TContext
+      > => {
+      return useMutation(getDismissFarmSetupMutationOptions(options));
+    }
+
+export const getFarmQuickStartUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/setup/quickstart`
+}
+
+/**
+ * @summary A group of animals in one go – group, numbered animals, starting ration and reminders (admin)
+ */
+export const farmQuickStart = async (farmId: number,
+    quickStartInput: QuickStartInput, options?: RequestInit): Promise<QuickStartResult> => {
+
+  return customFetch<QuickStartResult>(getFarmQuickStartUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(quickStartInput)
+  }
+);}
+
+
+
+
+
+export const getFarmQuickStartMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof farmQuickStart>>, TError,{farmId: number;data: BodyType<QuickStartInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof farmQuickStart>>, TError,{farmId: number;data: BodyType<QuickStartInput>}, TContext> => {
+
+const mutationKey = ['farmQuickStart'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof farmQuickStart>>, {farmId: number;data: BodyType<QuickStartInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  farmQuickStart(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type FarmQuickStartMutationResult = NonNullable<Awaited<ReturnType<typeof farmQuickStart>>>
+    export type FarmQuickStartMutationBody = BodyType<QuickStartInput>
+    export type FarmQuickStartMutationError = ErrorType<unknown>
+
+    /**
+ * @summary A group of animals in one go – group, numbered animals, starting ration and reminders (admin)
+ */
+export const useFarmQuickStart = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof farmQuickStart>>, TError,{farmId: number;data: BodyType<QuickStartInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof farmQuickStart>>,
+        TError,
+        {farmId: number;data: BodyType<QuickStartInput>},
+        TContext
+      > => {
+      return useMutation(getFarmQuickStartMutationOptions(options));
     }
 
 export const getGetAppStatusUrl = () => {

@@ -7,10 +7,15 @@
  * Run the integration files one after another (--no-file-parallelism).
  */
 
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import express, { type NextFunction, type Request, type Response } from "express";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
+
+// The farm routes reach the Futterplaner (Hof einrichten), which loads the AI client.
+vi.hoisted(() => {
+  process.env["GEMINI_API_KEY"] ??= "test-key";
+});
 
 const testUrl = process.env["TEST_DATABASE_URL"];
 const enabled =

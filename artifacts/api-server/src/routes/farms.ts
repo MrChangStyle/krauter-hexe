@@ -9,7 +9,12 @@ import {
   CreateFarmBody,
   CreateFarmResponse,
   DeleteFarmBody,
+  DismissFarmSetupBody,
+  DismissFarmSetupResponse,
   EnsureOwnFarmResponse,
+  FarmQuickStartBody,
+  FarmQuickStartResponse,
+  GetFarmSetupResponse,
   GetFarmResponse,
   GetHandoverResponse,
   ListFarmMembersResponse,
@@ -21,6 +26,8 @@ import {
 } from '@workspace/api-zod';
 
 import { handover, setHandoverNote } from '../lib/farmHandover';
+import { FarmDataError } from '../lib/farmAnimals';
+import { dismissSetup, farmSetup, quickStart } from '../lib/farmSetup';
 import { berlinDay } from '../lib/monitoring';
 import { requireApproved } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
@@ -190,6 +197,38 @@ router.put('/farms/:farmId/handover-note', requireFarm('admin'), async (req, res
   }
   await setHandoverNote(req.farm!.farmId, body.data.note);
   res.json(SetHandoverNoteResponse.parse(await handover(req.farm!.farmId, req.farm!.userId)));
+});
+
+// ── Hof einrichten ────────────────────────────────────────────────────────────
+
+router.get('/farms/:farmId/setup', requireFarm('guest'), async (req, res): Promise<void> => {
+  res.json(GetFarmSetupResponse.parse(await farmSetup(req.farm!.farmId)));
+});
+
+router.put('/farms/:farmId/setup', requireFarm('admin'), async (req, res): Promise<void> => {
+  const body = DismissFarmSetupBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: 'Bitte prüfe deine Eingaben.' });
+    return;
+  }
+  res.json(DismissFarmSetupResponse.parse(await dismissSetup(req.farm!.farmId, body.data.dismissed)));
+});
+
+router.post('/farms/:farmId/setup/quickstart', requireFarm('admin'), async (req, res): Promise<void> => {
+  const body = FarmQuickStartBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: 'Bitte wähle eine Tierart und 1 bis 50 Tiere.' });
+    return;
+  }
+  try {
+    res.status(201).json(FarmQuickStartResponse.parse(await quickStart(req.farm!.farmId, body.data)));
+  } catch (err) {
+    if (err instanceof FarmDataError) {
+      res.status(err.status).json({ error: err.message });
+      return;
+    }
+    throw err;
+  }
 });
 
 export default router;

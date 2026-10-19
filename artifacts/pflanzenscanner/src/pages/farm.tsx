@@ -26,6 +26,7 @@ import {
   type FarmRole,
   type FarmSummary,
 } from "@workspace/api-client-react";
+import { FarmSetupCard } from "@/components/farm-setup-card";
 import { FarmWeatherCard } from "@/components/farm-weather-card";
 import { deDay } from "@/lib/medicine-labels";
 import { berlinToday } from "@/lib/weather-labels";
@@ -485,9 +486,15 @@ export default function FarmPage() {
         </Link>
       )}
 
-      <FarmWeatherCard farm={farm} />
+      <FarmSetupCard farm={farm} onRename={() => openDialog("rename")} />
 
-      <FarmTasksSection farm={farm} />
+      <div id="wetter" className="scroll-mt-4">
+        <FarmWeatherCard farm={farm} />
+      </div>
+
+      <div id="aufgaben" className="scroll-mt-4">
+        <FarmTasksSection farm={farm} />
+      </div>
 
       <FarmAnimalsSection farm={farm} />
 
@@ -541,13 +548,15 @@ export default function FarmPage() {
         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
       </Link>
 
-      <MembersCard
-        farm={farm}
-        onLeft={() => {
-          setActiveId(null);
-          reload();
-        }}
-      />
+      <div id="mitglieder" className="scroll-mt-4">
+        <MembersCard
+          farm={farm}
+          onLeft={() => {
+            setActiveId(null);
+            reload();
+          }}
+        />
+      </div>
 
       {isAdmin && (
         <button

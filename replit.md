@@ -150,6 +150,13 @@ Plan in `docs/wetter.md` (`lib/farmWeather.ts`, `routes/farm-weather.ts`, card `
 - A stand-in is a caretaker or guest with a last day of access (`accessUntilValue`: today … one year; never an admin – becoming admin clears it, so a date can never leave a farm without its admin). `requireFarm` and the farm list treat a membership past that day as gone at once; the push cron deletes them (`removeExpiredMemberships`) before sending anything, so stand-ins get no reminders afterwards.
 - The handover page combines the admins' note, today's due stall tasks (existing task endpoints, tick off), running withdrawal periods, the farm weather, treatments of the last 14 days and the admins' names. A stand-in sees a banner on the farm page.
 
+## Hof einrichten
+
+`lib/farmSetup.ts`, routes in `routes/farms.ts`, card `components/farm-setup-card.tsx` (admins, above the weather on /farm), column `farms.setup_dismissed_at`.
+- The checklist (name, location, animals, rations, tasks, beds, members) is read from the data on every request – nothing is ticked by hand; a bed with a location counts for the weather like in `farmLocation`. Hiding it is per farm.
+- Quick start: one group with numbered animals (`H-1`, `H-2`, … – free numbers continue after existing ones; birth date and sex unknown, renamed later), a starting ration per species from `START_RATIONS` (a unit test checks each passes the Futterplaner without red) with its feeding reminders, weekly "Ausmisten" and, for poultry, daily "Eier sammeln". Cats and dogs get no ration.
+- The farm routes now reach the Futterplaner (and through it the AI client); tests importing `routes/farms` set `GEMINI_API_KEY` like the others.
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

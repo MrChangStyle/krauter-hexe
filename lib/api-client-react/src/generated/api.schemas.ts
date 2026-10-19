@@ -5,6 +5,268 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type FeedCategory = typeof FeedCategory[keyof typeof FeedCategory];
+
+
+export const FeedCategory = {
+  roughage: 'roughage',
+  fresh: 'fresh',
+  grain: 'grain',
+  compound: 'compound',
+  vegetable: 'vegetable',
+  mineral: 'mineral',
+} as const;
+
+export type LifeStage = typeof LifeStage[keyof typeof LifeStage];
+
+
+export const LifeStage = {
+  maintenance: 'maintenance',
+  growth: 'growth',
+  laying: 'laying',
+  molt: 'molt',
+  pregnancy: 'pregnancy',
+  lactation: 'lactation',
+  winter: 'winter',
+} as const;
+
+/**
+ * Per kg dry matter; dryMatter is % as fed
+ */
+export interface FeedValues {
+  dryMatter: number;
+  /** % of dry matter */
+  crudeProtein: number;
+  crudeFat: number;
+  crudeFibre: number;
+  /** g per kg dry matter */
+  calcium: number;
+  phosphorus: number;
+  /**
+     * mg per kg dry matter
+     * @nullable
+     */
+  copper: number | null;
+}
+
+export type FarmSpecies = typeof FarmSpecies[keyof typeof FarmSpecies];
+
+
+export const FarmSpecies = {
+  poultry: 'poultry',
+  rabbit: 'rabbit',
+  guineaPig: 'guineaPig',
+  cat: 'cat',
+  horse: 'horse',
+  dog: 'dog',
+  goat: 'goat',
+  sheep: 'sheep',
+  cattle: 'cattle',
+  pig: 'pig',
+  other: 'other',
+} as const;
+
+export type Feed = FeedValues & ({
+  key: string;
+  name: string;
+  category: FeedCategory;
+  /** @nullable */
+  forSpecies: FarmSpecies[] | null;
+  /** @nullable */
+  botanicalName: string | null;
+  /** @nullable */
+  hint: string | null;
+});
+
+export type FeedReferenceSpeciesItem = {
+  species: FarmSpecies;
+  stages: LifeStage[];
+  hasNeeds: boolean;
+};
+
+export interface FeedReference {
+  feeds: Feed[];
+  species: FeedReferenceSpeciesItem[];
+}
+
+export interface FarmFeed {
+  id: number;
+  name: string;
+  category: FeedCategory;
+  values: FeedValues;
+  /** @nullable */
+  forSpecies: string[] | null;
+  /** @nullable */
+  botanicalName: string | null;
+}
+
+/**
+ * As printed on the label (as fed) – crude nutrients, calcium and phosphorus in %, copper in mg/kg
+ */
+export interface LabelValues {
+  crudeProtein: number;
+  crudeFat: number;
+  crudeFibre: number;
+  calcium: number;
+  phosphorus: number;
+  /** @nullable */
+  copper?: number | null;
+}
+
+export interface FarmFeedInput {
+  /** @maxLength 80 */
+  name: string;
+  category: FeedCategory;
+  /** % as fed (88 for dry feed) */
+  dryMatter: number;
+  label: LabelValues;
+  /** @nullable */
+  forSpecies?: FarmSpecies[] | null;
+  /** @nullable */
+  botanicalName?: string | null;
+}
+
+export interface RationItem {
+  /** @nullable */
+  feedKey?: string | null;
+  /** @nullable */
+  feedId?: number | null;
+  /** As fed, per animal and day */
+  grams: number;
+}
+
+export type RationInputTimesItem = typeof RationInputTimesItem[keyof typeof RationInputTimesItem];
+
+
+export const RationInputTimesItem = {
+  morgens: 'morgens',
+  mittags: 'mittags',
+  abends: 'abends',
+} as const;
+
+export interface RationInput {
+  /** @nullable */
+  animalId?: number | null;
+  /** @nullable */
+  herdId?: number | null;
+  stage: LifeStage;
+  items: RationItem[];
+  times: RationInputTimesItem[];
+  /** @nullable */
+  waterL?: number | null;
+}
+
+export type NutrientCheckNutrient = typeof NutrientCheckNutrient[keyof typeof NutrientCheckNutrient];
+
+
+export const NutrientCheckNutrient = {
+  amount: 'amount',
+  crudeProtein: 'crudeProtein',
+  crudeFibre: 'crudeFibre',
+  calcium: 'calcium',
+  phosphorus: 'phosphorus',
+  copper: 'copper',
+} as const;
+
+export type NutrientCheckStatus = typeof NutrientCheckStatus[keyof typeof NutrientCheckStatus];
+
+
+export const NutrientCheckStatus = {
+  ok: 'ok',
+  low: 'low',
+  high: 'high',
+} as const;
+
+export interface NutrientCheck {
+  nutrient: NutrientCheckNutrient;
+  value: number;
+  min: number;
+  max: number;
+  status: NutrientCheckStatus;
+  severe: boolean;
+  /** @nullable */
+  tip: string | null;
+}
+
+export type FeedWarningKind = typeof FeedWarningKind[keyof typeof FeedWarningKind];
+
+
+export const FeedWarningKind = {
+  toxic: 'toxic',
+  foreignMineral: 'foreignMineral',
+  copper: 'copper',
+  withdrawal: 'withdrawal',
+} as const;
+
+export interface FeedWarning {
+  kind: FeedWarningKind;
+  text: string;
+}
+
+export type RationEvaluationTargetKind = typeof RationEvaluationTargetKind[keyof typeof RationEvaluationTargetKind];
+
+
+export const RationEvaluationTargetKind = {
+  animal: 'animal',
+  herd: 'herd',
+} as const;
+
+export type RationEvaluationTarget = {
+  kind: RationEvaluationTargetKind;
+  id: number;
+  name: string;
+  species: FarmSpecies;
+  count: number;
+};
+
+export type RationEvaluationItemsItem = {
+  /** @nullable */
+  feedKey: string | null;
+  /** @nullable */
+  feedId: number | null;
+  name: string;
+  grams: number;
+};
+
+export type RationEvaluationNeed = {
+  weightKg: number;
+  dmIntakeKg: number;
+  waterL: number;
+} | null;
+
+export type RationEvaluationValues = {
+  dmKg: number;
+  crudeProtein: number;
+  crudeFat: number;
+  crudeFibre: number;
+  calcium: number;
+  phosphorus: number;
+  /** @nullable */
+  copper: number | null;
+} | null;
+
+export type RationEvaluationGroup = {
+  feedKg: number;
+  /** @nullable */
+  waterL: number | null;
+};
+
+export interface RationEvaluation {
+  id: number;
+  target: RationEvaluationTarget;
+  stage: LifeStage;
+  items: RationEvaluationItemsItem[];
+  times: string[];
+  /** @nullable */
+  waterL: number | null;
+  need: RationEvaluationNeed;
+  values: RationEvaluationValues;
+  checks: NutrientCheck[];
+  warnings: FeedWarning[];
+  group: RationEvaluationGroup;
+  updatedAt: string;
+}
+
 export type AppStatusLevel = typeof AppStatusLevel[keyof typeof AppStatusLevel];
 
 
@@ -862,23 +1124,6 @@ export interface FarmSummary {
   name: string;
   role: FarmRole;
 }
-
-export type FarmSpecies = typeof FarmSpecies[keyof typeof FarmSpecies];
-
-
-export const FarmSpecies = {
-  poultry: 'poultry',
-  rabbit: 'rabbit',
-  guineaPig: 'guineaPig',
-  cat: 'cat',
-  horse: 'horse',
-  dog: 'dog',
-  goat: 'goat',
-  sheep: 'sheep',
-  cattle: 'cattle',
-  pig: 'pig',
-  other: 'other',
-} as const;
 
 export type AnimalSex = typeof AnimalSex[keyof typeof AnimalSex];
 

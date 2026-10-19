@@ -62,6 +62,8 @@ import type {
   FarmAnimal,
   FarmAnimalInput,
   FarmExport,
+  FarmFeed,
+  FarmFeedInput,
   FarmMember,
   FarmNameInput,
   FarmSpecies,
@@ -70,6 +72,7 @@ import type {
   FarmTaskInput,
   FavoriteIds,
   FeedLog,
+  FeedReference,
   FrostWarning,
   GardenBed,
   GardenBedInput,
@@ -108,6 +111,8 @@ import type {
   PushSubscriptionInput,
   PushTestResult,
   PushUnsubscribeInput,
+  RationEvaluation,
+  RationInput,
   RegisterInput,
   ReportGroup,
   ResolveReportsInput,
@@ -3460,6 +3465,527 @@ export const useDeleteUser = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteUserMutationOptions(options));
+    }
+
+export const getGetFeedReferenceUrl = () => {
+
+
+
+
+  return `/api/feeds/reference`
+}
+
+/**
+ * @summary Futtermittel-Liste (average values per kg dry matter) and the life stages per species
+ */
+export const getFeedReference = async ( options?: RequestInit): Promise<FeedReference> => {
+
+  return customFetch<FeedReference>(getGetFeedReferenceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFeedReferenceQueryKey = () => {
+    return [
+    `/api/feeds/reference`
+    ] as const;
+    }
+
+
+export const getGetFeedReferenceQueryOptions = <TData = Awaited<ReturnType<typeof getFeedReference>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFeedReference>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFeedReferenceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFeedReference>>> = ({ signal }) => getFeedReference({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFeedReference>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFeedReferenceQueryResult = NonNullable<Awaited<ReturnType<typeof getFeedReference>>>
+export type GetFeedReferenceQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Futtermittel-Liste (average values per kg dry matter) and the life stages per species
+ */
+
+export function useGetFeedReference<TData = Awaited<ReturnType<typeof getFeedReference>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFeedReference>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFeedReferenceQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListFarmFeedsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feeds`
+}
+
+/**
+ * @summary The farm's own feeds (from labels)
+ */
+export const listFarmFeeds = async (farmId: number, options?: RequestInit): Promise<FarmFeed[]> => {
+
+  return customFetch<FarmFeed[]>(getListFarmFeedsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFarmFeedsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/feeds`
+    ] as const;
+    }
+
+
+export const getListFarmFeedsQueryOptions = <TData = Awaited<ReturnType<typeof listFarmFeeds>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFarmFeeds>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFarmFeedsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFarmFeeds>>> = ({ signal }) => listFarmFeeds(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFarmFeeds>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFarmFeedsQueryResult = NonNullable<Awaited<ReturnType<typeof listFarmFeeds>>>
+export type ListFarmFeedsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary The farm's own feeds (from labels)
+ */
+
+export function useListFarmFeeds<TData = Awaited<ReturnType<typeof listFarmFeeds>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFarmFeeds>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFarmFeedsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddFarmFeedUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feeds`
+}
+
+/**
+ * @summary Save an own feed with the values from its label (caretaker or admin)
+ */
+export const addFarmFeed = async (farmId: number,
+    farmFeedInput: FarmFeedInput, options?: RequestInit): Promise<FarmFeed> => {
+
+  return customFetch<FarmFeed>(getAddFarmFeedUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmFeedInput)
+  }
+);}
+
+
+
+
+
+export const getAddFarmFeedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addFarmFeed>>, TError,{farmId: number;data: BodyType<FarmFeedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addFarmFeed>>, TError,{farmId: number;data: BodyType<FarmFeedInput>}, TContext> => {
+
+const mutationKey = ['addFarmFeed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addFarmFeed>>, {farmId: number;data: BodyType<FarmFeedInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  addFarmFeed(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddFarmFeedMutationResult = NonNullable<Awaited<ReturnType<typeof addFarmFeed>>>
+    export type AddFarmFeedMutationBody = BodyType<FarmFeedInput>
+    export type AddFarmFeedMutationError = ErrorType<void>
+
+    /**
+ * @summary Save an own feed with the values from its label (caretaker or admin)
+ */
+export const useAddFarmFeed = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addFarmFeed>>, TError,{farmId: number;data: BodyType<FarmFeedInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addFarmFeed>>,
+        TError,
+        {farmId: number;data: BodyType<FarmFeedInput>},
+        TContext
+      > => {
+      return useMutation(getAddFarmFeedMutationOptions(options));
+    }
+
+export const getRemoveFarmFeedUrl = (farmId: number,
+    feedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feeds/${feedId}`
+}
+
+/**
+ * @summary Delete an own feed that no ration uses (caretaker or admin)
+ */
+export const removeFarmFeed = async (farmId: number,
+    feedId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRemoveFarmFeedUrl(farmId,feedId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveFarmFeedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFarmFeed>>, TError,{farmId: number;feedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeFarmFeed>>, TError,{farmId: number;feedId: number}, TContext> => {
+
+const mutationKey = ['removeFarmFeed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeFarmFeed>>, {farmId: number;feedId: number}> = (props) => {
+          const {farmId,feedId} = props ?? {};
+
+          return  removeFarmFeed(farmId,feedId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveFarmFeedMutationResult = NonNullable<Awaited<ReturnType<typeof removeFarmFeed>>>
+
+    export type RemoveFarmFeedMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete an own feed that no ration uses (caretaker or admin)
+ */
+export const useRemoveFarmFeed = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFarmFeed>>, TError,{farmId: number;feedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeFarmFeed>>,
+        TError,
+        {farmId: number;feedId: number},
+        TContext
+      > => {
+      return useMutation(getRemoveFarmFeedMutationOptions(options));
+    }
+
+export const getListRationsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/rations`
+}
+
+/**
+ * @summary All rations of the farm, each checked against the need (fixed rules)
+ */
+export const listRations = async (farmId: number, options?: RequestInit): Promise<RationEvaluation[]> => {
+
+  return customFetch<RationEvaluation[]>(getListRationsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListRationsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/rations`
+    ] as const;
+    }
+
+
+export const getListRationsQueryOptions = <TData = Awaited<ReturnType<typeof listRations>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListRationsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listRations>>> = ({ signal }) => listRations(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listRations>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListRationsQueryResult = NonNullable<Awaited<ReturnType<typeof listRations>>>
+export type ListRationsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary All rations of the farm, each checked against the need (fixed rules)
+ */
+
+export function useListRations<TData = Awaited<ReturnType<typeof listRations>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listRations>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListRationsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSaveRationUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/rations`
+}
+
+/**
+ * @summary Set the daily ration of an animal or a herd (caretaker or admin)
+ */
+export const saveRation = async (farmId: number,
+    rationInput: RationInput, options?: RequestInit): Promise<RationEvaluation> => {
+
+  return customFetch<RationEvaluation>(getSaveRationUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(rationInput)
+  }
+);}
+
+
+
+
+
+export const getSaveRationMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveRation>>, TError,{farmId: number;data: BodyType<RationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveRation>>, TError,{farmId: number;data: BodyType<RationInput>}, TContext> => {
+
+const mutationKey = ['saveRation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveRation>>, {farmId: number;data: BodyType<RationInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  saveRation(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveRationMutationResult = NonNullable<Awaited<ReturnType<typeof saveRation>>>
+    export type SaveRationMutationBody = BodyType<RationInput>
+    export type SaveRationMutationError = ErrorType<void>
+
+    /**
+ * @summary Set the daily ration of an animal or a herd (caretaker or admin)
+ */
+export const useSaveRation = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveRation>>, TError,{farmId: number;data: BodyType<RationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof saveRation>>,
+        TError,
+        {farmId: number;data: BodyType<RationInput>},
+        TContext
+      > => {
+      return useMutation(getSaveRationMutationOptions(options));
+    }
+
+export const getRemoveRationUrl = (farmId: number,
+    rationId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/rations/${rationId}`
+}
+
+/**
+ * @summary Delete a ration (caretaker or admin)
+ */
+export const removeRation = async (farmId: number,
+    rationId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRemoveRationUrl(farmId,rationId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveRationMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeRation>>, TError,{farmId: number;rationId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeRation>>, TError,{farmId: number;rationId: number}, TContext> => {
+
+const mutationKey = ['removeRation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeRation>>, {farmId: number;rationId: number}> = (props) => {
+          const {farmId,rationId} = props ?? {};
+
+          return  removeRation(farmId,rationId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveRationMutationResult = NonNullable<Awaited<ReturnType<typeof removeRation>>>
+
+    export type RemoveRationMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a ration (caretaker or admin)
+ */
+export const useRemoveRation = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeRation>>, TError,{farmId: number;rationId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeRation>>,
+        TError,
+        {farmId: number;rationId: number},
+        TContext
+      > => {
+      return useMutation(getRemoveRationMutationOptions(options));
     }
 
 export const getGetAppStatusUrl = () => {

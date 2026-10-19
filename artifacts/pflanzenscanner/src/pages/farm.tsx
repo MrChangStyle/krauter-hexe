@@ -11,8 +11,7 @@ import {
   Trash2,
   UserPlus,
   Users,
-  X,
-} from "lucide-react";
+  X, Wheat } from "lucide-react";
 import {
   getListFarmMembersQueryKey,
   useAddFarmMember,
@@ -449,6 +448,18 @@ export default function FarmPage() {
       <FarmAnimalsSection farm={farm} />
 
       <FarmExportCard farm={farm} />
+
+      <Link
+        href="/farm/futter"
+        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
+      >
+        <Wheat className="h-5 w-5 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold">Futterplaner</span>
+          <span className="block text-sm text-muted-foreground">Rationen, Bedarf, Ampel und Warnungen</span>
+        </span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      </Link>
 
       <Link
         href="/farm/kameras"

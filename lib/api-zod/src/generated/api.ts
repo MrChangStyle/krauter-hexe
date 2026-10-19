@@ -1349,6 +1349,261 @@ export const DeleteUserResponse = zod.void()
 
 
 /**
+ * @summary Futtermittel-Liste (average values per kg dry matter) and the life stages per species
+ */
+export const GetFeedReferenceResponse = zod.object({
+  "feeds": zod.array(zod.object({
+  "dryMatter": zod.number(),
+  "crudeProtein": zod.number().describe('% of dry matter'),
+  "crudeFat": zod.number(),
+  "crudeFibre": zod.number(),
+  "calcium": zod.number().describe('g per kg dry matter'),
+  "phosphorus": zod.number(),
+  "copper": zod.number().nullable().describe('mg per kg dry matter')
+}).describe('Per kg dry matter; dryMatter is % as fed').and(zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])).nullable(),
+  "botanicalName": zod.string().nullable(),
+  "hint": zod.string().nullable()
+}))),
+  "species": zod.array(zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "stages": zod.array(zod.enum(['maintenance', 'growth', 'laying', 'molt', 'pregnancy', 'lactation', 'winter'])),
+  "hasNeeds": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary The farm's own feeds (from labels)
+ */
+export const ListFarmFeedsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListFarmFeedsResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "values": zod.object({
+  "dryMatter": zod.number(),
+  "crudeProtein": zod.number().describe('% of dry matter'),
+  "crudeFat": zod.number(),
+  "crudeFibre": zod.number(),
+  "calcium": zod.number().describe('g per kg dry matter'),
+  "phosphorus": zod.number(),
+  "copper": zod.number().nullable().describe('mg per kg dry matter')
+}).describe('Per kg dry matter; dryMatter is % as fed'),
+  "forSpecies": zod.array(zod.string()).nullable(),
+  "botanicalName": zod.string().nullable()
+})
+export const ListFarmFeedsResponse = zod.array(ListFarmFeedsResponseItem)
+
+
+/**
+ * @summary Save an own feed with the values from its label (caretaker or admin)
+ */
+export const AddFarmFeedParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const addFarmFeedBodyNameMax = 80;
+
+
+
+export const AddFarmFeedBody = zod.object({
+  "name": zod.string().max(addFarmFeedBodyNameMax),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "dryMatter": zod.number().describe('% as fed (88 for dry feed)'),
+  "label": zod.object({
+  "crudeProtein": zod.number(),
+  "crudeFat": zod.number(),
+  "crudeFibre": zod.number(),
+  "calcium": zod.number(),
+  "phosphorus": zod.number(),
+  "copper": zod.number().nullish()
+}).describe('As printed on the label (as fed) – crude nutrients, calcium and phosphorus in %, copper in mg\/kg'),
+  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])).nullish(),
+  "botanicalName": zod.string().nullish()
+})
+
+export const AddFarmFeedResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "values": zod.object({
+  "dryMatter": zod.number(),
+  "crudeProtein": zod.number().describe('% of dry matter'),
+  "crudeFat": zod.number(),
+  "crudeFibre": zod.number(),
+  "calcium": zod.number().describe('g per kg dry matter'),
+  "phosphorus": zod.number(),
+  "copper": zod.number().nullable().describe('mg per kg dry matter')
+}).describe('Per kg dry matter; dryMatter is % as fed'),
+  "forSpecies": zod.array(zod.string()).nullable(),
+  "botanicalName": zod.string().nullable()
+})
+
+
+/**
+ * @summary Delete an own feed that no ration uses (caretaker or admin)
+ */
+export const RemoveFarmFeedParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "feedId": zod.coerce.number()
+})
+
+export const RemoveFarmFeedResponse = zod.void()
+
+
+/**
+ * @summary All rations of the farm, each checked against the need (fixed rules)
+ */
+export const ListRationsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListRationsResponseItem = zod.object({
+  "id": zod.number(),
+  "target": zod.object({
+  "kind": zod.enum(['animal', 'herd']),
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "count": zod.number()
+}),
+  "stage": zod.enum(['maintenance', 'growth', 'laying', 'molt', 'pregnancy', 'lactation', 'winter']),
+  "items": zod.array(zod.object({
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "name": zod.string(),
+  "grams": zod.number()
+})),
+  "times": zod.array(zod.string()),
+  "waterL": zod.number().nullable(),
+  "need": zod.union([zod.null(),zod.object({
+  "weightKg": zod.number(),
+  "dmIntakeKg": zod.number(),
+  "waterL": zod.number()
+})]),
+  "values": zod.union([zod.null(),zod.object({
+  "dmKg": zod.number(),
+  "crudeProtein": zod.number(),
+  "crudeFat": zod.number(),
+  "crudeFibre": zod.number(),
+  "calcium": zod.number(),
+  "phosphorus": zod.number(),
+  "copper": zod.number().nullable()
+})]),
+  "checks": zod.array(zod.object({
+  "nutrient": zod.enum(['amount', 'crudeProtein', 'crudeFibre', 'calcium', 'phosphorus', 'copper']),
+  "value": zod.number(),
+  "min": zod.number(),
+  "max": zod.number(),
+  "status": zod.enum(['ok', 'low', 'high']),
+  "severe": zod.boolean(),
+  "tip": zod.string().nullable()
+})),
+  "warnings": zod.array(zod.object({
+  "kind": zod.enum(['toxic', 'foreignMineral', 'copper', 'withdrawal']),
+  "text": zod.string()
+})),
+  "group": zod.object({
+  "feedKg": zod.number(),
+  "waterL": zod.number().nullable()
+}),
+  "updatedAt": zod.string()
+})
+export const ListRationsResponse = zod.array(ListRationsResponseItem)
+
+
+/**
+ * @summary Set the daily ration of an animal or a herd (caretaker or admin)
+ */
+export const SaveRationParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const SaveRationBody = zod.object({
+  "animalId": zod.number().nullish(),
+  "herdId": zod.number().nullish(),
+  "stage": zod.enum(['maintenance', 'growth', 'laying', 'molt', 'pregnancy', 'lactation', 'winter']),
+  "items": zod.array(zod.object({
+  "feedKey": zod.string().nullish(),
+  "feedId": zod.number().nullish(),
+  "grams": zod.number().describe('As fed, per animal and day')
+})),
+  "times": zod.array(zod.enum(['morgens', 'mittags', 'abends'])),
+  "waterL": zod.number().nullish()
+})
+
+export const SaveRationResponse = zod.object({
+  "id": zod.number(),
+  "target": zod.object({
+  "kind": zod.enum(['animal', 'herd']),
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "count": zod.number()
+}),
+  "stage": zod.enum(['maintenance', 'growth', 'laying', 'molt', 'pregnancy', 'lactation', 'winter']),
+  "items": zod.array(zod.object({
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "name": zod.string(),
+  "grams": zod.number()
+})),
+  "times": zod.array(zod.string()),
+  "waterL": zod.number().nullable(),
+  "need": zod.union([zod.null(),zod.object({
+  "weightKg": zod.number(),
+  "dmIntakeKg": zod.number(),
+  "waterL": zod.number()
+})]),
+  "values": zod.union([zod.null(),zod.object({
+  "dmKg": zod.number(),
+  "crudeProtein": zod.number(),
+  "crudeFat": zod.number(),
+  "crudeFibre": zod.number(),
+  "calcium": zod.number(),
+  "phosphorus": zod.number(),
+  "copper": zod.number().nullable()
+})]),
+  "checks": zod.array(zod.object({
+  "nutrient": zod.enum(['amount', 'crudeProtein', 'crudeFibre', 'calcium', 'phosphorus', 'copper']),
+  "value": zod.number(),
+  "min": zod.number(),
+  "max": zod.number(),
+  "status": zod.enum(['ok', 'low', 'high']),
+  "severe": zod.boolean(),
+  "tip": zod.string().nullable()
+})),
+  "warnings": zod.array(zod.object({
+  "kind": zod.enum(['toxic', 'foreignMineral', 'copper', 'withdrawal']),
+  "text": zod.string()
+})),
+  "group": zod.object({
+  "feedKg": zod.number(),
+  "waterL": zod.number().nullable()
+}),
+  "updatedAt": zod.string()
+})
+
+
+/**
+ * @summary Delete a ration (caretaker or admin)
+ */
+export const RemoveRationParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "rationId": zod.coerce.number()
+})
+
+export const RemoveRationResponse = zod.void()
+
+
+/**
  * @summary The notice shown to everyone during a disruption (no sign-in needed)
  */
 export const GetAppStatusResponse = zod.object({

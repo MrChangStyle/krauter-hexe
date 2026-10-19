@@ -1,4 +1,4 @@
-import type { FeedCategory, FeedStockLine, LifeStage, NutrientCheck, RationSeason } from "@workspace/api-client-react";
+import type { FeedCategory, FeedStockLine, LifeStage, NutrientCheck, RationSeason, RecipeKind } from "@workspace/api-client-react";
 
 export const STAGE_LABELS: Record<LifeStage, string> = {
   maintenance: "Erhaltung",
@@ -97,4 +97,19 @@ export function kg(n: number): string {
 export const BALE_KG = 15;
 export function bales(kgAmount: number): number {
   return Math.ceil(kgAmount / BALE_KG);
+}
+
+export const RECIPE_KIND_LABELS: Record<RecipeKind, string> = {
+  fermented: "Fermentiert",
+  sprouts: "Keimfutter",
+  mix: "Mischung",
+  treat: "Leckerbissen",
+};
+
+/** Text lines (one per line, empty ones dropped) – for steps and hygiene rules. */
+export function lines(text: string): string[] {
+  return text
+    .split("\n")
+    .map((l) => l.trim())
+    .filter(Boolean);
 }

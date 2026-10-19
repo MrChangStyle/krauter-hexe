@@ -60,7 +60,7 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     const app = express();
     app.use(express.json());
     app.use((req: ExpressRequest, _res: ExpressResponse, next: NextFunction) => {
-      (req as unknown as { user: unknown }).user = { id: as, approved: true };
+      (req as unknown as { user: unknown }).user = { id: as, approved: true, isOwner: as === "chef" };
       (req as unknown as { isAuthenticated: () => boolean }).isAuthenticated = () => true;
       next();
     });
@@ -75,8 +75,8 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
   beforeEach(async () => {
     runModelChain.mockReset();
     fixedDay = null;
-    await q("TRUNCATE farms, farm_memberships, users, plants RESTART IDENTITY CASCADE");
-    await q(`INSERT INTO users (id, email, approved) VALUES ('anna', 'a@x.de', true), ('bert', 'b@x.de', true), ('gast', 'g@x.de', true)`);
+    await q("TRUNCATE farms, farm_memberships, users, plants, feed_recipes RESTART IDENTITY CASCADE");
+    await q(`INSERT INTO users (id, email, approved) VALUES ('anna', 'a@x.de', true), ('bert', 'b@x.de', true), ('gast', 'g@x.de', true), ('chef', 'c@x.de', true)`);
     const [a, b] = await q<{ id: number }>("INSERT INTO farms (name) VALUES ('Hof Anna'), ('Hof Bert') RETURNING id");
     farm.anna = a!.id;
     farm.bert = b!.id;
@@ -365,6 +365,64 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     const heuId = after.stocks[0].id;
     expect((await api("DELETE", `/farms/${farm.bert}/feed-stock/${heuId}`)).status).toBe(404);
     expect((await api("DELETE", `/farms/${farm.anna}/feed-stock/${heuId}`)).status).toBe(204);
+  });
+
+  it("shows sent-in recipes to everyone only after the owner approved them", async () => {
+    const recipe = (title: string, ingredient = "Gerste") => ({
+      title,
+      species: ["poultry"],
+      kind: "sprouts",
+      ingredients: [{ name: ingredient, amount: "50 g je Huhn" }],
+      steps: ["Einweichen", "Zweimal täglich spülen"],
+      hygiene: ["Bei Schimmel wegwerfen"],
+    });
+    expect((await api("GET", "/feed-recipes")).data.map((r: any) => r.status)).toEqual(["builtIn", "builtIn", "builtIn", "builtIn"]);
+    const scraps = await api("POST", "/feed-recipes", recipe("Resteessen", "Küchenreste"));
+    expect(scraps.status).toBe(201);
+    expect(scraps.data).toMatchObject({ id: "u:1", status: "pending", mine: true });
+    const sprouts = (await api("POST", "/feed-recipes", recipe("Keimgerste"))).data;
+    as = "bert";
+    expect((await api("GET", "/feed-recipes")).data).toHaveLength(4);
+    expect((await api("GET", "/admin/feed-recipes")).status).toBe(403);
+    expect((await api("DELETE", `/feed-recipes/${sprouts.id}`)).status).toBe(404);
+
+    as = "chef";
+    const drafts = (await api("GET", "/admin/feed-recipes")).data;
+    expect(drafts.map((d: any) => [d.title, d.flags])).toEqual([
+      ["Resteessen", ["Küchen- oder Speisereste dürfen nicht an Nutztiere (VO (EG) 1069/2009)."]],
+      ["Keimgerste", []],
+    ]);
+    expect((await api("POST", `/admin/feed-recipes/${scraps.data.id}/reject`)).data.status).toBe("rejected");
+    expect((await api("POST", `/admin/feed-recipes/${sprouts.id}/approve`)).data.status).toBe("approved");
+    expect((await api("POST", `/admin/feed-recipes/${sprouts.id}/approve`)).status).toBe(404);
+
+    as = "bert";
+    const forBert = (await api("GET", "/feed-recipes")).data;
+    expect(forBert.map((r: any) => [r.title, r.status, r.mine]).slice(4)).toEqual([["Keimgerste", "approved", false]]);
+    as = "anna";
+    expect((await api("GET", "/feed-recipes")).data.slice(4).map((r: any) => [r.title, r.status])).toEqual([
+      ["Keimgerste", "approved"],
+      ["Resteessen", "rejected"],
+    ]);
+    // Withdraw the turned-down one; an approved one stays (only the owner removes it).
+    expect((await api("DELETE", `/feed-recipes/${scraps.data.id}`)).status).toBe(204);
+    expect((await api("DELETE", `/feed-recipes/${sprouts.id}`)).status).toBe(404);
+    expect((await api("POST", "/feed-recipes", { ...recipe("Ohne Tiere"), species: [] })).status).toBe(400);
+    for (let i = 0; i < 5; i++) await api("POST", "/feed-recipes", recipe(`Ansatz ${i}`));
+    expect((await api("POST", "/feed-recipes", recipe("Zu viel"))).status).toBe(429);
+    as = "chef";
+    expect((await api("DELETE", `/feed-recipes/${sprouts.id}`)).status).toBe(204);
+  });
+
+  it("lists fodder plants from the beds per month", async () => {
+    const [bed] = await q<{ id: number }>("INSERT INTO garden_beds (farm_id, name, type, length_cm, width_cm) VALUES ($1, 'Futterbeet', 'bed', 200, 100) RETURNING id", [farm.anna]);
+    const year = new Date().getFullYear();
+    await q("INSERT INTO bed_plantings (farm_id, bed_id, season, crop_key, label, x, y) VALUES ($1, $2, $3, 'mangold', 'Mangold', 0, 0)", [farm.anna, bed!.id, year]);
+    const cal = (await api("GET", `/farms/${farm.anna}/feed-calendar`)).data;
+    expect(cal).toMatchObject({ year, species: ["poultry", "rabbit", "sheep"] });
+    expect(cal.months[6].fresh[0]).toEqual({ key: "mangold", name: "Mangold", species: ["poultry", "rabbit", "sheep"], planted: true });
+    as = "bert";
+    expect((await api("GET", `/farms/${farm.anna}/feed-calendar`)).status).toBe(404);
   });
 
   it("lets guests read, keeps farms apart", async () => {

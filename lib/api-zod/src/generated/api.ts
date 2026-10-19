@@ -1900,6 +1900,174 @@ export const RemoveFeedStockResponse = zod.void()
 
 
 /**
+ * @summary Built-in and approved recipes, plus the viewer's own that wait for approval
+ */
+export const ListFeedRecipesResponseItem = zod.object({
+  "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
+  "title": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
+  "ingredients": zod.array(zod.object({
+  "name": zod.string(),
+  "amount": zod.string()
+})),
+  "steps": zod.array(zod.string()),
+  "hygiene": zod.array(zod.string()),
+  "status": zod.enum(['builtIn', 'pending', 'approved', 'rejected']),
+  "mine": zod.boolean()
+})
+export const ListFeedRecipesResponse = zod.array(ListFeedRecipesResponseItem)
+
+
+/**
+ * @summary Send in a recipe; everyone sees it once the app owner approved it
+ */
+export const submitFeedRecipeBodyTitleMax = 80;
+
+export const submitFeedRecipeBodyIngredientsMax = 20;
+
+export const submitFeedRecipeBodyStepsMax = 15;
+
+export const submitFeedRecipeBodyHygieneMax = 10;
+
+
+
+export const SubmitFeedRecipeBody = zod.object({
+  "title": zod.string().max(submitFeedRecipeBodyTitleMax),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
+  "ingredients": zod.array(zod.object({
+  "name": zod.string(),
+  "amount": zod.string()
+})).max(submitFeedRecipeBodyIngredientsMax),
+  "steps": zod.array(zod.string()).max(submitFeedRecipeBodyStepsMax),
+  "hygiene": zod.array(zod.string()).max(submitFeedRecipeBodyHygieneMax).nullish()
+})
+
+export const SubmitFeedRecipeResponse = zod.object({
+  "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
+  "title": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
+  "ingredients": zod.array(zod.object({
+  "name": zod.string(),
+  "amount": zod.string()
+})),
+  "steps": zod.array(zod.string()),
+  "hygiene": zod.array(zod.string()),
+  "status": zod.enum(['builtIn', 'pending', 'approved', 'rejected']),
+  "mine": zod.boolean()
+})
+
+
+/**
+ * @summary Withdraw an own recipe that waits or was turned down (the app owner may remove any)
+ */
+export const DeleteFeedRecipeParams = zod.object({
+  "recipeId": zod.coerce.string()
+})
+
+export const DeleteFeedRecipeResponse = zod.void()
+
+
+/**
+ * @summary Recipes waiting for approval, with what the fixed rules found (app owner)
+ */
+export const ListFeedRecipeDraftsResponseItem = zod.object({
+  "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
+  "title": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
+  "ingredients": zod.array(zod.object({
+  "name": zod.string(),
+  "amount": zod.string()
+})),
+  "steps": zod.array(zod.string()),
+  "hygiene": zod.array(zod.string()),
+  "status": zod.enum(['builtIn', 'pending', 'approved', 'rejected']),
+  "mine": zod.boolean()
+}).and(zod.object({
+  "flags": zod.array(zod.string()),
+  "createdAt": zod.string()
+}))
+export const ListFeedRecipeDraftsResponse = zod.array(ListFeedRecipeDraftsResponseItem)
+
+
+/**
+ * @summary Approve a recipe (app owner)
+ */
+export const ApproveFeedRecipeParams = zod.object({
+  "recipeId": zod.coerce.string()
+})
+
+export const ApproveFeedRecipeResponse = zod.object({
+  "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
+  "title": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
+  "ingredients": zod.array(zod.object({
+  "name": zod.string(),
+  "amount": zod.string()
+})),
+  "steps": zod.array(zod.string()),
+  "hygiene": zod.array(zod.string()),
+  "status": zod.enum(['builtIn', 'pending', 'approved', 'rejected']),
+  "mine": zod.boolean()
+})
+
+
+/**
+ * @summary Turn a recipe down (app owner)
+ */
+export const RejectFeedRecipeParams = zod.object({
+  "recipeId": zod.coerce.string()
+})
+
+export const RejectFeedRecipeResponse = zod.object({
+  "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
+  "title": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
+  "ingredients": zod.array(zod.object({
+  "name": zod.string(),
+  "amount": zod.string()
+})),
+  "steps": zod.array(zod.string()),
+  "hygiene": zod.array(zod.string()),
+  "status": zod.enum(['builtIn', 'pending', 'approved', 'rejected']),
+  "mine": zod.boolean()
+})
+
+
+/**
+ * @summary Fodder plants from the garden per month for the species on the farm
+ */
+export const GetFeedCalendarParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFeedCalendarResponse = zod.object({
+  "year": zod.number(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "months": zod.array(zod.object({
+  "month": zod.number(),
+  "fresh": zod.array(zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "planted": zod.boolean()
+})),
+  "stored": zod.array(zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "planted": zod.boolean()
+}))
+}))
+})
+
+
+/**
  * @summary The notice shown to everyone during a disruption (no sign-in needed)
  */
 export const GetAppStatusResponse = zod.object({

@@ -61,7 +61,7 @@ export const FODDER_KG_PER_DAY: Record<FarmSpecies, number> = {
 };
 
 /** Garden crops that suit each species as fodder (no toxic ones). */
-const FODDER_CROPS: Record<FarmSpecies, string[]> = {
+export const FODDER_CROPS: Record<FarmSpecies, string[]> = {
   rabbit: ['moehre', 'mangold', 'petersilie', 'fenchel', 'salat', 'pastinake', 'dill'],
   guineaPig: ['moehre', 'mangold', 'petersilie', 'fenchel', 'salat', 'pastinake', 'dill'],
   poultry: ['mangold', 'salat', 'spinat', 'kuerbis', 'zucchini', 'ringelblume'],

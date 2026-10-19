@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bales, euro, formatRange, formatValue, grams, kg, light, lightText, rationName, shareText, shortDate } from "./feed-labels";
+import { bales, euro, lines, formatRange, formatValue, grams, kg, light, lightText, rationName, shareText, shortDate } from "./feed-labels";
 
 describe("feed labels", () => {
   it("turns a check into a traffic light", () => {
@@ -33,5 +33,9 @@ describe("feed labels", () => {
     expect(kg(0.025)).toBe("25 g");
     expect(kg(0)).toBe("0 kg");
     expect(bales(241.6)).toBe(17);
+  });
+
+  it("splits recipe text into lines", () => {
+    expect(lines(" Einweichen \n\n  Spülen\n")).toEqual(["Einweichen", "Spülen"]);
   });
 });

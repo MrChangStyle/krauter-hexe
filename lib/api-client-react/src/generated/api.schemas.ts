@@ -385,6 +385,84 @@ export interface FeedPurchaseInput {
   pricePerPackage?: number | null;
 }
 
+export type RecipeKind = typeof RecipeKind[keyof typeof RecipeKind];
+
+
+export const RecipeKind = {
+  fermented: 'fermented',
+  sprouts: 'sprouts',
+  mix: 'mix',
+  treat: 'treat',
+} as const;
+
+export interface RecipeIngredient {
+  name: string;
+  amount: string;
+}
+
+export type FeedRecipeStatus = typeof FeedRecipeStatus[keyof typeof FeedRecipeStatus];
+
+
+export const FeedRecipeStatus = {
+  builtIn: 'builtIn',
+  pending: 'pending',
+  approved: 'approved',
+  rejected: 'rejected',
+} as const;
+
+export interface FeedRecipe {
+  /** b:<key> built in, u:<id> sent in */
+  id: string;
+  title: string;
+  species: FarmSpecies[];
+  kind: RecipeKind;
+  ingredients: RecipeIngredient[];
+  steps: string[];
+  hygiene: string[];
+  status: FeedRecipeStatus;
+  mine: boolean;
+}
+
+export type FeedRecipeDraft = FeedRecipe & {
+  flags: string[];
+  createdAt: string;
+};
+
+export interface FeedRecipeInput {
+  /** @maxLength 80 */
+  title: string;
+  species: FarmSpecies[];
+  kind: RecipeKind;
+  /** @maxItems 20 */
+  ingredients: RecipeIngredient[];
+  /** @maxItems 15 */
+  steps: string[];
+  /**
+     * @maxItems 10
+     * @nullable
+     */
+  hygiene?: string[] | null;
+}
+
+export interface CalendarCrop {
+  key: string;
+  name: string;
+  species: FarmSpecies[];
+  planted: boolean;
+}
+
+export type FeedCalendarMonthsItem = {
+  month: number;
+  fresh: CalendarCrop[];
+  stored: CalendarCrop[];
+};
+
+export interface FeedCalendar {
+  year: number;
+  species: FarmSpecies[];
+  months: FeedCalendarMonthsItem[];
+}
+
 export interface FeedRemindersResult {
   created: number;
   updated: number;

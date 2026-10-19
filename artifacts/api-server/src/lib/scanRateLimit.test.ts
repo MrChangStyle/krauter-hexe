@@ -32,6 +32,8 @@ const { state } = vi.hoisted(() => ({
   },
 }));
 
+vi.mock("./monitoring", () => ({ bumpUsage: async () => {} }));
+
 vi.mock("@workspace/db", () => {
   const col = (name: string) => ({ __name: name });
   const scanAttemptsTable = {

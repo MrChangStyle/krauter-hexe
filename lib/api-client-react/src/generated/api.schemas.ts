@@ -5,6 +5,92 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+export type AppStatusLevel = typeof AppStatusLevel[keyof typeof AppStatusLevel];
+
+
+export const AppStatusLevel = {
+  info: 'info',
+  warning: 'warning',
+} as const;
+
+export interface AppStatus {
+  /** @nullable */
+  message: string | null;
+  level: AppStatusLevel;
+  /** @nullable */
+  updatedAt: string | null;
+}
+
+export type AppStatusInputLevel = typeof AppStatusInputLevel[keyof typeof AppStatusInputLevel];
+
+
+export const AppStatusInputLevel = {
+  info: 'info',
+  warning: 'warning',
+} as const;
+
+export interface AppStatusInput {
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  message: string | null;
+  level: AppStatusInputLevel;
+}
+
+export interface ClientErrorInput {
+  /** @maxLength 1000 */
+  message: string;
+  /**
+     * @maxLength 8000
+     * @nullable
+     */
+  stack?: string | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  path?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  release?: string | null;
+}
+
+export type ErrorGroupSource = typeof ErrorGroupSource[keyof typeof ErrorGroupSource];
+
+
+export const ErrorGroupSource = {
+  server: 'server',
+  client: 'client',
+} as const;
+
+export interface ErrorGroup {
+  fingerprint: string;
+  source: ErrorGroupSource;
+  message: string;
+  /** @nullable */
+  location: string | null;
+  /** @nullable */
+  stack: string | null;
+  /** @nullable */
+  release: string | null;
+  count: number;
+  firstSeen: string;
+  lastSeen: string;
+  /** @nullable */
+  resolvedAt: string | null;
+}
+
+export interface UsageDay {
+  day: string;
+  activeUsers: number;
+  newUsers: number;
+  aiActions: number;
+  errors: number;
+}
+
 export interface GeoReverseInput {
   /**
      * WGS-84 latitude.

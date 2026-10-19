@@ -1,8 +1,23 @@
 import app from "./app";
 import { isGoogleAuthConfigured } from "./lib/googleOAuth";
-import { logger } from "./lib/logger";
+import { logger, setErrorSink } from "./lib/logger";
+import { errorFromLog, flushErrors, recordError } from "./lib/monitoring";
 import { assertAuthConfigured } from "./lib/token";
 import { upgradeSchema } from "./lib/schemaUpgrade";
+
+// Error monitor: every logger.error/fatal ends up in the owner's list (lib/monitoring.ts).
+setErrorSink((obj, msg) => {
+  const report = errorFromLog(obj, msg);
+  if (report) recordError(report);
+});
+process.on("unhandledRejection", (reason) => {
+  logger.error({ err: reason }, "Unhandled promise rejection");
+});
+process.on("uncaughtException", (err) => {
+  logger.fatal({ err }, "Uncaught exception");
+  // Record it before the process goes down, as Node would without this handler.
+  void flushErrors().finally(() => process.exit(1));
+});
 
 // Fail at startup rather than on the first sign-in attempt: without a signing
 // key nobody can log in, and that should be obvious from the deploy log.

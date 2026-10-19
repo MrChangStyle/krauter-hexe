@@ -12,6 +12,7 @@
 
 import { gte, and, eq, lt, sql } from "drizzle-orm";
 import { db, scanAttemptsTable } from "@workspace/db";
+import { bumpUsage } from "./monitoring";
 
 /**
  * Photos per user, per scan type, per Berlin day.
@@ -122,12 +123,13 @@ export async function checkAndRecordScanAttempt(
   // limit, so recording rows for an account that can never hit it would only
   // grow the table. attemptId stays null, which makes a later refund a no-op.
   if (options.unlimited) {
+    void bumpUsage("ai_actions");
     return { allowed: true, resetsAt, limit: DAILY_SCAN_LIMIT, attemptId: null };
   }
 
   const berlinMidnight = getBerlinMidnightUTC(getTodayBerlinDate());
 
-  return db.transaction(async (tx) => {
+  const result = await db.transaction(async (tx): Promise<RateLimitResult> => {
     // Acquire a PostgreSQL advisory lock keyed on this user+scanType pair for
     // the duration of the transaction. pg_advisory_xact_lock serializes
     // concurrent requests for the same user so that the count read and the
@@ -189,6 +191,9 @@ export async function checkAndRecordScanAttempt(
       .returning({ id: scanAttemptsTable.id });
     return { allowed: true, resetsAt, limit: DAILY_SCAN_LIMIT, attemptId: inserted?.id ?? null };
   });
+  // Daily total of AI actions for the owner's statistics (no user stored).
+  if (result.allowed) void bumpUsage("ai_actions");
+  return result;
 }
 
 /**

@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: monitoring
+    description: Error monitoring, status notice and usage counts (Betrieb)
   - name: plants
     description: Plant scanning, identification, and archive operations
   - name: insects
@@ -1051,6 +1053,96 @@ paths:
           description: Signed in but not the owner
         "404":
           description: Account not found
+  /status:
+    get:
+      tags: [monitoring]
+      operationId: getAppStatus
+      summary: The notice shown to everyone during a disruption (no sign-in needed)
+      responses:
+        "200":
+          description: The notice (message null when there is none).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppStatus"
+  /admin/status:
+    put:
+      tags: [monitoring]
+      operationId: setAppStatus
+      summary: Set or clear the notice (app owner)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AppStatusInput"
+      responses:
+        "200":
+          description: The notice.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AppStatus"
+  /client-errors:
+    post:
+      tags: [monitoring]
+      operationId: reportClientError
+      summary: The app reports an error it ran into (no personal data; limited per address)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClientErrorInput"
+      responses:
+        "204":
+          description: Noted.
+        "429":
+          description: Too many reports.
+  /admin/errors:
+    get:
+      tags: [monitoring]
+      operationId: listErrorGroups
+      summary: Grouped errors, open ones first (app owner)
+      responses:
+        "200":
+          description: The groups.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ErrorGroup"
+  /admin/errors/{fingerprint}/resolve:
+    post:
+      tags: [monitoring]
+      operationId: resolveErrorGroup
+      summary: Mark an error as fixed; it opens again when it comes back (app owner)
+      parameters:
+        - name: fingerprint
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Marked.
+        "404":
+          description: Unknown group.
+  /admin/usage:
+    get:
+      tags: [monitoring]
+      operationId: getUsage
+      summary: Daily totals of the last 14 days, newest first (app owner)
+      responses:
+        "200":
+          description: The days.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsageDay"
   /healthz:
     get:
       operationId: healthCheck
@@ -3221,6 +3313,82 @@ components:
       schema:
         type: string
   schemas:
+    AppStatus:
+      type: object
+      required: [message, level, updatedAt]
+      properties:
+        message:
+          type: [string, 'null']
+        level:
+          type: string
+          enum: [info, warning]
+        updatedAt:
+          type: [string, 'null']
+    AppStatusInput:
+      type: object
+      required: [message, level]
+      properties:
+        message:
+          type: [string, 'null']
+          maxLength: 300
+        level:
+          type: string
+          enum: [info, warning]
+    ClientErrorInput:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          maxLength: 1000
+        stack:
+          type: [string, 'null']
+          maxLength: 8000
+        path:
+          type: [string, 'null']
+          maxLength: 500
+        release:
+          type: [string, 'null']
+          maxLength: 40
+    ErrorGroup:
+      type: object
+      required: [fingerprint, source, message, location, stack, release, count, firstSeen, lastSeen, resolvedAt]
+      properties:
+        fingerprint:
+          type: string
+        source:
+          type: string
+          enum: [server, client]
+        message:
+          type: string
+        location:
+          type: [string, 'null']
+        stack:
+          type: [string, 'null']
+        release:
+          type: [string, 'null']
+        count:
+          type: integer
+        firstSeen:
+          type: string
+        lastSeen:
+          type: string
+        resolvedAt:
+          type: [string, 'null']
+    UsageDay:
+      type: object
+      required: [day, activeUsers, newUsers, aiActions, errors]
+      properties:
+        day:
+          type: string
+        activeUsers:
+          type: integer
+        newUsers:
+          type: integer
+        aiActions:
+          type: integer
+        errors:
+          type: integer
     GeoReverseInput:
       type: object
       required: [lat, lon]

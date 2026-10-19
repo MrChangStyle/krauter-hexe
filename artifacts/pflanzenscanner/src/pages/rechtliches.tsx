@@ -150,6 +150,15 @@ export function DatenschutzPage() {
             Anmeldeversuche) (Art. 6 Abs. 1 lit. f DSGVO).
           </li>
           <li>
+            <strong>Fehler und Nutzung:</strong> Stürzt die App ab oder tritt
+            ein Fehler auf, speichern wir die Fehlermeldung, die betroffene
+            Seite (ohne Nummern) und die Version – ohne Bezug zu deiner Person.
+            Für die Nutzungsstatistik zählen wir nur Tageswerte (z. B. wie viele
+            Konten an einem Tag aktiv waren); dafür merken wir uns bei deinem
+            Konto allein das Datum deines letzten Besuchs (Art. 6 Abs. 1 lit. f
+            DSGVO, stabiler Betrieb).
+          </li>
+          <li>
             <strong>Auf deinem Gerät:</strong> Die App speichert Fotos, die noch
             nicht gescannt wurden, und deine Anmeldung lokal im Browser, damit
             sie auch ohne Netz funktioniert.
@@ -193,7 +202,8 @@ export function DatenschutzPage() {
           entfernen wir deine persönlichen Daten; Arten, die du dem
           gemeinsamen Archiv hinzugefügt hast, bleiben ohne Bezug zu deiner
           Person erhalten. Daten zum Missbrauchsschutz werden nach spätestens
-          sieben Tagen gelöscht.
+          sieben Tagen gelöscht, behobene Fehlermeldungen nach 90 Tagen,
+          Tageszahlen nach gut einem Jahr.
         </p>
       </section>
 

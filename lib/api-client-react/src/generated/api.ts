@@ -21,6 +21,8 @@ import type {
 
 import type {
   AddFarmMemberInput,
+  AppStatus,
+  AppStatusInput,
   ArchiveInput,
   AuthUserEnvelope,
   BackfillAnimalsResult,
@@ -44,6 +46,7 @@ import type {
   CategoryCount,
   ChangeFarmRoleInput,
   CleanupOrphanedDataInput,
+  ClientErrorInput,
   CornerSuggestion,
   CreateCareGuideInput,
   CreateReportInput,
@@ -55,6 +58,7 @@ import type {
   DeleteAccountInput,
   DeleteFarmInput,
   DeletePlantInput,
+  ErrorGroup,
   FarmAnimal,
   FarmAnimalInput,
   FarmExport,
@@ -117,6 +121,7 @@ import type {
   UpdateTaskInput,
   UpdateUserApprovalInput,
   UploadDay30PhotoInput,
+  UsageDay,
   WeightLog,
   WeightLogInput
 } from './api.schemas';
@@ -3456,6 +3461,450 @@ export const useDeleteUser = <TError = ErrorType<void>,
       > => {
       return useMutation(getDeleteUserMutationOptions(options));
     }
+
+export const getGetAppStatusUrl = () => {
+
+
+
+
+  return `/api/status`
+}
+
+/**
+ * @summary The notice shown to everyone during a disruption (no sign-in needed)
+ */
+export const getAppStatus = async ( options?: RequestInit): Promise<AppStatus> => {
+
+  return customFetch<AppStatus>(getGetAppStatusUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetAppStatusQueryKey = () => {
+    return [
+    `/api/status`
+    ] as const;
+    }
+
+
+export const getGetAppStatusQueryOptions = <TData = Awaited<ReturnType<typeof getAppStatus>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAppStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetAppStatusQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppStatus>>> = ({ signal }) => getAppStatus({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getAppStatus>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetAppStatusQueryResult = NonNullable<Awaited<ReturnType<typeof getAppStatus>>>
+export type GetAppStatusQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary The notice shown to everyone during a disruption (no sign-in needed)
+ */
+
+export function useGetAppStatus<TData = Awaited<ReturnType<typeof getAppStatus>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getAppStatus>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetAppStatusQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetAppStatusUrl = () => {
+
+
+
+
+  return `/api/admin/status`
+}
+
+/**
+ * @summary Set or clear the notice (app owner)
+ */
+export const setAppStatus = async (appStatusInput: AppStatusInput, options?: RequestInit): Promise<AppStatus> => {
+
+  return customFetch<AppStatus>(getSetAppStatusUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(appStatusInput)
+  }
+);}
+
+
+
+
+
+export const getSetAppStatusMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setAppStatus>>, TError,{data: BodyType<AppStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setAppStatus>>, TError,{data: BodyType<AppStatusInput>}, TContext> => {
+
+const mutationKey = ['setAppStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setAppStatus>>, {data: BodyType<AppStatusInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  setAppStatus(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetAppStatusMutationResult = NonNullable<Awaited<ReturnType<typeof setAppStatus>>>
+    export type SetAppStatusMutationBody = BodyType<AppStatusInput>
+    export type SetAppStatusMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Set or clear the notice (app owner)
+ */
+export const useSetAppStatus = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setAppStatus>>, TError,{data: BodyType<AppStatusInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setAppStatus>>,
+        TError,
+        {data: BodyType<AppStatusInput>},
+        TContext
+      > => {
+      return useMutation(getSetAppStatusMutationOptions(options));
+    }
+
+export const getReportClientErrorUrl = () => {
+
+
+
+
+  return `/api/client-errors`
+}
+
+/**
+ * @summary The app reports an error it ran into (no personal data; limited per address)
+ */
+export const reportClientError = async (clientErrorInput: ClientErrorInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getReportClientErrorUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(clientErrorInput)
+  }
+);}
+
+
+
+
+
+export const getReportClientErrorMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportClientError>>, TError,{data: BodyType<ClientErrorInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof reportClientError>>, TError,{data: BodyType<ClientErrorInput>}, TContext> => {
+
+const mutationKey = ['reportClientError'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof reportClientError>>, {data: BodyType<ClientErrorInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  reportClientError(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReportClientErrorMutationResult = NonNullable<Awaited<ReturnType<typeof reportClientError>>>
+    export type ReportClientErrorMutationBody = BodyType<ClientErrorInput>
+    export type ReportClientErrorMutationError = ErrorType<void>
+
+    /**
+ * @summary The app reports an error it ran into (no personal data; limited per address)
+ */
+export const useReportClientError = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof reportClientError>>, TError,{data: BodyType<ClientErrorInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof reportClientError>>,
+        TError,
+        {data: BodyType<ClientErrorInput>},
+        TContext
+      > => {
+      return useMutation(getReportClientErrorMutationOptions(options));
+    }
+
+export const getListErrorGroupsUrl = () => {
+
+
+
+
+  return `/api/admin/errors`
+}
+
+/**
+ * @summary Grouped errors, open ones first (app owner)
+ */
+export const listErrorGroups = async ( options?: RequestInit): Promise<ErrorGroup[]> => {
+
+  return customFetch<ErrorGroup[]>(getListErrorGroupsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListErrorGroupsQueryKey = () => {
+    return [
+    `/api/admin/errors`
+    ] as const;
+    }
+
+
+export const getListErrorGroupsQueryOptions = <TData = Awaited<ReturnType<typeof listErrorGroups>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listErrorGroups>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListErrorGroupsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listErrorGroups>>> = ({ signal }) => listErrorGroups({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listErrorGroups>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListErrorGroupsQueryResult = NonNullable<Awaited<ReturnType<typeof listErrorGroups>>>
+export type ListErrorGroupsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Grouped errors, open ones first (app owner)
+ */
+
+export function useListErrorGroups<TData = Awaited<ReturnType<typeof listErrorGroups>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listErrorGroups>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListErrorGroupsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getResolveErrorGroupUrl = (fingerprint: string,) => {
+
+
+
+
+  return `/api/admin/errors/${fingerprint}/resolve`
+}
+
+/**
+ * @summary Mark an error as fixed; it opens again when it comes back (app owner)
+ */
+export const resolveErrorGroup = async (fingerprint: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getResolveErrorGroupUrl(fingerprint),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getResolveErrorGroupMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resolveErrorGroup>>, TError,{fingerprint: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resolveErrorGroup>>, TError,{fingerprint: string}, TContext> => {
+
+const mutationKey = ['resolveErrorGroup'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resolveErrorGroup>>, {fingerprint: string}> = (props) => {
+          const {fingerprint} = props ?? {};
+
+          return  resolveErrorGroup(fingerprint,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResolveErrorGroupMutationResult = NonNullable<Awaited<ReturnType<typeof resolveErrorGroup>>>
+
+    export type ResolveErrorGroupMutationError = ErrorType<void>
+
+    /**
+ * @summary Mark an error as fixed; it opens again when it comes back (app owner)
+ */
+export const useResolveErrorGroup = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resolveErrorGroup>>, TError,{fingerprint: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof resolveErrorGroup>>,
+        TError,
+        {fingerprint: string},
+        TContext
+      > => {
+      return useMutation(getResolveErrorGroupMutationOptions(options));
+    }
+
+export const getGetUsageUrl = () => {
+
+
+
+
+  return `/api/admin/usage`
+}
+
+/**
+ * @summary Daily totals of the last 14 days, newest first (app owner)
+ */
+export const getUsage = async ( options?: RequestInit): Promise<UsageDay[]> => {
+
+  return customFetch<UsageDay[]>(getGetUsageUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetUsageQueryKey = () => {
+    return [
+    `/api/admin/usage`
+    ] as const;
+    }
+
+
+export const getGetUsageQueryOptions = <TData = Awaited<ReturnType<typeof getUsage>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetUsageQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getUsage>>> = ({ signal }) => getUsage({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getUsage>>>
+export type GetUsageQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Daily totals of the last 14 days, newest first (app owner)
+ */
+
+export function useGetUsage<TData = Awaited<ReturnType<typeof getUsage>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getUsage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetUsageQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getHealthCheckUrl = () => {
 

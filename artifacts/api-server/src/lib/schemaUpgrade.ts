@@ -48,6 +48,33 @@ const STATEMENTS = [
   ...FARM_SCHEMA_STATEMENTS,
   // Beet-Architekt (generated, see gardenSchemaStatements.ts).
   ...GARDEN_SCHEMA_STATEMENTS,
+  // Betrieb: error monitoring, status notice, usage counts (schema/monitoring.ts).
+  "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active_on date",
+  `CREATE TABLE IF NOT EXISTS "error_groups" (
+	"fingerprint" text PRIMARY KEY NOT NULL,
+	"source" text NOT NULL,
+	"message" text NOT NULL,
+	"location" text,
+	"stack" text,
+	"release" text,
+	"count" integer DEFAULT 1 NOT NULL,
+	"first_seen" timestamp with time zone DEFAULT now() NOT NULL,
+	"last_seen" timestamp with time zone DEFAULT now() NOT NULL,
+	"resolved_at" timestamp with time zone,
+	"notified_at" timestamp with time zone
+)`,
+  `CREATE TABLE IF NOT EXISTS "app_status" (
+	"id" integer PRIMARY KEY NOT NULL,
+	"message" text,
+	"level" text DEFAULT 'info' NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `CREATE TABLE IF NOT EXISTS "usage_daily" (
+	"day" date NOT NULL,
+	"metric" text NOT NULL,
+	"value" integer DEFAULT 0 NOT NULL,
+	CONSTRAINT "usage_daily_day_metric_pk" PRIMARY KEY("day","metric")
+)`,
 ];
 
 export async function upgradeSchema(): Promise<void> {

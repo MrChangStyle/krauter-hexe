@@ -2,8 +2,10 @@ import { Router } from "express";
 import { logger } from "../lib/logger";
 import { triggerDueNotifications } from "../lib/pushScheduler";
 import { cleanupOldScanAttempts } from "../lib/scanRateLimit";
+import { cleanupMonitoring } from "../lib/monitoring";
 
 const router = Router();
+let lastMonitoringCleanup = 0;
 
 /**
  * POST /cron/trigger-notifications
@@ -34,6 +36,10 @@ router.post("/cron/trigger-notifications", async (req, res) => {
     const triggered = await triggerDueNotifications();
     // Housekeeping piggybacks on the minute cron; it runs at most hourly.
     const removedAttempts = await cleanupOldScanAttempts();
+    if (Date.now() - lastMonitoringCleanup > 24 * 60 * 60 * 1000) {
+      lastMonitoringCleanup = Date.now();
+      await cleanupMonitoring();
+    }
     logger.info({ triggered, removedAttempts }, "Cron: trigger-notifications completed");
     res.json({ triggered });
   } catch (err) {

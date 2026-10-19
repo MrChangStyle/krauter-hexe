@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   boolean,
+  date,
   index,
   integer,
   jsonb,
@@ -60,6 +61,9 @@ export const usersTable = pgTable(
       .notNull()
       .defaultNow()
       .$onUpdate(() => new Date()),
+    // Day of the last request (Berlin), only for the daily count of active
+    // users in the owner's usage statistics – no further activity is stored.
+    lastActiveOn: date('last_active_on', { mode: 'string' }),
   },
   (table) => [
     // Hard guarantee that there is at most ONE owner row, no matter how

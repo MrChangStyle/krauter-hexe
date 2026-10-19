@@ -1699,6 +1699,207 @@ export const CreateFeedRemindersResponse = zod.object({
 
 
 /**
+ * @summary Vorrat, Kosten und Wintervorrat (fixed rules, from the rations in effect)
+ */
+export const GetFeedStockParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFeedStockResponse = zod.object({
+  "stocks": zod.array(zod.object({
+  "id": zod.number().nullable(),
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "stockKg": zod.number().nullable().describe('Left today (kg); null = never counted'),
+  "countedOn": zod.string().nullable(),
+  "packageKg": zod.number().nullable(),
+  "pricePerKg": zod.number().nullable(),
+  "dailyKg": zod.number(),
+  "daysLeft": zod.number().nullable(),
+  "emptyOn": zod.string().nullable(),
+  "reorderOn": zod.string().nullable(),
+  "status": zod.enum(['ok', 'soon', 'empty', 'unused', 'unknown'])
+})),
+  "costs": zod.object({
+  "lines": zod.array(zod.object({
+  "target": zod.object({
+  "kind": zod.enum(['animal', 'herd']),
+  "id": zod.number(),
+  "name": zod.string(),
+  "count": zod.number()
+}),
+  "perAnimalMonth": zod.number(),
+  "perMonth": zod.number(),
+  "missingPrices": zod.array(zod.string())
+})),
+  "perMonth": zod.number(),
+  "complete": zod.boolean()
+}),
+  "winter": zod.object({
+  "from": zod.string(),
+  "to": zod.string(),
+  "days": zod.number(),
+  "lines": zod.array(zod.object({
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "neededKg": zod.number(),
+  "stockKg": zod.number().describe('Expected on hand when the winter starts'),
+  "missingKg": zod.number(),
+  "gardenCrop": zod.string().nullable()
+})),
+  "gardenKg": zod.number()
+})
+})
+
+
+/**
+ * @summary Set what is on hand now ("Bestand gezählt"), optionally package size and price (caretaker or admin)
+ */
+export const CountFeedStockParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const CountFeedStockBody = zod.object({
+  "feedKey": zod.string().nullish(),
+  "feedId": zod.number().nullish(),
+  "stockKg": zod.number(),
+  "packageKg": zod.number().nullish(),
+  "pricePerPackage": zod.number().nullish()
+})
+
+export const CountFeedStockResponse = zod.object({
+  "stocks": zod.array(zod.object({
+  "id": zod.number().nullable(),
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "stockKg": zod.number().nullable().describe('Left today (kg); null = never counted'),
+  "countedOn": zod.string().nullable(),
+  "packageKg": zod.number().nullable(),
+  "pricePerKg": zod.number().nullable(),
+  "dailyKg": zod.number(),
+  "daysLeft": zod.number().nullable(),
+  "emptyOn": zod.string().nullable(),
+  "reorderOn": zod.string().nullable(),
+  "status": zod.enum(['ok', 'soon', 'empty', 'unused', 'unknown'])
+})),
+  "costs": zod.object({
+  "lines": zod.array(zod.object({
+  "target": zod.object({
+  "kind": zod.enum(['animal', 'herd']),
+  "id": zod.number(),
+  "name": zod.string(),
+  "count": zod.number()
+}),
+  "perAnimalMonth": zod.number(),
+  "perMonth": zod.number(),
+  "missingPrices": zod.array(zod.string())
+})),
+  "perMonth": zod.number(),
+  "complete": zod.boolean()
+}),
+  "winter": zod.object({
+  "from": zod.string(),
+  "to": zod.string(),
+  "days": zod.number(),
+  "lines": zod.array(zod.object({
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "neededKg": zod.number(),
+  "stockKg": zod.number().describe('Expected on hand when the winter starts'),
+  "missingKg": zod.number(),
+  "gardenCrop": zod.string().nullable()
+})),
+  "gardenKg": zod.number()
+})
+})
+
+
+/**
+ * @summary Add a purchase to the stock; updates the price per kg (caretaker or admin)
+ */
+export const BuyFeedParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const BuyFeedBody = zod.object({
+  "feedKey": zod.string().nullish(),
+  "feedId": zod.number().nullish(),
+  "packages": zod.number(),
+  "packageKg": zod.number(),
+  "pricePerPackage": zod.number().nullish()
+})
+
+export const BuyFeedResponse = zod.object({
+  "stocks": zod.array(zod.object({
+  "id": zod.number().nullable(),
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "stockKg": zod.number().nullable().describe('Left today (kg); null = never counted'),
+  "countedOn": zod.string().nullable(),
+  "packageKg": zod.number().nullable(),
+  "pricePerKg": zod.number().nullable(),
+  "dailyKg": zod.number(),
+  "daysLeft": zod.number().nullable(),
+  "emptyOn": zod.string().nullable(),
+  "reorderOn": zod.string().nullable(),
+  "status": zod.enum(['ok', 'soon', 'empty', 'unused', 'unknown'])
+})),
+  "costs": zod.object({
+  "lines": zod.array(zod.object({
+  "target": zod.object({
+  "kind": zod.enum(['animal', 'herd']),
+  "id": zod.number(),
+  "name": zod.string(),
+  "count": zod.number()
+}),
+  "perAnimalMonth": zod.number(),
+  "perMonth": zod.number(),
+  "missingPrices": zod.array(zod.string())
+})),
+  "perMonth": zod.number(),
+  "complete": zod.boolean()
+}),
+  "winter": zod.object({
+  "from": zod.string(),
+  "to": zod.string(),
+  "days": zod.number(),
+  "lines": zod.array(zod.object({
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "name": zod.string(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "neededKg": zod.number(),
+  "stockKg": zod.number().describe('Expected on hand when the winter starts'),
+  "missingKg": zod.number(),
+  "gardenCrop": zod.string().nullable()
+})),
+  "gardenKg": zod.number()
+})
+})
+
+
+/**
+ * @summary Forget the stock of a feed (caretaker or admin)
+ */
+export const RemoveFeedStockParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "stockId": zod.coerce.number()
+})
+
+export const RemoveFeedStockResponse = zod.void()
+
+
+/**
  * @summary The notice shown to everyone during a disruption (no sign-in needed)
  */
 export const GetAppStatusResponse = zod.object({
@@ -4071,6 +4272,7 @@ export const GetGardenPlanResponse = zod.object({
   "perDayKg": zod.number(),
   "summerKg": zod.number(),
   "winterKg": zod.number(),
+  "winterFromRations": zod.boolean().describe('The winter amount comes from the Futterplaner\'s winter rations'),
   "needM2": zod.number()
 }),
   "availableM2": zod.number(),

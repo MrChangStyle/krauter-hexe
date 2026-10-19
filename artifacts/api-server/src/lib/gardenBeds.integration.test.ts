@@ -13,6 +13,11 @@ import express, { type NextFunction, type Request as ExpressRequest, type Respon
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
+// The garden routes reach the Futterplaner (winter need), which loads the AI client.
+vi.hoisted(() => {
+  process.env["GEMINI_API_KEY"] ??= "test-key";
+});
+
 const testUrl = process.env["TEST_DATABASE_URL"];
 const enabled =
   !!testUrl && testUrl === (process.env["NEON_DATABASE_URL"] ?? process.env["DATABASE_URL"]);

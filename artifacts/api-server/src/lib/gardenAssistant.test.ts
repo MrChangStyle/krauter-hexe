@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.hoisted(() => {
   process.env["DATABASE_URL"] ??= "postgres://unused@127.0.0.1:1/unused";
+  process.env["GEMINI_API_KEY"] ??= "test-key";
 });
 
 const { DEFAULT_GOALS, planGarden } = await import("./gardenAssistant");

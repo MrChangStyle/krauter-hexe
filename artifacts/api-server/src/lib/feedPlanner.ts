@@ -280,6 +280,12 @@ export async function listRations(farmId: number) {
   return rations;
 }
 
+/** All rations, evaluated – without touching the reminders (Vorrat, Kosten, Garten). */
+export async function evaluatedRations(farmId: number) {
+  const rows = await db.select().from(feedRationsTable).where(eq(feedRationsTable.farmId, farmId)).orderBy(asc(feedRationsTable.id));
+  return evaluate(farmId, rows);
+}
+
 // ── Evaluation ───────────────────────────────────────────────────────────────
 
 export interface Warning {

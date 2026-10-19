@@ -75,3 +75,29 @@ export const feedRationsTable = pgTable(
     uniqueIndex("feed_rations_herd_season_unique").on(table.herdId, table.season).where(sql`${table.herdId} IS NOT NULL`),
   ],
 );
+
+// Vorrat (Futterplaner step 4): how much of a feed was on hand on a day –
+// set when counting, raised by a purchase. What is left today is computed
+// from the daily use of the rations. Price per kg from the last purchase.
+export const feedStocksTable = pgTable(
+  "feed_stocks",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    // A catalog feed (key) or an own feed (id).
+    feedKey: text("feed_key"),
+    feedId: integer("feed_id").references(() => farmFeedsTable.id, { onDelete: "cascade" }),
+    stockKg: doublePrecision("stock_kg").notNull(),
+    countedOn: date("counted_on", { mode: "string" }).notNull(),
+    packageKg: doublePrecision("package_kg"),
+    pricePerKg: doublePrecision("price_per_kg"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("feed_stocks_farm_idx").on(table.farmId),
+    uniqueIndex("feed_stocks_farm_key_unique").on(table.farmId, table.feedKey).where(sql`${table.feedKey} IS NOT NULL`),
+    uniqueIndex("feed_stocks_feed_unique").on(table.feedId).where(sql`${table.feedId} IS NOT NULL`),
+  ],
+);

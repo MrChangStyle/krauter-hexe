@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRange, formatValue, grams, light, lightText, rationName, shareText, shortDate } from "./feed-labels";
+import { bales, euro, formatRange, formatValue, grams, kg, light, lightText, rationName, shareText, shortDate } from "./feed-labels";
 
 describe("feed labels", () => {
   it("turns a check into a traffic light", () => {
@@ -24,5 +24,14 @@ describe("feed labels", () => {
     expect(rationName("all")).toBe("Ration");
     expect(shortDate("2026-10-22")).toBe("22.10.");
     expect(shareText(0.75)).toBe("75 %");
+  });
+
+  it("formats money, weights and bales", () => {
+    expect(euro(2.9)).toBe("2,90 €");
+    expect(kg(1.75)).toBe("1,8 kg");
+    expect(kg(241.6)).toBe("242 kg");
+    expect(kg(0.025)).toBe("25 g");
+    expect(kg(0)).toBe("0 kg");
+    expect(bales(241.6)).toBe(17);
   });
 });

@@ -30,3 +30,4 @@ export * from "./scan-attempts";
 export * from "./reports";
 export * from "./farm";
 export * from "./garden";
+export * from "./monitoring";

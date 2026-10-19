@@ -51,6 +51,8 @@ import { usePreparationBackfill } from '@/lib/use-preparation-backfill';
 import { useSymptomApplicationsBackfill } from '@/lib/use-symptom-applications-backfill';
 import { useMedicinalReviewBackfill } from '@/lib/use-medicinal-review-backfill';
 import { useEdibleMedicinalBackfill } from '@/lib/use-edible-medicinal-backfill';
+import { ErrorBoundary } from '@/components/error-boundary';
+import { StatusBanner } from '@/components/status-banner';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -181,8 +183,10 @@ function App() {
 
   return (
     // At an old address after the move, the move helper replaces the app.
+    <ErrorBoundary>
     <MoveGate>
       <QueryClientProvider client={queryClient}>
+        <StatusBanner />
         <AuthProvider>
           {/* Everything - including the offline scan queue - only runs for
               signed-in, approved accounts. */}
@@ -202,6 +206,7 @@ function App() {
         </AuthProvider>
       </QueryClientProvider>
     </MoveGate>
+    </ErrorBoundary>
   );
 }
 

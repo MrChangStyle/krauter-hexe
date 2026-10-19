@@ -5,6 +5,7 @@ import { type NextFunction, type Request, type Response } from 'express';
 
 import { clearAuthCookie, getAuthToken, setAuthCookie } from '../lib/auth';
 import { createAuthToken, verifyAuthToken } from '../lib/token';
+import { markActive } from '../lib/monitoring';
 
 // How often the token is re-issued (once per day of activity is enough - the
 // point is that active users never hit the 30-day expiry).
@@ -69,6 +70,9 @@ export async function authMiddleware(
   if (nowS - payload.issuedAt > ROLL_INTERVAL_S) {
     setAuthCookie(res, await createAuthToken(dbUser.id));
   }
+
+  // Daily count of active users for the owner's statistics (once a day).
+  void markActive(dbUser);
 
   req.user = {
     id: dbUser.id,

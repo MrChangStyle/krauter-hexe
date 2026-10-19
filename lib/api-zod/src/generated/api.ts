@@ -1349,6 +1349,99 @@ export const DeleteUserResponse = zod.void()
 
 
 /**
+ * @summary The notice shown to everyone during a disruption (no sign-in needed)
+ */
+export const GetAppStatusResponse = zod.object({
+  "message": zod.string().nullable(),
+  "level": zod.enum(['info', 'warning']),
+  "updatedAt": zod.string().nullable()
+})
+
+
+/**
+ * @summary Set or clear the notice (app owner)
+ */
+export const setAppStatusBodyMessageMax = 300;
+
+
+
+export const SetAppStatusBody = zod.object({
+  "message": zod.string().max(setAppStatusBodyMessageMax).nullable(),
+  "level": zod.enum(['info', 'warning'])
+})
+
+export const SetAppStatusResponse = zod.object({
+  "message": zod.string().nullable(),
+  "level": zod.enum(['info', 'warning']),
+  "updatedAt": zod.string().nullable()
+})
+
+
+/**
+ * @summary The app reports an error it ran into (no personal data; limited per address)
+ */
+export const reportClientErrorBodyMessageMax = 1000;
+
+export const reportClientErrorBodyStackMax = 8000;
+
+export const reportClientErrorBodyPathMax = 500;
+
+export const reportClientErrorBodyReleaseMax = 40;
+
+
+
+export const ReportClientErrorBody = zod.object({
+  "message": zod.string().max(reportClientErrorBodyMessageMax),
+  "stack": zod.string().max(reportClientErrorBodyStackMax).nullish(),
+  "path": zod.string().max(reportClientErrorBodyPathMax).nullish(),
+  "release": zod.string().max(reportClientErrorBodyReleaseMax).nullish()
+})
+
+export const ReportClientErrorResponse = zod.void()
+
+
+/**
+ * @summary Grouped errors, open ones first (app owner)
+ */
+export const ListErrorGroupsResponseItem = zod.object({
+  "fingerprint": zod.string(),
+  "source": zod.enum(['server', 'client']),
+  "message": zod.string(),
+  "location": zod.string().nullable(),
+  "stack": zod.string().nullable(),
+  "release": zod.string().nullable(),
+  "count": zod.number(),
+  "firstSeen": zod.string(),
+  "lastSeen": zod.string(),
+  "resolvedAt": zod.string().nullable()
+})
+export const ListErrorGroupsResponse = zod.array(ListErrorGroupsResponseItem)
+
+
+/**
+ * @summary Mark an error as fixed; it opens again when it comes back (app owner)
+ */
+export const ResolveErrorGroupParams = zod.object({
+  "fingerprint": zod.coerce.string()
+})
+
+export const ResolveErrorGroupResponse = zod.void()
+
+
+/**
+ * @summary Daily totals of the last 14 days, newest first (app owner)
+ */
+export const GetUsageResponseItem = zod.object({
+  "day": zod.string(),
+  "activeUsers": zod.number(),
+  "newUsers": zod.number(),
+  "aiActions": zod.number(),
+  "errors": zod.number()
+})
+export const GetUsageResponse = zod.array(GetUsageResponseItem)
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

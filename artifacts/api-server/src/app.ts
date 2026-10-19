@@ -4,6 +4,7 @@ import pinoHttp from "pino-http";
 import router from "./routes";
 import { authMiddleware } from "./middlewares/authMiddleware";
 import { logger } from "./lib/logger";
+import { errorHandler } from "./middlewares/errorHandler";
 import { mountWebClient, resolveWebClientDir } from "./lib/webClient";
 
 const app: Express = express();
@@ -55,5 +56,8 @@ app.use("/api", router);
 if (process.env["SERVE_WEB_CLIENT"] === "true") {
   mountWebClient(app, resolveWebClientDir());
 }
+
+// Last stop for errors a route did not handle (recorded by the error monitor).
+app.use(errorHandler);
 
 export default app;

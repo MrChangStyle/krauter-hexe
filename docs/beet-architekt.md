@@ -60,8 +60,11 @@ Vom Inhaber am 18.10.2026 ergänzt:
    Erinnerungen im Aufgabenplaner mit Push; Belegung je Jahr, Warnung bei gleicher Familie
    bzw. Starkzehrer nach Starkzehrer. Dazu die tägliche Frostwarnung aus der DWD-Vorhersage
    (ab 2 °C Lufttemperatur in der Nacht, nur wenn frostempfindliche Pflanzen draußen sind).
-5. **KI (Modul Garten):** Anbaudaten-Entwurf für neue Pflanzen mit Admin-Freigabe,
-   Ecken-Vorschlag und Fotoanalyse (Schatten, Boden, Unkraut), Beet-Vorschlag.
+5. **KI (Modul Garten) (UMGESETZT):** Anbaudaten-Entwurf für neue Pflanzen mit Admin-Freigabe,
+   Ecken-Vorschlag und Fotoanalyse (Schatten, Boden, Unkraut), Beet-Vorschlag. Die KI berät
+   nur: jeder Vorschlag läuft durch dieselben festen Regeln wie ein Tipp ins Raster, was sie
+   verletzt, wird aussortiert und benannt. KI-Funktionen und Gartenkalender tragen die
+   Markierung „Premium“ (noch ohne Sperre).
 6. **Garten-Assistent & Hochbeet-Begleiter:** Ziele (Selbstversorgung/Tierfutter), Bedarf
    aus dem Tier-Modul, Aufteilung auf die Beete, Schichtaufbau mit Materialmengen,
    Auffüllen, letzte Pflanztermine.

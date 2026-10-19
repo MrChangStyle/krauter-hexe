@@ -1,6 +1,7 @@
 import { doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { farmsTable } from "./farm";
 import { plantsTable } from "./plants";
+import { usersTable } from "./auth";
 
 // Beet-Architekt (docs/beet-architekt.md). Beds belong to a farm and follow
 // its rules: private to the members, every access through requireFarm(),
@@ -67,9 +68,20 @@ export const gardenBedsTable = pgTable(
     photoUrl: text("photo_url"),
     photoHeading: integer("photo_heading"),
     photoCorners: jsonb("photo_corners").$type<{ x: number; y: number }[]>(),
+    // KI (step 5): the latest AI look at the photo (shade, soil, weeds, tips);
+    // cleared with a new photo.
+    photoAnalysis: jsonb("photo_analysis").$type<BedPhotoAnalysis>(),
   },
   (table) => [index("garden_beds_farm_idx").on(table.farmId)],
 );
+
+export interface BedPhotoAnalysis {
+  shade: string;
+  soil: string;
+  weeds: string;
+  tips: string[];
+  createdAt: string;
+}
 
 /** Edge of one planner cell (cm) – the spec's 30 × 30 cm grid. */
 export const BED_CELL_CM = 30;
@@ -151,3 +163,20 @@ export const gardenDigestLogTable = pgTable(
   },
   (table) => [primaryKey({ columns: [table.farmId, table.day] })],
 );
+
+// KI (step 5): crops the fixed catalog does not know yet. The AI drafts the
+// Anbaudaten, the app owner reviews them; once approved they count for every
+// farm like the fixed catalog. `data` has the shape of the catalog's Crop
+// (lib/gardenCatalog.ts in the API server).
+export const CROP_DRAFT_STATUSES = ["draft", "approved"] as const;
+export type CropDraftStatus = (typeof CROP_DRAFT_STATUSES)[number];
+export const cropDraftStatusEnum = pgEnum("crop_draft_status", CROP_DRAFT_STATUSES);
+
+export const gardenCropsTable = pgTable("garden_crops", {
+  key: text("key").primaryKey(),
+  status: cropDraftStatusEnum("status").notNull().default("draft"),
+  data: jsonb("data").$type<Record<string, unknown>>().notNull(),
+  requestedBy: text("requested_by").references(() => usersTable.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  approvedAt: timestamp("approved_at", { withTimezone: true }),
+});

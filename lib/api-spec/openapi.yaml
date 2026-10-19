@@ -2264,6 +2264,80 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/CameraEvent"
+  /garden/crop-requests:
+    post:
+      tags: [garden]
+      operationId: requestCrop
+      summary: Ask for Anbaudaten of a plant the catalog does not know – the AI drafts them, the app owner approves (counts as a garden AI request)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CropRequestInput"
+      responses:
+        "200":
+          description: The draft, or the crop the catalog already has (existing = true).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CropRequestResult"
+        "400":
+          description: No name or unknown archive plant.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: The AI did not answer.
+  /garden/crop-drafts:
+    get:
+      tags: [garden]
+      operationId: listCropDrafts
+      summary: Open Anbaudaten drafts (app owner)
+      responses:
+        "200":
+          description: The drafts, oldest first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CropDraft"
+  /garden/crop-drafts/{key}/approve:
+    post:
+      tags: [garden]
+      operationId: approveCropDraft
+      summary: Approve a draft – from now on it counts for everyone (app owner)
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The approved crop.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CropDraft"
+        "404":
+          description: No such draft.
+  /garden/crop-drafts/{key}:
+    delete:
+      tags: [garden]
+      operationId: rejectCropDraft
+      summary: Throw a draft away (app owner)
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Removed.
+        "404":
+          description: No such draft.
   /garden/catalog:
     get:
       tags: [garden]
@@ -2449,6 +2523,104 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GardenBed"
+  /farms/{farmId}/beds/{bedId}/photo/corner-suggestion:
+    post:
+      tags: [garden]
+      operationId: suggestBedCorners
+      summary: KI suggests the four bed corners on the photo, in grid order; the user confirms (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The corners, or null when the AI could not find the bed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CornerSuggestion"
+        "400":
+          description: No photo.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: The AI did not answer.
+  /farms/{farmId}/beds/{bedId}/photo/analysis:
+    post:
+      tags: [garden]
+      operationId: analyzeBedPhoto
+      summary: KI-Einschätzung of the bed photo (shade, soil, weeds, tips), stored on the bed (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The bed with its analysis.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenBed"
+        "400":
+          description: No photo.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: The AI did not answer.
+  /farms/{farmId}/beds/{bedId}/seasons/{season}/suggestion:
+    post:
+      tags: [garden]
+      operationId: suggestPlanting
+      summary: KI suggests plantings for the free cells; the fixed rules drop what does not fit. Nothing is saved (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: season
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlantingSuggestionInput"
+      responses:
+        "200":
+          description: The checked suggestion.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlantingProposal"
+        "400":
+          description: The bed is full.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: The AI did not answer.
   /farms/{farmId}/beds/{bedId}/photo-corners:
     put:
       tags: [garden]
@@ -4651,7 +4823,7 @@ components:
           description: MM-DD
     GardenBed:
       type: object
-      required: [id, name, type, lengthCm, widthCm, heightCm, postalCode, latitude, longitude, sunHours, orientation, windProtection, soilTexture, soilPh, lastFrost, firstFrost, frostSource, notes, createdAt, photoUrl, photoHeading, photoCorners]
+      required: [id, name, type, lengthCm, widthCm, heightCm, postalCode, latitude, longitude, sunHours, orientation, windProtection, soilTexture, soilPh, lastFrost, firstFrost, frostSource, notes, createdAt, photoUrl, photoHeading, photoCorners, photoAnalysis]
       properties:
         id:
           type: integer
@@ -4711,6 +4883,103 @@ components:
           description: The four bed corners on the photo (0–1), in grid order
           items:
             $ref: "#/components/schemas/PhotoPoint"
+        photoAnalysis:
+          description: KI-Einschätzung of the photo (cleared with a new photo)
+          oneOf:
+            - $ref: "#/components/schemas/BedPhotoAnalysis"
+            - type: 'null'
+    BedPhotoAnalysis:
+      type: object
+      required: [shade, soil, weeds, tips, createdAt]
+      properties:
+        shade:
+          type: string
+        soil:
+          type: string
+        weeds:
+          type: string
+        tips:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+    CornerSuggestion:
+      type: object
+      required: [corners]
+      properties:
+        corners:
+          type: [array, 'null']
+          items:
+            $ref: "#/components/schemas/PhotoPoint"
+    PlantingSuggestionInput:
+      type: object
+      properties:
+        wishes:
+          type: [string, 'null']
+          maxLength: 300
+    PlantingProposal:
+      type: object
+      required: [items, dropped, notes]
+      properties:
+        items:
+          type: array
+          items:
+            type: object
+            required: [cropKey, label, x, y, w, h]
+            properties:
+              cropKey:
+                type: string
+              label:
+                type: string
+              x:
+                type: integer
+              y:
+                type: integer
+              w:
+                type: integer
+              h:
+                type: integer
+        dropped:
+          type: array
+          items:
+            type: object
+            required: [label, reason]
+            properties:
+              label:
+                type: string
+              reason:
+                type: string
+        notes:
+          type: string
+    CropRequestInput:
+      type: object
+      properties:
+        name:
+          type: [string, 'null']
+          maxLength: 40
+        plantId:
+          type: [integer, 'null']
+    CropDraft:
+      type: object
+      required: [crop, status, createdAt]
+      properties:
+        crop:
+          $ref: "#/components/schemas/Crop"
+        status:
+          type: string
+          enum: [draft, approved]
+        createdAt:
+          type: string
+    CropRequestResult:
+      type: object
+      required: [draft, existing]
+      properties:
+        draft:
+          $ref: "#/components/schemas/CropDraft"
+        existing:
+          type: boolean
+          description: The catalog or an earlier draft already had this plant – no AI call was made
     PhotoPoint:
       type: object
       required: [x, y]

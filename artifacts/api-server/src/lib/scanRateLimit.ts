@@ -112,7 +112,7 @@ function getNextBerlinMidnightUTC(): Date {
  */
 export async function checkAndRecordScanAttempt(
   userId: string,
-  scanType: "plant" | "insect" | "farm",
+  scanType: "plant" | "insect" | "farm" | "garden",
   options: { unlimited?: boolean } = {},
 ): Promise<RateLimitResult> {
   const resetsAt = getNextBerlinMidnightUTC().toISOString();

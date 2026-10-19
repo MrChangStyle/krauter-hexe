@@ -1,17 +1,20 @@
 import { useMemo, useRef, useState, type MouseEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Camera, Compass, Loader2, RotateCcw, Trash2 } from "lucide-react";
+import { Camera, Check, Compass, Loader2, RotateCcw, ScanSearch, Sparkles, Trash2 } from "lucide-react";
 import {
   getGetBedQueryKey,
+  useAnalyzeBedPhoto,
   useRemoveBedPhoto,
   useSetBedPhoto,
   useSetBedPhotoCorners,
+  useSuggestBedCorners,
   type BedPlanting,
   type Crop,
   type GardenBed,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { HenniTip } from "@/components/henni";
+import { PremiumBadge } from "@/components/premium-badge";
 import { useToast } from "@/hooks/use-toast";
 import { downscaleFile } from "@/lib/image";
 import { gridSize } from "@/lib/garden-planner";
@@ -108,12 +111,27 @@ export function BedPhoto({
     },
   });
   const remove = useRemoveBedPhoto({ mutation: { onSuccess: saved, onError: fail } });
+  const [suggested, setSuggested] = useState<Point[] | null>(null);
+  const aiFail = (err: unknown) =>
+    toast({ title: "KI nicht erreichbar", description: errorText(err, "Bitte versuche es gleich noch einmal."), variant: "destructive" });
+  const suggest = useSuggestBedCorners({
+    mutation: {
+      onSuccess({ corners }) {
+        if (corners) setSuggested(corners);
+        else toast({ title: "Keine Ecken gefunden", description: "Die KI konnte das Beet nicht sicher erkennen – tippe die Ecken bitte selbst an." });
+      },
+      onError: aiFail,
+    },
+  });
+  const analyze = useAnalyzeBedPhoto({ mutation: { onSuccess: saved, onError: aiFail } });
 
   const corners = draft === null ? (bed.photoCorners ?? null) : null;
   const h = useMemo(() => (corners ? squareToQuad(corners) : null), [corners]);
   const inv = useMemo(() => (h ? invert(h) : null), [h]);
   const marking = canWrite && bed.photoUrl !== null && (draft !== null || !bed.photoCorners);
   const points = draft ?? [];
+  // Markers on the photo: the AI's suggestion while it waits for a yes.
+  const shown = suggested ?? points;
 
   async function choose() {
     stopCompass.current?.();
@@ -122,6 +140,7 @@ export function BedPhoto({
   }
 
   function tap(event: MouseEvent<HTMLDivElement>) {
+    if (suggested || suggest.isPending) return;
     const box = event.currentTarget.getBoundingClientRect();
     const p = { x: (event.clientX - box.left) / box.width, y: (event.clientY - box.top) / box.height };
     if (marking) {
@@ -156,7 +175,8 @@ export function BedPhoto({
         setPreparing(true);
         try {
           const imageData = await downscaleFile(file);
-          upload.mutate({ farmId, bedId: bed.id, data: { imageData, heading: compass.heading.current } });
+          setSuggested(null);
+        upload.mutate({ farmId, bedId: bed.id, data: { imageData, heading: compass.heading.current } });
         } finally {
           setPreparing(false);
         }
@@ -209,7 +229,24 @@ export function BedPhoto({
   return (
     <div className="space-y-2">
       {fileInput}
-      {marking && <HenniTip>{CORNER_HINTS[Math.min(points.length, 3)]}</HenniTip>}
+      {suggested ? (
+        <HenniTip>Die KI schlägt diese Ecken vor. Passen sie? Nummer 1 ist der Anfang des Rasters.</HenniTip>
+      ) : (
+        marking && <HenniTip>{CORNER_HINTS[Math.min(points.length, 3)]}</HenniTip>
+      )}
+      {marking && !suggested && points.length === 0 && (
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5"
+          disabled={suggest.isPending}
+          onClick={() => suggest.mutate({ farmId, bedId: bed.id })}
+        >
+          {suggest.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+          Ecken vorschlagen lassen
+          <PremiumBadge />
+        </Button>
+      )}
       <div className="relative cursor-crosshair select-none overflow-hidden rounded-2xl" onClick={tap}>
         <img src={bed.photoUrl} alt={`Foto von ${bed.name}`} className="block w-full" draggable={false} />
         <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1 1" preserveAspectRatio="none" aria-hidden="true">
@@ -231,9 +268,9 @@ export function BedPhoto({
             </>
           )}
           {marking &&
-            points.length > 1 &&
-            points.slice(1).map((p, i) => (
-              <line key={i} x1={points[i]!.x} y1={points[i]!.y} x2={p.x} y2={p.y} stroke="#B9E36A" strokeWidth={2} vectorEffect="non-scaling-stroke" />
+            shown.length > 1 &&
+            [...shown.slice(1), ...(shown.length === 4 ? [shown[0]!] : [])].map((p, i) => (
+              <line key={i} x1={shown[i]!.x} y1={shown[i]!.y} x2={p.x} y2={p.y} stroke="#B9E36A" strokeWidth={2} vectorEffect="non-scaling-stroke" />
             ))}
         </svg>
         {h &&
@@ -250,7 +287,7 @@ export function BedPhoto({
             );
           })}
         {marking &&
-          points.map((p, i) => (
+          shown.map((p, i) => (
             <span
               key={i}
               className="pointer-events-none absolute flex h-6 w-6 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-2 border-white bg-[#14281D] text-xs font-bold text-white"
@@ -265,13 +302,39 @@ export function BedPhoto({
             Blick nach {headingText(bed.photoHeading)}
           </span>
         )}
-        {setCorners.isPending && (
+        {(setCorners.isPending || suggest.isPending) && (
           <span className="absolute inset-0 flex items-center justify-center bg-black/20">
             <Loader2 className="h-6 w-6 animate-spin text-white" />
           </span>
         )}
       </div>
-      {canWrite && (
+      {suggested && (
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            className="gap-1.5"
+            disabled={setCorners.isPending}
+            onClick={() => {
+              setCorners.mutate({ farmId, bedId: bed.id, data: { corners: suggested } });
+              setSuggested(null);
+            }}
+          >
+            <Check className="h-4 w-4" />
+            Ecken übernehmen
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => {
+              setSuggested(null);
+              setDraft([]);
+            }}
+          >
+            Selbst antippen
+          </Button>
+        </div>
+      )}
+      {canWrite && !suggested && (
         <div className="flex flex-wrap gap-2">
           <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setDraft([])} disabled={setCorners.isPending}>
             <RotateCcw className="h-4 w-4" />
@@ -293,6 +356,51 @@ export function BedPhoto({
             <Trash2 className="h-4 w-4" />
             Foto entfernen
           </Button>
+        </div>
+      )}
+      {(bed.photoAnalysis || canWrite) && (
+        <div className="space-y-2 rounded-2xl border border-border bg-card p-3 text-sm">
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex items-center gap-1.5 font-semibold">
+              <ScanSearch className="h-4 w-4 text-primary" />
+              KI-Einschätzung
+              <PremiumBadge />
+            </p>
+            {canWrite && (
+              <Button size="sm" variant="outline" className="gap-1.5" disabled={analyze.isPending} onClick={() => analyze.mutate({ farmId, bedId: bed.id })}>
+                {analyze.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                {bed.photoAnalysis ? "Neu" : "Foto analysieren"}
+              </Button>
+            )}
+          </div>
+          {bed.photoAnalysis ? (
+            <>
+              <dl className="space-y-1.5">
+                {(
+                  [
+                    ["Schatten", bed.photoAnalysis.shade],
+                    ["Boden", bed.photoAnalysis.soil],
+                    ["Unkraut", bed.photoAnalysis.weeds],
+                  ] as const
+                ).map(([label, value]) => (
+                  <div key={label}>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{label}</dt>
+                    <dd>{value}</dd>
+                  </div>
+                ))}
+              </dl>
+              {bed.photoAnalysis.tips.length > 0 && (
+                <ul className="list-disc space-y-0.5 pl-5">
+                  {bed.photoAnalysis.tips.map((t) => (
+                    <li key={t}>{t}</li>
+                  ))}
+                </ul>
+              )}
+              <p className="text-xs text-muted-foreground">KI-Einschätzung nach dem Foto – kann sich irren.</p>
+            </>
+          ) : (
+            <p className="text-muted-foreground">Die KI schaut sich das Foto an: Schatten, Boden und Unkraut – mit Tipps für die nächsten Wochen.</p>
+          )}
         </div>
       )}
     </div>

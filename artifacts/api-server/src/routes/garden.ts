@@ -1,6 +1,14 @@
 import { Router, type IRouter } from 'express';
 import {
   AddPlantingBody,
+  AnalyzeBedPhotoResponse,
+  ApproveCropDraftResponse,
+  ListCropDraftsResponse,
+  RequestCropBody,
+  RequestCropResponse,
+  SuggestBedCornersResponse,
+  SuggestPlantingBody,
+  SuggestPlantingResponse,
   AddPlantingResponse,
   CreateBedBody,
   CreateBedResponse,
@@ -21,7 +29,7 @@ import {
   UpdateBedResponse,
 } from '@workspace/api-zod';
 
-import { requireApproved } from '../middlewares/requireApproved';
+import { requireApproved, requireOwner } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
 import {
   createBed,
@@ -33,23 +41,66 @@ import {
   setBedPhoto,
   updateBed,
 } from '../lib/gardenBeds';
-import { GARDEN_CATALOG } from '../lib/gardenCatalog';
+import { fullCatalog } from '../lib/gardenCatalog';
+import { approveCrop, listCropDrafts, loadApprovedCrops, rejectCrop, requestCrop } from '../lib/gardenCrops';
+import { analyzeBedPhoto, suggestCorners, suggestPlanting } from '../lib/gardenAi';
 import { addPlanting, listPlantings, removePlanting } from '../lib/gardenPlanner';
 import { bedHistory, farmCalendar, farmFrostWarnings, setCheck } from '../lib/gardenCalendar';
 import { berlinTodayKey } from '../lib/pushScheduler';
-import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
+import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Beet-Architekt: the crop catalog (same for everyone) and the beds of a
 // farm (read: every member; write: caretaker or admin).
 
 const router: IRouter = Router();
 
-const catalogJson = GetGardenCatalogResponse.parse(GARDEN_CATALOG);
+router.get(
+  '/garden/catalog',
+  requireApproved,
+  handle(async (_req, res) => {
+    await loadApprovedCrops();
+    res.set('Cache-Control', 'private, max-age=300');
+    res.json(GetGardenCatalogResponse.parse(fullCatalog()));
+  }),
+);
 
-router.get('/garden/catalog', requireApproved, (_req, res) => {
-  res.set('Cache-Control', 'private, max-age=3600');
-  res.json(catalogJson);
-});
+// ── KI: new crops (draft by the AI, approved by the app owner) ───────────────
+
+router.post(
+  '/garden/crop-requests',
+  requireApproved,
+  handle(async (req, res) => {
+    const body = RequestCropBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    const result = await requestCrop(req.user!.id, body.data, (run) => withAiQuota(req, res, 'garden', run));
+    if (result) res.json(RequestCropResponse.parse(result));
+  }),
+);
+
+router.get(
+  '/garden/crop-drafts',
+  requireOwner,
+  handle(async (_req, res) => {
+    res.json(ListCropDraftsResponse.parse(await listCropDrafts()));
+  }),
+);
+
+router.post(
+  '/garden/crop-drafts/:key/approve',
+  requireOwner,
+  handle(async (req, res) => {
+    res.json(ApproveCropDraftResponse.parse(await approveCrop(String(req.params['key']))));
+  }),
+);
+
+router.delete(
+  '/garden/crop-drafts/:key',
+  requireOwner,
+  handle(async (req, res) => {
+    await rejectCrop(String(req.params['key']));
+    res.sendStatus(204);
+  }),
+);
 
 router.get(
   '/farms/:farmId/beds',
@@ -138,6 +189,33 @@ router.put(
   }),
 );
 
+router.post(
+  '/farms/:farmId/beds/:bedId/photo/corner-suggestion',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const bedId = idParam(req, 'bedId');
+    if (bedId === null) return notFound(res);
+    const farmId = req.farm!.farmId;
+    await getBed(farmId, bedId);
+    const result = await withAiQuota(req, res, 'garden', async () => ({ corners: await suggestCorners(farmId, bedId) }));
+    if (result) res.json(SuggestBedCornersResponse.parse(result));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/beds/:bedId/photo/analysis',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const bedId = idParam(req, 'bedId');
+    if (bedId === null) return notFound(res);
+    const farmId = req.farm!.farmId;
+    const bed = await getBed(farmId, bedId);
+    if (!bed.photoUrl) return void res.status(400).json({ error: 'Für dieses Beet gibt es noch kein Foto.' });
+    const updated = await withAiQuota(req, res, 'garden', () => analyzeBedPhoto(farmId, bedId));
+    if (updated) res.json(AnalyzeBedPhotoResponse.parse(updated));
+  }),
+);
+
 // ── Raster-Planer ────────────────────────────────────────────────────────────
 
 router.get(
@@ -161,6 +239,22 @@ router.post(
     const body = AddPlantingBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
     res.status(201).json(AddPlantingResponse.parse(await addPlanting(req.farm!.farmId, bedId, season, body.data)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/beds/:bedId/seasons/:season/suggestion',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const bedId = idParam(req, 'bedId');
+    const season = idParam(req, 'season');
+    if (bedId === null || season === null) return notFound(res);
+    const body = SuggestPlantingBody.safeParse(req.body ?? {});
+    if (!body.success) return badRequest(res);
+    const farmId = req.farm!.farmId;
+    await getBed(farmId, bedId);
+    const proposal = await withAiQuota(req, res, 'garden', () => suggestPlanting(farmId, bedId, season, body.data.wishes));
+    if (proposal) res.json(SuggestPlantingResponse.parse(proposal));
   }),
 );
 

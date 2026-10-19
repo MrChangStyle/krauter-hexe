@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { BedOrientation } from './bedOrientation';
+import type { BedPhotoAnalysis } from './bedPhotoAnalysis';
 import type { BedType } from './bedType';
 import type { FrostSource } from './frostSource';
 import type { PhotoPoint } from './photoPoint';
@@ -56,4 +57,6 @@ export interface GardenBed {
      * @nullable
      */
   photoCorners: PhotoPoint[] | null;
+  /** KI-Einschätzung of the photo (cleared with a new photo) */
+  photoAnalysis: BedPhotoAnalysis | null;
 }

@@ -22,41 +22,15 @@ import {
   listFeedAnalyses,
   suggestSpecies,
 } from '../lib/farmAi';
-import { checkAndRecordScanAttempt, refundScanAttempt } from '../lib/scanRateLimit';
-import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
+import { badRequest, handle, idParam, notFound, withAiQuota as withQuota } from './farmRouteHelpers';
+
+const withAiQuota = <T>(req: Request, res: Response, run: () => Promise<T>) => withQuota(req, res, 'farm', run);
 
 // AI features of "Meine Farm". Calls that send a photo to Gemini count
 // against the same daily limit as the scans (own counter "farm", same app-wide
 // budget). The cached Haltungs-Wiki and the archive lookup cost nothing.
 
 const router: IRouter = Router();
-
-/**
- * Records one AI attempt, or answers 429 and returns null. A failed AI call
- * gives its attempt back (like the plant scan).
- */
-async function withAiQuota<T>(req: Request, res: Response, run: () => Promise<T>): Promise<T | null> {
-  const user = req.user!;
-  const limit = await checkAndRecordScanAttempt(user.id, 'farm', { unlimited: user.isOwner });
-  if (!limit.allowed) {
-    res.status(429).json({
-      error:
-        limit.reason === 'budget'
-          ? 'Die KI ist für heute ausgelastet. Bitte versuche es morgen wieder.'
-          : `Du hast heute schon ${limit.limit} KI-Anfragen für die Farm gestellt. Morgen geht es weiter.`,
-      resetsAt: limit.resetsAt,
-    });
-    return null;
-  }
-  try {
-    return await run();
-  } catch (err) {
-    await refundScanAttempt(limit.attemptId);
-    if (err instanceof FarmDataError) throw err;
-    req.log.error({ err }, 'Farm AI request failed');
-    throw new FarmDataError(502, 'Die KI ist gerade nicht erreichbar. Bitte versuche es gleich noch einmal.');
-  }
-}
 
 router.post(
   '/farms/:farmId/ai/species',

@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronLeft, ChevronRight, History, Loader2, Search, Sun, Trash2 } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, History, Loader2, Search, Sparkles, Sun, Trash2, X } from "lucide-react";
 import {
   getGetBedHistoryQueryKey,
   getGetGardenCalendarQueryKey,
@@ -12,7 +12,10 @@ import {
   useListPlantings,
   useListPlants,
   useRemovePlanting,
+  useRequestCrop,
+  useSuggestPlanting,
   type BedPlanting,
+  type PlantingProposal,
   type Crop,
   type GardenBed,
 } from "@workspace/api-client-react";
@@ -22,6 +25,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { HenniTip } from "@/components/henni";
 import { BedPhoto } from "@/components/bed-photo";
 import { BedCalendar } from "@/components/bed-calendar";
+import { PremiumBadge } from "@/components/premium-badge";
+import { Textarea } from "@/components/ui/textarea";
 import { rotationIssues, rotationText, seasonSummary, type RotationIssue } from "@/lib/garden-calendar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -95,6 +100,24 @@ function CropPicker({
   const q = query.trim().toLowerCase();
   const crops = catalog.filter((c) => !q || c.name.toLowerCase().includes(q));
   const bySpecies = useMemo(() => new Map(catalog.map((c) => [speciesKey(c.botanicalName), c])), [catalog]);
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const request = useRequestCrop({
+    mutation: {
+      onSuccess({ draft, existing }) {
+        void queryClient.invalidateQueries({ queryKey: getGetGardenCatalogQueryKey() });
+        toast(
+          draft.status === "approved"
+            ? { title: `${draft.crop.name} ist schon im Katalog`, description: existing ? "Such im Katalog danach." : undefined }
+            : {
+                title: existing ? `${draft.crop.name} ist schon angefragt` : `Anbaudaten für ${draft.crop.name} angefragt`,
+                description: "Sobald sie freigegeben sind, gelten sie für alle Beete.",
+              },
+        );
+      },
+      onError: (err) => toast({ title: "Nicht angefragt", description: errorText(err, "Die KI ist gerade nicht erreichbar."), variant: "destructive" }),
+    },
+  });
   const archivePlants = (archive.data ?? [])
     .filter((p) => p.category !== "poisonous" && p.category !== "mushroom")
     .filter((p) => !q || p.germanName.toLowerCase().includes(q))
@@ -174,6 +197,20 @@ function CropPicker({
               );
             })}
             {crops.length === 0 && <li className="text-sm text-muted-foreground">Nichts gefunden – schau im Pflanzenarchiv.</li>}
+            {query.trim().length >= 3 && !crops.some((c) => c.name.toLowerCase() === q) && (
+              <li>
+                <button
+                  type="button"
+                  disabled={request.isPending}
+                  onClick={() => request.mutate({ data: { name: query.trim() } })}
+                  className="flex w-full items-center gap-2 rounded-xl border border-dashed border-border p-2.5 text-left text-sm hover:bg-muted/50 disabled:opacity-50"
+                >
+                  {request.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-primary" />}
+                  <span className="flex-1">„{query.trim()}“ fehlt? Anbaudaten per KI anfragen</span>
+                  <PremiumBadge />
+                </button>
+              </li>
+            )}
           </ul>
         ) : archive.isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -201,6 +238,17 @@ function CropPicker({
                       {p.rotation && <span className="block text-xs text-amber-700 dark:text-amber-400">{rotationText(p.rotation)}</span>}
                     </span>
                   </button>
+                  {!crop && (
+                    <button
+                      type="button"
+                      disabled={request.isPending}
+                      onClick={() => request.mutate({ data: { plantId: plant.id } })}
+                      className="ml-9 mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary disabled:opacity-50"
+                    >
+                      <Sparkles className="h-3 w-3" />
+                      Anbaudaten per KI anfragen
+                    </button>
+                  )}
                 </li>
               );
             })}
@@ -294,7 +342,13 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
   const [cell, setCell] = useState<{ x: number; y: number } | null>(null);
   const [selected, setSelected] = useState<BedPlanting | null>(null);
   const [view, setView] = useState<"grid" | "photo">(bed.photoCorners ? "photo" : "grid");
-  const catalog = useGetGardenCatalog({ query: { queryKey: getGetGardenCatalogQueryKey(), staleTime: Infinity } });
+  const [asking, setAsking] = useState(false);
+  const [wishes, setWishes] = useState("");
+  const [proposal, setProposal] = useState<PlantingProposal | null>(null);
+  const [applying, setApplying] = useState(false);
+  // A suggestion belongs to the season it was made for.
+  useEffect(() => setProposal(null), [season]);
+  const catalog = useGetGardenCatalog({ query: { queryKey: getGetGardenCatalogQueryKey(), staleTime: 5 * 60 * 1000 } });
   const plantingsQuery = useListPlantings(farmId, bed.id, season);
   const historyQuery = useGetBedHistory(farmId, bed.id);
   const refresh = () =>
@@ -312,6 +366,35 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
       onError: (err) => toast({ title: "Nicht gesetzt", description: errorText(err, "Bitte versuche es noch einmal."), variant: "destructive" }),
     },
   });
+  const suggest = useSuggestPlanting({
+    mutation: {
+      onSuccess(result) {
+        setAsking(false);
+        setView("grid");
+        setProposal(result);
+      },
+      onError: (err) => toast({ title: "Kein Vorschlag", description: errorText(err, "Die KI ist gerade nicht erreichbar."), variant: "destructive" }),
+    },
+  });
+  const addOne = useAddPlanting();
+  async function applyProposal(items: PlantingProposal["items"]) {
+    setApplying(true);
+    let failed = 0;
+    for (const item of items) {
+      try {
+        await addOne.mutateAsync({ farmId, bedId: bed.id, season, data: { cropKey: item.cropKey, x: item.x, y: item.y } });
+      } catch {
+        failed += 1;
+      }
+    }
+    setApplying(false);
+    setProposal(null);
+    await refresh();
+    toast({
+      title: `${items.length - failed} ${items.length - failed === 1 ? "Pflanzung" : "Pflanzungen"} übernommen`,
+      description: failed > 0 ? `${failed} passten inzwischen nicht mehr.` : undefined,
+    });
+  }
   const remove = useRemovePlanting({
     mutation: {
       onSuccess() {
@@ -361,6 +444,7 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
 
       <HenniTip>{hennyLine(hints, shady, inside.length === 0, firstRotation ? rotationText(firstRotation) : null)}</HenniTip>
 
+      <div className="flex flex-wrap items-center justify-between gap-2">
       <div role="tablist" aria-label="Ansicht" className="inline-flex rounded-full bg-muted p-1 text-sm">
         {(["grid", "photo"] as const).map((v) => (
           <button
@@ -374,6 +458,14 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
             {v === "grid" ? "Raster" : "Foto"}
           </button>
         ))}
+      </div>
+      {canWrite && !proposal && (
+        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAsking(true)}>
+          <Sparkles className="h-4 w-4" />
+          KI-Vorschlag
+          <PremiumBadge />
+        </Button>
+      )}
       </div>
 
       {plantingsQuery.isLoading || catalog.isLoading ? (
@@ -422,6 +514,48 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
                 </button>
               );
             })}
+            {proposal?.items.map((item) => (
+              <span
+                key={`p-${item.x}-${item.y}`}
+                className="pointer-events-none z-20 flex items-center justify-center rounded-md border-2 border-dashed border-white p-0.5 opacity-80"
+                style={{ gridColumn: `${item.x + 1} / span ${item.w}`, gridRow: `${item.y + 1} / span ${item.h}`, background: crops.get(item.cropKey)?.color ?? "#7DBB6A" }}
+                aria-label={`Vorschlag: ${item.label}`}
+              >
+                <span className="max-w-full truncate rounded bg-black/55 px-1 text-[10px] font-semibold leading-4 text-white">{item.label}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+      {proposal && (
+        <div className="space-y-2 rounded-2xl border-2 border-dashed border-primary/50 bg-card p-3 text-sm" role="region" aria-label="KI-Vorschlag">
+          <p className="flex items-center gap-1.5 font-semibold">
+            <Sparkles className="h-4 w-4 text-primary" />
+            KI-Vorschlag: {proposal.items.length} {proposal.items.length === 1 ? "Pflanzung" : "Pflanzungen"}
+          </p>
+          {proposal.notes && <p>{proposal.notes}</p>}
+          {proposal.items.length > 0 && <p className="text-muted-foreground">{proposal.items.map((i) => i.label).join(", ")}</p>}
+          {proposal.dropped.length > 0 && (
+            <div className="text-xs text-muted-foreground">
+              <p className="font-medium">Nach den festen Regeln aussortiert:</p>
+              <ul className="list-disc pl-5">
+                {proposal.dropped.map((d, i) => (
+                  <li key={i}>
+                    {d.label}: {d.reason}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-2">
+            <Button size="sm" className="gap-1.5" disabled={applying || proposal.items.length === 0} onClick={() => void applyProposal(proposal.items)}>
+              {applying ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+              Übernehmen
+            </Button>
+            <Button size="sm" variant="outline" className="gap-1.5" disabled={applying} onClick={() => setProposal(null)}>
+              <X className="h-4 w-4" />
+              Verwerfen
+            </Button>
           </div>
         </div>
       )}
@@ -455,6 +589,37 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
       )}
 
       <BedCalendar farmId={farmId} bedId={bed.id} season={season} canWrite={canWrite} plantings={inside} crops={crops} />
+
+      {asking && (
+        <Dialog open onOpenChange={(o) => !o && !suggest.isPending && setAsking(false)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                KI-Vorschlag für {season}
+                <PremiumBadge />
+              </DialogTitle>
+              <DialogDescription>
+                Die KI füllt die freien Felder nach Mischkultur und Fruchtfolge. Die festen Regeln prüfen jeden Vorschlag – du entscheidest danach.
+              </DialogDescription>
+            </DialogHeader>
+            <Textarea
+              value={wishes}
+              maxLength={300}
+              onChange={(e) => setWishes(e.target.value)}
+              placeholder="Wünsche, z. B. viel Salat, Kräuter für die Küche, keine Zucchini"
+              aria-label="Wünsche"
+            />
+            <Button
+              className="gap-1.5"
+              disabled={suggest.isPending}
+              onClick={() => suggest.mutate({ farmId, bedId: bed.id, season, data: { wishes: wishes.trim() || null } })}
+            >
+              {suggest.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+              Vorschlag holen
+            </Button>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {cell && catalog.data && (
         <CropPicker

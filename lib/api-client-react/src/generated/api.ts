@@ -44,10 +44,14 @@ import type {
   CategoryCount,
   ChangeFarmRoleInput,
   CleanupOrphanedDataInput,
+  CornerSuggestion,
   CreateCareGuideInput,
   CreateReportInput,
   CreateTaskInput,
   Crop,
+  CropDraft,
+  CropRequestInput,
+  CropRequestResult,
   DeleteAccountInput,
   DeleteFarmInput,
   DeletePlantInput,
@@ -90,6 +94,8 @@ import type {
   PlantHealthResult,
   PlantScanInput,
   PlantScanResult,
+  PlantingProposal,
+  PlantingSuggestionInput,
   PushPublicKey,
   PushSubscriptionInput,
   PushTestResult,
@@ -7203,6 +7209,296 @@ export function useListCameraEvents<TData = Awaited<ReturnType<typeof listCamera
 
 
 
+export const getRequestCropUrl = () => {
+
+
+
+
+  return `/api/garden/crop-requests`
+}
+
+/**
+ * @summary Ask for Anbaudaten of a plant the catalog does not know – the AI drafts them, the app owner approves (counts as a garden AI request)
+ */
+export const requestCrop = async (cropRequestInput: CropRequestInput, options?: RequestInit): Promise<CropRequestResult> => {
+
+  return customFetch<CropRequestResult>(getRequestCropUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(cropRequestInput)
+  }
+);}
+
+
+
+
+
+export const getRequestCropMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestCrop>>, TError,{data: BodyType<CropRequestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestCrop>>, TError,{data: BodyType<CropRequestInput>}, TContext> => {
+
+const mutationKey = ['requestCrop'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestCrop>>, {data: BodyType<CropRequestInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  requestCrop(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestCropMutationResult = NonNullable<Awaited<ReturnType<typeof requestCrop>>>
+    export type RequestCropMutationBody = BodyType<CropRequestInput>
+    export type RequestCropMutationError = ErrorType<void>
+
+    /**
+ * @summary Ask for Anbaudaten of a plant the catalog does not know – the AI drafts them, the app owner approves (counts as a garden AI request)
+ */
+export const useRequestCrop = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestCrop>>, TError,{data: BodyType<CropRequestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof requestCrop>>,
+        TError,
+        {data: BodyType<CropRequestInput>},
+        TContext
+      > => {
+      return useMutation(getRequestCropMutationOptions(options));
+    }
+
+export const getListCropDraftsUrl = () => {
+
+
+
+
+  return `/api/garden/crop-drafts`
+}
+
+/**
+ * @summary Open Anbaudaten drafts (app owner)
+ */
+export const listCropDrafts = async ( options?: RequestInit): Promise<CropDraft[]> => {
+
+  return customFetch<CropDraft[]>(getListCropDraftsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCropDraftsQueryKey = () => {
+    return [
+    `/api/garden/crop-drafts`
+    ] as const;
+    }
+
+
+export const getListCropDraftsQueryOptions = <TData = Awaited<ReturnType<typeof listCropDrafts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCropDrafts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCropDraftsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCropDrafts>>> = ({ signal }) => listCropDrafts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCropDrafts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCropDraftsQueryResult = NonNullable<Awaited<ReturnType<typeof listCropDrafts>>>
+export type ListCropDraftsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Open Anbaudaten drafts (app owner)
+ */
+
+export function useListCropDrafts<TData = Awaited<ReturnType<typeof listCropDrafts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCropDrafts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCropDraftsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getApproveCropDraftUrl = (key: string,) => {
+
+
+
+
+  return `/api/garden/crop-drafts/${key}/approve`
+}
+
+/**
+ * @summary Approve a draft – from now on it counts for everyone (app owner)
+ */
+export const approveCropDraft = async (key: string, options?: RequestInit): Promise<CropDraft> => {
+
+  return customFetch<CropDraft>(getApproveCropDraftUrl(key),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getApproveCropDraftMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveCropDraft>>, TError,{key: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approveCropDraft>>, TError,{key: string}, TContext> => {
+
+const mutationKey = ['approveCropDraft'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveCropDraft>>, {key: string}> = (props) => {
+          const {key} = props ?? {};
+
+          return  approveCropDraft(key,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveCropDraftMutationResult = NonNullable<Awaited<ReturnType<typeof approveCropDraft>>>
+
+    export type ApproveCropDraftMutationError = ErrorType<void>
+
+    /**
+ * @summary Approve a draft – from now on it counts for everyone (app owner)
+ */
+export const useApproveCropDraft = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveCropDraft>>, TError,{key: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof approveCropDraft>>,
+        TError,
+        {key: string},
+        TContext
+      > => {
+      return useMutation(getApproveCropDraftMutationOptions(options));
+    }
+
+export const getRejectCropDraftUrl = (key: string,) => {
+
+
+
+
+  return `/api/garden/crop-drafts/${key}`
+}
+
+/**
+ * @summary Throw a draft away (app owner)
+ */
+export const rejectCropDraft = async (key: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRejectCropDraftUrl(key),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRejectCropDraftMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectCropDraft>>, TError,{key: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof rejectCropDraft>>, TError,{key: string}, TContext> => {
+
+const mutationKey = ['rejectCropDraft'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rejectCropDraft>>, {key: string}> = (props) => {
+          const {key} = props ?? {};
+
+          return  rejectCropDraft(key,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RejectCropDraftMutationResult = NonNullable<Awaited<ReturnType<typeof rejectCropDraft>>>
+
+    export type RejectCropDraftMutationError = ErrorType<void>
+
+    /**
+ * @summary Throw a draft away (app owner)
+ */
+export const useRejectCropDraft = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectCropDraft>>, TError,{key: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof rejectCropDraft>>,
+        TError,
+        {key: string},
+        TContext
+      > => {
+      return useMutation(getRejectCropDraftMutationOptions(options));
+    }
+
 export const getGetGardenCatalogUrl = () => {
 
 
@@ -7803,6 +8099,228 @@ export const useRemoveBedPhoto = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRemoveBedPhotoMutationOptions(options));
+    }
+
+export const getSuggestBedCornersUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/photo/corner-suggestion`
+}
+
+/**
+ * @summary KI suggests the four bed corners on the photo, in grid order; the user confirms (caretaker or admin)
+ */
+export const suggestBedCorners = async (farmId: number,
+    bedId: number, options?: RequestInit): Promise<CornerSuggestion> => {
+
+  return customFetch<CornerSuggestion>(getSuggestBedCornersUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getSuggestBedCornersMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof suggestBedCorners>>, TError,{farmId: number;bedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof suggestBedCorners>>, TError,{farmId: number;bedId: number}, TContext> => {
+
+const mutationKey = ['suggestBedCorners'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof suggestBedCorners>>, {farmId: number;bedId: number}> = (props) => {
+          const {farmId,bedId} = props ?? {};
+
+          return  suggestBedCorners(farmId,bedId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SuggestBedCornersMutationResult = NonNullable<Awaited<ReturnType<typeof suggestBedCorners>>>
+
+    export type SuggestBedCornersMutationError = ErrorType<void>
+
+    /**
+ * @summary KI suggests the four bed corners on the photo, in grid order; the user confirms (caretaker or admin)
+ */
+export const useSuggestBedCorners = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof suggestBedCorners>>, TError,{farmId: number;bedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof suggestBedCorners>>,
+        TError,
+        {farmId: number;bedId: number},
+        TContext
+      > => {
+      return useMutation(getSuggestBedCornersMutationOptions(options));
+    }
+
+export const getAnalyzeBedPhotoUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/photo/analysis`
+}
+
+/**
+ * @summary KI-Einschätzung of the bed photo (shade, soil, weeds, tips), stored on the bed (caretaker or admin)
+ */
+export const analyzeBedPhoto = async (farmId: number,
+    bedId: number, options?: RequestInit): Promise<GardenBed> => {
+
+  return customFetch<GardenBed>(getAnalyzeBedPhotoUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getAnalyzeBedPhotoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeBedPhoto>>, TError,{farmId: number;bedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof analyzeBedPhoto>>, TError,{farmId: number;bedId: number}, TContext> => {
+
+const mutationKey = ['analyzeBedPhoto'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof analyzeBedPhoto>>, {farmId: number;bedId: number}> = (props) => {
+          const {farmId,bedId} = props ?? {};
+
+          return  analyzeBedPhoto(farmId,bedId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AnalyzeBedPhotoMutationResult = NonNullable<Awaited<ReturnType<typeof analyzeBedPhoto>>>
+
+    export type AnalyzeBedPhotoMutationError = ErrorType<void>
+
+    /**
+ * @summary KI-Einschätzung of the bed photo (shade, soil, weeds, tips), stored on the bed (caretaker or admin)
+ */
+export const useAnalyzeBedPhoto = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof analyzeBedPhoto>>, TError,{farmId: number;bedId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof analyzeBedPhoto>>,
+        TError,
+        {farmId: number;bedId: number},
+        TContext
+      > => {
+      return useMutation(getAnalyzeBedPhotoMutationOptions(options));
+    }
+
+export const getSuggestPlantingUrl = (farmId: number,
+    bedId: number,
+    season: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/seasons/${season}/suggestion`
+}
+
+/**
+ * @summary KI suggests plantings for the free cells; the fixed rules drop what does not fit. Nothing is saved (caretaker or admin)
+ */
+export const suggestPlanting = async (farmId: number,
+    bedId: number,
+    season: number,
+    plantingSuggestionInput: PlantingSuggestionInput, options?: RequestInit): Promise<PlantingProposal> => {
+
+  return customFetch<PlantingProposal>(getSuggestPlantingUrl(farmId,bedId,season),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(plantingSuggestionInput)
+  }
+);}
+
+
+
+
+
+export const getSuggestPlantingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof suggestPlanting>>, TError,{farmId: number;bedId: number;season: number;data: BodyType<PlantingSuggestionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof suggestPlanting>>, TError,{farmId: number;bedId: number;season: number;data: BodyType<PlantingSuggestionInput>}, TContext> => {
+
+const mutationKey = ['suggestPlanting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof suggestPlanting>>, {farmId: number;bedId: number;season: number;data: BodyType<PlantingSuggestionInput>}> = (props) => {
+          const {farmId,bedId,season,data} = props ?? {};
+
+          return  suggestPlanting(farmId,bedId,season,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SuggestPlantingMutationResult = NonNullable<Awaited<ReturnType<typeof suggestPlanting>>>
+    export type SuggestPlantingMutationBody = BodyType<PlantingSuggestionInput>
+    export type SuggestPlantingMutationError = ErrorType<void>
+
+    /**
+ * @summary KI suggests plantings for the free cells; the fixed rules drop what does not fit. Nothing is saved (caretaker or admin)
+ */
+export const useSuggestPlanting = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof suggestPlanting>>, TError,{farmId: number;bedId: number;season: number;data: BodyType<PlantingSuggestionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof suggestPlanting>>,
+        TError,
+        {farmId: number;bedId: number;season: number;data: BodyType<PlantingSuggestionInput>},
+        TContext
+      > => {
+      return useMutation(getSuggestPlantingMutationOptions(options));
     }
 
 export const getSetBedPhotoCornersUrl = (farmId: number,

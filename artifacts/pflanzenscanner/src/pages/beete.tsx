@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { ArrowLeft, CalendarDays, ChevronRight, Fence, Loader2, MapPin, Plus } from "lucide-react";
 import { FrostWarnings } from "@/components/garden-overview";
+import { PremiumBadge } from "@/components/premium-badge";
 import { useEnsureOwnFarm, useListBeds, type FarmSummary } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
@@ -38,7 +39,10 @@ function BedList({ farm }: { farm: FarmSummary }) {
         >
           <CalendarDays className="h-5 w-5 text-primary" />
           <span className="flex-1">
-            <span className="block font-medium">Gartenkalender</span>
+            <span className="flex items-center gap-1.5 font-medium">
+              Gartenkalender
+              <PremiumBadge />
+            </span>
             <span className="block text-xs text-muted-foreground">Säen, pflanzen, ernten – Monat für Monat</span>
           </span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />

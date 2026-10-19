@@ -198,7 +198,7 @@ export async function setBedPhoto(farmId: number, bedId: number, imageData: unkn
   }
   const [bed] = await db
     .update(gardenBedsTable)
-    .set({ photoUrl: url, photoHeading, photoCorners: null })
+    .set({ photoUrl: url, photoHeading, photoCorners: null, photoAnalysis: null })
     .where(and(eq(gardenBedsTable.id, bedId), eq(gardenBedsTable.farmId, farmId)))
     .returning();
   if (current.photoUrl && current.photoUrl !== url) void deleteImageByUrl(current.photoUrl).catch(() => false);
@@ -210,7 +210,7 @@ export async function removeBedPhoto(farmId: number, bedId: number) {
   const current = await getBed(farmId, bedId);
   const [bed] = await db
     .update(gardenBedsTable)
-    .set({ photoUrl: null, photoHeading: null, photoCorners: null })
+    .set({ photoUrl: null, photoHeading: null, photoCorners: null, photoAnalysis: null })
     .where(and(eq(gardenBedsTable.id, bedId), eq(gardenBedsTable.farmId, farmId)))
     .returning();
   if (current.photoUrl) void deleteImageByUrl(current.photoUrl).catch(() => false);

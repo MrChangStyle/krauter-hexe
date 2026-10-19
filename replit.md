@@ -118,6 +118,14 @@ In-house, no outside service (`lib/monitoring.ts`, `routes/monitoring.ts`, `midd
 - **Usage**: daily totals only – active accounts (once a day via `last_active_on`), new accounts (from `users.created_at`), AI actions (in `checkAndRecordScanAttempt`), errors. Owner card "Betrieb" in Mehr shows status form, errors (expand for stack, "Als behoben markieren") and the last 14 days. Housekeeping (daily, with the minute cron): resolved groups after 90 days, daily totals after ~400 days.
 - Optional extra: an external uptime check on `/api/healthz` (e.g. a free uptime monitor) alerts when the whole server is down, which the in-app monitor cannot report.
 
+## Futterplaner (Tiere)
+
+Plan and steps in `docs/futterplaner.md`. Fixed rules, no AI (`lib/feedCatalog.ts`, `lib/feedNeeds.ts`, `lib/feedPlanner.ts`, `routes/feed.ts`; tables `farm_feeds`, `feed_rations`; page `/farm/futter`).
+- **Everything is on dry matter.** Catalogue values are per kg DM; own feeds are entered as printed on the label ("wie gefüttert", Ca/P in %) and converted with the dry matter (default 88 %) on save. Bedarf per species and life stage is for a typical animal (`weightKg`); the check shows an Ampel per nutrient (amount 0.9–1.3× intake, protein, fibre, Ca, P, copper for sheep) with fixed tips. Values are Richtwerte – to be checked by a specialist before the public start.
+- **One ration per animal or herd** (partial unique indexes); a herd ration is per animal, group totals use the active members. Cats and dogs get no ration check.
+- **Warnings cannot be dismissed**: plants the archive marks toxic for the species, mineral feed made for another species and copper over the limit (sheep), running withdrawal periods from the medical records. No kitchen scraps are suggested (VO (EG) 1069/2009 notice on the page).
+- A feed in use cannot be deleted (409).
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

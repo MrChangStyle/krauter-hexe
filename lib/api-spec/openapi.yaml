@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: feed
+    description: Futterplaner – feeds, rations and their check against the need
   - name: monitoring
     description: Error monitoring, status notice and usage counts (Betrieb)
   - name: plants
@@ -1053,6 +1055,148 @@ paths:
           description: Signed in but not the owner
         "404":
           description: Account not found
+  /feeds/reference:
+    get:
+      tags: [feed]
+      operationId: getFeedReference
+      summary: Futtermittel-Liste (average values per kg dry matter) and the life stages per species
+      responses:
+        "200":
+          description: The reference data.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedReference"
+  /farms/{farmId}/feeds:
+    get:
+      tags: [feed]
+      operationId: listFarmFeeds
+      summary: The farm's own feeds (from labels)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The feeds.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmFeed"
+    post:
+      tags: [feed]
+      operationId: addFarmFeed
+      summary: Save an own feed with the values from its label (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmFeedInput"
+      responses:
+        "201":
+          description: The feed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmFeed"
+        "400":
+          description: Values out of range.
+  /farms/{farmId}/feeds/{feedId}:
+    delete:
+      tags: [feed]
+      operationId: removeFarmFeed
+      summary: Delete an own feed that no ration uses (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: feedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "409":
+          description: Still in a ration.
+  /farms/{farmId}/rations:
+    get:
+      tags: [feed]
+      operationId: listRations
+      summary: All rations of the farm, each checked against the need (fixed rules)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The rations with their check.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RationEvaluation"
+    put:
+      tags: [feed]
+      operationId: saveRation
+      summary: Set the daily ration of an animal or a herd (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RationInput"
+      responses:
+        "200":
+          description: The ration with its check.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RationEvaluation"
+        "400":
+          description: Invalid ration.
+  /farms/{farmId}/rations/{rationId}:
+    delete:
+      tags: [feed]
+      operationId: removeRation
+      summary: Delete a ration (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: rationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
   /status:
     get:
       tags: [monitoring]
@@ -3313,6 +3457,285 @@ components:
       schema:
         type: string
   schemas:
+    FeedCategory:
+      type: string
+      enum: [roughage, fresh, grain, compound, vegetable, mineral]
+    LifeStage:
+      type: string
+      enum: [maintenance, growth, laying, molt, pregnancy, lactation, winter]
+    FeedValues:
+      type: object
+      description: Per kg dry matter; dryMatter is % as fed
+      required: [dryMatter, crudeProtein, crudeFat, crudeFibre, calcium, phosphorus, copper]
+      properties:
+        dryMatter:
+          type: number
+        crudeProtein:
+          type: number
+          description: "% of dry matter"
+        crudeFat:
+          type: number
+        crudeFibre:
+          type: number
+        calcium:
+          type: number
+          description: g per kg dry matter
+        phosphorus:
+          type: number
+        copper:
+          type: [number, 'null']
+          description: mg per kg dry matter
+    Feed:
+      allOf:
+        - $ref: "#/components/schemas/FeedValues"
+        - type: object
+          required: [key, name, category, forSpecies, botanicalName, hint]
+          properties:
+            key:
+              type: string
+            name:
+              type: string
+            category:
+              $ref: "#/components/schemas/FeedCategory"
+            forSpecies:
+              type: [array, 'null']
+              items:
+                $ref: "#/components/schemas/FarmSpecies"
+            botanicalName:
+              type: [string, 'null']
+            hint:
+              type: [string, 'null']
+    FeedReference:
+      type: object
+      required: [feeds, species]
+      properties:
+        feeds:
+          type: array
+          items:
+            $ref: "#/components/schemas/Feed"
+        species:
+          type: array
+          items:
+            type: object
+            required: [species, stages, hasNeeds]
+            properties:
+              species:
+                $ref: "#/components/schemas/FarmSpecies"
+              stages:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LifeStage"
+              hasNeeds:
+                type: boolean
+    FarmFeed:
+      type: object
+      required: [id, name, category, values, forSpecies, botanicalName]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          $ref: "#/components/schemas/FeedCategory"
+        values:
+          $ref: "#/components/schemas/FeedValues"
+        forSpecies:
+          type: [array, 'null']
+          items:
+            type: string
+        botanicalName:
+          type: [string, 'null']
+    LabelValues:
+      type: object
+      description: As printed on the label (as fed) – crude nutrients, calcium and phosphorus in %, copper in mg/kg
+      required: [crudeProtein, crudeFat, crudeFibre, calcium, phosphorus]
+      properties:
+        crudeProtein:
+          type: number
+        crudeFat:
+          type: number
+        crudeFibre:
+          type: number
+        calcium:
+          type: number
+        phosphorus:
+          type: number
+        copper:
+          type: [number, 'null']
+    FarmFeedInput:
+      type: object
+      required: [name, category, dryMatter, label]
+      properties:
+        name:
+          type: string
+          maxLength: 80
+        category:
+          $ref: "#/components/schemas/FeedCategory"
+        dryMatter:
+          type: number
+          description: "% as fed (88 for dry feed)"
+        label:
+          $ref: "#/components/schemas/LabelValues"
+        forSpecies:
+          type: [array, 'null']
+          items:
+            $ref: "#/components/schemas/FarmSpecies"
+        botanicalName:
+          type: [string, 'null']
+    RationItem:
+      type: object
+      required: [grams]
+      properties:
+        feedKey:
+          type: [string, 'null']
+        feedId:
+          type: [integer, 'null']
+        grams:
+          type: number
+          description: As fed, per animal and day
+    RationInput:
+      type: object
+      required: [stage, items, times]
+      properties:
+        animalId:
+          type: [integer, 'null']
+        herdId:
+          type: [integer, 'null']
+        stage:
+          $ref: "#/components/schemas/LifeStage"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/RationItem"
+        times:
+          type: array
+          items:
+            type: string
+            enum: [morgens, mittags, abends]
+        waterL:
+          type: [number, 'null']
+    NutrientCheck:
+      type: object
+      required: [nutrient, value, min, max, status, severe, tip]
+      properties:
+        nutrient:
+          type: string
+          enum: [amount, crudeProtein, crudeFibre, calcium, phosphorus, copper]
+        value:
+          type: number
+        min:
+          type: number
+        max:
+          type: number
+        status:
+          type: string
+          enum: [ok, low, high]
+        severe:
+          type: boolean
+        tip:
+          type: [string, 'null']
+    FeedWarning:
+      type: object
+      required: [kind, text]
+      properties:
+        kind:
+          type: string
+          enum: [toxic, foreignMineral, copper, withdrawal]
+        text:
+          type: string
+    RationEvaluation:
+      type: object
+      required: [id, target, stage, items, times, waterL, need, values, checks, warnings, group, updatedAt]
+      properties:
+        id:
+          type: integer
+        target:
+          type: object
+          required: [kind, id, name, species, count]
+          properties:
+            kind:
+              type: string
+              enum: [animal, herd]
+            id:
+              type: integer
+            name:
+              type: string
+            species:
+              $ref: "#/components/schemas/FarmSpecies"
+            count:
+              type: integer
+        stage:
+          $ref: "#/components/schemas/LifeStage"
+        items:
+          type: array
+          items:
+            type: object
+            required: [feedKey, feedId, name, grams]
+            properties:
+              feedKey:
+                type: [string, 'null']
+              feedId:
+                type: [integer, 'null']
+              name:
+                type: string
+              grams:
+                type: number
+        times:
+          type: array
+          items:
+            type: string
+        waterL:
+          type: [number, 'null']
+        need:
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [weightKg, dmIntakeKg, waterL]
+              properties:
+                weightKg:
+                  type: number
+                dmIntakeKg:
+                  type: number
+                waterL:
+                  type: number
+        values:
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [dmKg, crudeProtein, crudeFat, crudeFibre, calcium, phosphorus, copper]
+              properties:
+                dmKg:
+                  type: number
+                crudeProtein:
+                  type: number
+                crudeFat:
+                  type: number
+                crudeFibre:
+                  type: number
+                calcium:
+                  type: number
+                phosphorus:
+                  type: number
+                copper:
+                  type: [number, 'null']
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/NutrientCheck"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedWarning"
+        group:
+          type: object
+          required: [feedKg, waterL]
+          properties:
+            feedKg:
+              type: number
+            waterL:
+              type: [number, 'null']
+        updatedAt:
+          type: string
     AppStatus:
       type: object
       required: [message, level, updatedAt]

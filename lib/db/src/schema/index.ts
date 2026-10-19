@@ -31,3 +31,4 @@ export * from "./reports";
 export * from "./farm";
 export * from "./garden";
 export * from "./monitoring";
+export * from "./feed";

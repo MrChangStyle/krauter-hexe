@@ -1,0 +1,569 @@
+import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Link } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
+import { AlertOctagon, ArrowLeft, Droplets, Info, Loader2, Plus, Scale, Trash2, Wheat } from "lucide-react";
+import {
+  getListFarmFeedsQueryKey,
+  getListRationsQueryKey,
+  useAddFarmFeed,
+  useEnsureOwnFarm,
+  useGetFeedReference,
+  useListFarmAnimals,
+  useListFarmFeeds,
+  useListHerds,
+  useListRations,
+  useRemoveFarmFeed,
+  useRemoveRation,
+  useSaveRation,
+  type FarmFeed,
+  type FarmSpecies,
+  type FarmSummary,
+  type Feed,
+  type FeedCategory,
+  type LifeStage,
+  type RationEvaluation,
+} from "@workspace/api-client-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
+import { SPECIES_LABELS } from "@/lib/farm-labels";
+import { CATEGORY_LABELS, NUTRIENT_LABELS, STAGE_LABELS, formatRange, formatValue, grams, light, lightText } from "@/lib/feed-labels";
+import { cn } from "@/lib/utils";
+
+const TIMES = ["morgens", "mittags", "abends"] as const;
+const DOT = { green: "bg-emerald-500", yellow: "bg-amber-400", red: "bg-red-600" } as const;
+const selectClass = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
+
+function errorText(err: unknown, fallback: string): string {
+  return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
+}
+
+interface Target {
+  kind: "animal" | "herd";
+  id: number;
+  name: string;
+  species: FarmSpecies;
+  count: number;
+}
+
+// ── Check of one ration ──────────────────────────────────────────────────────
+
+function RationResult({ ration }: { ration: RationEvaluation }) {
+  return (
+    <div className="space-y-3 text-sm">
+      {ration.warnings.length > 0 && (
+        <div role="alert" className="space-y-1.5 rounded-xl border-2 border-red-600 bg-red-50 p-3 text-red-950 dark:bg-red-950/40 dark:text-red-100">
+          {ration.warnings.map((w) => (
+            <p key={w.text} className="flex gap-2">
+              <AlertOctagon className="mt-0.5 h-4 w-4 shrink-0" />
+              {w.text}
+            </p>
+          ))}
+        </div>
+      )}
+      <ul className="space-y-1">
+        {ration.items.map((i, k) => (
+          <li key={k} className="flex justify-between gap-2">
+            <span>{i.name}</span>
+            <span className="tabular-nums text-muted-foreground">{grams(i.grams)} je Tier/Tag</span>
+          </li>
+        ))}
+      </ul>
+      {ration.checks.length > 0 ? (
+        <table className="w-full text-xs">
+          <thead className="text-muted-foreground">
+            <tr>
+              <th className="py-1 text-left font-normal">Nährstoff</th>
+              <th className="py-1 text-right font-normal">Ist</th>
+              <th className="py-1 text-right font-normal">Richtwert</th>
+              <th className="py-1 pl-2 text-left font-normal">Ampel</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ration.checks.map((c) => (
+              <tr key={c.nutrient} className="border-t border-border align-top">
+                <td className="py-1.5">
+                  {NUTRIENT_LABELS[c.nutrient].label}
+                  {c.tip && <span className="mt-0.5 block text-muted-foreground">{c.tip}</span>}
+                </td>
+                <td className="whitespace-nowrap py-1.5 text-right tabular-nums">{formatValue(c)}</td>
+                <td className="py-1.5 text-right tabular-nums text-muted-foreground">{formatRange(c)}</td>
+                <td className="py-1.5 pl-2">
+                  <span className="inline-flex items-center gap-1 whitespace-nowrap">
+                    <span className={cn("h-2.5 w-2.5 rounded-full", DOT[light(c)])} />
+                    {lightText(c)}
+                  </span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p className="text-muted-foreground">Für {SPECIES_LABELS[ration.target.species]} gibt es keine Rationsrechnung – Alleinfutter nach Herstellerangabe.</p>
+      )}
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        {ration.times.length > 0 && <span>Fütterung: {ration.times.join(", ")}</span>}
+        {ration.need && (
+          <span className="inline-flex items-center gap-1">
+            <Droplets className="h-3.5 w-3.5" />
+            Wasser etwa {ration.need.waterL.toLocaleString("de-DE")} l je Tier/Tag
+          </span>
+        )}
+        {ration.target.count > 1 && (
+          <span>
+            Gruppe ({ration.target.count} Tiere): {ration.group.feedKg.toLocaleString("de-DE")} kg Futter
+            {ration.group.waterL !== null && `, ${ration.group.waterL.toLocaleString("de-DE")} l Wasser`} am Tag
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Nährstoffe auf die Trockenmasse gerechnet; Richtwerte für ein typisches Tier{ration.need ? ` (${ration.need.weightKg.toLocaleString("de-DE")} kg)` : ""}.
+      </p>
+    </div>
+  );
+}
+
+// ── Editing a ration ─────────────────────────────────────────────────────────
+
+interface ItemDraft {
+  ref: string; // "k:<key>" or "o:<id>"
+  grams: string;
+}
+
+function RationDialog({
+  farmId,
+  target,
+  ration,
+  catalog,
+  own,
+  stages,
+  onClose,
+}: {
+  farmId: number;
+  target: Target;
+  ration: RationEvaluation | undefined;
+  catalog: Feed[];
+  own: FarmFeed[];
+  stages: LifeStage[];
+  onClose: () => void;
+}) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [stage, setStage] = useState<LifeStage>(ration?.stage ?? stages[0] ?? "maintenance");
+  const [items, setItems] = useState<ItemDraft[]>(
+    ration?.items.map((i) => ({ ref: i.feedKey ? `k:${i.feedKey}` : `o:${i.feedId}`, grams: String(i.grams).replace(".", ",") })) ?? [{ ref: "", grams: "" }],
+  );
+  const [times, setTimes] = useState<string[]>(ration?.times ?? ["morgens", "abends"]);
+  const save = useSaveRation({
+    mutation: {
+      onSuccess() {
+        void queryClient.invalidateQueries({ queryKey: getListRationsQueryKey(farmId) });
+        onClose();
+      },
+      onError: (err) => toast({ title: "Nicht gespeichert", description: errorText(err, "Bitte prüfe die Ration."), variant: "destructive" }),
+    },
+  });
+  const remove = useRemoveRation({
+    mutation: {
+      onSuccess() {
+        void queryClient.invalidateQueries({ queryKey: getListRationsQueryKey(farmId) });
+        onClose();
+      },
+    },
+  });
+  const groups = useMemo(() => {
+    const byCat = new Map<FeedCategory, Feed[]>();
+    for (const f of catalog) {
+      // Mineral feed for other species is not offered at all.
+      if (f.forSpecies && !f.forSpecies.includes(target.species)) continue;
+      byCat.set(f.category, [...(byCat.get(f.category) ?? []), f]);
+    }
+    return [...byCat.entries()];
+  }, [catalog, target.species]);
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const parsed = items
+      .filter((i) => i.ref)
+      .map((i) => {
+        const g = Number(i.grams.replace(",", "."));
+        return i.ref.startsWith("k:") ? { feedKey: i.ref.slice(2), grams: g } : { feedId: Number(i.ref.slice(2)), grams: g };
+      });
+    if (parsed.length === 0 || parsed.some((p) => !Number.isFinite(p.grams) || p.grams <= 0)) {
+      toast({ title: "Bitte Futtermittel und Menge in Gramm angeben", variant: "destructive" });
+      return;
+    }
+    save.mutate({
+      farmId,
+      data: { ...(target.kind === "animal" ? { animalId: target.id } : { herdId: target.id }), stage, items: parsed, times: times as ("morgens" | "mittags" | "abends")[] },
+    });
+  }
+
+  const hintFor = (ref: string) => (ref.startsWith("k:") ? catalog.find((f) => f.key === ref.slice(2))?.hint : null);
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && !save.isPending && onClose()}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Ration für {target.name}</DialogTitle>
+          <DialogDescription>
+            {SPECIES_LABELS[target.species]}
+            {target.kind === "herd" ? ` · Mengen je Tier, Gruppe mit ${target.count} Tieren` : ""}
+          </DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="ration-stage">Lebensphase</Label>
+            <select id="ration-stage" className={selectClass} value={stage} onChange={(e) => setStage(e.target.value as LifeStage)}>
+              {stages.map((s) => (
+                <option key={s} value={s}>
+                  {STAGE_LABELS[s]}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Futter je Tier und Tag</p>
+            {items.map((item, k) => (
+              <div key={k} className="space-y-1">
+                <div className="flex gap-2">
+                  <select
+                    aria-label={`Futtermittel ${k + 1}`}
+                    className={cn(selectClass, "flex-1")}
+                    value={item.ref}
+                    onChange={(e) => setItems(items.map((x, j) => (j === k ? { ...x, ref: e.target.value } : x)))}
+                  >
+                    <option value="">Futtermittel wählen …</option>
+                    {own.length > 0 && (
+                      <optgroup label="Eigene Futtermittel">
+                        {own.map((f) => (
+                          <option key={f.id} value={`o:${f.id}`}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    )}
+                    {groups.map(([cat, feeds]) => (
+                      <optgroup key={cat} label={CATEGORY_LABELS[cat]}>
+                        {feeds.map((f) => (
+                          <option key={f.key} value={`k:${f.key}`}>
+                            {f.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                  <Input
+                    aria-label={`Gramm ${k + 1}`}
+                    inputMode="decimal"
+                    placeholder="g"
+                    className="w-20"
+                    value={item.grams}
+                    onChange={(e) => setItems(items.map((x, j) => (j === k ? { ...x, grams: e.target.value } : x)))}
+                  />
+                  <button type="button" aria-label="Zeile entfernen" className="px-1 text-muted-foreground hover:text-destructive" onClick={() => setItems(items.filter((_, j) => j !== k))}>
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
+                {hintFor(item.ref) && <p className="pl-1 text-xs text-muted-foreground">{hintFor(item.ref)}</p>}
+              </div>
+            ))}
+            <Button type="button" variant="outline" size="sm" className="gap-1" onClick={() => setItems([...items, { ref: "", grams: "" }])}>
+              <Plus className="h-4 w-4" />
+              Futtermittel
+            </Button>
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-sm font-medium">Fütterungszeiten</p>
+            <div className="flex gap-2">
+              {TIMES.map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  aria-pressed={times.includes(t)}
+                  onClick={() => setTimes(times.includes(t) ? times.filter((x) => x !== t) : [...times, t])}
+                  className={cn("rounded-full border px-3 py-1 text-xs", times.includes(t) ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card")}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button type="submit" disabled={save.isPending} className="gap-1.5">
+              {save.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+              Speichern und prüfen
+            </Button>
+            {ration && (
+              <Button type="button" variant="ghost" className="text-destructive hover:text-destructive" disabled={remove.isPending} onClick={() => remove.mutate({ farmId, rationId: ration.id })}>
+                Ration löschen
+              </Button>
+            )}
+          </div>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Own feed from a label ────────────────────────────────────────────────────
+
+const LABEL_FIELDS = [
+  ["crudeProtein", "Rohprotein %"],
+  ["crudeFat", "Rohfett %"],
+  ["crudeFibre", "Rohfaser %"],
+  ["calcium", "Calcium %"],
+  ["phosphorus", "Phosphor %"],
+  ["copper", "Kupfer mg/kg"],
+] as const;
+
+function OwnFeedDialog({ farmId, onClose }: { farmId: number; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState<FeedCategory>("compound");
+  const [dm, setDm] = useState("88");
+  const [values, setValues] = useState<Record<string, string>>({});
+  const add = useAddFarmFeed({
+    mutation: {
+      onSuccess() {
+        void queryClient.invalidateQueries({ queryKey: getListFarmFeedsQueryKey(farmId) });
+        toast({ title: "Futtermittel gespeichert" });
+        onClose();
+      },
+      onError: (err) => toast({ title: "Nicht gespeichert", description: errorText(err, "Bitte prüfe die Werte."), variant: "destructive" }),
+    },
+  });
+  const num = (s: string | undefined) => (s && s.trim() ? Number(s.replace(",", ".")) : NaN);
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const label = {
+      crudeProtein: num(values["crudeProtein"]),
+      crudeFat: num(values["crudeFat"]),
+      crudeFibre: num(values["crudeFibre"]),
+      calcium: num(values["calcium"]),
+      phosphorus: num(values["phosphorus"]),
+      copper: Number.isFinite(num(values["copper"])) ? num(values["copper"]) : null,
+    };
+    if ([label.crudeProtein, label.crudeFat, label.crudeFibre, label.calcium, label.phosphorus].some((v) => !Number.isFinite(v))) {
+      toast({ title: "Bitte alle Werte vom Etikett eintragen", description: "Kupfer ist freiwillig.", variant: "destructive" });
+      return;
+    }
+    add.mutate({ farmId, data: { name: name.trim(), category, dryMatter: num(dm), label } });
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && !add.isPending && onClose()}>
+      <DialogContent className="max-h-[90dvh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Eigenes Futtermittel</DialogTitle>
+          <DialogDescription>Werte vom Etikett unter „Analytische Bestandteile“ – so, wie sie dort stehen.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={submit} className="space-y-3">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="feed-name">Name</Label>
+            <Input id="feed-name" required maxLength={80} value={name} onChange={(e) => setName(e.target.value)} placeholder="z. B. Legemehl vom Landhandel" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="feed-cat">Art</Label>
+              <select id="feed-cat" className={selectClass} value={category} onChange={(e) => setCategory(e.target.value as FeedCategory)}>
+                {(Object.keys(CATEGORY_LABELS) as FeedCategory[]).map((c) => (
+                  <option key={c} value={c}>
+                    {CATEGORY_LABELS[c]}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="feed-dm">Trockenmasse %</Label>
+              <Input id="feed-dm" inputMode="decimal" value={dm} onChange={(e) => setDm(e.target.value)} />
+            </div>
+            {LABEL_FIELDS.map(([key, label]) => (
+              <div key={key} className="flex flex-col gap-1.5">
+                <Label htmlFor={`feed-${key}`}>{label}</Label>
+                <Input id={`feed-${key}`} inputMode="decimal" value={values[key] ?? ""} onChange={(e) => setValues({ ...values, [key]: e.target.value })} />
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">Trockenmasse: 88 % bei Trockenfutter; steht selten auf dem Etikett.</p>
+          <Button type="submit" disabled={add.isPending} className="gap-1.5">
+            {add.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            Speichern
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+
+function Planner({ farm }: { farm: FarmSummary }) {
+  const queryClient = useQueryClient();
+  const canWrite = farm.role !== "guest";
+  const reference = useGetFeedReference();
+  const animals = useListFarmAnimals(farm.id);
+  const herds = useListHerds(farm.id);
+  const rations = useListRations(farm.id);
+  const own = useListFarmFeeds(farm.id);
+  const removeFeed = useRemoveFarmFeed({ mutation: { onSuccess: () => void queryClient.invalidateQueries({ queryKey: getListFarmFeedsQueryKey(farm.id) }) } });
+  const { toast } = useToast();
+  const [editing, setEditing] = useState<Target | null>(null);
+  const [ownDialog, setOwnDialog] = useState(false);
+
+  const targets: Target[] = useMemo(() => {
+    const active = (animals.data ?? []).filter((a) => !a.archivedAt);
+    return [
+      ...(herds.data ?? []).map((h) => ({ kind: "herd" as const, id: h.id, name: h.name, species: h.species, count: Math.max(1, active.filter((a) => a.herdId === h.id).length) })),
+      ...active.filter((a) => a.herdId === null).map((a) => ({ kind: "animal" as const, id: a.id, name: a.name, species: a.species, count: 1 })),
+    ];
+  }, [animals.data, herds.data]);
+  const rationOf = (t: Target) => (rations.data ?? []).find((r) => r.target.kind === t.kind && r.target.id === t.id);
+
+  if (!reference.data || animals.isLoading || herds.isLoading || rations.isLoading) return <Loader2 className="h-6 w-6 animate-spin text-primary" />;
+  const stagesOf = (s: FarmSpecies) => reference.data!.species.find((x) => x.species === s)?.stages ?? ["maintenance"];
+
+  return (
+    <div className="space-y-5">
+      <div className="flex gap-2 rounded-xl border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
+        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+        <p>
+          Küchen- und Speiseabfälle dürfen an Nutztiere nicht verfüttert werden (VO (EG) 1069/2009), auch in der Hobbyhaltung – bei Geflügel auch keine Eier und
+          Eierschalen aus dem eigenen Bestand. Die App schlägt deshalb keine Küchenreste vor.
+        </p>
+      </div>
+
+      {targets.length === 0 ? (
+        <p className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+          Leg zuerst Tiere oder Gruppen unter <Link href="/farm" className="underline">Tiere</Link> an.
+        </p>
+      ) : (
+        <ul className="space-y-3">
+          {targets.map((t) => {
+            const r = rationOf(t);
+            const lights = r?.checks.map(light) ?? [];
+            return (
+              <li key={`${t.kind}-${t.id}`} className="space-y-3 rounded-2xl border border-border bg-card p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div>
+                    <p className="font-semibold">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {SPECIES_LABELS[t.species]}
+                      {t.kind === "herd" ? ` · Gruppe, ${t.count} ${t.count === 1 ? "Tier" : "Tiere"}` : ""}
+                      {r ? ` · ${STAGE_LABELS[r.stage]}` : ""}
+                    </p>
+                  </div>
+                  {r && lights.length > 0 && (
+                    <span className="flex gap-1" aria-label={`Ampel: ${lights.filter((l) => l !== "green").length} Hinweise`}>
+                      {lights.map((l, k) => (
+                        <span key={k} className={cn("h-2.5 w-2.5 rounded-full", DOT[l])} />
+                      ))}
+                    </span>
+                  )}
+                </div>
+                {r ? <RationResult ration={r} /> : <p className="text-sm text-muted-foreground">Noch keine Ration eingetragen.</p>}
+                {canWrite && (
+                  <Button size="sm" variant={r ? "outline" : "default"} className="gap-1.5" onClick={() => setEditing(t)}>
+                    <Scale className="h-4 w-4" />
+                    {r ? "Ration ändern" : "Ration anlegen"}
+                  </Button>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="flex items-center gap-2 font-semibold">
+            <Wheat className="h-4 w-4 text-primary" />
+            Eigene Futtermittel
+          </h2>
+          {canWrite && (
+            <Button size="sm" variant="outline" className="gap-1" onClick={() => setOwnDialog(true)}>
+              <Plus className="h-4 w-4" />
+              Vom Etikett
+            </Button>
+          )}
+        </div>
+        {(own.data ?? []).length === 0 ? (
+          <p className="text-muted-foreground">Futter mit Etikett (Pellets, Mischfutter) einmal eintragen – danach steht es in jeder Ration zur Auswahl.</p>
+        ) : (
+          <ul className="space-y-1">
+            {(own.data ?? []).map((f) => (
+              <li key={f.id} className="flex items-center justify-between gap-2">
+                <span>
+                  {f.name} <span className="text-xs text-muted-foreground">· {CATEGORY_LABELS[f.category]}</span>
+                </span>
+                {canWrite && (
+                  <button
+                    type="button"
+                    aria-label={`${f.name} löschen`}
+                    className="p-1 text-muted-foreground hover:text-destructive"
+                    onClick={() =>
+                      removeFeed.mutate(
+                        { farmId: farm.id, feedId: f.id },
+                        { onError: (err) => toast({ title: "Nicht gelöscht", description: errorText(err, ""), variant: "destructive" }) },
+                      )
+                    }
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <p className="text-xs text-muted-foreground">
+        Futter- und Bedarfswerte sind Richtwerte aus der Fachliteratur für ein typisches Tier. Bei Krankheit, Trächtigkeit mit Problemen oder Jungtieren: Tierarzt fragen.
+      </p>
+
+      {editing && (
+        <RationDialog
+          farmId={farm.id}
+          target={editing}
+          ration={rationOf(editing)}
+          catalog={reference.data.feeds}
+          own={own.data ?? []}
+          stages={stagesOf(editing.species)}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {ownDialog && <OwnFeedDialog farmId={farm.id} onClose={() => setOwnDialog(false)} />}
+    </div>
+  );
+}
+
+/** /farm/futter – Futterplaner: rations per animal or herd, checked against the need. */
+export default function FutterplanerPage() {
+  const [farms, setFarms] = useState<FarmSummary[] | null>(null);
+  const ensure = useEnsureOwnFarm({ mutation: { onSuccess: (list) => setFarms(list) } });
+  useEffect(() => {
+    ensure.mutate();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  const farm = farms ? pickActiveFarm(farms, readActiveFarmId()) : null;
+
+  return (
+    <div className="space-y-5 px-4 pb-6 pt-6">
+      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <ArrowLeft className="h-4 w-4" />
+        Tiere
+      </Link>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
+        <h1 className="text-2xl font-bold">Futterplaner</h1>
+        <p className="mt-1 text-sm text-muted-foreground">Was deine Tiere bekommen – abgeglichen mit dem, was sie brauchen.</p>
+      </div>
+      {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Planner farm={farm} />}
+    </div>
+  );
+}

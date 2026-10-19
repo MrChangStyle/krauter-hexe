@@ -2,6 +2,7 @@ import { pool } from "@workspace/db";
 import { logger } from "./logger";
 import { FARM_SCHEMA_STATEMENTS } from "./farmSchemaStatements";
 import { GARDEN_SCHEMA_STATEMENTS } from "./gardenSchemaStatements";
+import { FEED_SCHEMA_STATEMENTS } from "./feedSchemaStatements";
 
 /**
  * Small, additive schema changes applied at server start.
@@ -48,6 +49,8 @@ const STATEMENTS = [
   ...FARM_SCHEMA_STATEMENTS,
   // Beet-Architekt (generated, see gardenSchemaStatements.ts).
   ...GARDEN_SCHEMA_STATEMENTS,
+  // Futterplaner (generated, see feedSchemaStatements.ts).
+  ...FEED_SCHEMA_STATEMENTS,
   // Betrieb: error monitoring, status notice, usage counts (schema/monitoring.ts).
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active_on date",
   `CREATE TABLE IF NOT EXISTS "error_groups" (

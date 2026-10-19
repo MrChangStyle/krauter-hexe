@@ -18,6 +18,7 @@ import { sendFeedDigests } from "./feedStock";
 import { sendWeatherDigests } from "./farmWeather";
 import { sendMedicineDigests } from "./medicines";
 import { sendDutyDigests } from "./farmDuties";
+import { sendBreedingDigests } from "./breeding";
 import { removeExpiredMemberships } from "./farmMembers";
 import { sendPushToUser } from "./webPush";
 
@@ -287,6 +288,9 @@ export async function triggerDueNotifications(): Promise<number> {
 
   // ── Pflichten: stock report in January ────────────────────────────────────
   triggered += await sendDutyDigests(hhmm, dateKey);
+
+  // ── Zucht: today's steps ──────────────────────────────────────────────────
+  triggered += await sendBreedingDigests(hhmm, dateKey);
 
   return triggered;
 }

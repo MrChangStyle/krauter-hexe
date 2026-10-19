@@ -25,6 +25,7 @@ import gardenRouter from "./garden";
 import monitoringRouter from "./monitoring";
 import feedRouter from "./feed";
 import farmWeatherRouter from "./farm-weather";
+import farmBreedingRouter from "./farm-breeding";
 
 const router: IRouter = Router();
 
@@ -47,6 +48,7 @@ router.use(appConfigRouter);
 router.use(farmsRouter);
 router.use(farmAnimalsRouter);
 router.use(farmHealthRouter);
+router.use(farmBreedingRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);

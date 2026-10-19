@@ -24,6 +24,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MedicalSection, WeightSection } from "@/components/farm-animal-health";
+import { LineageSection } from "@/components/farm-animal-lineage";
 import { FeedSection, HelpfulPlantsSection, HusbandrySection, SpeciesSuggestionBox } from "@/components/farm-ai";
 import { downscaleFile } from "@/lib/image";
 import { SEX_LABELS, SPECIES_LABELS, SPECIES_ORDER, ageText, todayIso } from "@/lib/farm-labels";
@@ -472,6 +473,7 @@ function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: numb
           </section>
         )}
 
+        <LineageSection key={animalId} farmId={farmId} animal={a} canWrite={canWrite} />
         <MedicalSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
         <WeightSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
         <FeedSection farmId={farmId} animalId={animalId} canWrite={canWrite} />

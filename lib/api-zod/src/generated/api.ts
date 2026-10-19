@@ -2339,6 +2339,275 @@ export const SetHandoverNoteResponse = zod.object({
 
 
 /**
+ * @summary Zucht – matings and clutches, running first, with expected day and steps
+ */
+export const ListBreedingParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListBreedingResponseItem = zod.object({
+  "id": zod.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "kind": zod.enum(['pregnancy', 'incubation']),
+  "motherId": zod.number().nullable(),
+  "motherName": zod.string().nullable(),
+  "fatherId": zod.number().nullable(),
+  "fatherName": zod.string().nullable(),
+  "startedOn": zod.string().describe('YYYY-MM-DD, day of mating or of setting the eggs'),
+  "durationDays": zod.number(),
+  "eggCount": zod.number().nullable(),
+  "status": zod.enum(['running', 'born', 'failed']),
+  "endedOn": zod.string().nullable(),
+  "bornAlive": zod.number().nullable(),
+  "bornDead": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "dueOn": zod.string(),
+  "earliestOn": zod.string(),
+  "latestOn": zod.string(),
+  "day": zod.number().nullable().describe('Day of the pregnancy or incubation today (running only).'),
+  "late": zod.boolean(),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "warning": zod.string().nullable().describe('Mother and father are related.')
+})
+export const ListBreedingResponse = zod.array(ListBreedingResponseItem)
+
+
+/**
+ * @summary Record a mating or a clutch set to hatch (caretaker)
+ */
+export const CreateBreedingParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createBreedingBodyFatherNameMax = 60;
+
+export const createBreedingBodyNotesMax = 2000;
+
+
+
+export const CreateBreedingBody = zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']).optional(),
+  "motherId": zod.number().nullish(),
+  "fatherId": zod.number().nullish(),
+  "fatherName": zod.string().max(createBreedingBodyFatherNameMax).nullish(),
+  "startedOn": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "durationDays": zod.number().nullish(),
+  "eggCount": zod.number().nullish(),
+  "notes": zod.string().max(createBreedingBodyNotesMax).nullish()
+})
+
+export const CreateBreedingResponse = zod.object({
+  "id": zod.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "kind": zod.enum(['pregnancy', 'incubation']),
+  "motherId": zod.number().nullable(),
+  "motherName": zod.string().nullable(),
+  "fatherId": zod.number().nullable(),
+  "fatherName": zod.string().nullable(),
+  "startedOn": zod.string().describe('YYYY-MM-DD, day of mating or of setting the eggs'),
+  "durationDays": zod.number(),
+  "eggCount": zod.number().nullable(),
+  "status": zod.enum(['running', 'born', 'failed']),
+  "endedOn": zod.string().nullable(),
+  "bornAlive": zod.number().nullable(),
+  "bornDead": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "dueOn": zod.string(),
+  "earliestOn": zod.string(),
+  "latestOn": zod.string(),
+  "day": zod.number().nullable().describe('Day of the pregnancy or incubation today (running only).'),
+  "late": zod.boolean(),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "warning": zod.string().nullable().describe('Mother and father are related.')
+})
+
+
+/**
+ * @summary Change father, dates, eggs or note; species and mother stay (caretaker)
+ */
+export const UpdateBreedingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "recordId": zod.coerce.number()
+})
+
+export const updateBreedingBodyFatherNameMax = 60;
+
+export const updateBreedingBodyNotesMax = 2000;
+
+
+
+export const UpdateBreedingBody = zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']).optional(),
+  "motherId": zod.number().nullish(),
+  "fatherId": zod.number().nullish(),
+  "fatherName": zod.string().max(updateBreedingBodyFatherNameMax).nullish(),
+  "startedOn": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "durationDays": zod.number().nullish(),
+  "eggCount": zod.number().nullish(),
+  "notes": zod.string().max(updateBreedingBodyNotesMax).nullish()
+})
+
+export const UpdateBreedingResponse = zod.object({
+  "id": zod.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "kind": zod.enum(['pregnancy', 'incubation']),
+  "motherId": zod.number().nullable(),
+  "motherName": zod.string().nullable(),
+  "fatherId": zod.number().nullable(),
+  "fatherName": zod.string().nullable(),
+  "startedOn": zod.string().describe('YYYY-MM-DD, day of mating or of setting the eggs'),
+  "durationDays": zod.number(),
+  "eggCount": zod.number().nullable(),
+  "status": zod.enum(['running', 'born', 'failed']),
+  "endedOn": zod.string().nullable(),
+  "bornAlive": zod.number().nullable(),
+  "bornDead": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "dueOn": zod.string(),
+  "earliestOn": zod.string(),
+  "latestOn": zod.string(),
+  "day": zod.number().nullable().describe('Day of the pregnancy or incubation today (running only).'),
+  "late": zod.boolean(),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "warning": zod.string().nullable().describe('Mother and father are related.')
+})
+
+
+/**
+ * @summary Delete a record; animals created from it stay (caretaker)
+ */
+export const DeleteBreedingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "recordId": zod.coerce.number()
+})
+
+export const DeleteBreedingResponse = zod.void()
+
+
+/**
+ * @summary Birth or hatch (optionally creating the young as animals), or not pregnant / given up (caretaker)
+ */
+export const EndBreedingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "recordId": zod.coerce.number()
+})
+
+export const endBreedingBodyNotesMax = 2000;
+
+
+
+export const EndBreedingBody = zod.object({
+  "outcome": zod.enum(['born', 'failed']),
+  "date": zod.string().describe('YYYY-MM-DD'),
+  "alive": zod.number().nullish(),
+  "dead": zod.number().nullish(),
+  "createYoung": zod.boolean().optional(),
+  "notes": zod.string().max(endBreedingBodyNotesMax).nullish()
+})
+
+export const EndBreedingResponse = zod.object({
+  "record": zod.object({
+  "id": zod.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "kind": zod.enum(['pregnancy', 'incubation']),
+  "motherId": zod.number().nullable(),
+  "motherName": zod.string().nullable(),
+  "fatherId": zod.number().nullable(),
+  "fatherName": zod.string().nullable(),
+  "startedOn": zod.string().describe('YYYY-MM-DD, day of mating or of setting the eggs'),
+  "durationDays": zod.number(),
+  "eggCount": zod.number().nullable(),
+  "status": zod.enum(['running', 'born', 'failed']),
+  "endedOn": zod.string().nullable(),
+  "bornAlive": zod.number().nullable(),
+  "bornDead": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "dueOn": zod.string(),
+  "earliestOn": zod.string(),
+  "latestOn": zod.string(),
+  "day": zod.number().nullable().describe('Day of the pregnancy or incubation today (running only).'),
+  "late": zod.boolean(),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "warning": zod.string().nullable().describe('Mother and father are related.')
+}),
+  "created": zod.number()
+})
+
+
+/**
+ * @summary Parents and offspring of an animal
+ */
+export const GetLineageParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const GetLineageResponse = zod.object({
+  "mother": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})]),
+  "father": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})]),
+  "offspring": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "birthDate": zod.string().nullable(),
+  "archived": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Set the parents of an animal by hand (caretaker)
+ */
+export const SetLineageParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "animalId": zod.coerce.number()
+})
+
+export const SetLineageBody = zod.object({
+  "motherId": zod.number().nullable(),
+  "fatherId": zod.number().nullable()
+})
+
+export const SetLineageResponse = zod.object({
+  "mother": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})]),
+  "father": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "name": zod.string()
+})]),
+  "offspring": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "birthDate": zod.string().nullable(),
+  "archived": zod.boolean()
+}))
+})
+
+
+/**
  * @summary Pflichten – what keeping the farm's species means on paper, with what is ticked off
  */
 export const GetFarmDutiesParams = zod.object({

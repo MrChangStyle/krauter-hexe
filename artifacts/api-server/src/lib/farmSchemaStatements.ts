@@ -76,8 +76,13 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"notes" text,
 	"archived_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"mother_id" integer,
+	"father_id" integer,
 	CONSTRAINT "farm_animals_farm_registration_unique" UNIQUE("farm_id","registration_number")
 )`,
+  // Zucht: parents.
+  `ALTER TABLE "farm_animals" ADD COLUMN IF NOT EXISTS "mother_id" integer`,
+  `ALTER TABLE "farm_animals" ADD COLUMN IF NOT EXISTS "father_id" integer`,
   `CREATE TABLE IF NOT EXISTS "medical_records" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,
@@ -256,4 +261,37 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `DO $$ BEGIN
      ALTER TABLE "farm_duty_checks" ADD CONSTRAINT "farm_duty_checks_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE TABLE IF NOT EXISTS "breeding_records" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"species" "farm_species" NOT NULL,
+	"mother_id" integer,
+	"father_id" integer,
+	"father_name" text,
+	"started_on" date NOT NULL,
+	"duration_days" integer NOT NULL,
+	"egg_count" integer,
+	"status" text DEFAULT 'running' NOT NULL,
+	"ended_on" date,
+	"born_alive" integer,
+	"born_dead" integer,
+	"notes" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "breeding_records" ADD CONSTRAINT "breeding_records_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "breeding_records" ADD CONSTRAINT "breeding_records_mother_id_farm_animals_id_fk" FOREIGN KEY ("mother_id") REFERENCES "public"."farm_animals"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "breeding_records" ADD CONSTRAINT "breeding_records_father_id_farm_animals_id_fk" FOREIGN KEY ("father_id") REFERENCES "public"."farm_animals"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_animals" ADD CONSTRAINT "farm_animals_mother_id_farm_animals_id_fk" FOREIGN KEY ("mother_id") REFERENCES "public"."farm_animals"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_animals" ADD CONSTRAINT "farm_animals_father_id_farm_animals_id_fk" FOREIGN KEY ("father_id") REFERENCES "public"."farm_animals"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "breeding_records_farm_idx" ON "breeding_records" USING btree ("farm_id")`,
 ];

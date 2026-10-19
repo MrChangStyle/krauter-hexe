@@ -1627,6 +1627,192 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Handover"
+  /farms/{farmId}/breeding:
+    get:
+      tags: [farm]
+      operationId: listBreeding
+      summary: Zucht – matings and clutches, running first, with expected day and steps
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The records.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BreedingRecord"
+    post:
+      tags: [farm]
+      operationId: createBreeding
+      summary: Record a mating or a clutch set to hatch (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BreedingInput"
+      responses:
+        "201":
+          description: The record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreedingRecord"
+        "400":
+          description: Invalid input.
+        "409":
+          description: The mother is already pregnant.
+  /farms/{farmId}/breeding/{recordId}:
+    put:
+      tags: [farm]
+      operationId: updateBreeding
+      summary: Change father, dates, eggs or note; species and mother stay (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BreedingInput"
+      responses:
+        "200":
+          description: The record.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreedingRecord"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    delete:
+      tags: [farm]
+      operationId: deleteBreeding
+      summary: Delete a record; animals created from it stay (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: Not found.
+  /farms/{farmId}/breeding/{recordId}/end:
+    post:
+      tags: [farm]
+      operationId: endBreeding
+      summary: Birth or hatch (optionally creating the young as animals), or not pregnant / given up (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: recordId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BreedingEndInput"
+      responses:
+        "200":
+          description: The record and how many animals were created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreedingEndResult"
+        "400":
+          description: Invalid input.
+        "409":
+          description: Already finished.
+  /farms/{farmId}/animals/{animalId}/lineage:
+    get:
+      tags: [farm]
+      operationId: getLineage
+      summary: Parents and offspring of an animal
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The lineage.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lineage"
+    put:
+      tags: [farm]
+      operationId: setLineage
+      summary: Set the parents of an animal by hand (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: animalId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LineageInput"
+      responses:
+        "200":
+          description: The lineage.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Lineage"
+        "400":
+          description: Invalid parents.
   /farms/{farmId}/duties:
     get:
       tags: [farm]
@@ -4677,6 +4863,165 @@ components:
         archived:
           type: [boolean, 'null']
           description: true marks it used up or thrown away
+    BreedingRecord:
+      type: object
+      required: [id, species, kind, motherId, motherName, fatherId, fatherName, startedOn, durationDays, eggCount, status, endedOn, bornAlive, bornDead, notes, dueOn, earliestOn, latestOn, day, late, steps, warning]
+      properties:
+        id:
+          type: integer
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        kind:
+          type: string
+          enum: [pregnancy, incubation]
+        motherId:
+          type: [integer, 'null']
+        motherName:
+          type: [string, 'null']
+        fatherId:
+          type: [integer, 'null']
+        fatherName:
+          type: [string, 'null']
+        startedOn:
+          type: string
+          description: YYYY-MM-DD, day of mating or of setting the eggs
+        durationDays:
+          type: integer
+        eggCount:
+          type: [integer, 'null']
+        status:
+          type: string
+          enum: [running, born, failed]
+        endedOn:
+          type: [string, 'null']
+        bornAlive:
+          type: [integer, 'null']
+        bornDead:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+        dueOn:
+          type: string
+        earliestOn:
+          type: string
+        latestOn:
+          type: string
+        day:
+          type: [integer, 'null']
+          description: Day of the pregnancy or incubation today (running only).
+        late:
+          type: boolean
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/BreedingStep"
+        warning:
+          type: [string, 'null']
+          description: Mother and father are related.
+    BreedingStep:
+      type: object
+      required: ["on", text, past]
+      properties:
+        "on":
+          type: string
+        text:
+          type: string
+        past:
+          type: boolean
+    BreedingInput:
+      type: object
+      required: [startedOn]
+      properties:
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        motherId:
+          type: [integer, 'null']
+        fatherId:
+          type: [integer, 'null']
+        fatherName:
+          type: [string, 'null']
+          maxLength: 60
+        startedOn:
+          type: string
+          description: YYYY-MM-DD, not in the future
+        durationDays:
+          type: [integer, 'null']
+        eggCount:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    BreedingEndInput:
+      type: object
+      required: [outcome, date]
+      properties:
+        outcome:
+          type: string
+          enum: [born, failed]
+        date:
+          type: string
+          description: YYYY-MM-DD
+        alive:
+          type: [integer, 'null']
+        dead:
+          type: [integer, 'null']
+        createYoung:
+          type: boolean
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    BreedingEndResult:
+      type: object
+      required: [record, created]
+      properties:
+        record:
+          $ref: "#/components/schemas/BreedingRecord"
+        created:
+          type: integer
+    Lineage:
+      type: object
+      required: [mother, father, offspring]
+      properties:
+        mother:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/LineageAnimal"
+        father:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/LineageAnimal"
+        offspring:
+          type: array
+          items:
+            $ref: "#/components/schemas/LineageChild"
+    LineageAnimal:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+    LineageChild:
+      type: object
+      required: [id, name, birthDate, archived]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        birthDate:
+          type: [string, 'null']
+        archived:
+          type: boolean
+    LineageInput:
+      type: object
+      required: [motherId, fatherId]
+      properties:
+        motherId:
+          type: [integer, 'null']
+        fatherId:
+          type: [integer, 'null']
     FarmDuties:
       type: object
       required: [holdingNumber, housingOrderUntil, species, duties]

@@ -1,4 +1,5 @@
 import {
+  type AnyPgColumn,
   boolean,
   date,
   doublePrecision,
@@ -146,6 +147,9 @@ export const farmAnimalsTable = pgTable(
     // Set instead of deleting, so the medical history stays exportable.
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Zucht: the parents, when they are animals of the same farm (lib/breeding.ts).
+    motherId: integer("mother_id").references((): AnyPgColumn => farmAnimalsTable.id, { onDelete: "set null" }),
+    fatherId: integer("father_id").references((): AnyPgColumn => farmAnimalsTable.id, { onDelete: "set null" }),
   },
   (table) => [
     unique("farm_animals_farm_registration_unique").on(table.farmId, table.registrationNumber),
@@ -340,4 +344,34 @@ export const farmDutyChecksTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [unique("farm_duty_checks_farm_duty_period_unique").on(table.farmId, table.dutyKey, table.period)],
+);
+
+// Zucht (lib/breeding.ts): a mating or a clutch of eggs set to hatch, from the
+// day of mating / setting to the birth or hatch. Expected dates and the steps
+// on the way are computed from `duration_days`, not stored.
+export const breedingRecordsTable = pgTable(
+  "breeding_records",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    species: farmSpeciesEnum("species").notNull(),
+    motherId: integer("mother_id").references(() => farmAnimalsTable.id, { onDelete: "set null" }),
+    fatherId: integer("father_id").references(() => farmAnimalsTable.id, { onDelete: "set null" }),
+    // A sire from elsewhere (Deckbock, Leihhahn).
+    fatherName: text("father_name"),
+    startedOn: date("started_on", { mode: "string" }).notNull(),
+    durationDays: integer("duration_days").notNull(),
+    // Eggs set (poultry only).
+    eggCount: integer("egg_count"),
+    // running | born | failed
+    status: text("status").notNull().default("running"),
+    endedOn: date("ended_on", { mode: "string" }),
+    bornAlive: integer("born_alive"),
+    bornDead: integer("born_dead"),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("breeding_records_farm_idx").on(table.farmId)],
 );

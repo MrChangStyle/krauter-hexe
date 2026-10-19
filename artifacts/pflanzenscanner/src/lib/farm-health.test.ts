@@ -111,7 +111,7 @@ describe("veterinary office export", () => {
     const csv = exportCsv(exportForPeriod(data, { from: "2026-01-01", to: "2026-06-30" }));
     expect(csv.startsWith("﻿Bestandsliste Hof Sonnenblick;1.1.2026 – 30.6.2026\r\n")).toBe(true);
     expect(csv).toContain("DE 1;Lotte;Ziege;;weiblich;12.4.2023;;\r\n");
-    expect(csv).toContain(`2.5.2026;DE 1;Lotte;"Husten; leicht";;"'=HYPERLINK(""x"")";7;9.5.2026;\r\n`);
+    expect(csv).toContain(`2.5.2026;DE 1;Lotte;"Husten; leicht";;"'=HYPERLINK(""x"")";;7;9.5.2026;\r\n`);
   });
 
   it("names the file after farm and period", () => {

@@ -76,6 +76,31 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"withdrawal_period_days" integer,
 	"vet" text,
 	"notes" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"medicine_id" integer,
+	"dose" double precision,
+	"batch" text
+)`,
+  // Arzneimittel-Vorrat.
+  `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "medicine_id" integer`,
+  `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "dose" double precision`,
+  `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "batch" text`,
+  `CREATE TABLE IF NOT EXISTS "medicines" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"name" text NOT NULL,
+	"active_ingredient" text,
+	"unit" text NOT NULL,
+	"amount" double precision NOT NULL,
+	"batch" text,
+	"expires_on" date,
+	"withdrawal_meat_days" integer,
+	"withdrawal_milk_days" integer,
+	"withdrawal_eggs_days" integer,
+	"vet" text,
+	"received_on" date,
+	"notes" text,
+	"archived_at" timestamp with time zone,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
   `CREATE TABLE IF NOT EXISTS "weight_logs" (
@@ -198,5 +223,12 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `CREATE INDEX IF NOT EXISTS "food_logs_farm_idx" ON "food_logs" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "herds_farm_idx" ON "herds" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "medical_records_farm_animal_idx" ON "medical_records" USING btree ("farm_id","animal_id")`,
+  `DO $$ BEGIN
+     ALTER TABLE "medical_records" ADD CONSTRAINT "medical_records_medicine_id_medicines_id_fk" FOREIGN KEY ("medicine_id") REFERENCES "public"."medicines"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "medicines" ADD CONSTRAINT "medicines_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "medicines_farm_idx" ON "medicines" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "weight_logs_farm_animal_idx" ON "weight_logs" USING btree ("farm_id","animal_id")`,
 ];

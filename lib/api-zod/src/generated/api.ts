@@ -2134,6 +2134,147 @@ export const SetFarmLocationResponse = zod.object({
 
 
 /**
+ * @summary Arzneimittel-Vorrat – expired and soon expiring first
+ */
+export const ListMedicinesParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListMedicinesResponseItem = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "activeIngredient": zod.string().nullable(),
+  "unit": zod.string(),
+  "amount": zod.number(),
+  "batch": zod.string().nullable(),
+  "expiresOn": zod.string().nullable(),
+  "withdrawalMeatDays": zod.number().nullable(),
+  "withdrawalMilkDays": zod.number().nullable(),
+  "withdrawalEggsDays": zod.number().nullable(),
+  "vet": zod.string().nullable(),
+  "receivedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['ok', 'expiresSoon', 'expired', 'empty', 'archived']),
+  "daysLeft": zod.number().nullable(),
+  "uses": zod.number()
+})
+export const ListMedicinesResponse = zod.array(ListMedicinesResponseItem)
+
+
+/**
+ * @summary Add a medicine to the stock (caretaker or admin)
+ */
+export const CreateMedicineParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createMedicineBodyNameMax = 100;
+
+export const createMedicineBodyUnitMax = 20;
+
+
+
+export const CreateMedicineBody = zod.object({
+  "name": zod.string().max(createMedicineBodyNameMax),
+  "activeIngredient": zod.string().nullish(),
+  "unit": zod.string().max(createMedicineBodyUnitMax),
+  "amount": zod.number(),
+  "batch": zod.string().nullish(),
+  "expiresOn": zod.string().nullish(),
+  "withdrawalMeatDays": zod.number().nullish(),
+  "withdrawalMilkDays": zod.number().nullish(),
+  "withdrawalEggsDays": zod.number().nullish(),
+  "vet": zod.string().nullish(),
+  "receivedOn": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "archived": zod.boolean().nullish().describe('true marks it used up or thrown away')
+})
+
+export const CreateMedicineResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "activeIngredient": zod.string().nullable(),
+  "unit": zod.string(),
+  "amount": zod.number(),
+  "batch": zod.string().nullable(),
+  "expiresOn": zod.string().nullable(),
+  "withdrawalMeatDays": zod.number().nullable(),
+  "withdrawalMilkDays": zod.number().nullable(),
+  "withdrawalEggsDays": zod.number().nullable(),
+  "vet": zod.string().nullable(),
+  "receivedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['ok', 'expiresSoon', 'expired', 'empty', 'archived']),
+  "daysLeft": zod.number().nullable(),
+  "uses": zod.number()
+})
+
+
+/**
+ * @summary Change a medicine, or mark it used up / thrown away (archived) (caretaker or admin)
+ */
+export const UpdateMedicineParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "medicineId": zod.coerce.number()
+})
+
+export const updateMedicineBodyNameMax = 100;
+
+export const updateMedicineBodyUnitMax = 20;
+
+
+
+export const UpdateMedicineBody = zod.object({
+  "name": zod.string().max(updateMedicineBodyNameMax),
+  "activeIngredient": zod.string().nullish(),
+  "unit": zod.string().max(updateMedicineBodyUnitMax),
+  "amount": zod.number(),
+  "batch": zod.string().nullish(),
+  "expiresOn": zod.string().nullish(),
+  "withdrawalMeatDays": zod.number().nullish(),
+  "withdrawalMilkDays": zod.number().nullish(),
+  "withdrawalEggsDays": zod.number().nullish(),
+  "vet": zod.string().nullish(),
+  "receivedOn": zod.string().nullish(),
+  "notes": zod.string().nullish(),
+  "archived": zod.boolean().nullish().describe('true marks it used up or thrown away')
+})
+
+export const UpdateMedicineResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "activeIngredient": zod.string().nullable(),
+  "unit": zod.string(),
+  "amount": zod.number(),
+  "batch": zod.string().nullable(),
+  "expiresOn": zod.string().nullable(),
+  "withdrawalMeatDays": zod.number().nullable(),
+  "withdrawalMilkDays": zod.number().nullable(),
+  "withdrawalEggsDays": zod.number().nullable(),
+  "vet": zod.string().nullable(),
+  "receivedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['ok', 'expiresSoon', 'expired', 'empty', 'archived']),
+  "daysLeft": zod.number().nullable(),
+  "uses": zod.number()
+})
+
+
+/**
+ * @summary Delete a medicine no health record used (caretaker or admin)
+ */
+export const DeleteMedicineParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "medicineId": zod.coerce.number()
+})
+
+export const DeleteMedicineResponse = zod.void()
+
+
+/**
  * @summary The notice shown to everyone during a disruption (no sign-in needed)
  */
 export const GetAppStatusResponse = zod.object({
@@ -2919,6 +3060,10 @@ export const ListMedicalRecordsResponseItem = zod.object({
   "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
   "vet": zod.string().nullable(),
   "notes": zod.string().nullable(),
+  "medicineId": zod.number().nullable().describe('From the Arzneimittel-Vorrat'),
+  "dose": zod.number().nullable().describe('Amount given, in the medicine\'s unit'),
+  "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
+  "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
   "createdAt": zod.coerce.date()
 })
 export const ListMedicalRecordsResponse = zod.array(ListMedicalRecordsResponseItem)
@@ -2954,7 +3099,9 @@ export const CreateMedicalRecordBody = zod.object({
   "medication": zod.string().max(createMedicalRecordBodyMedicationMax).nullish(),
   "withdrawalPeriodDays": zod.number().min(createMedicalRecordBodyWithdrawalPeriodDaysMin).max(createMedicalRecordBodyWithdrawalPeriodDaysMax).nullish(),
   "vet": zod.string().max(createMedicalRecordBodyVetMax).nullish(),
-  "notes": zod.string().max(createMedicalRecordBodyNotesMax).nullish()
+  "notes": zod.string().max(createMedicalRecordBodyNotesMax).nullish(),
+  "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
+  "dose": zod.number().nullish()
 })
 
 export const CreateMedicalRecordResponse = zod.object({
@@ -2967,6 +3114,10 @@ export const CreateMedicalRecordResponse = zod.object({
   "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
   "vet": zod.string().nullable(),
   "notes": zod.string().nullable(),
+  "medicineId": zod.number().nullable().describe('From the Arzneimittel-Vorrat'),
+  "dose": zod.number().nullable().describe('Amount given, in the medicine\'s unit'),
+  "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
+  "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
   "createdAt": zod.coerce.date()
 })
 
@@ -3001,7 +3152,9 @@ export const UpdateMedicalRecordBody = zod.object({
   "medication": zod.string().max(updateMedicalRecordBodyMedicationMax).nullish(),
   "withdrawalPeriodDays": zod.number().min(updateMedicalRecordBodyWithdrawalPeriodDaysMin).max(updateMedicalRecordBodyWithdrawalPeriodDaysMax).nullish(),
   "vet": zod.string().max(updateMedicalRecordBodyVetMax).nullish(),
-  "notes": zod.string().max(updateMedicalRecordBodyNotesMax).nullish()
+  "notes": zod.string().max(updateMedicalRecordBodyNotesMax).nullish(),
+  "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
+  "dose": zod.number().nullish()
 })
 
 export const UpdateMedicalRecordResponse = zod.object({
@@ -3014,6 +3167,10 @@ export const UpdateMedicalRecordResponse = zod.object({
   "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
   "vet": zod.string().nullable(),
   "notes": zod.string().nullable(),
+  "medicineId": zod.number().nullable().describe('From the Arzneimittel-Vorrat'),
+  "dose": zod.number().nullable().describe('Amount given, in the medicine\'s unit'),
+  "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
+  "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
   "createdAt": zod.coerce.date()
 })
 
@@ -3273,6 +3430,10 @@ export const GetFarmExportResponse = zod.object({
   "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
   "vet": zod.string().nullable(),
   "notes": zod.string().nullable(),
+  "medicineId": zod.number().nullable().describe('From the Arzneimittel-Vorrat'),
+  "dose": zod.number().nullable().describe('Amount given, in the medicine\'s unit'),
+  "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
+  "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
   "createdAt": zod.coerce.date()
 }))
 })

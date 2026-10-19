@@ -1493,6 +1493,98 @@ paths:
                 $ref: "#/components/schemas/FarmWeather"
         "422":
           description: Postal code not found.
+  /farms/{farmId}/medicines:
+    get:
+      tags: [farm]
+      operationId: listMedicines
+      summary: Arzneimittel-Vorrat – expired and soon expiring first
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The medicines.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Medicine"
+    post:
+      tags: [farm]
+      operationId: createMedicine
+      summary: Add a medicine to the stock (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicineInput"
+      responses:
+        "201":
+          description: The medicine.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medicine"
+  /farms/{farmId}/medicines/{medicineId}:
+    put:
+      tags: [farm]
+      operationId: updateMedicine
+      summary: Change a medicine, or mark it used up / thrown away (archived) (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: medicineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MedicineInput"
+      responses:
+        "200":
+          description: The medicine.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Medicine"
+    delete:
+      tags: [farm]
+      operationId: deleteMedicine
+      summary: Delete a medicine no health record used (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: medicineId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "409":
+          description: Used in a health record – archive it instead.
   /status:
     get:
       tags: [monitoring]
@@ -4330,6 +4422,78 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WeatherWarning"
+    Medicine:
+      type: object
+      required: [id, name, activeIngredient, unit, amount, batch, expiresOn, withdrawalMeatDays, withdrawalMilkDays, withdrawalEggsDays, vet, receivedOn, notes, archived, status, daysLeft, uses]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        activeIngredient:
+          type: [string, 'null']
+        unit:
+          type: string
+        amount:
+          type: number
+        batch:
+          type: [string, 'null']
+        expiresOn:
+          type: [string, 'null']
+        withdrawalMeatDays:
+          type: [integer, 'null']
+        withdrawalMilkDays:
+          type: [integer, 'null']
+        withdrawalEggsDays:
+          type: [integer, 'null']
+        vet:
+          type: [string, 'null']
+        receivedOn:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        archived:
+          type: boolean
+        status:
+          type: string
+          enum: [ok, expiresSoon, expired, empty, archived]
+        daysLeft:
+          type: [integer, 'null']
+        uses:
+          type: integer
+    MedicineInput:
+      type: object
+      required: [name, unit, amount]
+      properties:
+        name:
+          type: string
+          maxLength: 100
+        activeIngredient:
+          type: [string, 'null']
+        unit:
+          type: string
+          maxLength: 20
+        amount:
+          type: number
+        batch:
+          type: [string, 'null']
+        expiresOn:
+          type: [string, 'null']
+        withdrawalMeatDays:
+          type: [integer, 'null']
+        withdrawalMilkDays:
+          type: [integer, 'null']
+        withdrawalEggsDays:
+          type: [integer, 'null']
+        vet:
+          type: [string, 'null']
+        receivedOn:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        archived:
+          type: [boolean, 'null']
+          description: true marks it used up or thrown away
     RationSeason:
       type: string
       enum: [all, summer, winter]
@@ -5893,7 +6057,7 @@ components:
           description: JPEG/PNG/WebP data URL, already downscaled by the app.
     MedicalRecord:
       type: object
-      required: [id, animalId, date, diagnosis, treatment, medication, withdrawalPeriodDays, vet, notes, createdAt]
+      required: [id, animalId, date, diagnosis, treatment, medication, withdrawalPeriodDays, vet, notes, medicineId, dose, batch, doseUnit, createdAt]
       properties:
         id:
           type: integer
@@ -5915,6 +6079,18 @@ components:
           type: [string, 'null']
         notes:
           type: [string, 'null']
+        medicineId:
+          type: [integer, 'null']
+          description: From the Arzneimittel-Vorrat
+        dose:
+          type: [number, 'null']
+          description: Amount given, in the medicine's unit
+        batch:
+          type: [string, 'null']
+          description: Batch (Charge) of the medicine
+        doseUnit:
+          type: [string, 'null']
+          description: Unit of the dose (from the medicine)
         createdAt:
           type: string
           format: date-time
@@ -5945,6 +6121,11 @@ components:
         notes:
           type: [string, 'null']
           maxLength: 2000
+        medicineId:
+          type: [integer, 'null']
+          description: A medicine from the stock; its dose is taken off the stock
+        dose:
+          type: [number, 'null']
     WeightLog:
       type: object
       required: [id, animalId, date, weightKg, createdAt]

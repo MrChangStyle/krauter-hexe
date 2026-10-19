@@ -15,3 +15,18 @@ export const weatherDigestLogTable = pgTable(
   },
   (table) => [primaryKey({ columns: [table.farmId, table.day] })],
 );
+
+// Other once-a-day pushes per farm (topic "medicines", …): which farm got
+// which push on which day.
+export const farmPushLogTable = pgTable(
+  "farm_push_log",
+  {
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    topic: text("topic").notNull(),
+    day: text("day").notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.farmId, table.topic, table.day] })],
+);

@@ -89,6 +89,16 @@ const STATEMENTS = [
   `DO $$ BEGIN
      ALTER TABLE "weather_digest_log" ADD CONSTRAINT "weather_digest_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE TABLE IF NOT EXISTS "farm_push_log" (
+	"farm_id" integer NOT NULL,
+	"topic" text NOT NULL,
+	"day" text NOT NULL,
+	"sent_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "farm_push_log_farm_id_topic_day_pk" PRIMARY KEY("farm_id","topic","day")
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_push_log" ADD CONSTRAINT "farm_push_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
 ];
 
 export async function upgradeSchema(): Promise<void> {

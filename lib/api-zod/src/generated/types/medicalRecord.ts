@@ -25,5 +25,25 @@ export interface MedicalRecord {
   vet: string | null;
   /** @nullable */
   notes: string | null;
+  /**
+     * From the Arzneimittel-Vorrat
+     * @nullable
+     */
+  medicineId: number | null;
+  /**
+     * Amount given, in the medicine's unit
+     * @nullable
+     */
+  dose: number | null;
+  /**
+     * Batch (Charge) of the medicine
+     * @nullable
+     */
+  batch: string | null;
+  /**
+     * Unit of the dose (from the medicine)
+     * @nullable
+     */
+  doseUnit: string | null;
   createdAt: Date;
 }

@@ -2,13 +2,18 @@ import { Router, type IRouter } from 'express';
 import {
   CreateMedicalRecordBody,
   CreateMedicalRecordResponse,
+  CreateMedicineBody,
+  CreateMedicineResponse,
   CreateWeightLogBody,
   CreateWeightLogResponse,
   GetFarmExportResponse,
   ListMedicalRecordsResponse,
+  ListMedicinesResponse,
   ListWeightLogsResponse,
   UpdateMedicalRecordBody,
   UpdateMedicalRecordResponse,
+  UpdateMedicineBody,
+  UpdateMedicineResponse,
 } from '@workspace/api-zod';
 
 import { requireFarm } from '../middlewares/requireFarm';
@@ -22,9 +27,10 @@ import {
   listWeightLogs,
   updateMedicalRecord,
 } from '../lib/farmHealth';
+import { createMedicine, deleteMedicine, listMedicines, updateMedicine } from '../lib/medicines';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
-// Health records, weights and the veterinary office export. Reading: every
+// Health records, weights, the Arzneimittel-Vorrat and the veterinary office export. Reading: every
 // member; writing: caretaker or admin.
 
 const router: IRouter = Router();
@@ -120,6 +126,49 @@ router.get(
   requireFarm('guest'),
   handle(async (req, res) => {
     res.json(GetFarmExportResponse.parse(await farmExport(req.farm!.farmId)));
+  }),
+);
+
+// ── Arzneimittel-Vorrat ──────────────────────────────────────────────────────
+
+router.get(
+  '/farms/:farmId/medicines',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(ListMedicinesResponse.parse(await listMedicines(req.farm!.farmId)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/medicines',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = CreateMedicineBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.status(201).json(CreateMedicineResponse.parse(await createMedicine(req.farm!.farmId, body.data)));
+  }),
+);
+
+router.put(
+  '/farms/:farmId/medicines/:medicineId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const id = idParam(req, 'medicineId');
+    if (id === null) return notFound(res);
+    const body = UpdateMedicineBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(UpdateMedicineResponse.parse(await updateMedicine(req.farm!.farmId, id, body.data)));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/medicines/:medicineId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const id = idParam(req, 'medicineId');
+    if (id === null) return notFound(res);
+    await deleteMedicine(req.farm!.farmId, id);
+    res.sendStatus(204);
   }),
 );
 

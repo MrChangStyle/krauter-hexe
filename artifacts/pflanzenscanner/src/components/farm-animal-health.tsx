@@ -5,12 +5,14 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import {
   getGetFarmExportQueryKey,
   getListMedicalRecordsQueryKey,
+  getListMedicinesQueryKey,
   getListWeightLogsQueryKey,
   useCreateMedicalRecord,
   useCreateWeightLog,
   useDeleteMedicalRecord,
   useDeleteWeightLog,
   useListMedicalRecords,
+  useListMedicines,
   useListWeightLogs,
   useUpdateMedicalRecord,
   type MedicalRecord,
@@ -24,10 +26,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { todayIso } from "@/lib/farm-labels";
+import { medicineWithdrawal } from "@/lib/medicine-labels";
 import {
   WEIGHT_LOSS_WINDOW_DAYS,
   activeWithdrawalEnd,
   deDate,
+  doseText,
   kg,
   weightWarning,
   withdrawalEnd,
@@ -224,6 +228,8 @@ const EMPTY_RECORD: MedicalRecordInput = {
   withdrawalPeriodDays: null,
   vet: "",
   notes: "",
+  medicineId: null,
+  dose: null,
 };
 
 function toRecordInput(r: MedicalRecord): MedicalRecordInput {
@@ -235,6 +241,8 @@ function toRecordInput(r: MedicalRecord): MedicalRecordInput {
     withdrawalPeriodDays: r.withdrawalPeriodDays,
     vet: r.vet ?? "",
     notes: r.notes ?? "",
+    medicineId: r.medicineId,
+    dose: r.dose,
   };
 }
 
@@ -262,6 +270,7 @@ function RecordDialog({
   const done = () => {
     void queryClient.invalidateQueries({ queryKey: getListMedicalRecordsQueryKey(farmId, animalId) });
     void queryClient.invalidateQueries({ queryKey: getGetFarmExportQueryKey(farmId) });
+    void queryClient.invalidateQueries({ queryKey: getListMedicinesQueryKey(farmId) });
     onOpenChange(false);
   };
   const fail = (err: unknown) => setError(errorText(err, "Das hat nicht geklappt."));
@@ -269,12 +278,24 @@ function RecordDialog({
   const update = useUpdateMedicalRecord({ mutation: { onSuccess: done, onError: fail } });
   const remove = useDeleteMedicalRecord({ mutation: { onSuccess: done, onError: fail } });
   const busy = create.isPending || update.isPending || remove.isPending;
+  const medicines = useListMedicines(farmId);
+  // Typed text, so a decimal comma survives until saving.
+  const [doseInput, setDoseInput] = useState(record?.dose == null ? "" : String(record.dose).replace(".", ","));
+  // Offer what can still be used – and the one this record already uses.
+  const offered = (medicines.data ?? []).filter((m) => m.id === form.medicineId || (!m.archived && m.status !== "expired"));
+  const chosen = medicines.data?.find((m) => m.id === form.medicineId) ?? null;
 
   function submit(event: FormEvent) {
     event.preventDefault();
     setError(null);
-    if (record) update.mutate({ farmId, recordId: record.id, data: form });
-    else create.mutate({ farmId, animalId, data: form });
+    const dose = form.medicineId != null ? Number(doseInput.replace(",", ".")) : null;
+    if (dose !== null && !(dose > 0)) {
+      setError(`Bitte die Menge in ${chosen?.unit ?? "der Einheit des Mittels"} angeben.`);
+      return;
+    }
+    const data = { ...form, dose };
+    if (record) update.mutate({ farmId, recordId: record.id, data });
+    else create.mutate({ farmId, animalId, data });
   }
 
   return (
@@ -309,10 +330,49 @@ function RecordDialog({
             <Label htmlFor="med-treatment">Behandlung</Label>
             <Textarea id="med-treatment" rows={2} maxLength={2000} value={form.treatment ?? ""} onChange={(e) => set("treatment", e.target.value)} />
           </div>
+          {offered.length > 0 && (
+            <div className="space-y-1.5 rounded-lg border border-border p-3">
+              <div className="grid grid-cols-[1fr_auto] gap-3">
+                <div className="flex flex-col gap-1.5">
+                  <Label htmlFor="med-stock">Aus dem Arzneimittel-Vorrat</Label>
+                  <select
+                    id="med-stock"
+                    className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                    value={form.medicineId ?? ""}
+                    onChange={(e) => setForm((f) => ({ ...f, medicineId: e.target.value ? Number(e.target.value) : null }))}
+                  >
+                    <option value="">– nicht aus dem Vorrat –</option>
+                    {offered.map((m) => (
+                      <option key={m.id} value={m.id}>
+                        {m.name} ({m.amount.toLocaleString("de-DE")} {m.unit})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {chosen && (
+                  <div className="flex w-24 flex-col gap-1.5">
+                    <Label htmlFor="med-dose">Menge ({chosen.unit})</Label>
+                    <Input
+                      id="med-dose"
+                      inputMode="decimal"
+                      value={doseInput}
+                      onChange={(e) => setDoseInput(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+              {chosen && (
+                <p className="text-xs text-muted-foreground">
+                  {[chosen.batch && `Charge ${chosen.batch}`, medicineWithdrawal(chosen) && `Wartezeit ${medicineWithdrawal(chosen)}`].filter(Boolean).join(" · ")}
+                  {" – "}Medikament und Wartezeit leer lassen: werden passend zur Tierart übernommen; die Menge geht vom Vorrat ab.
+                </p>
+              )}
+            </div>
+          )}
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="med-medication">Medikament</Label>
-              <Input id="med-medication" maxLength={200} value={form.medication ?? ""} onChange={(e) => set("medication", e.target.value)} />
+              <Input id="med-medication" maxLength={200} value={form.medication ?? ""} placeholder={chosen?.name} onChange={(e) => set("medication", e.target.value)} />
             </div>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="med-vet">Tierarzt</Label>
@@ -406,7 +466,7 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
                 {r.treatment && <p className="whitespace-pre-wrap text-muted-foreground">{r.treatment}</p>}
                 {(r.medication || r.vet) && (
                   <p className="text-xs text-muted-foreground">
-                    {[r.medication && `Medikament: ${r.medication}`, r.vet && `Tierarzt: ${r.vet}`].filter(Boolean).join(" · ")}
+                    {[r.medication && `Medikament: ${r.medication}${doseText(r) ? ` (${doseText(r)})` : ""}`, r.vet && `Tierarzt: ${r.vet}`].filter(Boolean).join(" · ")}
                   </p>
                 )}
                 {end && (

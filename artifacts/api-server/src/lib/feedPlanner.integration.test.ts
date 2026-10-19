@@ -21,6 +21,8 @@ vi.hoisted(() => {
 });
 const runModelChain = vi.fn(async (_contents: unknown, _models: unknown, _config?: unknown): Promise<unknown> => ({}));
 vi.mock("./plantIdentification", async (orig) => ({ ...(await orig<object>()), runModelChain }));
+const sendPushToUser = vi.fn(async (_userId: string, _payload: unknown) => 1);
+vi.mock("./webPush", () => ({ sendPushToUser }));
 // "Today" for the season tests; null = the real day.
 let fixedDay: string | null = null;
 vi.mock("./monitoring", async (orig) => {
@@ -423,6 +425,26 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     expect(cal.months[6].fresh[0]).toEqual({ key: "mangold", name: "Mangold", species: ["poultry", "rabbit", "sheep"], planted: true });
     as = "bert";
     expect((await api("GET", `/farms/${farm.anna}/feed-calendar`)).status).toBe(404);
+  });
+
+  it("pushes 'Futter nachkaufen' on the day to buy more and the day before it runs out", async () => {
+    sendPushToUser.mockClear();
+    fixedDay = "2026-10-19";
+    await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 120 }], times: ["morgens"] });
+    await api("PUT", `/farms/${farm.anna}/feed-stock`, { feedKey: "legehennen", stockKg: 1.7 });
+    const { sendFeedDigests } = await import("./feedStock");
+    expect(await sendFeedDigests("07:00", "2026-10-19")).toBe(0);
+    expect(await sendFeedDigests("07:30", "2026-10-19")).toBe(1);
+    expect(await sendFeedDigests("08:00", "2026-10-19")).toBe(0);
+    // Admin and caretaker only – the guest gets nothing.
+    expect(sendPushToUser.mock.calls).toEqual([
+      ["anna", { title: "Futter nachkaufen", body: "Legehennen-Alleinfutter reicht noch 7 Tage (bis 26.10.).", tag: `feed-${farm.anna}-2026-10-19`, url: "/farm/futter/vorrat" }],
+    ]);
+    fixedDay = "2026-10-22";
+    expect(await sendFeedDigests("07:30", "2026-10-22")).toBe(0);
+    fixedDay = "2026-10-25";
+    expect(await sendFeedDigests("07:30", "2026-10-25")).toBe(1);
+    expect(sendPushToUser.mock.calls.at(-1)![1]).toMatchObject({ body: "Legehennen-Alleinfutter ist morgen leer." });
   });
 
   it("lets guests read, keeps farms apart", async () => {

@@ -96,4 +96,14 @@ export const FEED_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "feed_recipes" ADD CONSTRAINT "feed_recipes_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "feed_recipes_status_idx" ON "feed_recipes" USING btree ("status")`,
+  // "Futter nachkaufen" push: once per farm and day.
+  `CREATE TABLE IF NOT EXISTS "feed_digest_log" (
+	"farm_id" integer NOT NULL,
+	"day" text NOT NULL,
+	"sent_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "feed_digest_log_farm_id_day_pk" PRIMARY KEY("farm_id","day")
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "feed_digest_log" ADD CONSTRAINT "feed_digest_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
 ];

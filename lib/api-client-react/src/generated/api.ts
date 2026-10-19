@@ -71,6 +71,8 @@ import type {
   GardenBedInput,
   GardenCalendarEntry,
   GardenEventKind,
+  GardenGoals,
+  GardenPlan,
   GeoReverseInput,
   GeoReverseResult,
   HealthStatus,
@@ -8935,6 +8937,232 @@ export function useGetGardenCalendar<TData = Awaited<ReturnType<typeof getGarden
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetGardenCalendarQueryOptions(farmId,season,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetGardenGoalsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/goals`
+}
+
+/**
+ * @summary Goals of the Garten-Assistent (defaults until saved)
+ */
+export const getGardenGoals = async (farmId: number, options?: RequestInit): Promise<GardenGoals> => {
+
+  return customFetch<GardenGoals>(getGetGardenGoalsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGardenGoalsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/garden/goals`
+    ] as const;
+    }
+
+
+export const getGetGardenGoalsQueryOptions = <TData = Awaited<ReturnType<typeof getGardenGoals>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenGoals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGardenGoalsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGardenGoals>>> = ({ signal }) => getGardenGoals(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGardenGoals>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGardenGoalsQueryResult = NonNullable<Awaited<ReturnType<typeof getGardenGoals>>>
+export type GetGardenGoalsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Goals of the Garten-Assistent (defaults until saved)
+ */
+
+export function useGetGardenGoals<TData = Awaited<ReturnType<typeof getGardenGoals>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenGoals>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGardenGoalsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSaveGardenGoalsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/goals`
+}
+
+/**
+ * @summary Save the goals (caretaker or admin)
+ */
+export const saveGardenGoals = async (farmId: number,
+    gardenGoals: GardenGoals, options?: RequestInit): Promise<GardenGoals> => {
+
+  return customFetch<GardenGoals>(getSaveGardenGoalsUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(gardenGoals)
+  }
+);}
+
+
+
+
+
+export const getSaveGardenGoalsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveGardenGoals>>, TError,{farmId: number;data: BodyType<GardenGoals>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof saveGardenGoals>>, TError,{farmId: number;data: BodyType<GardenGoals>}, TContext> => {
+
+const mutationKey = ['saveGardenGoals'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof saveGardenGoals>>, {farmId: number;data: BodyType<GardenGoals>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  saveGardenGoals(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SaveGardenGoalsMutationResult = NonNullable<Awaited<ReturnType<typeof saveGardenGoals>>>
+    export type SaveGardenGoalsMutationBody = BodyType<GardenGoals>
+    export type SaveGardenGoalsMutationError = ErrorType<void>
+
+    /**
+ * @summary Save the goals (caretaker or admin)
+ */
+export const useSaveGardenGoals = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof saveGardenGoals>>, TError,{farmId: number;data: BodyType<GardenGoals>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof saveGardenGoals>>,
+        TError,
+        {farmId: number;data: BodyType<GardenGoals>},
+        TContext
+      > => {
+      return useMutation(getSaveGardenGoalsMutationOptions(options));
+    }
+
+export const getGetGardenPlanUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/plan`
+}
+
+/**
+ * @summary Garten-Assistent – needs of people and animals and the split onto the beds (fixed rules of thumb)
+ */
+export const getGardenPlan = async (farmId: number, options?: RequestInit): Promise<GardenPlan> => {
+
+  return customFetch<GardenPlan>(getGetGardenPlanUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGardenPlanQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/garden/plan`
+    ] as const;
+    }
+
+
+export const getGetGardenPlanQueryOptions = <TData = Awaited<ReturnType<typeof getGardenPlan>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenPlan>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGardenPlanQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGardenPlan>>> = ({ signal }) => getGardenPlan(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGardenPlan>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGardenPlanQueryResult = NonNullable<Awaited<ReturnType<typeof getGardenPlan>>>
+export type GetGardenPlanQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Garten-Assistent – needs of people and animals and the split onto the beds (fixed rules of thumb)
+ */
+
+export function useGetGardenPlan<TData = Awaited<ReturnType<typeof getGardenPlan>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenPlan>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGardenPlanQueryOptions(farmId,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

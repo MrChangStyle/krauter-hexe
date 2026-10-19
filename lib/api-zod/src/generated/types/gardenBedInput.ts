@@ -13,6 +13,11 @@ import type { WindProtection } from './windProtection';
 
 export interface GardenBedInput {
   /**
+     * Raised beds only – the year it was filled
+     * @nullable
+     */
+  builtYear?: number | null;
+  /**
      * @minLength 1
      * @maxLength 60
      */

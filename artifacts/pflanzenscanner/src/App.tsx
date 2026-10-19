@@ -8,6 +8,7 @@ import FarmAnimalPage from '@/pages/farm-animal';
 import FarmCamerasPage from '@/pages/farm-cameras';
 import BeetePage from '@/pages/beete';
 import GartenKalenderPage from '@/pages/garten-kalender';
+import GartenAssistentPage from '@/pages/garten-assistent';
 import BeetPage from '@/pages/beet';
 import NotFound from '@/pages/not-found';
 import { Redirect, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
@@ -129,6 +130,7 @@ function Router() {
         <Route path="/farm/:farmId/tier/:animalId" component={FarmAnimalPage} />
         <Route path="/beete" component={BeetePage} />
         <Route path="/beete/kalender" component={GartenKalenderPage} />
+        <Route path="/beete/assistent" component={GartenAssistentPage} />
         <Route path="/beete/:farmId/:bedId" component={BeetPage} />
         {/* Legacy redirects — keep old deep links working */}
         <Route path="/insekten">{() => { window.location.replace(import.meta.env.BASE_URL + "insekten-scanner"); return null; }}</Route>

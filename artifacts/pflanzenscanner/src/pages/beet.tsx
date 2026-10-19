@@ -52,6 +52,7 @@ interface FormState {
   lengthCm: string;
   widthCm: string;
   heightCm: string;
+  builtYear: string;
   postalCode: string;
   latitude: number | null;
   longitude: number | null;
@@ -73,6 +74,7 @@ function toForm(b: GardenBed | null): FormState {
     lengthCm: b ? String(b.lengthCm) : "",
     widthCm: b ? String(b.widthCm) : "",
     heightCm: b?.heightCm != null ? String(b.heightCm) : "",
+    builtYear: b?.builtYear != null ? String(b.builtYear) : "",
     postalCode: b?.postalCode ?? "",
     latitude: b?.postalCode ? null : (b?.latitude ?? null),
     longitude: b?.postalCode ? null : (b?.longitude ?? null),
@@ -110,6 +112,7 @@ export function toInput(f: FormState, wasManual: boolean): GardenBedInput | stri
     lengthCm: Math.round(lengthCm),
     widthCm: Math.round(widthCm),
     heightCm: f.type === "raised" && num(f.heightCm) !== null ? Math.round(num(f.heightCm)!) : null,
+    builtYear: f.type === "raised" && num(f.builtYear) !== null ? Math.round(num(f.builtYear)!) : null,
     postalCode: f.postalCode.trim() || null,
     latitude: f.latitude,
     longitude: f.longitude,
@@ -203,6 +206,12 @@ function BedForm({
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="bed-height">Höhe (cm)</Label>
               <Input id="bed-height" inputMode="numeric" value={form.heightCm} onChange={(e) => set("heightCm", e.target.value)} placeholder="80" />
+            </div>
+          )}
+          {form.type === "raised" && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="bed-built">Befüllt im Jahr</Label>
+              <Input id="bed-built" inputMode="numeric" value={form.builtYear} onChange={(e) => set("builtYear", e.target.value)} placeholder={String(new Date().getFullYear())} />
             </div>
           )}
         </div>

@@ -57,6 +57,11 @@ export interface GardenBed {
      * @nullable
      */
   photoCorners: PhotoPoint[] | null;
+  /**
+     * Raised beds – the year it was filled (Hochbeet-Begleiter)
+     * @nullable
+     */
+  builtYear: number | null;
   /** KI-Einschätzung of the photo (cleared with a new photo) */
   photoAnalysis: BedPhotoAnalysis | null;
 }

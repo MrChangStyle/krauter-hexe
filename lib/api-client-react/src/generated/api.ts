@@ -71,6 +71,7 @@ import type {
   FarmTask,
   FarmTaskInput,
   FavoriteIds,
+  FeedLabelReading,
   FeedLog,
   FeedReference,
   FrostWarning,
@@ -3691,6 +3692,78 @@ export const useAddFarmFeed = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getAddFarmFeedMutationOptions(options));
+    }
+
+export const getReadFeedLabelUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feeds/label`
+}
+
+/**
+ * @summary Read a feed label photo with the AI (caretaker or admin; counts against the farm AI limit). Nothing is saved – the user confirms the values.
+ */
+export const readFeedLabel = async (farmId: number,
+    photoInput: PhotoInput, options?: RequestInit): Promise<FeedLabelReading> => {
+
+  return customFetch<FeedLabelReading>(getReadFeedLabelUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(photoInput)
+  }
+);}
+
+
+
+
+
+export const getReadFeedLabelMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof readFeedLabel>>, TError,{farmId: number;data: BodyType<PhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof readFeedLabel>>, TError,{farmId: number;data: BodyType<PhotoInput>}, TContext> => {
+
+const mutationKey = ['readFeedLabel'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof readFeedLabel>>, {farmId: number;data: BodyType<PhotoInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  readFeedLabel(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ReadFeedLabelMutationResult = NonNullable<Awaited<ReturnType<typeof readFeedLabel>>>
+    export type ReadFeedLabelMutationBody = BodyType<PhotoInput>
+    export type ReadFeedLabelMutationError = ErrorType<void>
+
+    /**
+ * @summary Read a feed label photo with the AI (caretaker or admin; counts against the farm AI limit). Nothing is saved – the user confirms the values.
+ */
+export const useReadFeedLabel = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof readFeedLabel>>, TError,{farmId: number;data: BodyType<PhotoInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof readFeedLabel>>,
+        TError,
+        {farmId: number;data: BodyType<PhotoInput>},
+        TContext
+      > => {
+      return useMutation(getReadFeedLabelMutationOptions(options));
     }
 
 export const getRemoveFarmFeedUrl = (farmId: number,

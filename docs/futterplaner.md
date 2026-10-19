@@ -36,8 +36,10 @@ Für den Bau festgelegt:
    Etikett), Ration je Tier oder Gruppe mit Lebensphase und Fütterungszeiten; Abgleich mit dem
    Bedarf (Menge, Rohprotein, Rohfaser, Calcium, Phosphor, Kupfer beim Schaf) mit Ampel und
    Ausgleichs-Tipps; feste Warnungen; Wasserbedarf; Hinweis zu Küchenabfällen.
-2. **Etikett per KI (Premium):** Foto des Etiketts → analytische Bestandteile und Zusatzstoffe,
-   der Nutzer bestätigt die Werte.
+2. **Etikett per KI (Premium) (UMGESETZT):** Foto des Etiketts → analytische Bestandteile und
+   Zusatzstoffe, der Nutzer bestätigt die Werte. Nicht lesbare Werte bleiben leer; die Tierart vom
+   Etikett speist die Warnung bei artfremdem Futter; Kokzidiostatika (Monensin & Co.) außerhalb
+   von Geflügel geben eine nicht wegklickbare Warnung (für Pferde tödlich).
 3. **Fütterungsplan:** Anpassung nach Jahreszeit (Grünfutter im Sommer, Heu und Lagerfutter im
    Winter, Zusatzbedarf bei Kälte), Erinnerungen über die Stall-Aufgaben, Futterumstellung
    schrittweise über mehrere Tage.

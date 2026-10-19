@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertOctagon, ArrowLeft, Droplets, Info, Loader2, Plus, Scale, Trash2, Wheat } from "lucide-react";
+import { AlertOctagon, ArrowLeft, Camera, Droplets, Info, Loader2, Plus, Scale, Trash2, Wheat, X } from "lucide-react";
 import {
   getListFarmFeedsQueryKey,
   getListRationsQueryKey,
@@ -12,6 +12,7 @@ import {
   useListFarmFeeds,
   useListHerds,
   useListRations,
+  useReadFeedLabel,
   useRemoveFarmFeed,
   useRemoveRation,
   useSaveRation,
@@ -20,15 +21,18 @@ import {
   type FarmSummary,
   type Feed,
   type FeedCategory,
+  type FeedLabelReading,
   type LifeStage,
   type RationEvaluation,
 } from "@workspace/api-client-react";
+import { PremiumBadge } from "@/components/premium-badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
+import { downscaleFile } from "@/lib/image";
 import { SPECIES_LABELS } from "@/lib/farm-labels";
 import { CATEGORY_LABELS, NUTRIENT_LABELS, STAGE_LABELS, formatRange, formatValue, grams, light, lightText } from "@/lib/feed-labels";
 import { cn } from "@/lib/utils";
@@ -36,6 +40,8 @@ import { cn } from "@/lib/utils";
 const TIMES = ["morgens", "mittags", "abends"] as const;
 const DOT = { green: "bg-emerald-500", yellow: "bg-amber-400", red: "bg-red-600" } as const;
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
+
+const decimal = (n: number) => String(n).replace(".", ",");
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -323,10 +329,28 @@ const LABEL_FIELDS = [
 function OwnFeedDialog({ farmId, onClose }: { farmId: number; onClose: () => void }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const photo = useRef<HTMLInputElement>(null);
   const [name, setName] = useState("");
   const [category, setCategory] = useState<FeedCategory>("compound");
   const [dm, setDm] = useState("88");
   const [values, setValues] = useState<Record<string, string>>({});
+  const [reading, setReading] = useState<FeedLabelReading | null>(null);
+  const [forSpecies, setForSpecies] = useState<FarmSpecies[]>([]);
+  const [preparing, setPreparing] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+  const read = useReadFeedLabel({
+    mutation: {
+      onSuccess(r) {
+        setReading(r);
+        if (r.name) setName(r.name);
+        setCategory(r.category);
+        if (r.dryMatter !== null) setDm(decimal(r.dryMatter));
+        setValues(Object.fromEntries(LABEL_FIELDS.map(([key]) => [key, r.label[key] === null ? "" : decimal(r.label[key]!)])));
+        setForSpecies(r.forSpecies);
+      },
+      onError: (err) => setPhotoError(errorText(err, "Die KI ist gerade nicht erreichbar.")),
+    },
+  });
   const add = useAddFarmFeed({
     mutation: {
       onSuccess() {
@@ -338,6 +362,8 @@ function OwnFeedDialog({ farmId, onClose }: { farmId: number; onClose: () => voi
     },
   });
   const num = (s: string | undefined) => (s && s.trim() ? Number(s.replace(",", ".")) : NaN);
+  const reads = preparing || read.isPending;
+  const missing = reading ? LABEL_FIELDS.filter(([key]) => key !== "copper" && reading.label[key] === null).map(([, label]) => label.replace(" %", "")) : [];
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -353,7 +379,10 @@ function OwnFeedDialog({ farmId, onClose }: { farmId: number; onClose: () => voi
       toast({ title: "Bitte alle Werte vom Etikett eintragen", description: "Kupfer ist freiwillig.", variant: "destructive" });
       return;
     }
-    add.mutate({ farmId, data: { name: name.trim(), category, dryMatter: num(dm), label } });
+    add.mutate({
+      farmId,
+      data: { name: name.trim(), category, dryMatter: num(dm), label, forSpecies: forSpecies.length ? forSpecies : null, additives: reading?.additives.length ? reading.additives : null },
+    });
   }
 
   return (
@@ -363,6 +392,60 @@ function OwnFeedDialog({ farmId, onClose }: { farmId: number; onClose: () => voi
           <DialogTitle>Eigenes Futtermittel</DialogTitle>
           <DialogDescription>Werte vom Etikett unter „Analytische Bestandteile“ – so, wie sie dort stehen.</DialogDescription>
         </DialogHeader>
+        <div className="space-y-2 rounded-xl border border-dashed border-border p-3">
+          <input
+            ref={photo}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            aria-label="Foto vom Etikett"
+            onChange={async (e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setPhotoError(null);
+              setPreparing(true);
+              try {
+                // Small print: a little more resolution than other photos.
+                read.mutate({ farmId, data: { imageData: await downscaleFile(file, 1600, 0.8) } });
+              } finally {
+                setPreparing(false);
+              }
+            }}
+          />
+          <div className="flex flex-wrap items-center gap-2">
+            <Button type="button" variant="outline" size="sm" className="gap-1.5" disabled={reads} onClick={() => photo.current?.click()}>
+              {reads ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+              Etikett fotografieren
+            </Button>
+            <PremiumBadge />
+          </div>
+          {reads && <p className="text-xs text-muted-foreground">Die KI liest das Etikett …</p>}
+          {photoError && <p role="alert" className="text-xs text-destructive">{photoError}</p>}
+          {reading && (
+            <div className="space-y-1.5 text-xs">
+              <p className="font-medium text-amber-800 dark:text-amber-300">Von der KI gelesen – bitte jeden Wert mit dem Etikett vergleichen, bevor du speicherst.</p>
+              {missing.length > 0 && <p className="text-muted-foreground">Nicht lesbar: {missing.join(", ")} – bitte selbst eintragen.</p>}
+              {reading.dryMatter === null && <p className="text-muted-foreground">Keine Feuchtigkeit aufgedruckt – Trockenmasse 88 % angenommen.</p>}
+              {reading.ionophores.length > 0 && (
+                <p role="alert" className="flex gap-1.5 rounded-lg border-2 border-red-600 bg-red-50 p-2 text-red-950 dark:bg-red-950/40 dark:text-red-100">
+                  <AlertOctagon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  Enthält {reading.ionophores.join(", ")} (Kokzidiostatikum): nur für Geflügel – für Pferde schon in kleinen Mengen tödlich.
+                </p>
+              )}
+              {reading.additives.length > 0 && (
+                <details>
+                  <summary className="cursor-pointer text-muted-foreground">Zusatzstoffe ({reading.additives.length})</summary>
+                  <ul className="mt-1 list-disc pl-4">
+                    {reading.additives.map((a) => (
+                      <li key={a}>{a}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+            </div>
+          )}
+        </div>
         <form onSubmit={submit} className="space-y-3">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="feed-name">Name</Label>
@@ -386,12 +469,38 @@ function OwnFeedDialog({ farmId, onClose }: { farmId: number; onClose: () => voi
             {LABEL_FIELDS.map(([key, label]) => (
               <div key={key} className="flex flex-col gap-1.5">
                 <Label htmlFor={`feed-${key}`}>{label}</Label>
-                <Input id={`feed-${key}`} inputMode="decimal" value={values[key] ?? ""} onChange={(e) => setValues({ ...values, [key]: e.target.value })} />
+                <Input
+                  id={`feed-${key}`}
+                  inputMode="decimal"
+                  className={cn(reading && key !== "copper" && reading.label[key] === null && "border-amber-500")}
+                  value={values[key] ?? ""}
+                  onChange={(e) => setValues({ ...values, [key]: e.target.value })}
+                />
               </div>
             ))}
           </div>
+          {forSpecies.length > 0 && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Laut Etikett für</p>
+              <div className="flex flex-wrap gap-1.5">
+                {forSpecies.map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    aria-label={`${SPECIES_LABELS[s]} entfernen`}
+                    className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-2.5 py-0.5 text-xs"
+                    onClick={() => setForSpecies(forSpecies.filter((x) => x !== s))}
+                  >
+                    {SPECIES_LABELS[s]}
+                    <X className="h-3 w-3" />
+                  </button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">Bekommt eine andere Tierart dieses Futter, warnt der Futterplaner.</p>
+            </div>
+          )}
           <p className="text-xs text-muted-foreground">Trockenmasse: 88 % bei Trockenfutter; steht selten auf dem Etikett.</p>
-          <Button type="submit" disabled={add.isPending} className="gap-1.5">
+          <Button type="submit" disabled={add.isPending || reads} className="gap-1.5">
             {add.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             Speichern
           </Button>
@@ -499,7 +608,11 @@ function Planner({ farm }: { farm: FarmSummary }) {
             {(own.data ?? []).map((f) => (
               <li key={f.id} className="flex items-center justify-between gap-2">
                 <span>
-                  {f.name} <span className="text-xs text-muted-foreground">· {CATEGORY_LABELS[f.category]}</span>
+                  {f.name}{" "}
+                  <span className="text-xs text-muted-foreground">
+                    · {CATEGORY_LABELS[f.category]}
+                    {f.forSpecies?.length ? ` · für ${f.forSpecies.map((s) => SPECIES_LABELS[s as FarmSpecies] ?? s).join(", ")}` : ""}
+                  </span>
                 </span>
                 {canWrite && (
                   <button

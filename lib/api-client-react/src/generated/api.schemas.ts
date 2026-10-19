@@ -98,6 +98,42 @@ export interface FarmFeed {
   forSpecies: string[] | null;
   /** @nullable */
   botanicalName: string | null;
+  /** @nullable */
+  additives: string[] | null;
+}
+
+export type FeedLabelReadingLabel = {
+  /** @nullable */
+  crudeProtein: number | null;
+  /** @nullable */
+  crudeFat: number | null;
+  /** @nullable */
+  crudeFibre: number | null;
+  /** @nullable */
+  calcium: number | null;
+  /** @nullable */
+  phosphorus: number | null;
+  /** @nullable */
+  copper: number | null;
+};
+
+/**
+ * What the AI read from a label (as fed). Missing or implausible values are null and must be typed in.
+ */
+export interface FeedLabelReading {
+  /** @nullable */
+  name: string | null;
+  category: FeedCategory;
+  forSpecies: FarmSpecies[];
+  /**
+     * % – from moisture, only when printed
+     * @nullable
+     */
+  dryMatter: number | null;
+  label: FeedLabelReadingLabel;
+  additives: string[];
+  /** Coccidiostats found in the additives (Monensin & Co.) – deadly for horses */
+  ionophores: string[];
 }
 
 /**
@@ -124,6 +160,12 @@ export interface FarmFeedInput {
   forSpecies?: FarmSpecies[] | null;
   /** @nullable */
   botanicalName?: string | null;
+  /**
+     * @maxItems 30
+     * @nullable
+     * @items.maxLength 120
+     */
+  additives?: string[] | null;
 }
 
 export interface RationItem {
@@ -195,6 +237,7 @@ export const FeedWarningKind = {
   toxic: 'toxic',
   foreignMineral: 'foreignMineral',
   copper: 'copper',
+  ionophore: 'ionophore',
   withdrawal: 'withdrawal',
 } as const;
 

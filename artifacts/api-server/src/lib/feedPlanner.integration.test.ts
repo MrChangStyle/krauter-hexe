@@ -1,8 +1,9 @@
 /**
- * Futterplaner (step 1) against a REAL Postgres, through the HTTP routes: own
- * feeds, rations for an animal and a herd, the check, the warnings that
- * cannot be dismissed (toxic plant, foreign mineral feed, withdrawal period),
- * roles and isolation.
+ * Futterplaner (steps 1 and 2) against a REAL Postgres, through the HTTP
+ * routes: own feeds, rations for an animal and a herd, the check, the
+ * warnings that cannot be dismissed (toxic plant, foreign mineral feed,
+ * coccidiostat, withdrawal period), the label read by the (mocked) AI, roles
+ * and isolation.
  *
  * Skipped unless TEST_DATABASE_URL equals DATABASE_URL (throwaway database
  * with the schema pushed). Truncates tables – never point it at real data.
@@ -17,6 +18,19 @@ import type { AddressInfo } from "node:net";
 vi.hoisted(() => {
   process.env["GEMINI_API_KEY"] ??= "test-key";
 });
+const runModelChain = vi.fn(async (_contents: unknown, _models: unknown, _config?: unknown): Promise<unknown> => ({}));
+vi.mock("./plantIdentification", async (orig) => ({ ...(await orig<object>()), runModelChain }));
+
+const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
+const KUEKEN_LABEL = {
+  istEtikett: true,
+  name: "Kükenstarter",
+  art: "compound",
+  tierarten: ["poultry"],
+  feuchtigkeit: 12,
+  werte: { rohprotein: 20, rohfett: 4, rohfaser: 3.5, calcium: 1, phosphor: 0.65, kupfer: 15 },
+  zusatzstoffe: ["Vitamin D3 3000 I.E.", "Monensin-Natrium 100 mg"],
+};
 
 const testUrl = process.env["TEST_DATABASE_URL"];
 const enabled =
@@ -52,6 +66,7 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
   afterAll(() => server?.close());
 
   beforeEach(async () => {
+    runModelChain.mockReset();
     await q("TRUNCATE farms, farm_memberships, users, plants RESTART IDENTITY CASCADE");
     await q(`INSERT INTO users (id, email, approved) VALUES ('anna', 'a@x.de', true), ('bert', 'b@x.de', true), ('gast', 'g@x.de', true)`);
     const [a, b] = await q<{ id: number }>("INSERT INTO farms (name) VALUES ('Hof Anna'), ('Hof Bert') RETURNING id");
@@ -85,6 +100,41 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     return { status: res.status, data: text ? (JSON.parse(text) as any) : null };
   };
   const ration = (body: object, farmId = farm.anna) => api("PUT", `/farms/${farmId}/rations`, body);
+
+  it("reads a label with the AI, saves nothing until confirmed, and warns about Monensin for a horse", async () => {
+    runModelChain.mockResolvedValueOnce(KUEKEN_LABEL);
+    const read = await api("POST", `/farms/${farm.anna}/feeds/label`, { imageData: PHOTO });
+    expect(read.status).toBe(200);
+    expect(read.data).toMatchObject({ name: "Kükenstarter", dryMatter: 88, forSpecies: ["poultry"], label: { crudeProtein: 20, copper: 15 }, ionophores: ["Monensin"] });
+    expect(JSON.stringify(runModelChain.mock.calls[0]![0])).toContain("Etikett");
+    expect((await api("GET", `/farms/${farm.anna}/feeds`)).data).toEqual([]);
+    // The user confirms the values: saved like any own feed, with the additives.
+    const saved = await api("POST", `/farms/${farm.anna}/feeds`, {
+      name: read.data.name,
+      category: read.data.category,
+      dryMatter: read.data.dryMatter,
+      label: read.data.label,
+      forSpecies: read.data.forSpecies,
+      additives: read.data.additives,
+    });
+    expect(saved.data).toMatchObject({ additives: ["Vitamin D3 3000 I.E.", "Monensin-Natrium 100 mg"], values: { crudeProtein: 22.73 } });
+    const [pony] = await q<{ id: number }>(`INSERT INTO farm_animals (farm_id, name, species, registration_number) VALUES ($1, 'Pony', 'horse', 'P1') RETURNING id`, [farm.anna]);
+    const horse = await ration({ animalId: pony!.id, stage: "maintenance", items: [{ feedKey: "heu", grams: 9000 }, { feedId: saved.data.id, grams: 200 }], times: ["morgens"] });
+    expect(horse.data.warnings.map((w: any) => w.kind)).toEqual(["foreignMineral", "ionophore"]);
+    expect(horse.data.warnings[1].text).toBe("Kükenstarter enthält Monensin (Kokzidiostatikum) – schon kleine Mengen sind für Pferde tödlich.");
+    // The chicks it is made for get no warning.
+    const hens = await ration({ herdId: ids.hens, stage: "growth", items: [{ feedId: saved.data.id, grams: 60 }], times: ["morgens"] });
+    expect(hens.data.warnings).toEqual([]);
+  });
+
+  it("answers 422 without a label and keeps reading the label to caretakers", async () => {
+    runModelChain.mockResolvedValueOnce({ istEtikett: false });
+    expect((await api("POST", `/farms/${farm.anna}/feeds/label`, { imageData: PHOTO })).status).toBe(422);
+    expect((await api("POST", `/farms/${farm.anna}/feeds/label`, { imageData: "data:text/plain;base64,AAAA" })).status).toBe(400);
+    as = "gast";
+    expect((await api("POST", `/farms/${farm.anna}/feeds/label`, { imageData: PHOTO })).status).toBe(403);
+    expect(runModelChain).toHaveBeenCalledTimes(1);
+  });
 
   it("checks a herd's ration per animal and adds up for the group", async () => {
     const res = await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 80 }, { feedKey: "koernermix", grams: 40 }], times: ["abends", "morgens"] });

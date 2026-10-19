@@ -1397,7 +1397,8 @@ export const ListFarmFeedsResponseItem = zod.object({
   "copper": zod.number().nullable().describe('mg per kg dry matter')
 }).describe('Per kg dry matter; dryMatter is % as fed'),
   "forSpecies": zod.array(zod.string()).nullable(),
-  "botanicalName": zod.string().nullable()
+  "botanicalName": zod.string().nullable(),
+  "additives": zod.array(zod.string()).nullable()
 })
 export const ListFarmFeedsResponse = zod.array(ListFarmFeedsResponseItem)
 
@@ -1410,6 +1411,10 @@ export const AddFarmFeedParams = zod.object({
 })
 
 export const addFarmFeedBodyNameMax = 80;
+
+export const addFarmFeedBodyAdditivesItemMax = 120;
+
+export const addFarmFeedBodyAdditivesMax = 30;
 
 
 
@@ -1426,7 +1431,8 @@ export const AddFarmFeedBody = zod.object({
   "copper": zod.number().nullish()
 }).describe('As printed on the label (as fed) – crude nutrients, calcium and phosphorus in %, copper in mg\/kg'),
   "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])).nullish(),
-  "botanicalName": zod.string().nullish()
+  "botanicalName": zod.string().nullish(),
+  "additives": zod.array(zod.string().max(addFarmFeedBodyAdditivesItemMax)).max(addFarmFeedBodyAdditivesMax).nullish()
 })
 
 export const AddFarmFeedResponse = zod.object({
@@ -1443,8 +1449,38 @@ export const AddFarmFeedResponse = zod.object({
   "copper": zod.number().nullable().describe('mg per kg dry matter')
 }).describe('Per kg dry matter; dryMatter is % as fed'),
   "forSpecies": zod.array(zod.string()).nullable(),
-  "botanicalName": zod.string().nullable()
+  "botanicalName": zod.string().nullable(),
+  "additives": zod.array(zod.string()).nullable()
 })
+
+
+/**
+ * @summary Read a feed label photo with the AI (caretaker or admin; counts against the farm AI limit). Nothing is saved – the user confirms the values.
+ */
+export const ReadFeedLabelParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ReadFeedLabelBody = zod.object({
+  "imageData": zod.string().describe('JPEG\/PNG\/WebP data URL, already downscaled by the app.')
+})
+
+export const ReadFeedLabelResponse = zod.object({
+  "name": zod.string().nullable(),
+  "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
+  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
+  "dryMatter": zod.number().nullable().describe('% – from moisture, only when printed'),
+  "label": zod.object({
+  "crudeProtein": zod.number().nullable(),
+  "crudeFat": zod.number().nullable(),
+  "crudeFibre": zod.number().nullable(),
+  "calcium": zod.number().nullable(),
+  "phosphorus": zod.number().nullable(),
+  "copper": zod.number().nullable()
+}),
+  "additives": zod.array(zod.string()),
+  "ionophores": zod.array(zod.string()).describe('Coccidiostats found in the additives (Monensin & Co.) – deadly for horses')
+}).describe('What the AI read from a label (as fed). Missing or implausible values are null and must be typed in.')
 
 
 /**
@@ -1507,7 +1543,7 @@ export const ListRationsResponseItem = zod.object({
   "tip": zod.string().nullable()
 })),
   "warnings": zod.array(zod.object({
-  "kind": zod.enum(['toxic', 'foreignMineral', 'copper', 'withdrawal']),
+  "kind": zod.enum(['toxic', 'foreignMineral', 'copper', 'ionophore', 'withdrawal']),
   "text": zod.string()
 })),
   "group": zod.object({
@@ -1581,7 +1617,7 @@ export const SaveRationResponse = zod.object({
   "tip": zod.string().nullable()
 })),
   "warnings": zod.array(zod.object({
-  "kind": zod.enum(['toxic', 'foreignMineral', 'copper', 'withdrawal']),
+  "kind": zod.enum(['toxic', 'foreignMineral', 'copper', 'ionophore', 'withdrawal']),
   "text": zod.string()
 })),
   "group": zod.object({

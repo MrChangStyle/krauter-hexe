@@ -20,4 +20,10 @@ export interface FarmFeedInput {
   forSpecies?: FarmSpecies[] | null;
   /** @nullable */
   botanicalName?: string | null;
+  /**
+     * @maxItems 30
+     * @nullable
+     * @items.maxLength 120
+     */
+  additives?: string[] | null;
 }

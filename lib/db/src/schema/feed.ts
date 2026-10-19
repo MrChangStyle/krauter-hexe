@@ -1,6 +1,7 @@
 import { date, doublePrecision, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { farmAnimalsTable, farmsTable, herdsTable } from "./farm";
+import { usersTable } from "./auth";
 
 // Futterplaner (docs/futterplaner.md). Farm data like the animals: private to
 // the members, every access through requireFarm(), every query by farm_id.
@@ -100,4 +101,31 @@ export const feedStocksTable = pgTable(
     uniqueIndex("feed_stocks_farm_key_unique").on(table.farmId, table.feedKey).where(sql`${table.feedKey} IS NOT NULL`),
     uniqueIndex("feed_stocks_feed_unique").on(table.feedId).where(sql`${table.feedId} IS NOT NULL`),
   ],
+);
+
+/** One ingredient of a recipe, as the author wrote it. */
+export interface RecipeIngredientJson {
+  name: string;
+  amount: string;
+}
+
+// Rezepte (Futterplaner step 5) sent in by users. Shown to everyone only after
+// the app owner approved them; the built-in recipes live in the code.
+export const feedRecipesTable = pgTable(
+  "feed_recipes",
+  {
+    id: serial("id").primaryKey(),
+    title: text("title").notNull(),
+    species: jsonb("species").$type<string[]>().notNull(),
+    kind: text("kind").notNull(),
+    ingredients: jsonb("ingredients").$type<RecipeIngredientJson[]>().notNull(),
+    steps: jsonb("steps").$type<string[]>().notNull(),
+    hygiene: jsonb("hygiene").$type<string[]>().notNull(),
+    // "pending", "approved" or "rejected".
+    status: text("status").notNull().default("pending"),
+    authorId: text("author_id").references(() => usersTable.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+  },
+  (table) => [index("feed_recipes_status_idx").on(table.status)],
 );

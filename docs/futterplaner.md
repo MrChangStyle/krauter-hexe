@@ -59,5 +59,13 @@ Für den Bau festgelegt:
    dessen, was bei Winterbeginn noch da ist; Heu auch in Kleinballen (15 kg). Möhren, Futterrüben
    und Kürbis aus den Winterrationen ersetzen im Garten-Assistenten den Faustwert fürs
    Lagerfutter. Erinnerung per Push zum Nachkaufen fehlt noch.
-5. **Tipps und Rezepte:** geprüfte Rezepte mit Admin-Freigabe (z. B. fermentiertes Futter für
-   Hühner mit Hygieneregeln), Keimfutter, Jahreskalender der Futterpflanzen aus dem Garten.
+5. **Tipps und Rezepte (UMGESETZT):** geprüfte Rezepte mit Admin-Freigabe (z. B. fermentiertes
+   Futter für Hühner mit Hygieneregeln), Keimfutter, Jahreskalender der Futterpflanzen aus dem
+   Garten. Umgesetzt als Seite „Tipps & Rezepte“: vier mitgelieferte Rezepte (fermentiertes
+   Hühnerfutter, Keimfutter für Hühner, Keimhafer für Kaninchen/Meerschweinchen, Wiesenkräuter),
+   jeweils mit Hygieneregeln – wie die Richtwerte vor dem Start von einer Fachperson prüfen lassen.
+   Eingereichte Rezepte sieht nur der Absender, bis der App-Inhaber sie in „Mehr“ freigibt; feste
+   Regeln markieren ihm Küchenreste, tierische Produkte, Eier/Eierschalen und für Tiere giftige
+   Zutaten (höchstens 5 offene je Person). Futterkalender: je Monat die Futterpflanzen der
+   Tierarten auf dem Hof, die erntereif sind – was dieses Jahr in den Beeten steht zuerst, der
+   Rest als Vorschlag; Möhren, Rote Bete und Kürbis im Winter aus dem Lager.

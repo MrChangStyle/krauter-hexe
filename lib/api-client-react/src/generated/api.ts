@@ -71,9 +71,13 @@ import type {
   FarmTask,
   FarmTaskInput,
   FavoriteIds,
+  FeedCalendar,
   FeedLabelReading,
   FeedLog,
   FeedPurchaseInput,
+  FeedRecipe,
+  FeedRecipeDraft,
+  FeedRecipeInput,
   FeedReference,
   FeedRemindersResult,
   FeedStockCountInput,
@@ -4431,6 +4435,521 @@ export const useRemoveFeedStock = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getRemoveFeedStockMutationOptions(options));
     }
+
+export const getListFeedRecipesUrl = () => {
+
+
+
+
+  return `/api/feed-recipes`
+}
+
+/**
+ * @summary Built-in and approved recipes, plus the viewer's own that wait for approval
+ */
+export const listFeedRecipes = async ( options?: RequestInit): Promise<FeedRecipe[]> => {
+
+  return customFetch<FeedRecipe[]>(getListFeedRecipesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFeedRecipesQueryKey = () => {
+    return [
+    `/api/feed-recipes`
+    ] as const;
+    }
+
+
+export const getListFeedRecipesQueryOptions = <TData = Awaited<ReturnType<typeof listFeedRecipes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedRecipes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFeedRecipesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFeedRecipes>>> = ({ signal }) => listFeedRecipes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFeedRecipes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFeedRecipesQueryResult = NonNullable<Awaited<ReturnType<typeof listFeedRecipes>>>
+export type ListFeedRecipesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Built-in and approved recipes, plus the viewer's own that wait for approval
+ */
+
+export function useListFeedRecipes<TData = Awaited<ReturnType<typeof listFeedRecipes>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedRecipes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFeedRecipesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSubmitFeedRecipeUrl = () => {
+
+
+
+
+  return `/api/feed-recipes`
+}
+
+/**
+ * @summary Send in a recipe; everyone sees it once the app owner approved it
+ */
+export const submitFeedRecipe = async (feedRecipeInput: FeedRecipeInput, options?: RequestInit): Promise<FeedRecipe> => {
+
+  return customFetch<FeedRecipe>(getSubmitFeedRecipeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(feedRecipeInput)
+  }
+);}
+
+
+
+
+
+export const getSubmitFeedRecipeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitFeedRecipe>>, TError,{data: BodyType<FeedRecipeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof submitFeedRecipe>>, TError,{data: BodyType<FeedRecipeInput>}, TContext> => {
+
+const mutationKey = ['submitFeedRecipe'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof submitFeedRecipe>>, {data: BodyType<FeedRecipeInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  submitFeedRecipe(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SubmitFeedRecipeMutationResult = NonNullable<Awaited<ReturnType<typeof submitFeedRecipe>>>
+    export type SubmitFeedRecipeMutationBody = BodyType<FeedRecipeInput>
+    export type SubmitFeedRecipeMutationError = ErrorType<void>
+
+    /**
+ * @summary Send in a recipe; everyone sees it once the app owner approved it
+ */
+export const useSubmitFeedRecipe = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof submitFeedRecipe>>, TError,{data: BodyType<FeedRecipeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof submitFeedRecipe>>,
+        TError,
+        {data: BodyType<FeedRecipeInput>},
+        TContext
+      > => {
+      return useMutation(getSubmitFeedRecipeMutationOptions(options));
+    }
+
+export const getDeleteFeedRecipeUrl = (recipeId: string,) => {
+
+
+
+
+  return `/api/feed-recipes/${recipeId}`
+}
+
+/**
+ * @summary Withdraw an own recipe that waits or was turned down (the app owner may remove any)
+ */
+export const deleteFeedRecipe = async (recipeId: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteFeedRecipeUrl(recipeId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteFeedRecipeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFeedRecipe>>, TError,{recipeId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFeedRecipe>>, TError,{recipeId: string}, TContext> => {
+
+const mutationKey = ['deleteFeedRecipe'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFeedRecipe>>, {recipeId: string}> = (props) => {
+          const {recipeId} = props ?? {};
+
+          return  deleteFeedRecipe(recipeId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteFeedRecipeMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFeedRecipe>>>
+
+    export type DeleteFeedRecipeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Withdraw an own recipe that waits or was turned down (the app owner may remove any)
+ */
+export const useDeleteFeedRecipe = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFeedRecipe>>, TError,{recipeId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteFeedRecipe>>,
+        TError,
+        {recipeId: string},
+        TContext
+      > => {
+      return useMutation(getDeleteFeedRecipeMutationOptions(options));
+    }
+
+export const getListFeedRecipeDraftsUrl = () => {
+
+
+
+
+  return `/api/admin/feed-recipes`
+}
+
+/**
+ * @summary Recipes waiting for approval, with what the fixed rules found (app owner)
+ */
+export const listFeedRecipeDrafts = async ( options?: RequestInit): Promise<FeedRecipeDraft[]> => {
+
+  return customFetch<FeedRecipeDraft[]>(getListFeedRecipeDraftsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFeedRecipeDraftsQueryKey = () => {
+    return [
+    `/api/admin/feed-recipes`
+    ] as const;
+    }
+
+
+export const getListFeedRecipeDraftsQueryOptions = <TData = Awaited<ReturnType<typeof listFeedRecipeDrafts>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedRecipeDrafts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFeedRecipeDraftsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFeedRecipeDrafts>>> = ({ signal }) => listFeedRecipeDrafts({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFeedRecipeDrafts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFeedRecipeDraftsQueryResult = NonNullable<Awaited<ReturnType<typeof listFeedRecipeDrafts>>>
+export type ListFeedRecipeDraftsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Recipes waiting for approval, with what the fixed rules found (app owner)
+ */
+
+export function useListFeedRecipeDrafts<TData = Awaited<ReturnType<typeof listFeedRecipeDrafts>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedRecipeDrafts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFeedRecipeDraftsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getApproveFeedRecipeUrl = (recipeId: string,) => {
+
+
+
+
+  return `/api/admin/feed-recipes/${recipeId}/approve`
+}
+
+/**
+ * @summary Approve a recipe (app owner)
+ */
+export const approveFeedRecipe = async (recipeId: string, options?: RequestInit): Promise<FeedRecipe> => {
+
+  return customFetch<FeedRecipe>(getApproveFeedRecipeUrl(recipeId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getApproveFeedRecipeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveFeedRecipe>>, TError,{recipeId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof approveFeedRecipe>>, TError,{recipeId: string}, TContext> => {
+
+const mutationKey = ['approveFeedRecipe'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof approveFeedRecipe>>, {recipeId: string}> = (props) => {
+          const {recipeId} = props ?? {};
+
+          return  approveFeedRecipe(recipeId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ApproveFeedRecipeMutationResult = NonNullable<Awaited<ReturnType<typeof approveFeedRecipe>>>
+
+    export type ApproveFeedRecipeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Approve a recipe (app owner)
+ */
+export const useApproveFeedRecipe = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof approveFeedRecipe>>, TError,{recipeId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof approveFeedRecipe>>,
+        TError,
+        {recipeId: string},
+        TContext
+      > => {
+      return useMutation(getApproveFeedRecipeMutationOptions(options));
+    }
+
+export const getRejectFeedRecipeUrl = (recipeId: string,) => {
+
+
+
+
+  return `/api/admin/feed-recipes/${recipeId}/reject`
+}
+
+/**
+ * @summary Turn a recipe down (app owner)
+ */
+export const rejectFeedRecipe = async (recipeId: string, options?: RequestInit): Promise<FeedRecipe> => {
+
+  return customFetch<FeedRecipe>(getRejectFeedRecipeUrl(recipeId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getRejectFeedRecipeMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectFeedRecipe>>, TError,{recipeId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof rejectFeedRecipe>>, TError,{recipeId: string}, TContext> => {
+
+const mutationKey = ['rejectFeedRecipe'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rejectFeedRecipe>>, {recipeId: string}> = (props) => {
+          const {recipeId} = props ?? {};
+
+          return  rejectFeedRecipe(recipeId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RejectFeedRecipeMutationResult = NonNullable<Awaited<ReturnType<typeof rejectFeedRecipe>>>
+
+    export type RejectFeedRecipeMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Turn a recipe down (app owner)
+ */
+export const useRejectFeedRecipe = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rejectFeedRecipe>>, TError,{recipeId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof rejectFeedRecipe>>,
+        TError,
+        {recipeId: string},
+        TContext
+      > => {
+      return useMutation(getRejectFeedRecipeMutationOptions(options));
+    }
+
+export const getGetFeedCalendarUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feed-calendar`
+}
+
+/**
+ * @summary Fodder plants from the garden per month for the species on the farm
+ */
+export const getFeedCalendar = async (farmId: number, options?: RequestInit): Promise<FeedCalendar> => {
+
+  return customFetch<FeedCalendar>(getGetFeedCalendarUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFeedCalendarQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/feed-calendar`
+    ] as const;
+    }
+
+
+export const getGetFeedCalendarQueryOptions = <TData = Awaited<ReturnType<typeof getFeedCalendar>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFeedCalendar>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFeedCalendarQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFeedCalendar>>> = ({ signal }) => getFeedCalendar(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFeedCalendar>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFeedCalendarQueryResult = NonNullable<Awaited<ReturnType<typeof getFeedCalendar>>>
+export type GetFeedCalendarQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Fodder plants from the garden per month for the species on the farm
+ */
+
+export function useGetFeedCalendar<TData = Awaited<ReturnType<typeof getFeedCalendar>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFeedCalendar>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFeedCalendarQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getGetAppStatusUrl = () => {
 

@@ -39,6 +39,7 @@ import { AccountCard } from "@/components/account-card";
 import { OrphanCleanupCard } from "@/components/orphan-cleanup-card";
 import { ModerationCard } from "@/components/moderation-card";
 import { CropDraftsCard } from "@/components/crop-drafts-card";
+import { RecipeDraftsCard } from "@/components/recipe-drafts-card";
 import { OperationsCard } from "@/components/operations-card";
 import { ImageRescueCard } from "@/components/image-rescue-card";
 import { useFavorites } from "@/lib/use-favorites";
@@ -1056,6 +1057,7 @@ export default function MehrPage() {
           <OperationsCard />
           <ModerationCard />
           <CropDraftsCard />
+          <RecipeDraftsCard />
           <Benutzerverwaltung />
           <OrphanCleanupCard />
         </>

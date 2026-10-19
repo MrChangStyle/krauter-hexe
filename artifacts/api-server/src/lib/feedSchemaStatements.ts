@@ -78,4 +78,22 @@ export const FEED_SCHEMA_STATEMENTS: readonly string[] = [
   `CREATE INDEX IF NOT EXISTS "feed_stocks_farm_idx" ON "feed_stocks" USING btree ("farm_id")`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "feed_stocks_farm_key_unique" ON "feed_stocks" USING btree ("farm_id","feed_key") WHERE "feed_stocks"."feed_key" IS NOT NULL`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "feed_stocks_feed_unique" ON "feed_stocks" USING btree ("feed_id") WHERE "feed_stocks"."feed_id" IS NOT NULL`,
+  // Step 5: Rezepte.
+  `CREATE TABLE IF NOT EXISTS "feed_recipes" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"title" text NOT NULL,
+	"species" jsonb NOT NULL,
+	"kind" text NOT NULL,
+	"ingredients" jsonb NOT NULL,
+	"steps" jsonb NOT NULL,
+	"hygiene" jsonb NOT NULL,
+	"status" text DEFAULT 'pending' NOT NULL,
+	"author_id" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"reviewed_at" timestamp with time zone
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "feed_recipes" ADD CONSTRAINT "feed_recipes_author_id_users_id_fk" FOREIGN KEY ("author_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "feed_recipes_status_idx" ON "feed_recipes" USING btree ("status")`,
 ];

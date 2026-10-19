@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertOctagon, ArrowLeft, Bell, Camera, Droplets, Info, Leaf, Loader2, Package, Plus, Repeat, Scale, Trash2, Wheat, X } from "lucide-react";
+import { AlertOctagon, ArrowLeft, Bell, BookOpen, Camera, Droplets, Info, Leaf, Loader2, Package, Plus, Repeat, Scale, Trash2, Wheat, X } from "lucide-react";
 import {
   getListFarmFeedsQueryKey,
   getListRationsQueryKey,
@@ -822,6 +822,10 @@ export default function FutterplanerPage() {
           Vorrat, Kosten & Wintervorrat
         </span>
         <PremiumBadge />
+      </Link>
+      <Link href="/farm/futter/tipps" className="flex items-center gap-2 rounded-2xl border border-border bg-card p-3 text-sm font-medium hover:bg-muted/50">
+        <BookOpen className="h-4 w-4 text-primary" />
+        Tipps, Rezepte & Futterkalender
       </Link>
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Planner farm={farm} />}
     </div>

@@ -1334,6 +1334,121 @@ paths:
       responses:
         "204":
           description: Deleted.
+  /feed-recipes:
+    get:
+      tags: [feed]
+      operationId: listFeedRecipes
+      summary: Built-in and approved recipes, plus the viewer's own that wait for approval
+      responses:
+        "200":
+          description: The recipes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeedRecipe"
+    post:
+      tags: [feed]
+      operationId: submitFeedRecipe
+      summary: Send in a recipe; everyone sees it once the app owner approved it
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedRecipeInput"
+      responses:
+        "201":
+          description: The recipe, waiting for approval.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedRecipe"
+        "429":
+          description: Too many recipes waiting.
+  /feed-recipes/{recipeId}:
+    delete:
+      tags: [feed]
+      operationId: deleteFeedRecipe
+      summary: Withdraw an own recipe that waits or was turned down (the app owner may remove any)
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted.
+  /admin/feed-recipes:
+    get:
+      tags: [feed]
+      operationId: listFeedRecipeDrafts
+      summary: Recipes waiting for approval, with what the fixed rules found (app owner)
+      responses:
+        "200":
+          description: The drafts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeedRecipeDraft"
+  /admin/feed-recipes/{recipeId}/approve:
+    post:
+      tags: [feed]
+      operationId: approveFeedRecipe
+      summary: Approve a recipe (app owner)
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The approved recipe.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedRecipe"
+  /admin/feed-recipes/{recipeId}/reject:
+    post:
+      tags: [feed]
+      operationId: rejectFeedRecipe
+      summary: Turn a recipe down (app owner)
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The rejected recipe.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedRecipe"
+  /farms/{farmId}/feed-calendar:
+    get:
+      tags: [feed]
+      operationId: getFeedCalendar
+      summary: Fodder plants from the garden per month for the species on the farm
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The calendar of this year.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedCalendar"
   /status:
     get:
       tags: [monitoring]
@@ -3982,6 +4097,129 @@ components:
           type: number
         pricePerPackage:
           type: [number, 'null']
+    RecipeKind:
+      type: string
+      enum: [fermented, sprouts, mix, treat]
+    RecipeIngredient:
+      type: object
+      required: [name, amount]
+      properties:
+        name:
+          type: string
+        amount:
+          type: string
+    FeedRecipe:
+      type: object
+      required: [id, title, species, kind, ingredients, steps, hygiene, status, mine]
+      properties:
+        id:
+          type: string
+          description: "b:<key> built in, u:<id> sent in"
+        title:
+          type: string
+        species:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmSpecies"
+        kind:
+          $ref: "#/components/schemas/RecipeKind"
+        ingredients:
+          type: array
+          items:
+            $ref: "#/components/schemas/RecipeIngredient"
+        steps:
+          type: array
+          items:
+            type: string
+        hygiene:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [builtIn, pending, approved, rejected]
+        mine:
+          type: boolean
+    FeedRecipeDraft:
+      allOf:
+        - $ref: "#/components/schemas/FeedRecipe"
+        - type: object
+          required: [flags, createdAt]
+          properties:
+            flags:
+              type: array
+              items:
+                type: string
+            createdAt:
+              type: string
+    FeedRecipeInput:
+      type: object
+      required: [title, species, kind, ingredients, steps]
+      properties:
+        title:
+          type: string
+          maxLength: 80
+        species:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmSpecies"
+        kind:
+          $ref: "#/components/schemas/RecipeKind"
+        ingredients:
+          type: array
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/RecipeIngredient"
+        steps:
+          type: array
+          maxItems: 15
+          items:
+            type: string
+        hygiene:
+          type: [array, 'null']
+          maxItems: 10
+          items:
+            type: string
+    CalendarCrop:
+      type: object
+      required: [key, name, species, planted]
+      properties:
+        key:
+          type: string
+        name:
+          type: string
+        species:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmSpecies"
+        planted:
+          type: boolean
+    FeedCalendar:
+      type: object
+      required: [year, species, months]
+      properties:
+        year:
+          type: integer
+        species:
+          type: array
+          items:
+            $ref: "#/components/schemas/FarmSpecies"
+        months:
+          type: array
+          items:
+            type: object
+            required: [month, fresh, stored]
+            properties:
+              month:
+                type: integer
+              fresh:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarCrop"
+              stored:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CalendarCrop"
     RationSeason:
       type: string
       enum: [all, summer, winter]

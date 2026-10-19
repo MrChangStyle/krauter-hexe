@@ -2,25 +2,35 @@ import { Router, type IRouter } from 'express';
 import {
   AddFarmFeedBody,
   AddFarmFeedResponse,
+  ApproveFeedRecipeResponse,
   BuyFeedBody,
   BuyFeedResponse,
   CountFeedStockBody,
   CountFeedStockResponse,
   CreateFeedRemindersResponse,
+  GetFeedCalendarResponse,
   GetFeedReferenceResponse,
   GetFeedStockResponse,
   ListFarmFeedsResponse,
+  ListFeedRecipeDraftsResponse,
+  ListFeedRecipesResponse,
   ListRationsResponse,
   ReadFeedLabelBody,
   ReadFeedLabelResponse,
+  RejectFeedRecipeResponse,
   SaveRationBody,
   SaveRationResponse,
+  SubmitFeedRecipeBody,
+  SubmitFeedRecipeResponse,
 } from '@workspace/api-zod';
 
-import { requireApproved } from '../middlewares/requireApproved';
+import { requireApproved, requireOwner } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
 import { checkImage } from '../lib/farmAi';
+import { feedCalendar } from '../lib/feedCalendar';
+import { berlinDay } from '../lib/monitoring';
 import { readFeedLabel } from '../lib/feedLabel';
+import { deleteRecipe, listRecipeDrafts, listRecipes, reviewRecipe, submitRecipe } from '../lib/feedRecipes';
 import { buyFeed, countStock, feedStock, removeStock } from '../lib/feedStock';
 import { addFarmFeed, feedReference, feedReminders, listFarmFeeds, listRations, removeFarmFeed, removeRation, saveRation } from '../lib/feedPlanner';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
@@ -156,6 +166,68 @@ router.delete(
     if (stockId === null) return notFound(res);
     await removeStock(req.farm!.farmId, stockId);
     res.sendStatus(204);
+  }),
+);
+
+// Tipps und Rezepte: recipes for everyone (sent-in ones after the app owner's
+// approval) and the fodder calendar of a farm's garden.
+
+router.get(
+  '/feed-recipes',
+  requireApproved,
+  handle(async (req, res) => {
+    res.json(ListFeedRecipesResponse.parse(await listRecipes(req.user!.id)));
+  }),
+);
+
+router.post(
+  '/feed-recipes',
+  requireApproved,
+  handle(async (req, res) => {
+    const body = SubmitFeedRecipeBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.status(201).json(SubmitFeedRecipeResponse.parse(await submitRecipe(req.user!.id, body.data)));
+  }),
+);
+
+router.delete(
+  '/feed-recipes/:recipeId',
+  requireApproved,
+  handle(async (req, res) => {
+    await deleteRecipe(String(req.params['recipeId']), { id: req.user!.id, isOwner: !!req.user!.isOwner });
+    res.sendStatus(204);
+  }),
+);
+
+router.get(
+  '/admin/feed-recipes',
+  requireOwner,
+  handle(async (_req, res) => {
+    res.json(ListFeedRecipeDraftsResponse.parse(await listRecipeDrafts()));
+  }),
+);
+
+router.post(
+  '/admin/feed-recipes/:recipeId/approve',
+  requireOwner,
+  handle(async (req, res) => {
+    res.json(ApproveFeedRecipeResponse.parse(await reviewRecipe(String(req.params['recipeId']), true)));
+  }),
+);
+
+router.post(
+  '/admin/feed-recipes/:recipeId/reject',
+  requireOwner,
+  handle(async (req, res) => {
+    res.json(RejectFeedRecipeResponse.parse(await reviewRecipe(String(req.params['recipeId']), false)));
+  }),
+);
+
+router.get(
+  '/farms/:farmId/feed-calendar',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(GetFeedCalendarResponse.parse(await feedCalendar(req.farm!.farmId, Number(berlinDay().slice(0, 4)))));
   }),
 );
 

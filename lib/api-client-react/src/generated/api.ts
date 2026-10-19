@@ -75,6 +75,8 @@ import type {
   GardenPlan,
   GeoReverseInput,
   GeoReverseResult,
+  Harvest,
+  HarvestInput,
   HealthStatus,
   HelpfulPlants,
   Herd,
@@ -9174,6 +9176,235 @@ export function useGetGardenPlan<TData = Awaited<ReturnType<typeof getGardenPlan
 
 
 
+
+export const getListHarvestsUrl = (farmId: number,
+    season: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/seasons/${season}/harvests`
+}
+
+/**
+ * @summary Harvests of a season, newest first
+ */
+export const listHarvests = async (farmId: number,
+    season: number, options?: RequestInit): Promise<Harvest[]> => {
+
+  return customFetch<Harvest[]>(getListHarvestsUrl(farmId,season),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListHarvestsQueryKey = (farmId: number,
+    season: number,) => {
+    return [
+    `/api/farms/${farmId}/garden/seasons/${season}/harvests`
+    ] as const;
+    }
+
+
+export const getListHarvestsQueryOptions = <TData = Awaited<ReturnType<typeof listHarvests>>, TError = ErrorType<unknown>>(farmId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listHarvests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListHarvestsQueryKey(farmId,season);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listHarvests>>> = ({ signal }) => listHarvests(farmId,season, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && season !== null && season !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listHarvests>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListHarvestsQueryResult = NonNullable<Awaited<ReturnType<typeof listHarvests>>>
+export type ListHarvestsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Harvests of a season, newest first
+ */
+
+export function useListHarvests<TData = Awaited<ReturnType<typeof listHarvests>>, TError = ErrorType<unknown>>(
+ farmId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listHarvests>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListHarvestsQueryOptions(farmId,season,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddHarvestUrl = (farmId: number,
+    plantingId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/plantings/${plantingId}/harvests`
+}
+
+/**
+ * @summary Log a harvest of a planting (caretaker or admin)
+ */
+export const addHarvest = async (farmId: number,
+    plantingId: number,
+    harvestInput: HarvestInput, options?: RequestInit): Promise<Harvest> => {
+
+  return customFetch<Harvest>(getAddHarvestUrl(farmId,plantingId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(harvestInput)
+  }
+);}
+
+
+
+
+
+export const getAddHarvestMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addHarvest>>, TError,{farmId: number;plantingId: number;data: BodyType<HarvestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addHarvest>>, TError,{farmId: number;plantingId: number;data: BodyType<HarvestInput>}, TContext> => {
+
+const mutationKey = ['addHarvest'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addHarvest>>, {farmId: number;plantingId: number;data: BodyType<HarvestInput>}> = (props) => {
+          const {farmId,plantingId,data} = props ?? {};
+
+          return  addHarvest(farmId,plantingId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddHarvestMutationResult = NonNullable<Awaited<ReturnType<typeof addHarvest>>>
+    export type AddHarvestMutationBody = BodyType<HarvestInput>
+    export type AddHarvestMutationError = ErrorType<void>
+
+    /**
+ * @summary Log a harvest of a planting (caretaker or admin)
+ */
+export const useAddHarvest = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addHarvest>>, TError,{farmId: number;plantingId: number;data: BodyType<HarvestInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addHarvest>>,
+        TError,
+        {farmId: number;plantingId: number;data: BodyType<HarvestInput>},
+        TContext
+      > => {
+      return useMutation(getAddHarvestMutationOptions(options));
+    }
+
+export const getRemoveHarvestUrl = (farmId: number,
+    harvestId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/harvests/${harvestId}`
+}
+
+/**
+ * @summary Delete a logged harvest (caretaker or admin)
+ */
+export const removeHarvest = async (farmId: number,
+    harvestId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRemoveHarvestUrl(farmId,harvestId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveHarvestMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeHarvest>>, TError,{farmId: number;harvestId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeHarvest>>, TError,{farmId: number;harvestId: number}, TContext> => {
+
+const mutationKey = ['removeHarvest'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeHarvest>>, {farmId: number;harvestId: number}> = (props) => {
+          const {farmId,harvestId} = props ?? {};
+
+          return  removeHarvest(farmId,harvestId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveHarvestMutationResult = NonNullable<Awaited<ReturnType<typeof removeHarvest>>>
+
+    export type RemoveHarvestMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a logged harvest (caretaker or admin)
+ */
+export const useRemoveHarvest = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeHarvest>>, TError,{farmId: number;harvestId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeHarvest>>,
+        TError,
+        {farmId: number;harvestId: number},
+        TContext
+      > => {
+      return useMutation(getRemoveHarvestMutationOptions(options));
+    }
 
 export const getGetFrostWarningsUrl = (farmId: number,) => {
 

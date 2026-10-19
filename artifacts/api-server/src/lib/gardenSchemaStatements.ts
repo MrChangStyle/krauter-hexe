@@ -142,4 +142,33 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
   `DO $$ BEGIN
      ALTER TABLE "garden_goals" ADD CONSTRAINT "garden_goals_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  // Added with the harvest log (Ernten).
+  `DO $$ BEGIN
+     CREATE TYPE "public"."harvest_use" AS ENUM('kitchen', 'fodder');
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE TABLE IF NOT EXISTS "harvest_logs" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"planting_id" integer,
+	"bed_id" integer,
+	"season" integer NOT NULL,
+	"crop_key" text,
+	"label" text NOT NULL,
+	"cells" integer NOT NULL,
+	"harvested_on" date NOT NULL,
+	"amount_kg" double precision NOT NULL,
+	"use" "harvest_use" NOT NULL,
+	"note" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "harvest_logs" ADD CONSTRAINT "harvest_logs_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "harvest_logs" ADD CONSTRAINT "harvest_logs_planting_id_bed_plantings_id_fk" FOREIGN KEY ("planting_id") REFERENCES "public"."bed_plantings"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "harvest_logs" ADD CONSTRAINT "harvest_logs_bed_id_garden_beds_id_fk" FOREIGN KEY ("bed_id") REFERENCES "public"."garden_beds"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "harvest_logs_farm_season_idx" ON "harvest_logs" USING btree ("farm_id","season")`,
 ];

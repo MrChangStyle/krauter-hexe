@@ -1502,6 +1502,46 @@ export interface BedCornersInput {
   corners: PhotoPoint[];
 }
 
+export type HarvestUse = typeof HarvestUse[keyof typeof HarvestUse];
+
+
+export const HarvestUse = {
+  kitchen: 'kitchen',
+  fodder: 'fodder',
+} as const;
+
+export interface Harvest {
+  id: number;
+  /** @nullable */
+  plantingId: number | null;
+  /** @nullable */
+  bedId: number | null;
+  season: number;
+  /** @nullable */
+  cropKey: string | null;
+  label: string;
+  /** Cells (30 × 30 cm) of the planting when harvested */
+  cells: number;
+  /** YYYY-MM-DD */
+  harvestedOn: string;
+  amountKg: number;
+  use: HarvestUse;
+  /** @nullable */
+  note: string | null;
+}
+
+export interface HarvestInput {
+  /** @pattern ^\d{4}-\d{2}-\d{2}$ */
+  harvestedOn: string;
+  amountKg: number;
+  use: HarvestUse;
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  note?: string | null;
+}
+
 export type GardenDirection = typeof GardenDirection[keyof typeof GardenDirection];
 
 
@@ -1547,6 +1587,17 @@ export type GardenPlanFodder = {
   needM2: number;
 };
 
+/**
+ * Own yields (latest season with harvests) the plan was computed with
+ */
+export type GardenPlanLearned = {
+  season: number;
+  /** @nullable */
+  kitchenKgPerM2: number | null;
+  /** @nullable */
+  fodderKgPerM2: number | null;
+} | null;
+
 export type GardenPlanBedsItemRole = typeof GardenPlanBedsItemRole[keyof typeof GardenPlanBedsItemRole];
 
 
@@ -1584,6 +1635,8 @@ export interface GardenPlan {
      * @nullable
      */
   manageableM2: number | null;
+  /** Own yields (latest season with harvests) the plan was computed with */
+  learned: GardenPlanLearned;
   beds: GardenPlanBedsItem[];
   tips: string[];
 }

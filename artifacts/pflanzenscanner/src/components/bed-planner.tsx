@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { HenniTip } from "@/components/henni";
 import { BedPhoto } from "@/components/bed-photo";
 import { BedCalendar } from "@/components/bed-calendar";
+import { HarvestLog } from "@/components/harvest-log";
 import { PremiumBadge } from "@/components/premium-badge";
 import { AutumnCard, RaisedBedCompanion } from "@/components/raised-bed-companion";
 import { Textarea } from "@/components/ui/textarea";
@@ -262,6 +263,7 @@ function CropPicker({
 }
 
 function PlantingDialog({
+  farmId,
   planting,
   crop,
   plantings,
@@ -272,6 +274,7 @@ function PlantingDialog({
   onRemove,
   onClose,
 }: {
+  farmId: number;
   planting: BedPlanting;
   crop: Crop | undefined;
   plantings: BedPlanting[];
@@ -289,7 +292,7 @@ function PlantingDialog({
   const bad = other(hints.bad);
   return (
     <Dialog open onOpenChange={(o) => !o && !busy && onClose()}>
-      <DialogContent>
+      <DialogContent className="max-h-[85dvh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="h-4 w-4 rounded-full" style={{ background: crop?.color ?? "#7DBB6A" }} />
@@ -324,6 +327,7 @@ function PlantingDialog({
             {rotationText(issue)}
           </p>
         ))}
+        <HarvestLog farmId={farmId} planting={planting} canWrite={canWrite} />
         {canWrite && (
           <Button variant="outline" className="gap-1.5 text-destructive hover:text-destructive" disabled={busy} onClick={onRemove}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -647,6 +651,7 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
       )}
       {selected && (
         <PlantingDialog
+          farmId={farmId}
           planting={selected}
           crop={selected.cropKey ? crops.get(selected.cropKey) : undefined}
           plantings={inside}

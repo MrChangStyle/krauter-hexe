@@ -2898,6 +2898,81 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GardenPlan"
+  /farms/{farmId}/garden/seasons/{season}/harvests:
+    get:
+      tags: [garden]
+      operationId: listHarvests
+      summary: Harvests of a season, newest first
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: season
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The harvests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Harvest"
+  /farms/{farmId}/plantings/{plantingId}/harvests:
+    post:
+      tags: [garden]
+      operationId: addHarvest
+      summary: Log a harvest of a planting (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: plantingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HarvestInput"
+      responses:
+        "201":
+          description: The harvest.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Harvest"
+        "400":
+          description: Date or amount out of range.
+  /farms/{farmId}/harvests/{harvestId}:
+    delete:
+      tags: [garden]
+      operationId: removeHarvest
+      summary: Delete a logged harvest (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: harvestId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
   /farms/{farmId}/garden/frost-warnings:
     get:
       tags: [garden]
@@ -5071,6 +5146,51 @@ components:
           maxItems: 4
           items:
             $ref: "#/components/schemas/PhotoPoint"
+    HarvestUse:
+      type: string
+      enum: [kitchen, fodder]
+    Harvest:
+      type: object
+      required: [id, plantingId, bedId, season, cropKey, label, cells, harvestedOn, amountKg, use, note]
+      properties:
+        id:
+          type: integer
+        plantingId:
+          type: [integer, 'null']
+        bedId:
+          type: [integer, 'null']
+        season:
+          type: integer
+        cropKey:
+          type: [string, 'null']
+        label:
+          type: string
+        cells:
+          type: integer
+          description: Cells (30 × 30 cm) of the planting when harvested
+        harvestedOn:
+          type: string
+          description: YYYY-MM-DD
+        amountKg:
+          type: number
+        use:
+          $ref: "#/components/schemas/HarvestUse"
+        note:
+          type: [string, 'null']
+    HarvestInput:
+      type: object
+      required: [harvestedOn, amountKg, use]
+      properties:
+        harvestedOn:
+          type: string
+          pattern: '^\d{4}-\d{2}-\d{2}$'
+        amountKg:
+          type: number
+        use:
+          $ref: "#/components/schemas/HarvestUse"
+        note:
+          type: [string, 'null']
+          maxLength: 300
     GardenDirection:
       type: string
       enum: [vegetables, herbs, fruit, storage]
@@ -5097,7 +5217,7 @@ components:
           maximum: 80
     GardenPlan:
       type: object
-      required: [goals, kitchenNeedM2, fodder, availableM2, kitchenM2, fodderM2, kitchenCoverage, fodderCoverage, manageableM2, beds, tips]
+      required: [goals, kitchenNeedM2, fodder, availableM2, kitchenM2, fodderM2, kitchenCoverage, fodderCoverage, manageableM2, learned, beds, tips]
       properties:
         goals:
           $ref: "#/components/schemas/GardenGoals"
@@ -5141,6 +5261,19 @@ components:
         manageableM2:
           type: [number, 'null']
           description: Area the given hours per week can look after
+        learned:
+          description: Own yields (latest season with harvests) the plan was computed with
+          oneOf:
+            - type: 'null'
+            - type: object
+              required: [season, kitchenKgPerM2, fodderKgPerM2]
+              properties:
+                season:
+                  type: integer
+                kitchenKgPerM2:
+                  type: [number, 'null']
+                fodderKgPerM2:
+                  type: [number, 'null']
         beds:
           type: array
           items:

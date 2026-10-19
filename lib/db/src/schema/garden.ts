@@ -1,4 +1,4 @@
-import { doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { date, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { farmsTable } from "./farm";
 import { plantsTable } from "./plants";
 import { usersTable } from "./auth";
@@ -200,3 +200,33 @@ export const gardenGoalsTable = pgTable("garden_goals", {
   hoursPerWeek: integer("hours_per_week"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// Ernten (after step 6): what a planting brought, for the kitchen or as
+// fodder. The Garten-Assistent learns its yields per m² from them. Crop,
+// label, season and size are copied, so the record outlives the planting.
+export const HARVEST_USES = ["kitchen", "fodder"] as const;
+export type HarvestUse = (typeof HARVEST_USES)[number];
+export const harvestUseEnum = pgEnum("harvest_use", HARVEST_USES);
+
+export const harvestLogsTable = pgTable(
+  "harvest_logs",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    plantingId: integer("planting_id").references(() => bedPlantingsTable.id, { onDelete: "set null" }),
+    bedId: integer("bed_id").references(() => gardenBedsTable.id, { onDelete: "set null" }),
+    season: integer("season").notNull(),
+    cropKey: text("crop_key"),
+    label: text("label").notNull(),
+    // Cells of the planting when it was harvested (30 × 30 cm each).
+    cells: integer("cells").notNull(),
+    harvestedOn: date("harvested_on", { mode: "string" }).notNull(),
+    amountKg: doublePrecision("amount_kg").notNull(),
+    use: harvestUseEnum("use").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("harvest_logs_farm_season_idx").on(table.farmId, table.season)],
+);

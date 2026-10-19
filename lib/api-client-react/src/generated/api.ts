@@ -61,6 +61,9 @@ import type {
   ErrorGroup,
   FarmAnimal,
   FarmAnimalInput,
+  FarmDuties,
+  FarmDutyCheckInput,
+  FarmDutySettingsInput,
   FarmExport,
   FarmFeed,
   FarmFeedInput,
@@ -5553,6 +5556,229 @@ export const useSetHandoverNote = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getSetHandoverNoteMutationOptions(options));
+    }
+
+export const getGetFarmDutiesUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/duties`
+}
+
+/**
+ * @summary Pflichten – what keeping the farm's species means on paper, with what is ticked off
+ */
+export const getFarmDuties = async (farmId: number, options?: RequestInit): Promise<FarmDuties> => {
+
+  return customFetch<FarmDuties>(getGetFarmDutiesUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFarmDutiesQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/duties`
+    ] as const;
+    }
+
+
+export const getGetFarmDutiesQueryOptions = <TData = Awaited<ReturnType<typeof getFarmDuties>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmDuties>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFarmDutiesQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFarmDuties>>> = ({ signal }) => getFarmDuties(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFarmDuties>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFarmDutiesQueryResult = NonNullable<Awaited<ReturnType<typeof getFarmDuties>>>
+export type GetFarmDutiesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Pflichten – what keeping the farm's species means on paper, with what is ticked off
+ */
+
+export function useGetFarmDuties<TData = Awaited<ReturnType<typeof getFarmDuties>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmDuties>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFarmDutiesQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetFarmDutySettingsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/duties`
+}
+
+/**
+ * @summary Registration number and the end of a housing order for poultry (admin)
+ */
+export const setFarmDutySettings = async (farmId: number,
+    farmDutySettingsInput: FarmDutySettingsInput, options?: RequestInit): Promise<FarmDuties> => {
+
+  return customFetch<FarmDuties>(getSetFarmDutySettingsUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmDutySettingsInput)
+  }
+);}
+
+
+
+
+
+export const getSetFarmDutySettingsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmDutySettings>>, TError,{farmId: number;data: BodyType<FarmDutySettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setFarmDutySettings>>, TError,{farmId: number;data: BodyType<FarmDutySettingsInput>}, TContext> => {
+
+const mutationKey = ['setFarmDutySettings'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setFarmDutySettings>>, {farmId: number;data: BodyType<FarmDutySettingsInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  setFarmDutySettings(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetFarmDutySettingsMutationResult = NonNullable<Awaited<ReturnType<typeof setFarmDutySettings>>>
+    export type SetFarmDutySettingsMutationBody = BodyType<FarmDutySettingsInput>
+    export type SetFarmDutySettingsMutationError = ErrorType<void>
+
+    /**
+ * @summary Registration number and the end of a housing order for poultry (admin)
+ */
+export const useSetFarmDutySettings = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmDutySettings>>, TError,{farmId: number;data: BodyType<FarmDutySettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setFarmDutySettings>>,
+        TError,
+        {farmId: number;data: BodyType<FarmDutySettingsInput>},
+        TContext
+      > => {
+      return useMutation(getSetFarmDutySettingsMutationOptions(options));
+    }
+
+export const getCheckFarmDutyUrl = (farmId: number,
+    dutyKey: string,) => {
+
+
+
+
+  return `/api/farms/${farmId}/duties/${dutyKey}`
+}
+
+/**
+ * @summary Tick a duty off for its current period, or take the tick back (admin)
+ */
+export const checkFarmDuty = async (farmId: number,
+    dutyKey: string,
+    farmDutyCheckInput: FarmDutyCheckInput, options?: RequestInit): Promise<FarmDuties> => {
+
+  return customFetch<FarmDuties>(getCheckFarmDutyUrl(farmId,dutyKey),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmDutyCheckInput)
+  }
+);}
+
+
+
+
+
+export const getCheckFarmDutyMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkFarmDuty>>, TError,{farmId: number;dutyKey: string;data: BodyType<FarmDutyCheckInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkFarmDuty>>, TError,{farmId: number;dutyKey: string;data: BodyType<FarmDutyCheckInput>}, TContext> => {
+
+const mutationKey = ['checkFarmDuty'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkFarmDuty>>, {farmId: number;dutyKey: string;data: BodyType<FarmDutyCheckInput>}> = (props) => {
+          const {farmId,dutyKey,data} = props ?? {};
+
+          return  checkFarmDuty(farmId,dutyKey,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckFarmDutyMutationResult = NonNullable<Awaited<ReturnType<typeof checkFarmDuty>>>
+    export type CheckFarmDutyMutationBody = BodyType<FarmDutyCheckInput>
+    export type CheckFarmDutyMutationError = ErrorType<void>
+
+    /**
+ * @summary Tick a duty off for its current period, or take the tick back (admin)
+ */
+export const useCheckFarmDuty = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkFarmDuty>>, TError,{farmId: number;dutyKey: string;data: BodyType<FarmDutyCheckInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof checkFarmDuty>>,
+        TError,
+        {farmId: number;dutyKey: string;data: BodyType<FarmDutyCheckInput>},
+        TContext
+      > => {
+      return useMutation(getCheckFarmDutyMutationOptions(options));
     }
 
 export const getGetFarmSetupUrl = (farmId: number,) => {

@@ -153,7 +153,7 @@ describe.skipIf(!enabled)("Meine Farm – health, weights, tasks, export (real d
     expect((await api("POST", `/farms/${farm.bert}/tasks`, task({ animalId: lotte }))).status).toBe(400);
     // … and his export holds only his own animal.
     const exp = await api("GET", `/farms/${farm.bert}/export`);
-    expect(exp.data).toEqual({ farmName: "Hof Bert", animals: [expect.objectContaining({ id: bertsAnimal })], medicalRecords: [] });
+    expect(exp.data).toEqual({ farmName: "Hof Bert", holdingNumber: null, animals: [expect.objectContaining({ id: bertsAnimal })], medicalRecords: [] });
     // Anna's farm itself stays closed to him.
     expect((await api("GET", `/farms/${farm.anna}/tasks`)).status).toBe(404);
     expect(await q("SELECT count(*)::int AS n FROM medical_records")).toEqual([{ n: 1 }]);

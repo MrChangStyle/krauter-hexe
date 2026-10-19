@@ -6,6 +6,8 @@ import {
   AddFarmMemberResponse,
   ChangeFarmMemberRoleBody,
   ChangeFarmMemberRoleResponse,
+  CheckFarmDutyBody,
+  CheckFarmDutyResponse,
   CreateFarmBody,
   CreateFarmResponse,
   DeleteFarmBody,
@@ -14,6 +16,7 @@ import {
   EnsureOwnFarmResponse,
   FarmQuickStartBody,
   FarmQuickStartResponse,
+  GetFarmDutiesResponse,
   GetFarmSetupResponse,
   GetFarmResponse,
   GetHandoverResponse,
@@ -22,9 +25,12 @@ import {
   RenameFarmBody,
   RenameFarmResponse,
   SetHandoverNoteBody,
+  SetFarmDutySettingsBody,
+  SetFarmDutySettingsResponse,
   SetHandoverNoteResponse,
 } from '@workspace/api-zod';
 
+import { checkDuty, farmDuties, setDutySettings } from '../lib/farmDuties';
 import { handover, setHandoverNote } from '../lib/farmHandover';
 import { FarmDataError } from '../lib/farmAnimals';
 import { dismissSetup, farmSetup, quickStart } from '../lib/farmSetup';
@@ -228,6 +234,40 @@ router.post('/farms/:farmId/setup/quickstart', requireFarm('admin'), async (req,
       return;
     }
     throw err;
+  }
+});
+
+// ── Pflichten ─────────────────────────────────────────────────────────────────
+
+router.get('/farms/:farmId/duties', requireFarm('guest'), async (req, res): Promise<void> => {
+  res.json(GetFarmDutiesResponse.parse(await farmDuties(req.farm!.farmId)));
+});
+
+router.put('/farms/:farmId/duties', requireFarm('admin'), async (req, res): Promise<void> => {
+  const body = SetFarmDutySettingsBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: 'Bitte prüfe deine Eingaben.' });
+    return;
+  }
+  try {
+    res.json(SetFarmDutySettingsResponse.parse(await setDutySettings(req.farm!.farmId, body.data)));
+  } catch (err) {
+    if (!(err instanceof FarmDataError)) throw err;
+    res.status(err.status).json({ error: err.message });
+  }
+});
+
+router.put('/farms/:farmId/duties/:dutyKey', requireFarm('admin'), async (req, res): Promise<void> => {
+  const body = CheckFarmDutyBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: 'Bitte prüfe deine Eingaben.' });
+    return;
+  }
+  try {
+    res.json(CheckFarmDutyResponse.parse(await checkDuty(req.farm!.farmId, String(req.params.dutyKey), body.data.done)));
+  } catch (err) {
+    if (!(err instanceof FarmDataError)) throw err;
+    res.status(err.status).json({ error: err.message });
   }
 });
 

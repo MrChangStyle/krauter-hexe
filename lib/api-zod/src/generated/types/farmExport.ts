@@ -10,6 +10,7 @@ import type { MedicalRecord } from './medicalRecord';
 
 export interface FarmExport {
   farmName: string;
+  holdingNumber: string | null;
   animals: FarmAnimal[];
   medicalRecords: MedicalRecord[];
 }

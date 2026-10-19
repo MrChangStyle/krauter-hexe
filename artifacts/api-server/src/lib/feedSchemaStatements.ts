@@ -28,8 +28,16 @@ export const FEED_SCHEMA_STATEMENTS: readonly string[] = [
 	"items" jsonb NOT NULL,
 	"times" jsonb NOT NULL,
 	"water_l" double precision,
-	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"season" text DEFAULT 'all' NOT NULL,
+	"previous_items" jsonb,
+	"change_started_on" date,
+	"change_days" integer
 )`,
+  `ALTER TABLE "feed_rations" ADD COLUMN IF NOT EXISTS "season" text DEFAULT 'all' NOT NULL`,
+  `ALTER TABLE "feed_rations" ADD COLUMN IF NOT EXISTS "previous_items" jsonb`,
+  `ALTER TABLE "feed_rations" ADD COLUMN IF NOT EXISTS "change_started_on" date`,
+  `ALTER TABLE "feed_rations" ADD COLUMN IF NOT EXISTS "change_days" integer`,
   `DO $$ BEGIN
      ALTER TABLE "farm_feeds" ADD CONSTRAINT "farm_feeds_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
@@ -44,6 +52,9 @@ export const FEED_SCHEMA_STATEMENTS: readonly string[] = [
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "farm_feeds_farm_idx" ON "farm_feeds" USING btree ("farm_id")`,
   `CREATE INDEX IF NOT EXISTS "feed_rations_farm_idx" ON "feed_rations" USING btree ("farm_id")`,
-  `CREATE UNIQUE INDEX IF NOT EXISTS "feed_rations_animal_unique" ON "feed_rations" USING btree ("animal_id") WHERE "feed_rations"."animal_id" IS NOT NULL`,
-  `CREATE UNIQUE INDEX IF NOT EXISTS "feed_rations_herd_unique" ON "feed_rations" USING btree ("herd_id") WHERE "feed_rations"."herd_id" IS NOT NULL`,
+  // Step 3: one ration per target AND season (all year, summer, winter).
+  `DROP INDEX IF EXISTS "feed_rations_animal_unique"`,
+  `DROP INDEX IF EXISTS "feed_rations_herd_unique"`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "feed_rations_animal_season_unique" ON "feed_rations" USING btree ("animal_id","season") WHERE "feed_rations"."animal_id" IS NOT NULL`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "feed_rations_herd_season_unique" ON "feed_rations" USING btree ("herd_id","season") WHERE "feed_rations"."herd_id" IS NOT NULL`,
 ];

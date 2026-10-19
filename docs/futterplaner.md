@@ -40,9 +40,16 @@ Für den Bau festgelegt:
    Zusatzstoffe, der Nutzer bestätigt die Werte. Nicht lesbare Werte bleiben leer; die Tierart vom
    Etikett speist die Warnung bei artfremdem Futter; Kokzidiostatika (Monensin & Co.) außerhalb
    von Geflügel geben eine nicht wegklickbare Warnung (für Pferde tödlich).
-3. **Fütterungsplan:** Anpassung nach Jahreszeit (Grünfutter im Sommer, Heu und Lagerfutter im
-   Winter, Zusatzbedarf bei Kälte), Erinnerungen über die Stall-Aufgaben, Futterumstellung
-   schrittweise über mehrere Tage.
+3. **Fütterungsplan (UMGESETZT):** Anpassung nach Jahreszeit (Grünfutter im Sommer, Heu und
+   Lagerfutter im Winter, Zusatzbedarf bei Kälte), Erinnerungen über die Stall-Aufgaben,
+   Futterumstellung schrittweise über mehrere Tage. Umgesetzt als Ration „ganzjährig“, „Sommer“
+   (April–Oktober) oder „Winter“ (November–März) je Tier oder Gruppe; die passende gilt. Wechsel
+   der Futtermittel und der Übergang zur nächsten Jahreszeit laufen in vier Stufen (25/50/75/100 %)
+   über 7 Tage (Geflügel, Schwein), 10 (Kaninchen, Meerschweinchen) oder 14 (Wiederkäuer, Pferd);
+   der Saisonwechsel beginnt so, dass er am 1. April bzw. 1. November fertig ist. Feste Hinweise
+   zur Jahreszeit (Frost, Wasser, Grünfutter, Weide und Hufrehe). „Erinnern“ legt tägliche
+   Stall-Aufgaben „Füttern“ je Fütterungszeit an. Kälte wird über die Jahreszeit berücksichtigt;
+   echte Frostwarnungen aus der Wettervorhersage kommen mit dem Wetter-Ausbau.
 4. **Vorrat und Kosten (Premium):** Sackgröße und Kaufdatum → wann nachkaufen; Wintervorrat-
    Rechner (Heu und Lagerfutter bis zum Frühjahr, an den Garten-Assistenten); Kosten pro Tier
    und Monat.

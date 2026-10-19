@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { FeedTransition } from './feedTransition';
 import type { FeedWarning } from './feedWarning';
 import type { LifeStage } from './lifeStage';
 import type { NutrientCheck } from './nutrientCheck';
@@ -13,10 +14,14 @@ import type { RationEvaluationItemsItem } from './rationEvaluationItemsItem';
 import type { RationEvaluationNeed } from './rationEvaluationNeed';
 import type { RationEvaluationTarget } from './rationEvaluationTarget';
 import type { RationEvaluationValues } from './rationEvaluationValues';
+import type { RationSeason } from './rationSeason';
 
 export interface RationEvaluation {
   id: number;
   target: RationEvaluationTarget;
+  season: RationSeason;
+  /** The ration in effect today for its animal or group */
+  active: boolean;
   stage: LifeStage;
   items: RationEvaluationItemsItem[];
   times: string[];
@@ -26,6 +31,8 @@ export interface RationEvaluation {
   values: RationEvaluationValues;
   checks: NutrientCheck[];
   warnings: FeedWarning[];
+  transition: null | FeedTransition;
+  hints: string[];
   group: RationEvaluationGroup;
   updatedAt: string;
 }

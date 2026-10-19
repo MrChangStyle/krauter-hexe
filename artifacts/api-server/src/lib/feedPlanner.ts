@@ -1,5 +1,5 @@
 /**
- * Futterplaner, step 1 (docs/futterplaner.md): a farm's own feeds, the daily
+ * Futterplaner, steps 1 and 3 (docs/futterplaner.md): a farm's own feeds, the daily
  * ration of an animal or a herd, and its check against the need of the
  * species and life stage – with the warnings that cannot be dismissed (toxic
  * plants, mineral feed for another species, coccidiostats outside poultry, a
@@ -11,6 +11,7 @@ import {
   db,
   farmAnimalsTable,
   farmFeedsTable,
+  farmTasksTable,
   feedRationsTable,
   herdsTable,
   medicalRecordsTable,
@@ -18,7 +19,7 @@ import {
   type FarmSpecies,
   type RationItemJson,
 } from '@workspace/db';
-import { and, asc, eq, inArray, isNotNull, isNull, or, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, like, or, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { archiveKindFor, statusFor } from './farmAi';
@@ -26,6 +27,8 @@ import { ionophoresIn } from './feedLabel';
 import { FEED_CATALOG, feedByKey, type FeedCategory, type FeedValues } from './feedCatalog';
 import { FEED_NEEDS, LIFE_STAGES, checkRation, needFor, type LifeStage, type NutrientCheck } from './feedNeeds';
 import { berlinDay } from './monitoring';
+import { SEASONS, activeSeason, addDays, daysBetween, mix, newShareOn, nextSeasonStart, phases, seasonHints, transitionDays, type Phase, type Season } from './feedSeason';
+import { createFarmTask } from './farmTasks';
 import { speciesKey } from './speciesKey';
 
 const SPECIES_DE: Record<FarmSpecies, string> = {
@@ -144,6 +147,10 @@ export interface RationInput {
   items: RationItemJson[];
   times: string[];
   waterL?: number | null;
+  /** "all" (default), "summer" or "winter". */
+  season?: string | null;
+  /** Spread a change of feed over some days (default true). */
+  gradual?: boolean | null;
 }
 
 interface Target {
@@ -203,15 +210,59 @@ export async function saveRation(farmId: number, input: RationInput) {
   const times = FEED_TIMES.filter((t) => input.times.includes(t));
   const waterL = input.waterL == null ? null : Number(input.waterL);
   if (waterL !== null && (!Number.isFinite(waterL) || waterL < 0 || waterL > 500)) throw new FarmDataError(400, 'Wasser in Litern prüfen.');
-  const values = { farmId, animalId: target.kind === 'animal' ? target.id : null, herdId: target.kind === 'herd' ? target.id : null, stage, items, times, waterL, updatedAt: new Date() };
-  const [existing] = await db
-    .select({ id: feedRationsTable.id })
-    .from(feedRationsTable)
-    .where(and(eq(feedRationsTable.farmId, farmId), target.kind === 'animal' ? eq(feedRationsTable.animalId, target.id) : eq(feedRationsTable.herdId, target.id)));
+  const season = (input.season ?? 'all') as Season;
+  if (!SEASONS.includes(season)) throw new FarmDataError(400, 'Bitte wähle ganzjährig, Sommer oder Winter.');
+
+  const today = berlinDay();
+  const siblings = await rationsOf(farmId, target);
+  const before = siblings.find((r) => r.season === activeSeason(siblings.map((x) => x.season as Season), today));
+  const existing = siblings.find((r) => r.season === season);
+  const nowActive = activeSeason([...new Set([...siblings.map((x) => x.season as Season), season])], today) === season;
+  // A new set of feeds for the ration in effect: change over step by step,
+  // from what was fed until now. Only the amounts changed: keep a running change.
+  let change: Pick<typeof feedRationsTable.$inferInsert, 'previousItems' | 'changeStartedOn' | 'changeDays'> = {
+    previousItems: existing?.previousItems ?? null,
+    changeStartedOn: existing?.changeStartedOn ?? null,
+    changeDays: existing?.changeDays ?? null,
+  };
+  if (input.gradual === false || !nowActive) {
+    change = { previousItems: null, changeStartedOn: null, changeDays: null };
+  } else if (before && !sameFeeds(before.items, items)) {
+    change = { previousItems: before.items, changeStartedOn: today, changeDays: transitionDays(target.species) };
+  }
+  const values = {
+    farmId,
+    animalId: target.kind === 'animal' ? target.id : null,
+    herdId: target.kind === 'herd' ? target.id : null,
+    season,
+    stage,
+    items,
+    times,
+    waterL,
+    ...change,
+    updatedAt: new Date(),
+  };
   const [row] = existing
     ? await db.update(feedRationsTable).set(values).where(eq(feedRationsTable.id, existing.id)).returning()
     : await db.insert(feedRationsTable).values(values).returning();
-  return (await evaluate(farmId, [row!]))[0]!;
+  const evaluation = (await evaluate(farmId, [row!]))[0]!;
+  if (evaluation.active) await syncReminders(farmId, evaluation, 'save');
+  return evaluation;
+}
+
+function rationsOf(farmId: number, target: Pick<Target, 'kind' | 'id'>) {
+  return db
+    .select()
+    .from(feedRationsTable)
+    .where(and(eq(feedRationsTable.farmId, farmId), target.kind === 'animal' ? eq(feedRationsTable.animalId, target.id) : eq(feedRationsTable.herdId, target.id)));
+}
+
+const refOf = (i: RationItemJson) => (i.feedKey ? `k:${i.feedKey}` : `o:${i.feedId}`);
+
+function sameFeeds(a: RationItemJson[], b: RationItemJson[]): boolean {
+  const x = new Set(a.map(refOf));
+  const y = new Set(b.map(refOf));
+  return x.size === y.size && [...x].every((k) => y.has(k));
 }
 
 export async function removeRation(farmId: number, rationId: number): Promise<void> {
@@ -224,7 +275,9 @@ export async function removeRation(farmId: number, rationId: number): Promise<vo
 
 export async function listRations(farmId: number) {
   const rows = await db.select().from(feedRationsTable).where(eq(feedRationsTable.farmId, farmId)).orderBy(asc(feedRationsTable.id));
-  return evaluate(farmId, rows);
+  const rations = await evaluate(farmId, rows);
+  for (const ration of rations) if (ration.active) await syncReminders(farmId, ration, 'refresh');
+  return rations;
 }
 
 // ── Evaluation ───────────────────────────────────────────────────────────────
@@ -297,10 +350,23 @@ interface ResolvedItem {
   ref: { feedKey: string | null; feedId: number | null };
   name: string;
   grams: number;
+  category: FeedCategory;
   values: FeedValues;
   forSpecies: string[] | null;
   botanicalName: string | null;
   additives: string[] | null;
+}
+
+type OwnFeed = Awaited<ReturnType<typeof listFarmFeeds>>[number];
+
+function resolve(items: RationItemJson[], own: Map<number, OwnFeed>): ResolvedItem[] {
+  return items.flatMap((i): ResolvedItem[] => {
+    const catalog = i.feedKey ? feedByKey(i.feedKey) : undefined;
+    const mine = i.feedId != null ? own.get(i.feedId) : undefined;
+    if (catalog) return [{ ref: { feedKey: catalog.key, feedId: null }, name: catalog.name, grams: i.grams, category: catalog.category, values: catalog as FeedValues, forSpecies: catalog.forSpecies as string[] | null, botanicalName: catalog.botanicalName, additives: null }];
+    if (mine) return [{ ref: { feedKey: null, feedId: mine.id }, name: mine.name, grams: i.grams, category: mine.category as FeedCategory, values: mine.values, forSpecies: mine.forSpecies, botanicalName: mine.botanicalName, additives: mine.additives }];
+    return [];
+  });
 }
 
 /** Feeds with a coccidiostat like Monensin – deadly for horses, meant for poultry only. */
@@ -314,9 +380,51 @@ function ionophoreWarnings(species: FarmSpecies, items: ResolvedItem[]): Warning
   });
 }
 
+/** A change of feed in progress (or about to start for the next season). */
+export interface Transition {
+  /** "change": the feeds of the ration were changed; "season": the next season's ration takes over. */
+  reason: 'change' | 'season';
+  /** Season whose ration takes over (reason "season"). */
+  toSeason: Season | null;
+  startedOn: string;
+  endsOn: string;
+  days: number;
+  /** 1-based day of the change today; 0 = starts later (shown in advance). */
+  day: number;
+  newShare: number;
+  phases: Phase[];
+  /** Today's mixture per animal. */
+  items: { name: string; grams: number }[];
+}
+
+function transitionOf(
+  reason: Transition['reason'],
+  toSeason: Season | null,
+  startedOn: string,
+  days: number,
+  today: string,
+  from: ResolvedItem[],
+  to: ResolvedItem[],
+): Transition | null {
+  const index = daysBetween(startedOn, today);
+  if (index >= days) return null;
+  const share = index < 0 ? 0 : newShareOn(index, days);
+  const same = (a: ResolvedItem, b: ResolvedItem) => a.ref.feedKey === b.ref.feedKey && a.ref.feedId === b.ref.feedId;
+  const items = mix(
+    from.map((r) => ({ key: r, grams: r.grams })),
+    to.map((r) => ({ key: r, grams: r.grams })),
+    share,
+    same,
+  ).map((m) => ({ name: m.key.name, grams: m.grams }));
+  return { reason, toSeason, startedOn, endsOn: addDays(startedOn, days - 1), days, day: Math.max(0, index + 1), newShare: share, phases: phases(days), items };
+}
+
 export interface RationEvaluation {
   id: number;
   target: Omit<Target, 'animalIds'>;
+  season: Season;
+  /** The ration in effect today for its animal or group. */
+  active: boolean;
   stage: LifeStage;
   items: { feedKey: string | null; feedId: number | null; name: string; grams: number }[];
   times: string[];
@@ -325,6 +433,9 @@ export interface RationEvaluation {
   values: ReturnType<typeof checkRation>['values'] | null;
   checks: NutrientCheck[];
   warnings: Warning[];
+  transition: Transition | null;
+  /** Fixed hints for the season (only on the ration in effect). */
+  hints: string[];
   /** For the whole group per day: feed as fed (kg) and water (l). */
   group: { feedKg: number; waterL: number | null };
   updatedAt: string;
@@ -332,6 +443,7 @@ export interface RationEvaluation {
 
 async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSelect)[]): Promise<RationEvaluation[]> {
   const own = new Map((await listFarmFeeds(farmId)).map((f) => [f.id, f]));
+  const all = await db.select().from(feedRationsTable).where(eq(feedRationsTable.farmId, farmId));
   const today = berlinDay();
   const out: RationEvaluation[] = [];
   for (const row of rows) {
@@ -341,13 +453,26 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
     } catch {
       continue;
     }
-    const resolved = row.items.flatMap((i): ResolvedItem[] => {
-      const catalog = i.feedKey ? feedByKey(i.feedKey) : undefined;
-      const mine = i.feedId != null ? own.get(i.feedId) : undefined;
-      if (catalog) return [{ ref: { feedKey: catalog.key, feedId: null }, name: catalog.name, grams: i.grams, values: catalog as FeedValues, forSpecies: catalog.forSpecies as string[] | null, botanicalName: catalog.botanicalName, additives: null }];
-      if (mine) return [{ ref: { feedKey: null, feedId: mine.id }, name: mine.name, grams: i.grams, values: mine.values, forSpecies: mine.forSpecies, botanicalName: mine.botanicalName, additives: mine.additives }];
-      return [];
-    });
+    const siblings = all.filter((r) => (target.kind === 'animal' ? r.animalId === target.id : r.herdId === target.id));
+    const seasons = siblings.map((r) => r.season as Season);
+    const season = row.season as Season;
+    const active = activeSeason(seasons, today) === season;
+    const resolved = resolve(row.items, own);
+
+    let transition: Transition | null = null;
+    if (active && row.previousItems && row.changeStartedOn && row.changeDays) {
+      transition = transitionOf('change', null, row.changeStartedOn, row.changeDays, today, resolve(row.previousItems, own), resolved);
+    }
+    if (active && !transition) {
+      // Shown from the start of the change, which ends the day before the season does.
+      const next = nextSeasonStart(today);
+      const nextRow = siblings.find((r) => r.season === activeSeason(seasons, next.day));
+      const days = transitionDays(target.species);
+      if (nextRow && nextRow.id !== row.id && !sameFeeds(row.items, nextRow.items) && daysBetween(today, next.day) <= days) {
+        transition = transitionOf('season', nextRow.season as Season, addDays(next.day, -days), days, today, resolved, resolve(nextRow.items, own));
+      }
+    }
+
     const stage = row.stage as LifeStage;
     const need = needFor(target.species, stage);
     const result = need ? checkRation(target.species, need, resolved.map((r) => ({ ...r.values, grams: r.grams }))) : null;
@@ -367,6 +492,8 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
     out.push({
       id: row.id,
       target: publicTarget,
+      season,
+      active,
       stage,
       items: resolved.map((r) => ({ ...r.ref, name: r.name, grams: r.grams })),
       times: row.times,
@@ -375,6 +502,8 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
       values: result?.values ?? null,
       checks: result?.checks ?? [],
       warnings,
+      transition,
+      hints: active ? seasonHints(target.species, today, resolved.map((r) => r.category)) : [],
       group: {
         feedKg: Math.round(resolved.reduce((s, r) => s + r.grams, 0) * target.count) / 1000,
         waterL: need ? Math.round(need.waterL * target.count * 10) / 10 : null,
@@ -383,6 +512,85 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
     });
   }
   return out;
+}
+
+// ── Reminders (Stall-Aufgaben) ───────────────────────────────────────────────
+
+const TIME_OF: Record<(typeof FEED_TIMES)[number], string> = { morgens: '07:00', mittags: '12:00', abends: '18:00' };
+const REMINDER_PREFIX = 'Futterplaner';
+
+function gramsText(g: number): string {
+  return g >= 1000 ? `${String(Math.round(g / 100) / 10).replace('.', ',')} kg` : `${Math.round(g)} g`;
+}
+
+/**
+ * The note of a feeding task: what one animal gets per feeding – or, while a
+ * change of feed runs, where to find today's amounts (they change every few days).
+ */
+export function reminderNote(items: { name: string; grams: number }[], feedings: number, changeEndsOn: string | null = null): string {
+  if (changeEndsOn) return `${REMINDER_PREFIX}: Umstellung bis ${changeEndsOn.slice(8, 10)}.${changeEndsOn.slice(5, 7)}. – die Mengen für heute stehen im Futterplaner.`;
+  const per = items.map((i) => `${i.name} ${gramsText(i.grams / feedings)}`).join(', ');
+  const note = `${REMINDER_PREFIX} (je Tier und Fütterung): ${per}`;
+  return note.length > 200 ? `${note.slice(0, 199)}…` : note;
+}
+
+/**
+ * Daily "Füttern" stall tasks for the ration in effect, one per feeding time.
+ * - "create" ("Erinnern"): makes the missing ones, switches the others back on;
+ * - "save" (ration saved): refreshes the notes, pauses dropped feeding times;
+ * - "refresh" (plan opened): only refreshes notes that changed, e.g. when the
+ *   season's ration took over or a change of feed started or ended.
+ * Reminders are never deleted here, and only "create" switches one on.
+ */
+async function syncReminders(farmId: number, ration: RationEvaluation, mode: 'create' | 'save' | 'refresh') {
+  const create = mode === 'create';
+  const target = ration.target.kind === 'animal' ? eq(farmTasksTable.animalId, ration.target.id) : eq(farmTasksTable.herdId, ration.target.id);
+  const existing = await db
+    .select({ id: farmTasksTable.id, reminderTime: farmTasksTable.reminderTime, notes: farmTasksTable.notes })
+    .from(farmTasksTable)
+    .where(and(eq(farmTasksTable.farmId, farmId), target, eq(farmTasksTable.actionType, 'Füttern'), like(farmTasksTable.notes, `${REMINDER_PREFIX}%`)));
+  if (!create && existing.length === 0) return { created: 0, updated: 0, paused: 0 };
+  const times = (ration.times.length ? ration.times : ['morgens']) as (typeof FEED_TIMES)[number][];
+  // A change for the next season that has not started yet leaves the ration as it is.
+  const changing = ration.transition && ration.transition.day > 0 ? ration.transition : null;
+  const note = reminderNote(ration.items, times.length, changing?.endsOn ?? null);
+  let created = 0;
+  let updated = 0;
+  for (const time of times) {
+    const task = existing.find((t) => t.reminderTime === TIME_OF[time]);
+    if (task) {
+      if (mode === 'refresh' && task.notes === note) continue;
+      await db
+        .update(farmTasksTable)
+        .set(create ? { notes: note, isActive: true } : { notes: note })
+        .where(eq(farmTasksTable.id, task.id));
+      updated++;
+    } else if (create) {
+      await createFarmTask(farmId, {
+        actionType: 'Füttern',
+        animalId: ration.target.kind === 'animal' ? ration.target.id : null,
+        herdId: ration.target.kind === 'herd' ? ration.target.id : null,
+        notes: note,
+        intervalValue: 1,
+        intervalUnit: 'Tage',
+        reminderTime: TIME_OF[time],
+      });
+      created++;
+    }
+  }
+  const dropped = mode === 'refresh' ? [] : existing.filter((t) => !times.some((time) => TIME_OF[time] === t.reminderTime));
+  if (dropped.length) await db.update(farmTasksTable).set({ isActive: false }).where(inArray(farmTasksTable.id, dropped.map((t) => t.id)));
+  return { created, updated, paused: dropped.length };
+}
+
+/** "Als Stall-Aufgabe erinnern": only for the ration in effect. */
+export async function feedReminders(farmId: number, rationId: number) {
+  const [row] = await db.select().from(feedRationsTable).where(and(eq(feedRationsTable.id, rationId), eq(feedRationsTable.farmId, farmId)));
+  if (!row) throw notFound();
+  const [ration] = await evaluate(farmId, [row]);
+  if (!ration) throw notFound();
+  if (!ration.active) throw new FarmDataError(409, 'Erinnerungen gibt es für die Ration, die gerade gilt.');
+  return syncReminders(farmId, ration, 'create');
 }
 
 /** The feed list and the needs, for the app's pickers and labels. */

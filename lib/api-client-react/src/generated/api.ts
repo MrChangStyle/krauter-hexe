@@ -74,6 +74,7 @@ import type {
   FeedLabelReading,
   FeedLog,
   FeedReference,
+  FeedRemindersResult,
   FrostWarning,
   GardenBed,
   GardenBedInput,
@@ -4059,6 +4060,79 @@ export const useRemoveRation = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRemoveRationMutationOptions(options));
+    }
+
+export const getCreateFeedRemindersUrl = (farmId: number,
+    rationId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/rations/${rationId}/reminders`
+}
+
+/**
+ * @summary Daily "Füttern" stall tasks for the ration in effect, one per feeding time (caretaker or admin)
+ */
+export const createFeedReminders = async (farmId: number,
+    rationId: number, options?: RequestInit): Promise<FeedRemindersResult> => {
+
+  return customFetch<FeedRemindersResult>(getCreateFeedRemindersUrl(farmId,rationId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getCreateFeedRemindersMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFeedReminders>>, TError,{farmId: number;rationId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createFeedReminders>>, TError,{farmId: number;rationId: number}, TContext> => {
+
+const mutationKey = ['createFeedReminders'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFeedReminders>>, {farmId: number;rationId: number}> = (props) => {
+          const {farmId,rationId} = props ?? {};
+
+          return  createFeedReminders(farmId,rationId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateFeedRemindersMutationResult = NonNullable<Awaited<ReturnType<typeof createFeedReminders>>>
+
+    export type CreateFeedRemindersMutationError = ErrorType<void>
+
+    /**
+ * @summary Daily "Füttern" stall tasks for the ration in effect, one per feeding time (caretaker or admin)
+ */
+export const useCreateFeedReminders = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFeedReminders>>, TError,{farmId: number;rationId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createFeedReminders>>,
+        TError,
+        {farmId: number;rationId: number},
+        TContext
+      > => {
+      return useMutation(getCreateFeedRemindersMutationOptions(options));
     }
 
 export const getGetAppStatusUrl = () => {

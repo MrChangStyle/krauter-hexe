@@ -13,7 +13,7 @@ import {
   type AnimalSex,
   type FarmSpecies,
 } from '@workspace/db';
-import { and, asc, eq, sql } from 'drizzle-orm';
+import { and, asc, eq, like, sql } from 'drizzle-orm';
 
 import { deleteImageByUrl, uploadImage } from './imageStorage';
 
@@ -285,4 +285,24 @@ export async function setPhoto(farmId: number, animalId: number, imageData: unkn
     void deleteImageByUrl(current.imageUrl).catch(() => false);
   }
   return getAnimal(farmId, animalId);
+}
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/** `n` registration numbers free on this farm: H-1, H-2, … continuing after existing ones. */
+export async function freeNumbers(tx: Tx, farmId: number, prefix: string, n: number): Promise<{ k: number; nr: string }[]> {
+  const taken = new Set(
+    (
+      await tx
+        .select({ nr: farmAnimalsTable.registrationNumber })
+        .from(farmAnimalsTable)
+        .where(and(eq(farmAnimalsTable.farmId, farmId), like(farmAnimalsTable.registrationNumber, `${prefix}-%`)))
+    ).map((r) => r.nr),
+  );
+  const out: { k: number; nr: string }[] = [];
+  for (let k = 1; out.length < n; k++) {
+    const nr = `${prefix}-${k}`;
+    if (!taken.has(nr)) out.push({ k, nr });
+  }
+  return out;
 }

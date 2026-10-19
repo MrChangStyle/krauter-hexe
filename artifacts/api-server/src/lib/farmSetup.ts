@@ -17,9 +17,9 @@ import {
   herdsTable,
   type FarmSpecies,
 } from '@workspace/db';
-import { and, count, eq, isNotNull, isNull, like } from 'drizzle-orm';
+import { and, count, eq, isNotNull, isNull } from 'drizzle-orm';
 
-import { FarmDataError, notFound, text } from './farmAnimals';
+import { FarmDataError, freeNumbers, notFound, text } from './farmAnimals';
 import { DEFAULT_FARM_NAME } from './farmMembers';
 import { createFarmTask } from './farmTasks';
 import { feedReminders, saveRation } from './feedPlanner';
@@ -75,7 +75,7 @@ export async function dismissSetup(farmId: number, dismissed: boolean): Promise<
 // ── Quick start ──────────────────────────────────────────────────────────────
 
 /** Name of one animal, and the group name to suggest. */
-const NAMES: Record<FarmSpecies, { one: string; group: string; prefix: string }> = {
+export const NAMES: Record<FarmSpecies, { one: string; group: string; prefix: string }> = {
   poultry: { one: 'Huhn', group: 'Hühner', prefix: 'H' },
   rabbit: { one: 'Kaninchen', group: 'Kaninchen', prefix: 'K' },
   guineaPig: { one: 'Meerschweinchen', group: 'Meerschweinchen', prefix: 'M' },
@@ -127,21 +127,14 @@ export async function quickStart(farmId: number, input: QuickStartInput): Promis
 
   const herdId = await db.transaction(async (tx) => {
     const [herd] = await tx.insert(herdsTable).values({ farmId, name: groupName, species: input.species }).returning({ id: herdsTable.id });
-    // Numbers that are free on this farm: H-1, H-2, … continuing after existing ones.
-    const taken = new Set(
-      (
-        await tx
-          .select({ nr: farmAnimalsTable.registrationNumber })
-          .from(farmAnimalsTable)
-          .where(and(eq(farmAnimalsTable.farmId, farmId), like(farmAnimalsTable.registrationNumber, `${names.prefix}-%`)))
-      ).map((r) => r.nr),
-    );
-    const rows: (typeof farmAnimalsTable.$inferInsert)[] = [];
-    for (let k = 1; rows.length < n; k++) {
-      const nr = `${names.prefix}-${k}`;
-      if (taken.has(nr)) continue;
-      rows.push({ farmId, herdId: herd!.id, name: `${names.one} ${k}`, species: input.species, registrationNumber: nr, sex: 'unknown' });
-    }
+    const rows = (await freeNumbers(tx, farmId, names.prefix, n)).map(({ k, nr }) => ({
+      farmId,
+      herdId: herd!.id,
+      name: `${names.one} ${k}`,
+      species: input.species,
+      registrationNumber: nr,
+      sex: 'unknown' as const,
+    }));
     await tx.insert(farmAnimalsTable).values(rows);
     return herd!.id;
   });

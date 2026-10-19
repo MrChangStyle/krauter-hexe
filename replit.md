@@ -165,6 +165,14 @@ Details and sources in `docs/pflichten.md` (`lib/farmDuties.ts`, routes in `rout
 - Admins tick off and store the registration number (also in the vet export header) and the end of a Geflügelpest housing order (today … one year); the order shows as a banner on the farm page, the handover and the duties page until its last day.
 - `sendDutyDigests()` (push cron, 07:30) on 2 and 12 January to the admins (not stand-ins) of farms with an open report, once per farm and day (`farm_push_log`, topic `duties`).
 
+## Zucht
+
+Details in `docs/zucht.md` (`lib/breeding.ts`, `routes/farm-breeding.ts`, page `/farm/zucht`, card `components/farm-animal-lineage.tsx`; table `breeding_records`, columns `farm_animals.mother_id/father_id`).
+- A record is a mating or a clutch (poultry: eggs, optional broody hen) with start day and length; expected day, range and steps come from `BREEDING` per species and are not stored. Statuses: running, born, failed.
+- The birth can create the young (`freeNumbers` from `farmAnimals.ts`, also used by the quick start) with birth date, parents and the mother's group.
+- Parents live on the animal; `relation()` warns when mother and father are related, without blocking. The lineage endpoint and card show the parents and young, and let caretakers set the parents by hand (no cycles).
+- `sendBreedingDigests()` (push cron, 07:30) pushes the day's steps once per farm (`farm_push_log`, topic `breeding`) to admins and caretakers.
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

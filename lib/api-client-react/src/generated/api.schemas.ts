@@ -604,6 +604,151 @@ export interface MedicineInput {
   archived?: boolean | null;
 }
 
+export type BreedingRecordKind = typeof BreedingRecordKind[keyof typeof BreedingRecordKind];
+
+
+export const BreedingRecordKind = {
+  pregnancy: 'pregnancy',
+  incubation: 'incubation',
+} as const;
+
+export type BreedingRecordStatus = typeof BreedingRecordStatus[keyof typeof BreedingRecordStatus];
+
+
+export const BreedingRecordStatus = {
+  running: 'running',
+  born: 'born',
+  failed: 'failed',
+} as const;
+
+export interface BreedingStep {
+  on: string;
+  text: string;
+  past: boolean;
+}
+
+export interface BreedingRecord {
+  id: number;
+  species: FarmSpecies;
+  kind: BreedingRecordKind;
+  /** @nullable */
+  motherId: number | null;
+  /** @nullable */
+  motherName: string | null;
+  /** @nullable */
+  fatherId: number | null;
+  /** @nullable */
+  fatherName: string | null;
+  /** YYYY-MM-DD, day of mating or of setting the eggs */
+  startedOn: string;
+  durationDays: number;
+  /** @nullable */
+  eggCount: number | null;
+  status: BreedingRecordStatus;
+  /** @nullable */
+  endedOn: string | null;
+  /** @nullable */
+  bornAlive: number | null;
+  /** @nullable */
+  bornDead: number | null;
+  /** @nullable */
+  notes: string | null;
+  dueOn: string;
+  earliestOn: string;
+  latestOn: string;
+  /**
+     * Day of the pregnancy or incubation today (running only).
+     * @nullable
+     */
+  day: number | null;
+  late: boolean;
+  steps: BreedingStep[];
+  /**
+     * Mother and father are related.
+     * @nullable
+     */
+  warning: string | null;
+}
+
+export interface BreedingInput {
+  species?: FarmSpecies;
+  /** @nullable */
+  motherId?: number | null;
+  /** @nullable */
+  fatherId?: number | null;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  fatherName?: string | null;
+  /** YYYY-MM-DD, not in the future */
+  startedOn: string;
+  /** @nullable */
+  durationDays?: number | null;
+  /** @nullable */
+  eggCount?: number | null;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export type BreedingEndInputOutcome = typeof BreedingEndInputOutcome[keyof typeof BreedingEndInputOutcome];
+
+
+export const BreedingEndInputOutcome = {
+  born: 'born',
+  failed: 'failed',
+} as const;
+
+export interface BreedingEndInput {
+  outcome: BreedingEndInputOutcome;
+  /** YYYY-MM-DD */
+  date: string;
+  /** @nullable */
+  alive?: number | null;
+  /** @nullable */
+  dead?: number | null;
+  createYoung?: boolean;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface BreedingEndResult {
+  record: BreedingRecord;
+  created: number;
+}
+
+export interface LineageAnimal {
+  id: number;
+  name: string;
+}
+
+export interface LineageChild {
+  id: number;
+  name: string;
+  /** @nullable */
+  birthDate: string | null;
+  archived: boolean;
+}
+
+export interface Lineage {
+  mother: null | LineageAnimal;
+  father: null | LineageAnimal;
+  offspring: LineageChild[];
+}
+
+export interface LineageInput {
+  /** @nullable */
+  motherId: number | null;
+  /** @nullable */
+  fatherId: number | null;
+}
+
 export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];
 
 

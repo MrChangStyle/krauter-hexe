@@ -2339,6 +2339,69 @@ export const SetHandoverNoteResponse = zod.object({
 
 
 /**
+ * @summary Hof einrichten – which setup steps are done (read from the data)
+ */
+export const GetFarmSetupParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFarmSetupResponse = zod.object({
+  "dismissed": zod.boolean(),
+  "steps": zod.array(zod.object({
+  "key": zod.enum(['name', 'location', 'animals', 'rations', 'tasks', 'beds', 'members']),
+  "done": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary Hide or show the setup checklist for the farm (admin)
+ */
+export const DismissFarmSetupParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const DismissFarmSetupBody = zod.object({
+  "dismissed": zod.boolean()
+})
+
+export const DismissFarmSetupResponse = zod.object({
+  "dismissed": zod.boolean(),
+  "steps": zod.array(zod.object({
+  "key": zod.enum(['name', 'location', 'animals', 'rations', 'tasks', 'beds', 'members']),
+  "done": zod.boolean()
+}))
+})
+
+
+/**
+ * @summary A group of animals in one go – group, numbered animals, starting ration and reminders (admin)
+ */
+export const FarmQuickStartParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const farmQuickStartBodyCountMax = 50;
+
+export const farmQuickStartBodyNameMax = 60;
+
+
+
+export const FarmQuickStartBody = zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "count": zod.number().min(1).max(farmQuickStartBodyCountMax),
+  "name": zod.string().max(farmQuickStartBodyNameMax).nullish()
+})
+
+export const FarmQuickStartResponse = zod.object({
+  "herdId": zod.number(),
+  "animals": zod.number(),
+  "rationId": zod.number().nullable(),
+  "tasks": zod.number()
+})
+
+
+/**
  * @summary The notice shown to everyone during a disruption (no sign-in needed)
  */
 export const GetAppStatusResponse = zod.object({

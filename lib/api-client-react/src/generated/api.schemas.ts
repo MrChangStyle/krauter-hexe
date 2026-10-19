@@ -604,6 +604,55 @@ export interface MedicineInput {
   archived?: boolean | null;
 }
 
+export type FarmSetupStepsItemKey = typeof FarmSetupStepsItemKey[keyof typeof FarmSetupStepsItemKey];
+
+
+export const FarmSetupStepsItemKey = {
+  name: 'name',
+  location: 'location',
+  animals: 'animals',
+  rations: 'rations',
+  tasks: 'tasks',
+  beds: 'beds',
+  members: 'members',
+} as const;
+
+export type FarmSetupStepsItem = {
+  key: FarmSetupStepsItemKey;
+  done: boolean;
+};
+
+export interface FarmSetup {
+  dismissed: boolean;
+  steps: FarmSetupStepsItem[];
+}
+
+export interface FarmSetupDismissInput {
+  dismissed: boolean;
+}
+
+export interface QuickStartInput {
+  species: FarmSpecies;
+  /**
+     * @minimum 1
+     * @maximum 50
+     */
+  count: number;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  name?: string | null;
+}
+
+export interface QuickStartResult {
+  herdId: number;
+  animals: number;
+  /** @nullable */
+  rationId: number | null;
+  tasks: number;
+}
+
 export interface FeedRemindersResult {
   created: number;
   updated: number;

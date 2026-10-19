@@ -28,7 +28,8 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"postal_code" text,
 	"latitude" double precision,
 	"longitude" double precision,
-	"handover_note" text
+	"handover_note" text,
+	"setup_dismissed_at" timestamp with time zone
 )`,
   // Wetter: where the farm is.
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "postal_code" text`,
@@ -36,6 +37,8 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "longitude" double precision`,
   // Vertretung.
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "handover_note" text`,
+  // Hof einrichten.
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "setup_dismissed_at" timestamp with time zone`,
   `CREATE TABLE IF NOT EXISTS "farm_memberships" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

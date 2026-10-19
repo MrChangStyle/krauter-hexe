@@ -70,3 +70,8 @@ Für den Bau festgelegt:
    Zutaten (höchstens 5 offene je Person). Futterkalender: je Monat die Futterpflanzen der
    Tierarten auf dem Hof, die erntereif sind – was dieses Jahr in den Beeten steht zuerst, der
    Rest als Vorschlag; Möhren, Rote Bete und Kürbis im Winter aus dem Lager.
+
+## Nachträge
+
+- Meerschweinchen, Erhaltung: Rohfaser-Richtwert 15–28 % statt 12–20 % – Heu zur freien Aufnahme
+  ist richtig und soll nicht als „zu viel“ erscheinen (wie beim Kaninchen, auch Blinddarmverdauer).

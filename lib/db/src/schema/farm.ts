@@ -79,6 +79,8 @@ export const farmsTable = pgTable("farms", {
   longitude: doublePrecision("longitude"),
   // Vertretung: what someone looking after the animals needs to know (keys, vet, quirks).
   handoverNote: text("handover_note"),
+  // Hof einrichten: the admins closed the setup checklist.
+  setupDismissedAt: timestamp("setup_dismissed_at", { withTimezone: true }),
 });
 
 export const farmMembershipsTable = pgTable(

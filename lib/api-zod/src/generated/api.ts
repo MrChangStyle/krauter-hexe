@@ -2068,6 +2068,72 @@ export const GetFeedCalendarResponse = zod.object({
 
 
 /**
+ * @summary Forecast for three days (DWD via Bright Sky) and fixed warnings for the animals and the garden
+ */
+export const GetFarmWeatherParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFarmWeatherResponse = zod.object({
+  "location": zod.union([zod.null(),zod.object({
+  "source": zod.enum(['farm', 'bed']),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]),
+  "days": zod.array(zod.object({
+  "date": zod.string(),
+  "minTemp": zod.number(),
+  "maxTemp": zod.number(),
+  "precipitationMm": zod.number(),
+  "maxGustKmh": zod.number(),
+  "icon": zod.enum(['sun', 'cloud', 'rain', 'snow', 'storm'])
+})),
+  "warnings": zod.array(zod.object({
+  "kind": zod.enum(['hardFrost', 'frost', 'heat', 'storm', 'rain', 'dry']),
+  "date": zod.string(),
+  "text": zod.string()
+}))
+})
+
+
+/**
+ * @summary Where the farm is – postal code or the phone's position, rounded to about 10 km (admin)
+ */
+export const SetFarmLocationParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const SetFarmLocationBody = zod.object({
+  "postalCode": zod.string().nullish(),
+  "latitude": zod.number().nullish(),
+  "longitude": zod.number().nullish()
+})
+
+export const SetFarmLocationResponse = zod.object({
+  "location": zod.union([zod.null(),zod.object({
+  "source": zod.enum(['farm', 'bed']),
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]),
+  "days": zod.array(zod.object({
+  "date": zod.string(),
+  "minTemp": zod.number(),
+  "maxTemp": zod.number(),
+  "precipitationMm": zod.number(),
+  "maxGustKmh": zod.number(),
+  "icon": zod.enum(['sun', 'cloud', 'rain', 'snow', 'storm'])
+})),
+  "warnings": zod.array(zod.object({
+  "kind": zod.enum(['hardFrost', 'frost', 'heat', 'storm', 'rain', 'dry']),
+  "date": zod.string(),
+  "text": zod.string()
+}))
+})
+
+
+/**
  * @summary The notice shown to everyone during a disruption (no sign-in needed)
  */
 export const GetAppStatusResponse = zod.object({

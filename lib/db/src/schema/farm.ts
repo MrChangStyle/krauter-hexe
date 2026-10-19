@@ -73,6 +73,10 @@ export const farmsTable = pgTable("farms", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // Where the farm is, for the weather (rounded to 0.1°, about 10 km – no exact address).
+  postalCode: text("postal_code"),
+  latitude: doublePrecision("latitude"),
+  longitude: doublePrecision("longitude"),
 });
 
 export const farmMembershipsTable = pgTable(

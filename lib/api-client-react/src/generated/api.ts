@@ -64,12 +64,14 @@ import type {
   FarmExport,
   FarmFeed,
   FarmFeedInput,
+  FarmLocationInput,
   FarmMember,
   FarmNameInput,
   FarmSpecies,
   FarmSummary,
   FarmTask,
   FarmTaskInput,
+  FarmWeather,
   FavoriteIds,
   FeedCalendar,
   FeedLabelReading,
@@ -4950,6 +4952,155 @@ export function useGetFeedCalendar<TData = Awaited<ReturnType<typeof getFeedCale
 
 
 
+
+export const getGetFarmWeatherUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/weather`
+}
+
+/**
+ * @summary Forecast for three days (DWD via Bright Sky) and fixed warnings for the animals and the garden
+ */
+export const getFarmWeather = async (farmId: number, options?: RequestInit): Promise<FarmWeather> => {
+
+  return customFetch<FarmWeather>(getGetFarmWeatherUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFarmWeatherQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/weather`
+    ] as const;
+    }
+
+
+export const getGetFarmWeatherQueryOptions = <TData = Awaited<ReturnType<typeof getFarmWeather>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmWeather>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFarmWeatherQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFarmWeather>>> = ({ signal }) => getFarmWeather(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFarmWeather>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFarmWeatherQueryResult = NonNullable<Awaited<ReturnType<typeof getFarmWeather>>>
+export type GetFarmWeatherQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Forecast for three days (DWD via Bright Sky) and fixed warnings for the animals and the garden
+ */
+
+export function useGetFarmWeather<TData = Awaited<ReturnType<typeof getFarmWeather>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmWeather>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFarmWeatherQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetFarmLocationUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/location`
+}
+
+/**
+ * @summary Where the farm is – postal code or the phone's position, rounded to about 10 km (admin)
+ */
+export const setFarmLocation = async (farmId: number,
+    farmLocationInput: FarmLocationInput, options?: RequestInit): Promise<FarmWeather> => {
+
+  return customFetch<FarmWeather>(getSetFarmLocationUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmLocationInput)
+  }
+);}
+
+
+
+
+
+export const getSetFarmLocationMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmLocation>>, TError,{farmId: number;data: BodyType<FarmLocationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setFarmLocation>>, TError,{farmId: number;data: BodyType<FarmLocationInput>}, TContext> => {
+
+const mutationKey = ['setFarmLocation'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setFarmLocation>>, {farmId: number;data: BodyType<FarmLocationInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  setFarmLocation(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetFarmLocationMutationResult = NonNullable<Awaited<ReturnType<typeof setFarmLocation>>>
+    export type SetFarmLocationMutationBody = BodyType<FarmLocationInput>
+    export type SetFarmLocationMutationError = ErrorType<void>
+
+    /**
+ * @summary Where the farm is – postal code or the phone's position, rounded to about 10 km (admin)
+ */
+export const useSetFarmLocation = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmLocation>>, TError,{farmId: number;data: BodyType<FarmLocationInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setFarmLocation>>,
+        TError,
+        {farmId: number;data: BodyType<FarmLocationInput>},
+        TContext
+      > => {
+      return useMutation(getSetFarmLocationMutationOptions(options));
+    }
 
 export const getGetAppStatusUrl = () => {
 

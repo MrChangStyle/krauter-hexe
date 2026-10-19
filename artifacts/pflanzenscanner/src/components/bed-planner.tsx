@@ -26,6 +26,7 @@ import { HenniTip } from "@/components/henni";
 import { BedPhoto } from "@/components/bed-photo";
 import { BedCalendar } from "@/components/bed-calendar";
 import { PremiumBadge } from "@/components/premium-badge";
+import { AutumnCard, RaisedBedCompanion } from "@/components/raised-bed-companion";
 import { Textarea } from "@/components/ui/textarea";
 import { rotationIssues, rotationText, seasonSummary, type RotationIssue } from "@/lib/garden-calendar";
 import { useToast } from "@/hooks/use-toast";
@@ -348,6 +349,14 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
   const [applying, setApplying] = useState(false);
   // A suggestion belongs to the season it was made for.
   useEffect(() => setProposal(null), [season]);
+  // The Garten-Assistent links here with wishes for the KI-Vorschlag.
+  useEffect(() => {
+    const wish = new URLSearchParams(window.location.search).get("ki");
+    if (wish && canWrite) {
+      setWishes(wish.slice(0, 300));
+      setAsking(true);
+    }
+  }, [canWrite]);
   const catalog = useGetGardenCatalog({ query: { queryKey: getGetGardenCatalogQueryKey(), staleTime: 5 * 60 * 1000 } });
   const plantingsQuery = useListPlantings(farmId, bed.id, season);
   const historyQuery = useGetBedHistory(farmId, bed.id);
@@ -589,6 +598,9 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
       )}
 
       <BedCalendar farmId={farmId} bedId={bed.id} season={season} canWrite={canWrite} plantings={inside} crops={crops} />
+
+      {bed.type === "raised" && <RaisedBedCompanion bed={bed} season={season} plantings={inside} crops={crops} />}
+      {catalog.data && <AutumnCard bed={bed} season={season} catalog={catalog.data} />}
 
       {asking && (
         <Dialog open onOpenChange={(o) => !o && !suggest.isPending && setAsking(false)}>

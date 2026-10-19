@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, CalendarDays, ChevronRight, Fence, Loader2, MapPin, Plus } from "lucide-react";
+import { ArrowLeft, CalendarDays, ChevronRight, Compass, Fence, Loader2, MapPin, Plus } from "lucide-react";
 import { FrostWarnings } from "@/components/garden-overview";
 import { PremiumBadge } from "@/components/premium-badge";
 import { useEnsureOwnFarm, useListBeds, type FarmSummary } from "@workspace/api-client-react";
@@ -32,6 +32,22 @@ function BedList({ farm }: { farm: FarmSummary }) {
       </div>
 
       <FrostWarnings farmId={farm.id} />
+      {list.length > 0 && (
+        <Link
+          href="/beete/assistent"
+          className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm transition-colors hover:bg-muted/50"
+        >
+          <Compass className="h-5 w-5 text-primary" />
+          <span className="flex-1">
+            <span className="flex items-center gap-1.5 font-medium">
+              Garten-Assistent
+              <PremiumBadge />
+            </span>
+            <span className="block text-xs text-muted-foreground">Bedarf für Haushalt und Tiere, Aufteilung auf die Beete</span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+      )}
       {list.length > 0 && (
         <Link
           href="/beete/kalender"

@@ -1356,6 +1356,11 @@ export interface GardenBed {
      * @nullable
      */
   photoCorners: PhotoPoint[] | null;
+  /**
+     * Raised beds – the year it was filled (Hochbeet-Begleiter)
+     * @nullable
+     */
+  builtYear: number | null;
   /** KI-Einschätzung of the photo (cleared with a new photo) */
   photoAnalysis: BedPhotoAnalysis | null;
 }
@@ -1497,7 +1502,98 @@ export interface BedCornersInput {
   corners: PhotoPoint[];
 }
 
+export type GardenDirection = typeof GardenDirection[keyof typeof GardenDirection];
+
+
+export const GardenDirection = {
+  vegetables: 'vegetables',
+  herbs: 'herbs',
+  fruit: 'fruit',
+  storage: 'storage',
+} as const;
+
+export interface GardenGoals {
+  /**
+     * @minimum 0
+     * @maximum 30
+     */
+  people: number;
+  /**
+     * Share of the bed area for animal fodder (%)
+     * @minimum 0
+     * @maximum 100
+     */
+  animalShare: number;
+  directions: GardenDirection[];
+  /**
+     * @minimum 0
+     * @maximum 80
+     * @nullable
+     */
+  hoursPerWeek: number | null;
+}
+
+export type GardenPlanFodderAnimalsItem = {
+  species: FarmSpecies;
+  count: number;
+  perDayKg: number;
+};
+
+export type GardenPlanFodder = {
+  animals: GardenPlanFodderAnimalsItem[];
+  perDayKg: number;
+  summerKg: number;
+  winterKg: number;
+  needM2: number;
+};
+
+export type GardenPlanBedsItemRole = typeof GardenPlanBedsItemRole[keyof typeof GardenPlanBedsItemRole];
+
+
+export const GardenPlanBedsItemRole = {
+  kitchen: 'kitchen',
+  fodder: 'fodder',
+} as const;
+
+export type GardenPlanBedsItem = {
+  bedId: number;
+  name: string;
+  areaM2: number;
+  role: GardenPlanBedsItemRole;
+  crops: string[];
+  /** Wishes for the KI planting suggestion of this bed */
+  wishes: string;
+};
+
+export interface GardenPlan {
+  goals: GardenGoals;
+  kitchenNeedM2: number;
+  fodder: GardenPlanFodder;
+  availableM2: number;
+  kitchenM2: number;
+  fodderM2: number;
+  /**
+     * Percent of the kitchen need the kitchen beds cover
+     * @nullable
+     */
+  kitchenCoverage: number | null;
+  /** @nullable */
+  fodderCoverage: number | null;
+  /**
+     * Area the given hours per week can look after
+     * @nullable
+     */
+  manageableM2: number | null;
+  beds: GardenPlanBedsItem[];
+  tips: string[];
+}
+
 export interface GardenBedInput {
+  /**
+     * Raised beds only – the year it was filled
+     * @nullable
+     */
+  builtYear?: number | null;
   /**
      * @minLength 1
      * @maxLength 60

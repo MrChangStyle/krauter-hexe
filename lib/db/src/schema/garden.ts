@@ -71,6 +71,9 @@ export const gardenBedsTable = pgTable(
     // KI (step 5): the latest AI look at the photo (shade, soil, weeds, tips);
     // cleared with a new photo.
     photoAnalysis: jsonb("photo_analysis").$type<BedPhotoAnalysis>(),
+    // Hochbeet-Begleiter (step 6): the year a raised bed was filled – its
+    // layers rot down, so the year decides what it feeds best.
+    builtYear: integer("built_year"),
   },
   (table) => [index("garden_beds_farm_idx").on(table.farmId)],
 );
@@ -179,4 +182,21 @@ export const gardenCropsTable = pgTable("garden_crops", {
   requestedBy: text("requested_by").references(() => usersTable.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   approvedAt: timestamp("approved_at", { withTimezone: true }),
+});
+
+// Garten-Assistent (step 6): what a farm wants from its beds. Needs and the
+// split onto the beds are computed from this, the animals and the beds.
+export const GARDEN_DIRECTIONS = ["vegetables", "herbs", "fruit", "storage"] as const;
+export type GardenDirection = (typeof GARDEN_DIRECTIONS)[number];
+
+export const gardenGoalsTable = pgTable("garden_goals", {
+  farmId: integer("farm_id")
+    .primaryKey()
+    .references(() => farmsTable.id, { onDelete: "cascade" }),
+  people: integer("people").notNull(),
+  // Share of the bed area meant for animal fodder, 0–100 %.
+  animalShare: integer("animal_share").notNull(),
+  directions: jsonb("directions").$type<GardenDirection[]>().notNull(),
+  hoursPerWeek: integer("hours_per_week"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

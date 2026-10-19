@@ -37,6 +37,8 @@ export interface BedInput {
   /** Own frost dates; null hands them back to the weather history. */
   frostDates?: { lastFrost: string; firstFrost: string } | null;
   notes?: unknown;
+  /** Raised beds: the year it was filled (Hochbeet-Begleiter). */
+  builtYear?: number | null;
 }
 
 function int(value: number | null | undefined, min: number, max: number, message: string): number | null {
@@ -102,6 +104,7 @@ async function bedValues(input: BedInput, previous?: { postalCode: string | null
     soilTexture: input.soilTexture ?? null,
     soilPh: ph === null ? null : Math.round(ph * 10) / 10,
     notes: text(input.notes, 2000, 'Die Notiz'),
+    builtYear: input.type === 'raised' ? int(input.builtYear, 1990, new Date().getFullYear() + 1, 'Das Baujahr ist ungültig.') : null,
   };
 
   if (input.frostDates === undefined) return { values, frost: undefined };

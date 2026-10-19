@@ -129,4 +129,17 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
   `DO $$ BEGIN
      ALTER TABLE "garden_crops" ADD CONSTRAINT "garden_crops_requested_by_users_id_fk" FOREIGN KEY ("requested_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  // Added with step 6 (Garten-Assistent & Hochbeet-Begleiter).
+  `ALTER TABLE "garden_beds" ADD COLUMN IF NOT EXISTS "built_year" integer`,
+  `CREATE TABLE IF NOT EXISTS "garden_goals" (
+	"farm_id" integer PRIMARY KEY NOT NULL,
+	"people" integer NOT NULL,
+	"animal_share" integer NOT NULL,
+	"directions" jsonb NOT NULL,
+	"hours_per_week" integer,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "garden_goals" ADD CONSTRAINT "garden_goals_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
 ];

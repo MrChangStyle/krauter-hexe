@@ -16,6 +16,10 @@ import {
   GetBedHistoryResponse,
   GetBedResponse,
   GetFrostWarningsResponse,
+  GetGardenGoalsResponse,
+  GetGardenPlanResponse,
+  SaveGardenGoalsBody,
+  SaveGardenGoalsResponse,
   GetGardenCalendarResponse,
   GetGardenCatalogResponse,
   ListBedsResponse,
@@ -47,6 +51,7 @@ import { analyzeBedPhoto, suggestCorners, suggestPlanting } from '../lib/gardenA
 import { addPlanting, listPlantings, removePlanting } from '../lib/gardenPlanner';
 import { bedHistory, farmCalendar, farmFrostWarnings, setCheck } from '../lib/gardenCalendar';
 import { berlinTodayKey } from '../lib/pushScheduler';
+import { gardenPlan, getGoals, saveGoals } from '../lib/gardenAssistant';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Beet-Architekt: the crop catalog (same for everyone) and the beds of a
@@ -288,6 +293,34 @@ router.get(
     const season = idParam(req, 'season');
     if (season === null) return notFound(res);
     res.json(GetGardenCalendarResponse.parse(await farmCalendar(req.farm!.farmId, season)));
+  }),
+);
+
+// ── Garten-Assistent ─────────────────────────────────────────────────────────
+
+router.get(
+  '/farms/:farmId/garden/goals',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(GetGardenGoalsResponse.parse(await getGoals(req.farm!.farmId)));
+  }),
+);
+
+router.put(
+  '/farms/:farmId/garden/goals',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = SaveGardenGoalsBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(SaveGardenGoalsResponse.parse(await saveGoals(req.farm!.farmId, body.data)));
+  }),
+);
+
+router.get(
+  '/farms/:farmId/garden/plan',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(GetGardenPlanResponse.parse(await gardenPlan(req.farm!.farmId)));
   }),
 );
 

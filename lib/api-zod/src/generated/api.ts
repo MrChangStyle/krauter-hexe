@@ -2931,6 +2931,7 @@ export const ListBedsResponseItem = zod.object({
   "x": zod.number(),
   "y": zod.number()
 })).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "builtYear": zod.number().nullable().describe('Raised beds – the year it was filled (Hochbeet-Begleiter)'),
   "photoAnalysis": zod.union([zod.object({
   "shade": zod.string(),
   "soil": zod.string(),
@@ -2956,6 +2957,7 @@ export const createBedBodyNotesMax = 2000;
 
 
 export const CreateBedBody = zod.object({
+  "builtYear": zod.number().nullish().describe('Raised beds only – the year it was filled'),
   "name": zod.string().min(1).max(createBedBodyNameMax),
   "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
   "lengthCm": zod.number(),
@@ -3002,6 +3004,7 @@ export const CreateBedResponse = zod.object({
   "x": zod.number(),
   "y": zod.number()
 })).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "builtYear": zod.number().nullable().describe('Raised beds – the year it was filled (Hochbeet-Begleiter)'),
   "photoAnalysis": zod.union([zod.object({
   "shade": zod.string(),
   "soil": zod.string(),
@@ -3046,6 +3049,7 @@ export const GetBedResponse = zod.object({
   "x": zod.number(),
   "y": zod.number()
 })).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "builtYear": zod.number().nullable().describe('Raised beds – the year it was filled (Hochbeet-Begleiter)'),
   "photoAnalysis": zod.union([zod.object({
   "shade": zod.string(),
   "soil": zod.string(),
@@ -3071,6 +3075,7 @@ export const updateBedBodyNotesMax = 2000;
 
 
 export const UpdateBedBody = zod.object({
+  "builtYear": zod.number().nullish().describe('Raised beds only – the year it was filled'),
   "name": zod.string().min(1).max(updateBedBodyNameMax),
   "type": zod.enum(['raised', 'bed', 'greenhouse', 'coldframe', 'container']).describe('Hochbeet, Freilandbeet, Gewächshaus, Frühbeet, Kübel\/Balkon'),
   "lengthCm": zod.number(),
@@ -3117,6 +3122,7 @@ export const UpdateBedResponse = zod.object({
   "x": zod.number(),
   "y": zod.number()
 })).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "builtYear": zod.number().nullable().describe('Raised beds – the year it was filled (Hochbeet-Begleiter)'),
   "photoAnalysis": zod.union([zod.object({
   "shade": zod.string(),
   "soil": zod.string(),
@@ -3177,6 +3183,7 @@ export const SetBedPhotoResponse = zod.object({
   "x": zod.number(),
   "y": zod.number()
 })).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "builtYear": zod.number().nullable().describe('Raised beds – the year it was filled (Hochbeet-Begleiter)'),
   "photoAnalysis": zod.union([zod.object({
   "shade": zod.string(),
   "soil": zod.string(),
@@ -3221,6 +3228,7 @@ export const RemoveBedPhotoResponse = zod.object({
   "x": zod.number(),
   "y": zod.number()
 })).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "builtYear": zod.number().nullable().describe('Raised beds – the year it was filled (Hochbeet-Begleiter)'),
   "photoAnalysis": zod.union([zod.object({
   "shade": zod.string(),
   "soil": zod.string(),
@@ -3281,6 +3289,7 @@ export const AnalyzeBedPhotoResponse = zod.object({
   "x": zod.number(),
   "y": zod.number()
 })).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "builtYear": zod.number().nullable().describe('Raised beds – the year it was filled (Hochbeet-Begleiter)'),
   "photoAnalysis": zod.union([zod.object({
   "shade": zod.string(),
   "soil": zod.string(),
@@ -3371,6 +3380,7 @@ export const SetBedPhotoCornersResponse = zod.object({
   "x": zod.number(),
   "y": zod.number()
 })).nullable().describe('The four bed corners on the photo (0–1), in grid order'),
+  "builtYear": zod.number().nullable().describe('Raised beds – the year it was filled (Hochbeet-Begleiter)'),
   "photoAnalysis": zod.union([zod.object({
   "shade": zod.string(),
   "soil": zod.string(),
@@ -3511,6 +3521,131 @@ export const GetGardenCalendarResponseItem = zod.object({
   "open": zod.boolean().describe('Still to do – false when ticked off or no longer needed (sown directly instead of indoors)')
 })
 export const GetGardenCalendarResponse = zod.array(GetGardenCalendarResponseItem)
+
+
+/**
+ * @summary Goals of the Garten-Assistent (defaults until saved)
+ */
+export const GetGardenGoalsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const getGardenGoalsResponsePeopleMin = 0;
+export const getGardenGoalsResponsePeopleMax = 30;
+
+export const getGardenGoalsResponseAnimalShareMin = 0;
+export const getGardenGoalsResponseAnimalShareMax = 100;
+
+export const getGardenGoalsResponseHoursPerWeekMin = 0;
+export const getGardenGoalsResponseHoursPerWeekMax = 80;
+
+
+
+export const GetGardenGoalsResponse = zod.object({
+  "people": zod.number().min(getGardenGoalsResponsePeopleMin).max(getGardenGoalsResponsePeopleMax),
+  "animalShare": zod.number().min(getGardenGoalsResponseAnimalShareMin).max(getGardenGoalsResponseAnimalShareMax).describe('Share of the bed area for animal fodder (%)'),
+  "directions": zod.array(zod.enum(['vegetables', 'herbs', 'fruit', 'storage'])),
+  "hoursPerWeek": zod.number().min(getGardenGoalsResponseHoursPerWeekMin).max(getGardenGoalsResponseHoursPerWeekMax).nullable()
+})
+
+
+/**
+ * @summary Save the goals (caretaker or admin)
+ */
+export const SaveGardenGoalsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const saveGardenGoalsBodyPeopleMin = 0;
+export const saveGardenGoalsBodyPeopleMax = 30;
+
+export const saveGardenGoalsBodyAnimalShareMin = 0;
+export const saveGardenGoalsBodyAnimalShareMax = 100;
+
+export const saveGardenGoalsBodyHoursPerWeekMin = 0;
+export const saveGardenGoalsBodyHoursPerWeekMax = 80;
+
+
+
+export const SaveGardenGoalsBody = zod.object({
+  "people": zod.number().min(saveGardenGoalsBodyPeopleMin).max(saveGardenGoalsBodyPeopleMax),
+  "animalShare": zod.number().min(saveGardenGoalsBodyAnimalShareMin).max(saveGardenGoalsBodyAnimalShareMax).describe('Share of the bed area for animal fodder (%)'),
+  "directions": zod.array(zod.enum(['vegetables', 'herbs', 'fruit', 'storage'])),
+  "hoursPerWeek": zod.number().min(saveGardenGoalsBodyHoursPerWeekMin).max(saveGardenGoalsBodyHoursPerWeekMax).nullable()
+})
+
+export const saveGardenGoalsResponsePeopleMin = 0;
+export const saveGardenGoalsResponsePeopleMax = 30;
+
+export const saveGardenGoalsResponseAnimalShareMin = 0;
+export const saveGardenGoalsResponseAnimalShareMax = 100;
+
+export const saveGardenGoalsResponseHoursPerWeekMin = 0;
+export const saveGardenGoalsResponseHoursPerWeekMax = 80;
+
+
+
+export const SaveGardenGoalsResponse = zod.object({
+  "people": zod.number().min(saveGardenGoalsResponsePeopleMin).max(saveGardenGoalsResponsePeopleMax),
+  "animalShare": zod.number().min(saveGardenGoalsResponseAnimalShareMin).max(saveGardenGoalsResponseAnimalShareMax).describe('Share of the bed area for animal fodder (%)'),
+  "directions": zod.array(zod.enum(['vegetables', 'herbs', 'fruit', 'storage'])),
+  "hoursPerWeek": zod.number().min(saveGardenGoalsResponseHoursPerWeekMin).max(saveGardenGoalsResponseHoursPerWeekMax).nullable()
+})
+
+
+/**
+ * @summary Garten-Assistent – needs of people and animals and the split onto the beds (fixed rules of thumb)
+ */
+export const GetGardenPlanParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const getGardenPlanResponseGoalsPeopleMin = 0;
+export const getGardenPlanResponseGoalsPeopleMax = 30;
+
+export const getGardenPlanResponseGoalsAnimalShareMin = 0;
+export const getGardenPlanResponseGoalsAnimalShareMax = 100;
+
+export const getGardenPlanResponseGoalsHoursPerWeekMin = 0;
+export const getGardenPlanResponseGoalsHoursPerWeekMax = 80;
+
+
+
+export const GetGardenPlanResponse = zod.object({
+  "goals": zod.object({
+  "people": zod.number().min(getGardenPlanResponseGoalsPeopleMin).max(getGardenPlanResponseGoalsPeopleMax),
+  "animalShare": zod.number().min(getGardenPlanResponseGoalsAnimalShareMin).max(getGardenPlanResponseGoalsAnimalShareMax).describe('Share of the bed area for animal fodder (%)'),
+  "directions": zod.array(zod.enum(['vegetables', 'herbs', 'fruit', 'storage'])),
+  "hoursPerWeek": zod.number().min(getGardenPlanResponseGoalsHoursPerWeekMin).max(getGardenPlanResponseGoalsHoursPerWeekMax).nullable()
+}),
+  "kitchenNeedM2": zod.number(),
+  "fodder": zod.object({
+  "animals": zod.array(zod.object({
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "count": zod.number(),
+  "perDayKg": zod.number()
+})),
+  "perDayKg": zod.number(),
+  "summerKg": zod.number(),
+  "winterKg": zod.number(),
+  "needM2": zod.number()
+}),
+  "availableM2": zod.number(),
+  "kitchenM2": zod.number(),
+  "fodderM2": zod.number(),
+  "kitchenCoverage": zod.number().nullable().describe('Percent of the kitchen need the kitchen beds cover'),
+  "fodderCoverage": zod.number().nullable(),
+  "manageableM2": zod.number().nullable().describe('Area the given hours per week can look after'),
+  "beds": zod.array(zod.object({
+  "bedId": zod.number(),
+  "name": zod.string(),
+  "areaM2": zod.number(),
+  "role": zod.enum(['kitchen', 'fodder']),
+  "crops": zod.array(zod.string()),
+  "wishes": zod.string().describe('Wishes for the KI planting suggestion of this bed')
+})),
+  "tips": zod.array(zod.string())
+})
 
 
 /**

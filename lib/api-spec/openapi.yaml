@@ -2837,6 +2837,67 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/GardenCalendarEntry"
+  /farms/{farmId}/garden/goals:
+    get:
+      tags: [garden]
+      operationId: getGardenGoals
+      summary: Goals of the Garten-Assistent (defaults until saved)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The goals.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenGoals"
+    put:
+      tags: [garden]
+      operationId: saveGardenGoals
+      summary: Save the goals (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GardenGoals"
+      responses:
+        "200":
+          description: The saved goals.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenGoals"
+        "400":
+          description: Out of range.
+  /farms/{farmId}/garden/plan:
+    get:
+      tags: [garden]
+      operationId: getGardenPlan
+      summary: Garten-Assistent – needs of people and animals and the split onto the beds (fixed rules of thumb)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The plan.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenPlan"
   /farms/{farmId}/garden/frost-warnings:
     get:
       tags: [garden]
@@ -4823,7 +4884,7 @@ components:
           description: MM-DD
     GardenBed:
       type: object
-      required: [id, name, type, lengthCm, widthCm, heightCm, postalCode, latitude, longitude, sunHours, orientation, windProtection, soilTexture, soilPh, lastFrost, firstFrost, frostSource, notes, createdAt, photoUrl, photoHeading, photoCorners, photoAnalysis]
+      required: [id, name, type, lengthCm, widthCm, heightCm, postalCode, latitude, longitude, sunHours, orientation, windProtection, soilTexture, soilPh, lastFrost, firstFrost, frostSource, notes, createdAt, photoUrl, photoHeading, photoCorners, photoAnalysis, builtYear]
       properties:
         id:
           type: integer
@@ -4883,6 +4944,9 @@ components:
           description: The four bed corners on the photo (0–1), in grid order
           items:
             $ref: "#/components/schemas/PhotoPoint"
+        builtYear:
+          type: [integer, 'null']
+          description: Raised beds – the year it was filled (Hochbeet-Begleiter)
         photoAnalysis:
           description: KI-Einschätzung of the photo (cleared with a new photo)
           oneOf:
@@ -5007,10 +5071,109 @@ components:
           maxItems: 4
           items:
             $ref: "#/components/schemas/PhotoPoint"
+    GardenDirection:
+      type: string
+      enum: [vegetables, herbs, fruit, storage]
+    GardenGoals:
+      type: object
+      required: [people, animalShare, directions, hoursPerWeek]
+      properties:
+        people:
+          type: integer
+          minimum: 0
+          maximum: 30
+        animalShare:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: Share of the bed area for animal fodder (%)
+        directions:
+          type: array
+          items:
+            $ref: "#/components/schemas/GardenDirection"
+        hoursPerWeek:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 80
+    GardenPlan:
+      type: object
+      required: [goals, kitchenNeedM2, fodder, availableM2, kitchenM2, fodderM2, kitchenCoverage, fodderCoverage, manageableM2, beds, tips]
+      properties:
+        goals:
+          $ref: "#/components/schemas/GardenGoals"
+        kitchenNeedM2:
+          type: number
+        fodder:
+          type: object
+          required: [animals, perDayKg, summerKg, winterKg, needM2]
+          properties:
+            animals:
+              type: array
+              items:
+                type: object
+                required: [species, count, perDayKg]
+                properties:
+                  species:
+                    $ref: "#/components/schemas/FarmSpecies"
+                  count:
+                    type: integer
+                  perDayKg:
+                    type: number
+            perDayKg:
+              type: number
+            summerKg:
+              type: number
+            winterKg:
+              type: number
+            needM2:
+              type: number
+        availableM2:
+          type: number
+        kitchenM2:
+          type: number
+        fodderM2:
+          type: number
+        kitchenCoverage:
+          type: [integer, 'null']
+          description: Percent of the kitchen need the kitchen beds cover
+        fodderCoverage:
+          type: [integer, 'null']
+        manageableM2:
+          type: [number, 'null']
+          description: Area the given hours per week can look after
+        beds:
+          type: array
+          items:
+            type: object
+            required: [bedId, name, areaM2, role, crops, wishes]
+            properties:
+              bedId:
+                type: integer
+              name:
+                type: string
+              areaM2:
+                type: number
+              role:
+                type: string
+                enum: [kitchen, fodder]
+              crops:
+                type: array
+                items:
+                  type: string
+              wishes:
+                type: string
+                description: Wishes for the KI planting suggestion of this bed
+        tips:
+          type: array
+          items:
+            type: string
     GardenBedInput:
       type: object
       required: [name, type, lengthCm, widthCm]
       properties:
+        builtYear:
+          type: [integer, 'null']
+          description: Raised beds only – the year it was filled
         name:
           type: string
           minLength: 1

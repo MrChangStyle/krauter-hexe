@@ -1225,6 +1225,31 @@ paths:
       responses:
         "204":
           description: Deleted.
+  /farms/{farmId}/rations/{rationId}/reminders:
+    post:
+      tags: [feed]
+      operationId: createFeedReminders
+      summary: Daily "Füttern" stall tasks for the ration in effect, one per feeding time (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: rationId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: What was created, updated and paused.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedRemindersResult"
+        "409":
+          description: Not the ration in effect.
   /status:
     get:
       tags: [monitoring]
@@ -3693,6 +3718,13 @@ components:
             enum: [morgens, mittags, abends]
         waterL:
           type: [number, 'null']
+        season:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/RationSeason"
+        gradual:
+          type: [boolean, 'null']
+          description: Spread a change of feed over some days (default true)
     NutrientCheck:
       type: object
       required: [nutrient, value, min, max, status, severe, tip]
@@ -3722,9 +3754,70 @@ components:
           enum: [toxic, foreignMineral, copper, ionophore, withdrawal]
         text:
           type: string
+    RationSeason:
+      type: string
+      enum: [all, summer, winter]
+      description: all year, summer (April–October) or winter (November–March)
+    FeedRemindersResult:
+      type: object
+      required: [created, updated, paused]
+      properties:
+        created:
+          type: integer
+        updated:
+          type: integer
+        paused:
+          type: integer
+    FeedTransition:
+      type: object
+      description: A change of feed spread over some days – today's mixture of the old and the new ration
+      required: [reason, toSeason, startedOn, endsOn, days, day, newShare, phases, items]
+      properties:
+        reason:
+          type: string
+          enum: [change, season]
+        toSeason:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/RationSeason"
+        startedOn:
+          type: string
+          description: YYYY-MM-DD
+        endsOn:
+          type: string
+          description: YYYY-MM-DD
+        days:
+          type: integer
+        day:
+          type: integer
+          description: 1-based day of the change today; 0 = starts later
+        newShare:
+          type: number
+        phases:
+          type: array
+          items:
+            type: object
+            required: [fromDay, toDay, newShare]
+            properties:
+              fromDay:
+                type: integer
+              toDay:
+                type: integer
+              newShare:
+                type: number
+        items:
+          type: array
+          items:
+            type: object
+            required: [name, grams]
+            properties:
+              name:
+                type: string
+              grams:
+                type: number
     RationEvaluation:
       type: object
-      required: [id, target, stage, items, times, waterL, need, values, checks, warnings, group, updatedAt]
+      required: [id, target, season, active, stage, items, times, waterL, need, values, checks, warnings, transition, hints, group, updatedAt]
       properties:
         id:
           type: integer
@@ -3743,6 +3836,11 @@ components:
               $ref: "#/components/schemas/FarmSpecies"
             count:
               type: integer
+        season:
+          $ref: "#/components/schemas/RationSeason"
+        active:
+          type: boolean
+          description: The ration in effect today for its animal or group
         stage:
           $ref: "#/components/schemas/LifeStage"
         items:
@@ -3805,6 +3903,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/FeedWarning"
+        transition:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/FeedTransition"
+        hints:
+          type: array
+          items:
+            type: string
         group:
           type: object
           required: [feedKg, waterL]

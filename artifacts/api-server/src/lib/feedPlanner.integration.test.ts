@@ -1,9 +1,10 @@
 /**
- * Futterplaner (steps 1 and 2) against a REAL Postgres, through the HTTP
- * routes: own feeds, rations for an animal and a herd, the check, the
- * warnings that cannot be dismissed (toxic plant, foreign mineral feed,
- * coccidiostat, withdrawal period), the label read by the (mocked) AI, roles
- * and isolation.
+ * Futterplaner (steps 1–3) against a REAL Postgres, through the HTTP routes:
+ * own feeds, rations for an animal and a herd, the check, the warnings that
+ * cannot be dismissed (toxic plant, foreign mineral feed, coccidiostat,
+ * withdrawal period), the label read by the (mocked) AI, summer and winter
+ * rations with the step-by-step change, the feeding reminders, roles and
+ * isolation.
  *
  * Skipped unless TEST_DATABASE_URL equals DATABASE_URL (throwaway database
  * with the schema pushed). Truncates tables – never point it at real data.
@@ -20,6 +21,12 @@ vi.hoisted(() => {
 });
 const runModelChain = vi.fn(async (_contents: unknown, _models: unknown, _config?: unknown): Promise<unknown> => ({}));
 vi.mock("./plantIdentification", async (orig) => ({ ...(await orig<object>()), runModelChain }));
+// "Today" for the season tests; null = the real day.
+let fixedDay: string | null = null;
+vi.mock("./monitoring", async (orig) => {
+  const real = await orig<typeof import("./monitoring")>();
+  return { ...real, berlinDay: () => fixedDay ?? real.berlinDay() };
+});
 
 const PHOTO = "data:image/jpeg;base64,/9j/4AAQSkZJRg==";
 const KUEKEN_LABEL = {
@@ -67,6 +74,7 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
 
   beforeEach(async () => {
     runModelChain.mockReset();
+    fixedDay = null;
     await q("TRUNCATE farms, farm_memberships, users, plants RESTART IDENTITY CASCADE");
     await q(`INSERT INTO users (id, email, approved) VALUES ('anna', 'a@x.de', true), ('bert', 'b@x.de', true), ('gast', 'g@x.de', true)`);
     const [a, b] = await q<{ id: number }>("INSERT INTO farms (name) VALUES ('Hof Anna'), ('Hof Bert') RETURNING id");
@@ -207,6 +215,105 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     expect((await api("POST", `/farms/${farm.anna}/feeds`, { name: "X", category: "compound", dryMatter: 88, label: { crudeProtein: 60, crudeFat: 30, crudeFibre: 10, calcium: 1, phosphorus: 1 } })).status).toBe(400);
     expect((await api("GET", `/farms/${farm.anna}/feeds`)).data).toHaveLength(1);
     expect((await api("DELETE", `/farms/${farm.anna}/feeds/${res.data.id}`)).status).toBe(204);
+  });
+
+  it("switches to the winter ration step by step at the end of October", async () => {
+    fixedDay = "2026-10-10";
+    const all = await ration({ animalId: ids.hase, stage: "maintenance", items: [{ feedKey: "heu", grams: 120 }, { feedKey: "kaninchenpellets", grams: 20 }], times: ["morgens"] });
+    // October: no more advice to start a summer ration.
+    expect(all.data).toMatchObject({ season: "all", active: true, transition: null, hints: [] });
+    const winter = await ration({ animalId: ids.hase, season: "winter", stage: "winter", items: [{ feedKey: "heu", grams: 140 }, { feedKey: "moehre", grams: 40 }], times: ["morgens"] });
+    expect(winter.data).toMatchObject({ season: "winter", active: false, transition: null, hints: [] });
+
+    fixedDay = "2026-10-25";
+    const list = (await api("GET", `/farms/${farm.anna}/rations`)).data;
+    const now = list.find((r: any) => r.season === "all");
+    expect(now.transition).toEqual({
+      reason: "season",
+      toSeason: "winter",
+      startedOn: "2026-10-22",
+      endsOn: "2026-10-31",
+      days: 10,
+      day: 4,
+      newShare: 0.5,
+      phases: [
+        { fromDay: 1, toDay: 3, newShare: 0.25 },
+        { fromDay: 4, toDay: 5, newShare: 0.5 },
+        { fromDay: 6, toDay: 8, newShare: 0.75 },
+        { fromDay: 9, toDay: 10, newShare: 1 },
+      ],
+      items: [{ name: "Wiesenheu", grams: 130 }, { name: "Möhren", grams: 20 }, { name: "Kaninchen-Alleinfutter (Pellets)", grams: 10 }],
+    });
+
+    fixedDay = "2026-11-02";
+    const later = (await api("GET", `/farms/${farm.anna}/rations`)).data;
+    expect(later.map((r: any) => [r.season, r.active, r.transition])).toEqual([["all", false, null], ["winter", true, null]]);
+    expect(later[1].hints).toEqual([expect.stringMatching(/Bei Frost/)]);
+  });
+
+  it("spreads a change of feeds over some days, unless told not to", async () => {
+    fixedDay = "2026-12-01";
+    await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 120 }], times: ["morgens"] });
+    const changed = await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 100 }, { feedKey: "koernermix", grams: 20 }], times: ["morgens"] });
+    expect(changed.data.transition).toMatchObject({ reason: "change", startedOn: "2026-12-01", days: 7, day: 1, newShare: 0.25, items: [{ name: "Legehennen-Alleinfutter", grams: 115 }, { name: "Körnermischung Geflügel", grams: 5 }] });
+    // Only the amounts changed: the running change goes on.
+    fixedDay = "2026-12-03";
+    const tweak = await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 105 }, { feedKey: "koernermix", grams: 15 }], times: ["morgens"] });
+    expect(tweak.data.transition).toMatchObject({ startedOn: "2026-12-01", day: 3, newShare: 0.5 });
+    fixedDay = "2026-12-08";
+    expect((await api("GET", `/farms/${farm.anna}/rations`)).data[0].transition).toBeNull();
+    const now = await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 120 }], times: ["morgens"], gradual: false });
+    expect(now.data.transition).toBeNull();
+  });
+
+  it("turns the ration in effect into daily feeding reminders and keeps them up to date", async () => {
+    fixedDay = "2026-12-01";
+    const hens = await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 120 }, { feedKey: "koernermix", grams: 20 }], times: ["morgens", "abends"] });
+    expect((await api("POST", `/farms/${farm.anna}/rations/${hens.data.id}/reminders`)).data).toEqual({ created: 2, updated: 0, paused: 0 });
+    // Again: nothing doubled.
+    expect((await api("POST", `/farms/${farm.anna}/rations/${hens.data.id}/reminders`)).data).toEqual({ created: 0, updated: 2, paused: 0 });
+    const tasks = () => q<{ reminder_time: string; notes: string; is_active: boolean; herd_id: number; interval_value: number }>("SELECT reminder_time, notes, is_active, herd_id, interval_value FROM farm_tasks ORDER BY reminder_time");
+    expect(await tasks()).toEqual([
+      { reminder_time: "07:00", notes: "Futterplaner (je Tier und Fütterung): Legehennen-Alleinfutter 60 g, Körnermischung Geflügel 10 g", is_active: true, herd_id: ids.hens, interval_value: 1 },
+      { reminder_time: "18:00", notes: "Futterplaner (je Tier und Fütterung): Legehennen-Alleinfutter 60 g, Körnermischung Geflügel 10 g", is_active: true, herd_id: ids.hens, interval_value: 1 },
+    ]);
+    // Saving the ration refreshes the notes; a dropped feeding time is paused.
+    await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 120 }], times: ["morgens"], gradual: false });
+    expect((await tasks()).map((t) => [t.reminder_time, t.notes, t.is_active])).toEqual([
+      ["07:00", "Futterplaner (je Tier und Fütterung): Legehennen-Alleinfutter 120 g", true],
+      ["18:00", "Futterplaner (je Tier und Fütterung): Legehennen-Alleinfutter 60 g, Körnermischung Geflügel 10 g", false],
+    ]);
+    // A change of feed: the note points to the plan, a reminder switched off stays off.
+    await q("UPDATE farm_tasks SET is_active = false WHERE reminder_time = '07:00'");
+    await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 100 }, { feedKey: "muschelkalk", grams: 5 }], times: ["morgens"] });
+    expect((await tasks()).map((t) => [t.reminder_time, t.notes, t.is_active])[0]).toEqual([
+      "07:00",
+      "Futterplaner: Umstellung bis 07.12. – die Mengen für heute stehen im Futterplaner.",
+      false,
+    ]);
+    // Only for the ration in effect, only for caretakers.
+    const summer = await ration({ herdId: ids.hens, season: "summer", stage: "laying", items: [{ feedKey: "legehennen", grams: 110 }], times: ["morgens"] });
+    expect((await api("POST", `/farms/${farm.anna}/rations/${summer.data.id}/reminders`)).status).toBe(409);
+    as = "gast";
+    expect((await api("POST", `/farms/${farm.anna}/rations/${hens.data.id}/reminders`)).status).toBe(403);
+    expect((await ration({ herdId: ids.hens, season: "herbst", stage: "laying", items: [{ feedKey: "legehennen", grams: 110 }], times: [] })).status).toBe(403);
+    as = "anna";
+    expect((await ration({ herdId: ids.hens, season: "herbst", stage: "laying", items: [{ feedKey: "legehennen", grams: 110 }], times: [] })).status).toBe(400);
+  });
+
+  it("refreshes the reminder when the winter ration takes over", async () => {
+    fixedDay = "2026-10-10";
+    const all = await ration({ animalId: ids.sheep, stage: "maintenance", items: [{ feedKey: "heu", grams: 1800 }], times: ["morgens"] });
+    await api("POST", `/farms/${farm.anna}/rations/${all.data.id}/reminders`);
+    await ration({ animalId: ids.sheep, season: "winter", stage: "winter", items: [{ feedKey: "heu", grams: 1600 }, { feedKey: "futterruebe", grams: 1500 }], times: ["morgens"] });
+    const note = async () => (await q<{ notes: string }>("SELECT notes FROM farm_tasks"))[0]!.notes;
+    expect(await note()).toBe("Futterplaner (je Tier und Fütterung): Wiesenheu 1,8 kg");
+    fixedDay = "2026-10-20";
+    await api("GET", `/farms/${farm.anna}/rations`);
+    expect(await note()).toBe("Futterplaner: Umstellung bis 31.10. – die Mengen für heute stehen im Futterplaner.");
+    fixedDay = "2026-11-05";
+    await api("GET", `/farms/${farm.anna}/rations`);
+    expect(await note()).toBe("Futterplaner (je Tier und Fütterung): Wiesenheu 1,6 kg, Futterrüben 1,5 kg");
   });
 
   it("lets guests read, keeps farms apart", async () => {

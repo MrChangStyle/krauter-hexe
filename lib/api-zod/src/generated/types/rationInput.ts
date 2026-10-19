@@ -8,6 +8,7 @@
 import type { LifeStage } from './lifeStage';
 import type { RationInputTimesItem } from './rationInputTimesItem';
 import type { RationItem } from './rationItem';
+import type { RationSeason } from './rationSeason';
 
 export interface RationInput {
   /** @nullable */
@@ -19,4 +20,10 @@ export interface RationInput {
   times: RationInputTimesItem[];
   /** @nullable */
   waterL?: number | null;
+  season?: null | RationSeason;
+  /**
+     * Spread a change of feed over some days (default true)
+     * @nullable
+     */
+  gradual?: boolean | null;
 }

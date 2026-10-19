@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRange, formatValue, grams, light, lightText } from "./feed-labels";
+import { formatRange, formatValue, grams, light, lightText, rationName, shareText, shortDate } from "./feed-labels";
 
 describe("feed labels", () => {
   it("turns a check into a traffic light", () => {
@@ -17,5 +17,12 @@ describe("feed labels", () => {
     expect(formatRange({ nutrient: "copper", min: 0, max: 15 })).toBe("bis 15");
     expect(grams(120)).toBe("120 g");
     expect(grams(1700)).toBe("1,7 kg");
+  });
+
+  it("names seasonal rations and the steps of a change", () => {
+    expect(rationName("winter")).toBe("Winterration");
+    expect(rationName("all")).toBe("Ration");
+    expect(shortDate("2026-10-22")).toBe("22.10.");
+    expect(shareText(0.75)).toBe("75 %");
   });
 });

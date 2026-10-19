@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertOctagon, ArrowLeft, Camera, Droplets, Info, Loader2, Plus, Scale, Trash2, Wheat, X } from "lucide-react";
+import { AlertOctagon, ArrowLeft, Bell, Camera, Droplets, Info, Leaf, Loader2, Plus, Repeat, Scale, Trash2, Wheat, X } from "lucide-react";
 import {
   getListFarmFeedsQueryKey,
   getListRationsQueryKey,
   useAddFarmFeed,
+  useCreateFeedReminders,
   useEnsureOwnFarm,
   useGetFeedReference,
   useListFarmAnimals,
@@ -24,6 +25,7 @@ import {
   type FeedLabelReading,
   type LifeStage,
   type RationEvaluation,
+  type RationSeason,
 } from "@workspace/api-client-react";
 import { PremiumBadge } from "@/components/premium-badge";
 import { Button } from "@/components/ui/button";
@@ -34,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { downscaleFile } from "@/lib/image";
 import { SPECIES_LABELS } from "@/lib/farm-labels";
-import { CATEGORY_LABELS, NUTRIENT_LABELS, STAGE_LABELS, formatRange, formatValue, grams, light, lightText } from "@/lib/feed-labels";
+import { CATEGORY_LABELS, NUTRIENT_LABELS, SEASON_LABELS, STAGE_LABELS, formatRange, formatValue, grams, light, lightText, rationName, shareText, shortDate } from "@/lib/feed-labels";
 import { cn } from "@/lib/utils";
 
 const TIMES = ["morgens", "mittags", "abends"] as const;
@@ -53,6 +55,56 @@ interface Target {
   name: string;
   species: FarmSpecies;
   count: number;
+}
+
+// ── Fütterungsplan: change of feed and season hints ──────────────────────────
+
+function TransitionBox({ transition: t }: { transition: NonNullable<RationEvaluation["transition"]> }) {
+  const title =
+    t.reason === "season"
+      ? t.day === 0
+        ? `Umstellung auf die ${rationName(t.toSeason ?? "all")} ab ${shortDate(t.startedOn)}`
+        : `Umstellung auf die ${rationName(t.toSeason ?? "all")} – Tag ${t.day} von ${t.days}`
+      : `Futterumstellung – Tag ${t.day} von ${t.days}`;
+  return (
+    <div className="space-y-2 rounded-xl border border-sky-300 bg-sky-50 p-3 text-sm text-sky-950 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100">
+      <p className="flex items-center gap-2 font-medium">
+        <Repeat className="h-4 w-4 shrink-0" />
+        {title}
+      </p>
+      {t.day > 0 && (
+        <div>
+          <p className="text-xs">Heute {shareText(t.newShare)} neue Ration, je Tier:</p>
+          <ul className="mt-1 space-y-0.5">
+            {t.items.map((i) => (
+              <li key={i.name} className="flex justify-between gap-2">
+                <span>{i.name}</span>
+                <span className="tabular-nums">{grams(i.grams)}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <p className="text-xs">
+        {t.phases.map((ph) => `Tag ${ph.fromDay === ph.toDay ? ph.fromDay : `${ph.fromDay}–${ph.toDay}`}: ${shareText(ph.newShare)}`).join(" · ")} neu, fertig am {shortDate(t.endsOn)} – langsam
+        umstellen schont die Verdauung.
+      </p>
+    </div>
+  );
+}
+
+function SeasonHints({ hints }: { hints: string[] }) {
+  if (hints.length === 0) return null;
+  return (
+    <ul className="space-y-1 rounded-xl bg-muted/50 p-3 text-xs text-muted-foreground">
+      {hints.map((h) => (
+        <li key={h} className="flex gap-2">
+          <Leaf className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+          {h}
+        </li>
+      ))}
+    </ul>
+  );
 }
 
 // ── Check of one ration ──────────────────────────────────────────────────────
@@ -143,6 +195,7 @@ function RationDialog({
   farmId,
   target,
   ration,
+  season: initialSeason,
   catalog,
   own,
   stages,
@@ -151,6 +204,7 @@ function RationDialog({
   farmId: number;
   target: Target;
   ration: RationEvaluation | undefined;
+  season: RationSeason;
   catalog: Feed[];
   own: FarmFeed[];
   stages: LifeStage[];
@@ -163,6 +217,8 @@ function RationDialog({
     ration?.items.map((i) => ({ ref: i.feedKey ? `k:${i.feedKey}` : `o:${i.feedId}`, grams: String(i.grams).replace(".", ",") })) ?? [{ ref: "", grams: "" }],
   );
   const [times, setTimes] = useState<string[]>(ration?.times ?? ["morgens", "abends"]);
+  const [season, setSeason] = useState<RationSeason>(ration?.season ?? initialSeason);
+  const [gradual, setGradual] = useState(true);
   const save = useSaveRation({
     mutation: {
       onSuccess() {
@@ -204,7 +260,14 @@ function RationDialog({
     }
     save.mutate({
       farmId,
-      data: { ...(target.kind === "animal" ? { animalId: target.id } : { herdId: target.id }), stage, items: parsed, times: times as ("morgens" | "mittags" | "abends")[] },
+      data: {
+        ...(target.kind === "animal" ? { animalId: target.id } : { herdId: target.id }),
+        season,
+        stage,
+        items: parsed,
+        times: times as ("morgens" | "mittags" | "abends")[],
+        gradual,
+      },
     });
   }
 
@@ -214,13 +277,25 @@ function RationDialog({
     <Dialog open onOpenChange={(o) => !o && !save.isPending && onClose()}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Ration für {target.name}</DialogTitle>
+          <DialogTitle>
+            {rationName(season)} für {target.name}
+          </DialogTitle>
           <DialogDescription>
             {SPECIES_LABELS[target.species]}
             {target.kind === "herd" ? ` · Mengen je Tier, Gruppe mit ${target.count} Tieren` : ""}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={submit} className="space-y-4">
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="ration-season">Gilt</Label>
+            <select id="ration-season" className={selectClass} value={season} disabled={!!ration} onChange={(e) => setSeason(e.target.value as RationSeason)}>
+              {(Object.keys(SEASON_LABELS) as RationSeason[]).map((s) => (
+                <option key={s} value={s}>
+                  {SEASON_LABELS[s]}
+                </option>
+              ))}
+            </select>
+          </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="ration-stage">Lebensphase</Label>
             <select id="ration-stage" className={selectClass} value={stage} onChange={(e) => setStage(e.target.value as LifeStage)}>
@@ -298,6 +373,13 @@ function RationDialog({
               ))}
             </div>
           </div>
+          <label className="flex items-start gap-2 text-sm">
+            <input type="checkbox" className="mt-1" checked={gradual} onChange={(e) => setGradual(e.target.checked)} />
+            <span>
+              Schrittweise umstellen
+              <span className="block text-xs text-muted-foreground">Ändern sich die Futtermittel, verteilt der Plan den Wechsel über einige Tage.</span>
+            </span>
+          </label>
           <div className="flex flex-wrap gap-2">
             <Button type="submit" disabled={save.isPending} className="gap-1.5">
               {save.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
@@ -522,7 +604,17 @@ function Planner({ farm }: { farm: FarmSummary }) {
   const own = useListFarmFeeds(farm.id);
   const removeFeed = useRemoveFarmFeed({ mutation: { onSuccess: () => void queryClient.invalidateQueries({ queryKey: getListFarmFeedsQueryKey(farm.id) }) } });
   const { toast } = useToast();
-  const [editing, setEditing] = useState<Target | null>(null);
+  const [editing, setEditing] = useState<{ target: Target; season: RationSeason; ration: RationEvaluation | undefined } | null>(null);
+  const reminders = useCreateFeedReminders({
+    mutation: {
+      onSuccess: (r) =>
+        toast({
+          title: r.created > 0 ? `${r.created} ${r.created === 1 ? "Erinnerung" : "Erinnerungen"} angelegt` : "Erinnerungen aktualisiert",
+          description: "Täglich unter Stall-Aufgaben, mit den Mengen je Fütterung.",
+        }),
+      onError: (err) => toast({ title: "Nicht angelegt", description: errorText(err, ""), variant: "destructive" }),
+    },
+  });
   const [ownDialog, setOwnDialog] = useState(false);
 
   const targets: Target[] = useMemo(() => {
@@ -532,7 +624,7 @@ function Planner({ farm }: { farm: FarmSummary }) {
       ...active.filter((a) => a.herdId === null).map((a) => ({ kind: "animal" as const, id: a.id, name: a.name, species: a.species, count: 1 })),
     ];
   }, [animals.data, herds.data]);
-  const rationOf = (t: Target) => (rations.data ?? []).find((r) => r.target.kind === t.kind && r.target.id === t.id);
+  const rationsOf = (t: Target) => (rations.data ?? []).filter((r) => r.target.kind === t.kind && r.target.id === t.id);
 
   if (!reference.data || animals.isLoading || herds.isLoading || rations.isLoading) return <Loader2 className="h-6 w-6 animate-spin text-primary" />;
   const stagesOf = (s: FarmSpecies) => reference.data!.species.find((x) => x.species === s)?.stages ?? ["maintenance"];
@@ -554,7 +646,10 @@ function Planner({ farm }: { farm: FarmSummary }) {
       ) : (
         <ul className="space-y-3">
           {targets.map((t) => {
-            const r = rationOf(t);
+            const all = rationsOf(t);
+            const r = all.find((x) => x.active);
+            const others = all.filter((x) => !x.active);
+            const missing = (["summer", "winter"] as const).filter((season) => !all.some((x) => x.season === season));
             const lights = r?.checks.map(light) ?? [];
             return (
               <li key={`${t.kind}-${t.id}`} className="space-y-3 rounded-2xl border border-border bg-card p-4">
@@ -565,6 +660,7 @@ function Planner({ farm }: { farm: FarmSummary }) {
                       {SPECIES_LABELS[t.species]}
                       {t.kind === "herd" ? ` · Gruppe, ${t.count} ${t.count === 1 ? "Tier" : "Tiere"}` : ""}
                       {r ? ` · ${STAGE_LABELS[r.stage]}` : ""}
+                      {r && r.season !== "all" ? ` · ${rationName(r.season)}` : ""}
                     </p>
                   </div>
                   {r && lights.length > 0 && (
@@ -575,12 +671,55 @@ function Planner({ farm }: { farm: FarmSummary }) {
                     </span>
                   )}
                 </div>
-                {r ? <RationResult ration={r} /> : <p className="text-sm text-muted-foreground">Noch keine Ration eingetragen.</p>}
+                {r?.transition && <TransitionBox transition={r.transition} />}
+                {r ? (
+                  <RationResult ration={r} />
+                ) : (
+                  <p className="text-sm text-muted-foreground">{all.length ? "Für die jetzige Jahreszeit ist keine Ration eingetragen." : "Noch keine Ration eingetragen."}</p>
+                )}
+                {r && <SeasonHints hints={r.hints} />}
+                {others.length > 0 && (
+                  <ul className="space-y-1 border-t border-border pt-2 text-xs">
+                    {others.map((o) => (
+                      <li key={o.id} className="flex items-center justify-between gap-2">
+                        <span className="text-muted-foreground">
+                          <span className="font-medium text-foreground">{SEASON_LABELS[o.season]}</span>: {o.items.map((i) => `${i.name} ${grams(i.grams)}`).join(", ")}
+                        </span>
+                        {canWrite && (
+                          <button type="button" className="shrink-0 underline" onClick={() => setEditing({ target: t, season: o.season, ration: o })}>
+                            ändern
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 {canWrite && (
-                  <Button size="sm" variant={r ? "outline" : "default"} className="gap-1.5" onClick={() => setEditing(t)}>
-                    <Scale className="h-4 w-4" />
-                    {r ? "Ration ändern" : "Ration anlegen"}
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant={r ? "outline" : "default"} className="gap-1.5" onClick={() => setEditing({ target: t, season: r?.season ?? "all", ration: r })}>
+                      <Scale className="h-4 w-4" />
+                      {r ? "Ration ändern" : "Ration anlegen"}
+                    </Button>
+                    {r && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="gap-1.5"
+                        disabled={reminders.isPending}
+                        onClick={() => reminders.mutate({ farmId: farm.id, rationId: r.id })}
+                      >
+                        <Bell className="h-4 w-4" />
+                        Erinnern
+                      </Button>
+                    )}
+                    {all.length > 0 &&
+                      missing.map((season) => (
+                        <Button key={season} size="sm" variant="ghost" className="gap-1" onClick={() => setEditing({ target: t, season, ration: undefined })}>
+                          <Plus className="h-4 w-4" />
+                          {rationName(season)}
+                        </Button>
+                      ))}
+                  </div>
                 )}
               </li>
             );
@@ -642,11 +781,12 @@ function Planner({ farm }: { farm: FarmSummary }) {
       {editing && (
         <RationDialog
           farmId={farm.id}
-          target={editing}
-          ration={rationOf(editing)}
+          target={editing.target}
+          ration={editing.ration}
+          season={editing.season}
           catalog={reference.data.feeds}
           own={own.data ?? []}
-          stages={stagesOf(editing.species)}
+          stages={stagesOf(editing.target.species)}
           onClose={() => setEditing(null)}
         />
       )}

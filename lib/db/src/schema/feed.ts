@@ -1,4 +1,4 @@
-import { doublePrecision, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { date, doublePrecision, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { farmAnimalsTable, farmsTable, herdsTable } from "./farm";
 
@@ -61,10 +61,17 @@ export const feedRationsTable = pgTable(
     // Water actually offered per animal and day (l); null = not entered.
     waterL: doublePrecision("water_l"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    // Fütterungsplan (step 3): "all", "summer" (Apr–Oct) or "winter" (Nov–Mar).
+    season: text("season").notNull().default("all"),
+    // A change of feed is spread over some days: the ration before, and when
+    // and over how many days the change runs. Null = no change running.
+    previousItems: jsonb("previous_items").$type<RationItemJson[]>(),
+    changeStartedOn: date("change_started_on", { mode: "string" }),
+    changeDays: integer("change_days"),
   },
   (table) => [
     index("feed_rations_farm_idx").on(table.farmId),
-    uniqueIndex("feed_rations_animal_unique").on(table.animalId).where(sql`${table.animalId} IS NOT NULL`),
-    uniqueIndex("feed_rations_herd_unique").on(table.herdId).where(sql`${table.herdId} IS NOT NULL`),
+    uniqueIndex("feed_rations_animal_season_unique").on(table.animalId, table.season).where(sql`${table.animalId} IS NOT NULL`),
+    uniqueIndex("feed_rations_herd_season_unique").on(table.herdId, table.season).where(sql`${table.herdId} IS NOT NULL`),
   ],
 );

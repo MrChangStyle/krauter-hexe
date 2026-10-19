@@ -2,6 +2,7 @@ import { Router, type IRouter } from 'express';
 import {
   AddFarmFeedBody,
   AddFarmFeedResponse,
+  CreateFeedRemindersResponse,
   GetFeedReferenceResponse,
   ListFarmFeedsResponse,
   ListRationsResponse,
@@ -15,7 +16,7 @@ import { requireApproved } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
 import { checkImage } from '../lib/farmAi';
 import { readFeedLabel } from '../lib/feedLabel';
-import { addFarmFeed, feedReference, listFarmFeeds, listRations, removeFarmFeed, removeRation, saveRation } from '../lib/feedPlanner';
+import { addFarmFeed, feedReference, feedReminders, listFarmFeeds, listRations, removeFarmFeed, removeRation, saveRation } from '../lib/feedPlanner';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Futterplaner: the feed list (same for everyone) and a farm's own feeds and
@@ -87,6 +88,16 @@ router.put(
     const body = SaveRationBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
     res.json(SaveRationResponse.parse(await saveRation(req.farm!.farmId, { ...body.data, items: body.data.items.map((i) => ({ feedKey: i.feedKey ?? undefined, feedId: i.feedId ?? undefined, grams: i.grams })) })));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/rations/:rationId/reminders',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const rationId = idParam(req, 'rationId');
+    if (rationId === null) return notFound(res);
+    res.json(CreateFeedRemindersResponse.parse(await feedReminders(req.farm!.farmId, rationId)));
   }),
 );
 

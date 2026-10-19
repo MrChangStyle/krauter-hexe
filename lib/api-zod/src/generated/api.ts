@@ -1510,6 +1510,8 @@ export const ListRationsResponseItem = zod.object({
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "count": zod.number()
 }),
+  "season": zod.enum(['all', 'summer', 'winter']).describe('all year, summer (April–October) or winter (November–March)'),
+  "active": zod.boolean().describe('The ration in effect today for its animal or group'),
   "stage": zod.enum(['maintenance', 'growth', 'laying', 'molt', 'pregnancy', 'lactation', 'winter']),
   "items": zod.array(zod.object({
   "feedKey": zod.string().nullable(),
@@ -1546,6 +1548,25 @@ export const ListRationsResponseItem = zod.object({
   "kind": zod.enum(['toxic', 'foreignMineral', 'copper', 'ionophore', 'withdrawal']),
   "text": zod.string()
 })),
+  "transition": zod.union([zod.null(),zod.object({
+  "reason": zod.enum(['change', 'season']),
+  "toSeason": zod.union([zod.null(),zod.enum(['all', 'summer', 'winter']).describe('all year, summer (April–October) or winter (November–March)')]),
+  "startedOn": zod.string().describe('YYYY-MM-DD'),
+  "endsOn": zod.string().describe('YYYY-MM-DD'),
+  "days": zod.number(),
+  "day": zod.number().describe('1-based day of the change today; 0 = starts later'),
+  "newShare": zod.number(),
+  "phases": zod.array(zod.object({
+  "fromDay": zod.number(),
+  "toDay": zod.number(),
+  "newShare": zod.number()
+})),
+  "items": zod.array(zod.object({
+  "name": zod.string(),
+  "grams": zod.number()
+}))
+}).describe('A change of feed spread over some days – today\'s mixture of the old and the new ration')]),
+  "hints": zod.array(zod.string()),
   "group": zod.object({
   "feedKg": zod.number(),
   "waterL": zod.number().nullable()
@@ -1572,7 +1593,9 @@ export const SaveRationBody = zod.object({
   "grams": zod.number().describe('As fed, per animal and day')
 })),
   "times": zod.array(zod.enum(['morgens', 'mittags', 'abends'])),
-  "waterL": zod.number().nullish()
+  "waterL": zod.number().nullish(),
+  "season": zod.union([zod.null(),zod.enum(['all', 'summer', 'winter']).describe('all year, summer (April–October) or winter (November–March)')]).optional(),
+  "gradual": zod.boolean().nullish().describe('Spread a change of feed over some days (default true)')
 })
 
 export const SaveRationResponse = zod.object({
@@ -1584,6 +1607,8 @@ export const SaveRationResponse = zod.object({
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "count": zod.number()
 }),
+  "season": zod.enum(['all', 'summer', 'winter']).describe('all year, summer (April–October) or winter (November–March)'),
+  "active": zod.boolean().describe('The ration in effect today for its animal or group'),
   "stage": zod.enum(['maintenance', 'growth', 'laying', 'molt', 'pregnancy', 'lactation', 'winter']),
   "items": zod.array(zod.object({
   "feedKey": zod.string().nullable(),
@@ -1620,6 +1645,25 @@ export const SaveRationResponse = zod.object({
   "kind": zod.enum(['toxic', 'foreignMineral', 'copper', 'ionophore', 'withdrawal']),
   "text": zod.string()
 })),
+  "transition": zod.union([zod.null(),zod.object({
+  "reason": zod.enum(['change', 'season']),
+  "toSeason": zod.union([zod.null(),zod.enum(['all', 'summer', 'winter']).describe('all year, summer (April–October) or winter (November–March)')]),
+  "startedOn": zod.string().describe('YYYY-MM-DD'),
+  "endsOn": zod.string().describe('YYYY-MM-DD'),
+  "days": zod.number(),
+  "day": zod.number().describe('1-based day of the change today; 0 = starts later'),
+  "newShare": zod.number(),
+  "phases": zod.array(zod.object({
+  "fromDay": zod.number(),
+  "toDay": zod.number(),
+  "newShare": zod.number()
+})),
+  "items": zod.array(zod.object({
+  "name": zod.string(),
+  "grams": zod.number()
+}))
+}).describe('A change of feed spread over some days – today\'s mixture of the old and the new ration')]),
+  "hints": zod.array(zod.string()),
   "group": zod.object({
   "feedKg": zod.number(),
   "waterL": zod.number().nullable()
@@ -1637,6 +1681,21 @@ export const RemoveRationParams = zod.object({
 })
 
 export const RemoveRationResponse = zod.void()
+
+
+/**
+ * @summary Daily "Füttern" stall tasks for the ration in effect, one per feeding time (caretaker or admin)
+ */
+export const CreateFeedRemindersParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "rationId": zod.coerce.number()
+})
+
+export const CreateFeedRemindersResponse = zod.object({
+  "created": zod.number(),
+  "updated": zod.number(),
+  "paused": zod.number()
+})
 
 
 /**

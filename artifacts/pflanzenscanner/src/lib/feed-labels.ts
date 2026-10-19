@@ -1,4 +1,4 @@
-import type { FeedCategory, LifeStage, NutrientCheck } from "@workspace/api-client-react";
+import type { FeedCategory, LifeStage, NutrientCheck, RationSeason } from "@workspace/api-client-react";
 
 export const STAGE_LABELS: Record<LifeStage, string> = {
   maintenance: "Erhaltung",
@@ -54,4 +54,24 @@ export function formatRange(check: Pick<NutrientCheck, "nutrient" | "min" | "max
 /** Grams, or kilograms from 1000 g on. */
 export function grams(g: number): string {
   return g >= 1000 ? `${num(g / 1000, 2)} kg` : `${num(g, 1)} g`;
+}
+
+export const SEASON_LABELS: Record<RationSeason, string> = {
+  all: "Ganzjährig",
+  summer: "Sommer (Apr–Okt)",
+  winter: "Winter (Nov–Mär)",
+};
+
+/** "Winterration", "Sommerration", "Ration" (all year). */
+export function rationName(season: RationSeason): string {
+  return season === "summer" ? "Sommerration" : season === "winter" ? "Winterration" : "Ration";
+}
+
+/** "2026-10-22" → "22.10." */
+export function shortDate(day: string): string {
+  return `${day.slice(8, 10)}.${day.slice(5, 7)}.`;
+}
+
+export function shareText(share: number): string {
+  return `${Math.round(share * 100)} %`;
 }

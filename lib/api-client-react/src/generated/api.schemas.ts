@@ -186,6 +186,18 @@ export const RationInputTimesItem = {
   abends: 'abends',
 } as const;
 
+/**
+ * all year, summer (April–October) or winter (November–March)
+ */
+export type RationSeason = typeof RationSeason[keyof typeof RationSeason];
+
+
+export const RationSeason = {
+  all: 'all',
+  summer: 'summer',
+  winter: 'winter',
+} as const;
+
 export interface RationInput {
   /** @nullable */
   animalId?: number | null;
@@ -196,6 +208,12 @@ export interface RationInput {
   times: RationInputTimesItem[];
   /** @nullable */
   waterL?: number | null;
+  season?: null | RationSeason;
+  /**
+     * Spread a change of feed over some days (default true)
+     * @nullable
+     */
+  gradual?: boolean | null;
 }
 
 export type NutrientCheckNutrient = typeof NutrientCheckNutrient[keyof typeof NutrientCheckNutrient];
@@ -244,6 +262,49 @@ export const FeedWarningKind = {
 export interface FeedWarning {
   kind: FeedWarningKind;
   text: string;
+}
+
+export interface FeedRemindersResult {
+  created: number;
+  updated: number;
+  paused: number;
+}
+
+export type FeedTransitionReason = typeof FeedTransitionReason[keyof typeof FeedTransitionReason];
+
+
+export const FeedTransitionReason = {
+  change: 'change',
+  season: 'season',
+} as const;
+
+export type FeedTransitionPhasesItem = {
+  fromDay: number;
+  toDay: number;
+  newShare: number;
+};
+
+export type FeedTransitionItemsItem = {
+  name: string;
+  grams: number;
+};
+
+/**
+ * A change of feed spread over some days – today's mixture of the old and the new ration
+ */
+export interface FeedTransition {
+  reason: FeedTransitionReason;
+  toSeason: null | RationSeason;
+  /** YYYY-MM-DD */
+  startedOn: string;
+  /** YYYY-MM-DD */
+  endsOn: string;
+  days: number;
+  /** 1-based day of the change today; 0 = starts later */
+  day: number;
+  newShare: number;
+  phases: FeedTransitionPhasesItem[];
+  items: FeedTransitionItemsItem[];
 }
 
 export type RationEvaluationTargetKind = typeof RationEvaluationTargetKind[keyof typeof RationEvaluationTargetKind];
@@ -297,6 +358,9 @@ export type RationEvaluationGroup = {
 export interface RationEvaluation {
   id: number;
   target: RationEvaluationTarget;
+  season: RationSeason;
+  /** The ration in effect today for its animal or group */
+  active: boolean;
   stage: LifeStage;
   items: RationEvaluationItemsItem[];
   times: string[];
@@ -306,6 +370,8 @@ export interface RationEvaluation {
   values: RationEvaluationValues;
   checks: NutrientCheck[];
   warnings: FeedWarning[];
+  transition: null | FeedTransition;
+  hints: string[];
   group: RationEvaluationGroup;
   updatedAt: string;
 }

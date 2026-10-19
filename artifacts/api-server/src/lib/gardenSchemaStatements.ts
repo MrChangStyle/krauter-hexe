@@ -171,4 +171,27 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "harvest_logs" ADD CONSTRAINT "harvest_logs_bed_id_garden_beds_id_fk" FOREIGN KEY ("bed_id") REFERENCES "public"."garden_beds"("id") ON DELETE set null ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "harvest_logs_farm_season_idx" ON "harvest_logs" USING btree ("farm_id","season")`,
+  `CREATE TABLE IF NOT EXISTS "seeds" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"crop_key" text,
+	"name" text NOT NULL,
+	"variety" text,
+	"amount" double precision NOT NULL,
+	"unit" text NOT NULL,
+	"source" text DEFAULT 'bought' NOT NULL,
+	"harvest_year" integer,
+	"use_by" date,
+	"open_pollinated" boolean,
+	"test_sown" integer,
+	"test_germinated" integer,
+	"tested_on" date,
+	"notes" text,
+	"archived_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "seeds" ADD CONSTRAINT "seeds_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "seeds_farm_idx" ON "seeds" USING btree ("farm_id")`,
 ];

@@ -2608,6 +2608,212 @@ export const SetLineageResponse = zod.object({
 
 
 /**
+ * @summary Saatgut – the farm's seeds with how long they germinate, and what the bed plan still needs
+ */
+export const GetSeedOverviewParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetSeedOverviewResponse = zod.object({
+  "seeds": zod.array(zod.object({
+  "id": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "cropName": zod.string().nullable(),
+  "name": zod.string(),
+  "variety": zod.string().nullable(),
+  "amount": zod.number(),
+  "unit": zod.enum(['Tüten', 'g', 'Korn']),
+  "source": zod.enum(['bought', 'saved', 'swapped']),
+  "harvestYear": zod.number().nullable(),
+  "useBy": zod.string().nullable().describe('YYYY-MM-DD from the packet'),
+  "openPollinated": zod.boolean().nullable(),
+  "testSown": zod.number().nullable(),
+  "testGerminated": zod.number().nullable(),
+  "testedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['ok', 'check', 'old', 'weak', 'empty', 'archived']),
+  "goodUntil": zod.number().nullable().describe('Last year the seed germinates well (from use-by or harvest year).'),
+  "germinationRate": zod.number().nullable(),
+  "saving": zod.union([zod.null(),zod.enum(['easy', 'isolate', 'biennial', 'vegetative'])])
+})),
+  "plan": zod.object({
+  "season": zod.number(),
+  "missing": zod.array(zod.object({
+  "cropKey": zod.string(),
+  "name": zod.string(),
+  "vegetative": zod.boolean()
+})),
+  "check": zod.array(zod.object({
+  "cropKey": zod.string(),
+  "name": zod.string(),
+  "vegetative": zod.boolean()
+}))
+})
+})
+
+
+/**
+ * @summary Add seed (caretaker)
+ */
+export const CreateSeedParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createSeedBodyNameMax = 60;
+
+export const createSeedBodyVarietyMax = 60;
+
+export const createSeedBodyAmountMin = 0;
+
+export const createSeedBodyNotesMax = 2000;
+
+
+
+export const CreateSeedBody = zod.object({
+  "cropKey": zod.string().nullish(),
+  "name": zod.string().max(createSeedBodyNameMax).nullish(),
+  "variety": zod.string().max(createSeedBodyVarietyMax).nullish(),
+  "amount": zod.number().min(createSeedBodyAmountMin),
+  "unit": zod.enum(['Tüten', 'g', 'Korn']),
+  "source": zod.enum(['bought', 'saved', 'swapped']).optional(),
+  "harvestYear": zod.number().nullish(),
+  "useBy": zod.string().nullish().describe('YYYY-MM-DD'),
+  "openPollinated": zod.boolean().nullish(),
+  "notes": zod.string().max(createSeedBodyNotesMax).nullish(),
+  "archived": zod.boolean().optional()
+})
+
+export const CreateSeedResponse = zod.object({
+  "id": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "cropName": zod.string().nullable(),
+  "name": zod.string(),
+  "variety": zod.string().nullable(),
+  "amount": zod.number(),
+  "unit": zod.enum(['Tüten', 'g', 'Korn']),
+  "source": zod.enum(['bought', 'saved', 'swapped']),
+  "harvestYear": zod.number().nullable(),
+  "useBy": zod.string().nullable().describe('YYYY-MM-DD from the packet'),
+  "openPollinated": zod.boolean().nullable(),
+  "testSown": zod.number().nullable(),
+  "testGerminated": zod.number().nullable(),
+  "testedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['ok', 'check', 'old', 'weak', 'empty', 'archived']),
+  "goodUntil": zod.number().nullable().describe('Last year the seed germinates well (from use-by or harvest year).'),
+  "germinationRate": zod.number().nullable(),
+  "saving": zod.union([zod.null(),zod.enum(['easy', 'isolate', 'biennial', 'vegetative'])])
+})
+
+
+/**
+ * @summary Change a seed, its amount, or archive it (caretaker)
+ */
+export const UpdateSeedParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "seedId": zod.coerce.number()
+})
+
+export const updateSeedBodyNameMax = 60;
+
+export const updateSeedBodyVarietyMax = 60;
+
+export const updateSeedBodyAmountMin = 0;
+
+export const updateSeedBodyNotesMax = 2000;
+
+
+
+export const UpdateSeedBody = zod.object({
+  "cropKey": zod.string().nullish(),
+  "name": zod.string().max(updateSeedBodyNameMax).nullish(),
+  "variety": zod.string().max(updateSeedBodyVarietyMax).nullish(),
+  "amount": zod.number().min(updateSeedBodyAmountMin),
+  "unit": zod.enum(['Tüten', 'g', 'Korn']),
+  "source": zod.enum(['bought', 'saved', 'swapped']).optional(),
+  "harvestYear": zod.number().nullish(),
+  "useBy": zod.string().nullish().describe('YYYY-MM-DD'),
+  "openPollinated": zod.boolean().nullish(),
+  "notes": zod.string().max(updateSeedBodyNotesMax).nullish(),
+  "archived": zod.boolean().optional()
+})
+
+export const UpdateSeedResponse = zod.object({
+  "id": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "cropName": zod.string().nullable(),
+  "name": zod.string(),
+  "variety": zod.string().nullable(),
+  "amount": zod.number(),
+  "unit": zod.enum(['Tüten', 'g', 'Korn']),
+  "source": zod.enum(['bought', 'saved', 'swapped']),
+  "harvestYear": zod.number().nullable(),
+  "useBy": zod.string().nullable().describe('YYYY-MM-DD from the packet'),
+  "openPollinated": zod.boolean().nullable(),
+  "testSown": zod.number().nullable(),
+  "testGerminated": zod.number().nullable(),
+  "testedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['ok', 'check', 'old', 'weak', 'empty', 'archived']),
+  "goodUntil": zod.number().nullable().describe('Last year the seed germinates well (from use-by or harvest year).'),
+  "germinationRate": zod.number().nullable(),
+  "saving": zod.union([zod.null(),zod.enum(['easy', 'isolate', 'biennial', 'vegetative'])])
+})
+
+
+/**
+ * @summary Delete a seed (caretaker)
+ */
+export const DeleteSeedParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "seedId": zod.coerce.number()
+})
+
+export const DeleteSeedResponse = zod.void()
+
+
+/**
+ * @summary Record a germination test (caretaker)
+ */
+export const RecordGerminationTestParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "seedId": zod.coerce.number()
+})
+
+export const RecordGerminationTestBody = zod.object({
+  "sown": zod.number(),
+  "germinated": zod.number(),
+  "testedOn": zod.string().describe('YYYY-MM-DD')
+})
+
+export const RecordGerminationTestResponse = zod.object({
+  "id": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "cropName": zod.string().nullable(),
+  "name": zod.string(),
+  "variety": zod.string().nullable(),
+  "amount": zod.number(),
+  "unit": zod.enum(['Tüten', 'g', 'Korn']),
+  "source": zod.enum(['bought', 'saved', 'swapped']),
+  "harvestYear": zod.number().nullable(),
+  "useBy": zod.string().nullable().describe('YYYY-MM-DD from the packet'),
+  "openPollinated": zod.boolean().nullable(),
+  "testSown": zod.number().nullable(),
+  "testGerminated": zod.number().nullable(),
+  "testedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['ok', 'check', 'old', 'weak', 'empty', 'archived']),
+  "goodUntil": zod.number().nullable().describe('Last year the seed germinates well (from use-by or harvest year).'),
+  "germinationRate": zod.number().nullable(),
+  "saving": zod.union([zod.null(),zod.enum(['easy', 'isolate', 'biennial', 'vegetative'])])
+})
+
+
+/**
  * @summary Pflichten – what keeping the farm's species means on paper, with what is ticked off
  */
 export const GetFarmDutiesParams = zod.object({

@@ -59,6 +59,7 @@ import ArzneimittelPage from '@/pages/arzneimittel';
 import UebergabePage from '@/pages/uebergabe';
 import PflichtenPage from '@/pages/pflichten';
 import ZuchtPage from '@/pages/zucht';
+import SaatgutPage from '@/pages/saatgut';
 import { StatusBanner } from '@/components/status-banner';
 
 const queryClient = new QueryClient({
@@ -147,6 +148,7 @@ function Router() {
         <Route path="/beete" component={BeetePage} />
         <Route path="/beete/kalender" component={GartenKalenderPage} />
         <Route path="/beete/assistent" component={GartenAssistentPage} />
+        <Route path="/beete/saatgut" component={SaatgutPage} />
         <Route path="/beete/:farmId/:bedId" component={BeetPage} />
         {/* Legacy redirects — keep old deep links working */}
         <Route path="/insekten">{() => { window.location.replace(import.meta.env.BASE_URL + "insekten-scanner"); return null; }}</Route>

@@ -1,4 +1,4 @@
-import { date, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { farmsTable } from "./farm";
 import { plantsTable } from "./plants";
 import { usersTable } from "./auth";
@@ -229,4 +229,39 @@ export const harvestLogsTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("harvest_logs_farm_season_idx").on(table.farmId, table.season)],
+);
+
+// Saatgut (lib/seeds.ts): the farm's seed packets and saved seeds. How long
+// they germinate comes from fixed rules per crop; a germination test, once
+// done, wins over the rule.
+export const seedsTable = pgTable(
+  "seeds",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    // Crop of the garden catalog; null for something it does not know.
+    cropKey: text("crop_key"),
+    name: text("name").notNull(),
+    variety: text("variety"),
+    amount: doublePrecision("amount").notNull(),
+    // Tüten | g | Korn
+    unit: text("unit").notNull(),
+    // bought | saved | swapped
+    source: text("source").notNull().default("bought"),
+    // Harvest year of the seed (packet: "Ernte" / own harvest).
+    harvestYear: integer("harvest_year"),
+    // "Verwendbar bis" printed on the packet.
+    useBy: date("use_by", { mode: "string" }),
+    // Samenfest (true), F1 (false), unknown (null) – only samenfest seed comes true when saved.
+    openPollinated: boolean("open_pollinated"),
+    testSown: integer("test_sown"),
+    testGerminated: integer("test_germinated"),
+    testedOn: date("tested_on", { mode: "string" }),
+    notes: text("notes"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("seeds_farm_idx").on(table.farmId)],
 );

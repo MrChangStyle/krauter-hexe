@@ -8,12 +8,15 @@
 
 import {
   db,
+  EXPENSE_CATEGORIES,
   farmAnimalsTable,
+  farmExpensesTable,
   farmPricesTable,
   farmYieldsTable,
   harvestLogsTable,
   herdsTable,
   FARM_PRODUCTS,
+  type ExpenseCategory,
   type FarmProduct,
 } from '@workspace/db';
 import { and, asc, desc, eq, gte, isNull, lte, or, sql } from 'drizzle-orm';
@@ -171,6 +174,24 @@ export function summarize(year: number, harvests: HarvestRow[], yields: YieldRow
   };
 }
 
+export interface ExpenseSummary {
+  total: number;
+  lines: { category: ExpenseCategory; eur: number }[];
+  months: number[];
+}
+
+/** Expenses per category (in the fixed order) and month. */
+export function summarizeExpenses(rows: { category: string; date: string; amountEur: number }[]): ExpenseSummary {
+  const byCategory = new Map<string, number>();
+  const months = Array.from({ length: 12 }, () => 0);
+  for (const r of rows) {
+    byCategory.set(r.category, (byCategory.get(r.category) ?? 0) + r.amountEur);
+    months[Number(r.date.slice(5, 7)) - 1]! += r.amountEur;
+  }
+  const lines = EXPENSE_CATEGORIES.filter((c) => byCategory.has(c)).map((category) => ({ category, eur: round2(byCategory.get(category)!) }));
+  return { total: round2(lines.reduce((s, l) => s + l.eur, 0)), lines, months: months.map(round2) };
+}
+
 /** Eggs per hen and day over the last 30 days (laying rate). */
 export function layingRate(eggs: number, hens: number, days = 30): number | null {
   return hens > 0 ? Math.round((eggs / (hens * days)) * 100) / 100 : null;
@@ -195,10 +216,21 @@ export interface YieldEntry {
   note: string | null;
 }
 
+export interface ExpenseEntry {
+  id: number;
+  date: string;
+  category: ExpenseCategory;
+  amountEur: number;
+  note: string | null;
+}
+
 export interface YieldOverview {
   entries: YieldEntry[];
   summary: YieldSummary;
   previousTotal: number;
+  expenses: ExpenseSummary & { entries: ExpenseEntry[] };
+  /** Value of the yields minus the expenses entered. */
+  balance: number;
   /** This year only: eggs per hen and day over the last 30 days. */
   laying: { hens: number; eggs: number; perHenDay: number } | null;
   /** This year only: feed costs per month from today's rations (Futterplaner). */
@@ -230,9 +262,14 @@ export function validYear(raw: unknown, today: string): number {
 export async function yieldOverview(farmId: number, rawYear?: unknown, today = berlinDay()): Promise<YieldOverview> {
   const year = validYear(rawYear, today);
   const price = await priceOf(farmId);
-  const [current, previous, entries] = await Promise.all([
+  const [current, previous, expenseRows, entries] = await Promise.all([
     yearData(farmId, year),
     yearData(farmId, year - 1),
+    db
+      .select({ id: farmExpensesTable.id, date: farmExpensesTable.date, category: farmExpensesTable.category, amountEur: farmExpensesTable.amountEur, note: farmExpensesTable.note })
+      .from(farmExpensesTable)
+      .where(and(eq(farmExpensesTable.farmId, farmId), gte(farmExpensesTable.date, `${year}-01-01`), lte(farmExpensesTable.date, `${year}-12-31`)))
+      .orderBy(desc(farmExpensesTable.date), desc(farmExpensesTable.id)),
     db
       .select({
         id: farmYieldsTable.id,
@@ -272,10 +309,14 @@ export async function yieldOverview(farmId: number, rawYear?: unknown, today = b
       logger.warn({ err, farmId }, 'Feed costs for the yield overview failed');
     }
   }
+  const summary = summarize(year, current.harvests, current.yields, price);
+  const expenses = summarizeExpenses(expenseRows);
   return {
     entries: entries.map((e) => ({ ...e, product: e.product as FarmProduct, unit: PRODUCT_UNITS[e.product as FarmProduct].unit })),
-    summary: summarize(year, current.harvests, current.yields, price),
+    summary,
     previousTotal: summarize(year - 1, previous.harvests, previous.yields, price).total,
+    expenses: { ...expenses, entries: expenseRows.map((e) => ({ ...e, category: e.category as ExpenseCategory })) },
+    balance: round2(summary.total - expenses.total),
     laying,
     feedCost,
   };
@@ -306,6 +347,28 @@ export async function removeYield(farmId: number, id: number): Promise<void> {
     .delete(farmYieldsTable)
     .where(and(eq(farmYieldsTable.id, id), eq(farmYieldsTable.farmId, farmId)))
     .returning({ id: farmYieldsTable.id });
+  if (deleted.length === 0) throw notFound();
+}
+
+export interface ExpenseInput {
+  date: unknown;
+  category: ExpenseCategory;
+  amountEur: number;
+  note?: unknown;
+}
+
+export async function addExpense(farmId: number, input: ExpenseInput): Promise<void> {
+  if (!(EXPENSE_CATEGORIES as readonly string[]).includes(input.category)) throw new FarmDataError(400, 'Diese Art von Ausgabe gibt es nicht.');
+  const date = validDate(input.date, 'Datum');
+  if (!Number.isFinite(input.amountEur) || input.amountEur <= 0 || input.amountEur > 100_000) throw new FarmDataError(400, 'Der Betrag ist ungültig.');
+  await db.insert(farmExpensesTable).values({ farmId, date, category: input.category, amountEur: round2(input.amountEur), note: text(input.note, 500, 'Die Notiz') });
+}
+
+export async function removeExpense(farmId: number, id: number): Promise<void> {
+  const deleted = await db
+    .delete(farmExpensesTable)
+    .where(and(eq(farmExpensesTable.id, id), eq(farmExpensesTable.farmId, farmId)))
+    .returning({ id: farmExpensesTable.id });
   if (deleted.length === 0) throw notFound();
 }
 

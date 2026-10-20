@@ -1,10 +1,20 @@
-import type { FarmProduct } from "@workspace/api-client-react";
+import type { ExpenseCategory, FarmProduct } from "@workspace/api-client-react";
 
 export const PRODUCTS: Record<FarmProduct, { label: string; unit: string; step: string }> = {
   eggs: { label: "Eier", unit: "Stück", step: "1" },
   milk: { label: "Milch", unit: "l", step: "0.1" },
   meat: { label: "Fleisch", unit: "kg", step: "0.1" },
   wool: { label: "Wolle", unit: "kg", step: "0.1" },
+};
+
+export const EXPENSE_LABELS: Record<ExpenseCategory, string> = {
+  feed: "Futter",
+  vet: "Tierarzt & Medizin",
+  bedding: "Einstreu",
+  seeds: "Saatgut & Pflanzen",
+  animals: "Tierkauf",
+  equipment: "Geräte & Material",
+  other: "Sonstiges",
 };
 
 export const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];

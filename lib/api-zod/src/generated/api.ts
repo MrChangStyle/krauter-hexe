@@ -2864,6 +2864,22 @@ export const GetYieldOverviewResponse = zod.object({
   "total": zod.number()
 }),
   "previousTotal": zod.number(),
+  "expenses": zod.object({
+  "total": zod.number(),
+  "lines": zod.array(zod.object({
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'animals', 'equipment', 'other']),
+  "eur": zod.number()
+})),
+  "months": zod.array(zod.number()),
+  "entries": zod.array(zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'animals', 'equipment', 'other']),
+  "amountEur": zod.number(),
+  "note": zod.string().nullable()
+}))
+}),
+  "balance": zod.number().describe('Value of the yields minus the expenses entered.'),
   "laying": zod.union([zod.null(),zod.object({
   "hens": zod.number(),
   "eggs": zod.number(),
@@ -2907,6 +2923,38 @@ export const DeleteYieldParams = zod.object({
 })
 
 export const DeleteYieldResponse = zod.void()
+
+
+/**
+ * @summary Enter an expense (caretaker)
+ */
+export const AddExpenseParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const addExpenseBodyNoteMax = 500;
+
+
+
+export const AddExpenseBody = zod.object({
+  "date": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'animals', 'equipment', 'other']),
+  "amountEur": zod.number(),
+  "note": zod.string().max(addExpenseBodyNoteMax).nullish()
+})
+
+export const AddExpenseResponse = zod.void()
+
+
+/**
+ * @summary Delete an expense (caretaker)
+ */
+export const DeleteExpenseParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "expenseId": zod.coerce.number()
+})
+
+export const DeleteExpenseResponse = zod.void()
 
 
 /**

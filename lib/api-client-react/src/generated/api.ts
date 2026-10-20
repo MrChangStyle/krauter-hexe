@@ -63,6 +63,7 @@ import type {
   DeleteFarmInput,
   DeletePlantInput,
   ErrorGroup,
+  ExpenseInput,
   FarmAnimal,
   FarmAnimalInput,
   FarmDuties,
@@ -6693,6 +6694,151 @@ export const useDeleteYield = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteYieldMutationOptions(options));
+    }
+
+export const getAddExpenseUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/expenses`
+}
+
+/**
+ * @summary Enter an expense (caretaker)
+ */
+export const addExpense = async (farmId: number,
+    expenseInput: ExpenseInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAddExpenseUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(expenseInput)
+  }
+);}
+
+
+
+
+
+export const getAddExpenseMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addExpense>>, TError,{farmId: number;data: BodyType<ExpenseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addExpense>>, TError,{farmId: number;data: BodyType<ExpenseInput>}, TContext> => {
+
+const mutationKey = ['addExpense'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addExpense>>, {farmId: number;data: BodyType<ExpenseInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  addExpense(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddExpenseMutationResult = NonNullable<Awaited<ReturnType<typeof addExpense>>>
+    export type AddExpenseMutationBody = BodyType<ExpenseInput>
+    export type AddExpenseMutationError = ErrorType<void>
+
+    /**
+ * @summary Enter an expense (caretaker)
+ */
+export const useAddExpense = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addExpense>>, TError,{farmId: number;data: BodyType<ExpenseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addExpense>>,
+        TError,
+        {farmId: number;data: BodyType<ExpenseInput>},
+        TContext
+      > => {
+      return useMutation(getAddExpenseMutationOptions(options));
+    }
+
+export const getDeleteExpenseUrl = (farmId: number,
+    expenseId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/expenses/${expenseId}`
+}
+
+/**
+ * @summary Delete an expense (caretaker)
+ */
+export const deleteExpense = async (farmId: number,
+    expenseId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteExpenseUrl(farmId,expenseId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteExpenseMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{farmId: number;expenseId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{farmId: number;expenseId: number}, TContext> => {
+
+const mutationKey = ['deleteExpense'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteExpense>>, {farmId: number;expenseId: number}> = (props) => {
+          const {farmId,expenseId} = props ?? {};
+
+          return  deleteExpense(farmId,expenseId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteExpenseMutationResult = NonNullable<Awaited<ReturnType<typeof deleteExpense>>>
+
+    export type DeleteExpenseMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete an expense (caretaker)
+ */
+export const useDeleteExpense = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteExpense>>, TError,{farmId: number;expenseId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteExpense>>,
+        TError,
+        {farmId: number;expenseId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteExpenseMutationOptions(options));
     }
 
 export const getListFarmPricesUrl = (farmId: number,) => {

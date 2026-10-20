@@ -2010,6 +2010,49 @@ paths:
           description: Deleted.
         "404":
           description: Not found.
+  /farms/{farmId}/expenses:
+    post:
+      tags: [farm]
+      operationId: addExpense
+      summary: Enter an expense (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExpenseInput"
+      responses:
+        "204":
+          description: Saved.
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/expenses/{expenseId}:
+    delete:
+      tags: [farm]
+      operationId: deleteExpense
+      summary: Delete an expense (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: expenseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: Not found.
   /farms/{farmId}/prices:
     get:
       tags: [farm]
@@ -5511,9 +5554,64 @@ components:
             $ref: "#/components/schemas/YieldMonth"
         total:
           type: number
+    ExpenseCategory:
+      type: string
+      enum: [feed, vet, bedding, seeds, animals, equipment, other]
+    ExpenseInput:
+      type: object
+      required: [date, category, amountEur]
+      properties:
+        date:
+          type: string
+          description: YYYY-MM-DD, not in the future
+        category:
+          $ref: "#/components/schemas/ExpenseCategory"
+        amountEur:
+          type: number
+        note:
+          type: [string, 'null']
+          maxLength: 500
+    ExpenseEntry:
+      type: object
+      required: [id, date, category, amountEur, note]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        category:
+          $ref: "#/components/schemas/ExpenseCategory"
+        amountEur:
+          type: number
+        note:
+          type: [string, 'null']
+    ExpenseOverview:
+      type: object
+      required: [total, lines, months, entries]
+      properties:
+        total:
+          type: number
+        lines:
+          type: array
+          items:
+            type: object
+            required: [category, eur]
+            properties:
+              category:
+                $ref: "#/components/schemas/ExpenseCategory"
+              eur:
+                type: number
+        months:
+          type: array
+          items:
+            type: number
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/ExpenseEntry"
     YieldOverview:
       type: object
-      required: [entries, summary, previousTotal, laying, feedCost]
+      required: [entries, summary, previousTotal, expenses, balance, laying, feedCost]
       properties:
         entries:
           type: array
@@ -5523,6 +5621,11 @@ components:
           $ref: "#/components/schemas/YieldSummary"
         previousTotal:
           type: number
+        expenses:
+          $ref: "#/components/schemas/ExpenseOverview"
+        balance:
+          type: number
+          description: Value of the yields minus the expenses entered.
         laying:
           oneOf:
             - type: 'null'

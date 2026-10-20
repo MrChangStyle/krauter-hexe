@@ -142,4 +142,31 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
     as = "bert";
     expect((await api("GET", `/farms/${farmId}/prices`)).status).toBe(404);
   });
+
+  it("sets expenses against the value", async () => {
+    await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 100 });
+    expect((await api("POST", `/farms/${farmId}/expenses`, { date: "2026-09-01", category: "feed", amountEur: 24.99, note: "Legemehl 25 kg" })).status).toBe(204);
+    await api("POST", `/farms/${farmId}/expenses`, { date: "2026-10-05", category: "vet", amountEur: 35 });
+    await api("POST", `/farms/${farmId}/expenses`, { date: "2025-12-01", category: "feed", amountEur: 10 });
+    const { data } = await api("GET", Y());
+    expect(data.expenses).toMatchObject({ total: 59.99, lines: [{ category: "feed", eur: 24.99 }, { category: "vet", eur: 35 }] });
+    expect(data.expenses.entries.map((e: any) => [e.date, e.category, e.amountEur, e.note])).toEqual([
+      ["2026-10-05", "vet", 35, null],
+      ["2026-09-01", "feed", 24.99, "Legemehl 25 kg"],
+    ]);
+    expect(data.balance).toBe(-19.99);
+    const bad = async (body: object) => (await api("POST", `/farms/${farmId}/expenses`, { date: "2026-10-01", category: "feed", amountEur: 5, ...body })).status;
+    expect(await bad({ category: "urlaub" })).toBe(400);
+    expect(await bad({ amountEur: 0 })).toBe(400);
+    expect(await bad({ date: "2099-01-01" })).toBe(400);
+    const id = data.expenses.entries[0].id;
+    as = "gina";
+    expect((await api("POST", `/farms/${farmId}/expenses`, { date: "2026-10-01", category: "feed", amountEur: 5 })).status).toBe(403);
+    expect((await api("DELETE", `/farms/${farmId}/expenses/${id}`)).status).toBe(403);
+    as = "bert";
+    expect((await api("DELETE", `/farms/${otherFarm}/expenses/${id}`)).status).toBe(404);
+    as = "anna";
+    expect((await api("DELETE", `/farms/${farmId}/expenses/${id}`)).status).toBe(204);
+    expect((await api("GET", Y())).data.balance).toBe(15.01);
+  });
 });

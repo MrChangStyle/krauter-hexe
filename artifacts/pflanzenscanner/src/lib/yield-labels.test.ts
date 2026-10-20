@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { changeText, euro, num } from "./yield-labels";
+import { EXPENSE_LABELS, changeText, euro, num } from "./yield-labels";
 
 describe("yield labels", () => {
   it("formats money, amounts and the change to last year", () => {
@@ -9,5 +9,6 @@ describe("yield labels", () => {
     expect(changeText(120, 100)).toBe("+20 % zum Vorjahr");
     expect(changeText(95, 100)).toBe("−5 % zum Vorjahr");
     expect(changeText(50, 0)).toBeNull();
+    expect(Object.keys(EXPENSE_LABELS)).toEqual(["feed", "vet", "bedding", "seeds", "animals", "equipment", "other"]);
   });
 });

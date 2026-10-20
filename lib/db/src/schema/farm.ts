@@ -413,3 +413,24 @@ export const farmPricesTable = pgTable(
   },
   (table) => [primaryKey({ columns: [table.farmId, table.key] })],
 );
+
+// Ertrag & Bilanz: what the farm spent (feed, vet, bedding, seed, animals,
+// equipment, other), so the year's value can be set against its costs.
+export const EXPENSE_CATEGORIES = ["feed", "vet", "bedding", "seeds", "animals", "equipment", "other"] as const;
+export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
+
+export const farmExpensesTable = pgTable(
+  "farm_expenses",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    date: date("date", { mode: "string" }).notNull(),
+    category: text("category").notNull(),
+    amountEur: doublePrecision("amount_eur").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("farm_expenses_farm_date_idx").on(table.farmId, table.date)],
+);

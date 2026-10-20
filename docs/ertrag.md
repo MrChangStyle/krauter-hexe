@@ -25,7 +25,13 @@ Die Seite `/farm/ertrag` zeigt, was Tiere und Garten im Jahr bringen und was das
 - **Legeleistung**: Eier der letzten 30 Tage geteilt durch Hennen (Geflügel weiblich oder unbekannt, nicht archiviert) und 30 Tage.
 - **Futterkosten im Monat**: Schätzung des Futterplaners (`feedStock().costs`) aus den heutigen Rationen und den Preisen im Vorrat. Fehlen Preise, steht das dabei.
 
+## Ausgaben und Bilanz
+
+- Ausgaben werden mit Datum, Betrag und Kategorie eingetragen (`farm_expenses`), optional mit einer Notiz. Kategorien: Futter, Tierarzt & Medizin, Einstreu, Saatgut & Pflanzen, Tierkauf, Geräte & Material, Sonstiges.
+- `summarizeExpenses()` ist rein und summiert je Kategorie in fester Reihenfolge und je Monat.
+- **Bilanz** = Wert der Erträge minus eingetragene Ausgaben.
+- Die Futterkosten-Schätzung des Futterplaners wird **nicht** abgezogen. Echte Futterkäufe trägt man als Ausgabe „Futter“ ein, sonst würden sie doppelt zählen.
+
 ## Offen
 
-- Weitere Ausgaben (Tierarzt, Einstreu, Saatgut) als eigene Kostenposten.
 - Verkäufe und echte Einnahmen getrennt vom Eigenverbrauch.

@@ -6,13 +6,16 @@ import { ArrowLeft, Egg, Loader2, PiggyBank, Plus, Tag, Trash2 } from "lucide-re
 import {
   getGetYieldOverviewQueryKey,
   getListFarmPricesQueryKey,
+  useAddExpense,
   useAddYield,
+  useDeleteExpense,
   useDeleteYield,
   useEnsureOwnFarm,
   useGetYieldOverview,
   useListFarmPrices,
   useListHerds,
   useSetFarmPrice,
+  type ExpenseCategory,
   type FarmProduct,
   type FarmSummary,
   type PriceItem,
@@ -26,7 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
-import { MONTHS, PRODUCTS, changeText, euro, num } from "@/lib/yield-labels";
+import { EXPENSE_LABELS, MONTHS, PRODUCTS, changeText, euro, num } from "@/lib/yield-labels";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -101,6 +104,67 @@ function EntryForm({ farm, year }: { farm: FarmSummary; year: number }) {
       <Button type="submit" size="sm" disabled={add.isPending} className="gap-1.5">
         {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         Eintragen
+      </Button>
+    </form>
+  );
+}
+
+/** An expense: "Legemehl, 24,99 €". */
+function ExpenseForm({ farm, year }: { farm: FarmSummary; year: number }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [category, setCategory] = useState<ExpenseCategory>("feed");
+  const [amount, setAmount] = useState("");
+  const [date, setDate] = useState(todayIso());
+  const [note, setNote] = useState("");
+  const add = useAddExpense({
+    mutation: {
+      onSuccess() {
+        void queryClient.invalidateQueries({ queryKey: getGetYieldOverviewQueryKey(farm.id, year) });
+        toast({ title: `Ausgabe eingetragen: ${euro(Number(amount.replace(",", ".")))}` });
+        setAmount("");
+        setNote("");
+      },
+      onError: (err) => toast({ title: "Nicht eingetragen", description: errorText(err, ""), variant: "destructive" }),
+    },
+  });
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    add.mutate({ farmId: farm.id, data: { category, amountEur: Number(amount.replace(",", ".")), date, note: note.trim() || null } });
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-3">
+      <div className="grid grid-cols-[1fr_6rem] gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="x-category">Wofür</Label>
+          <select id="x-category" className={selectClass} value={category} onChange={(e) => setCategory(e.target.value as ExpenseCategory)}>
+            {(Object.keys(EXPENSE_LABELS) as ExpenseCategory[]).map((c) => (
+              <option key={c} value={c}>
+                {EXPENSE_LABELS[c]}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="x-amount">Betrag €</Label>
+          <Input id="x-amount" inputMode="decimal" required value={amount} onChange={(e) => setAmount(e.target.value)} />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="x-date">Datum</Label>
+          <Input id="x-date" type="date" max={todayIso()} required value={date} onChange={(e) => setDate(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="x-note">Notiz</Label>
+          <Input id="x-note" maxLength={500} value={note} placeholder="z. B. Legemehl" onChange={(e) => setNote(e.target.value)} />
+        </div>
+      </div>
+      <Button type="submit" size="sm" disabled={add.isPending} className="gap-1.5">
+        {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+        Ausgabe eintragen
       </Button>
     </form>
   );
@@ -201,16 +265,43 @@ function Overview({ farm }: { farm: FarmSummary }) {
   const thisYear = Number(todayIso().slice(0, 4));
   const [year, setYear] = useState(thisYear);
   const [pricing, setPricing] = useState(false);
+  const [tab, setTab] = useState<"yield" | "expense">("yield");
   const queryClient = useQueryClient();
   const overview = useGetYieldOverview(farm.id, year);
-  const remove = useDeleteYield({ mutation: { onSuccess: () => void queryClient.invalidateQueries({ queryKey: getGetYieldOverviewQueryKey(farm.id, year) }) } });
+  const refresh = { onSuccess: () => void queryClient.invalidateQueries({ queryKey: getGetYieldOverviewQueryKey(farm.id, year) }) };
+  const remove = useDeleteYield({ mutation: refresh });
+  const removeExpense = useDeleteExpense({ mutation: refresh });
   const canWrite = farm.role !== "guest";
   const d = overview.data;
   const change = d ? changeText(d.summary.total, d.previousTotal) : null;
 
   return (
     <div className="space-y-5">
-      {canWrite && year === thisYear && <EntryForm farm={farm} year={year} />}
+      {canWrite && year === thisYear && (
+        <div className="space-y-2">
+          <div role="tablist" className="flex gap-1 rounded-lg bg-muted p-1 text-sm">
+            {(["yield", "expense"] as const).map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={tab === t}
+                className={`flex-1 rounded-md px-3 py-1.5 ${tab === t ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}
+                onClick={() => setTab(t)}
+              >
+                {t === "yield" ? "Ertrag" : "Ausgabe"}
+              </button>
+            ))}
+          </div>
+          {tab === "yield" ? (
+            <EntryForm farm={farm} year={year} />
+          ) : (
+            <div className="rounded-xl border border-border bg-card p-4 text-sm">
+              <ExpenseForm farm={farm} year={year} />
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="flex items-center justify-between gap-2">
         <select aria-label="Jahr" className="h-9 rounded-md border border-input bg-background px-2 text-sm" value={year} onChange={(e) => setYear(Number(e.target.value))}>
@@ -240,6 +331,21 @@ function Overview({ farm }: { farm: FarmSummary }) {
             {change && <p className="text-xs text-muted-foreground">{change}</p>}
             <MonthChart months={d.summary.months} />
             <p className="text-xs text-muted-foreground">Garten {euro(d.summary.garden.value)} · Tiere {euro(d.summary.animals.value)} – zu euren Preisen.</p>
+            {d.expenses.total > 0 && (
+              <dl className="space-y-1 border-t border-border pt-3">
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Ausgaben</dt>
+                  <dd>− {euro(d.expenses.total)}</dd>
+                </div>
+                <div className="flex justify-between font-semibold">
+                  <dt>Bilanz</dt>
+                  <dd data-testid="yield-balance" className={d.balance < 0 ? "text-red-700 dark:text-red-300" : "text-primary"}>
+                    {d.balance < 0 ? "− " : ""}
+                    {euro(Math.abs(d.balance))}
+                  </dd>
+                </div>
+              </dl>
+            )}
           </section>
 
           {(d.laying || d.feedCost) && (
@@ -258,10 +364,26 @@ function Overview({ farm }: { farm: FarmSummary }) {
                   <p className="text-xs text-muted-foreground">Futterkosten</p>
                   <p className="text-lg font-semibold">{euro(d.feedCost.perMonth)}</p>
                   <p className="text-xs text-muted-foreground">
-                    im Monat, nach den Rationen{d.feedCost.complete ? "" : " (nicht alle Preise bekannt)"}
+                    im Monat, geschätzt nach den Rationen{d.feedCost.complete ? "" : " (nicht alle Preise bekannt)"}
                   </p>
                 </div>
               )}
+            </section>
+          )}
+
+          {d.expenses.lines.length > 0 && (
+            <section className="space-y-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Ausgaben</h2>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
+                  {d.expenses.lines.map((l) => (
+                    <tr key={l.category}>
+                      <td className="py-1.5">{EXPENSE_LABELS[l.category]}</td>
+                      <td className="py-1.5 text-right font-medium">{euro(l.eur)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </section>
           )}
 
@@ -312,6 +434,27 @@ function Overview({ farm }: { farm: FarmSummary }) {
             )}
           </section>
 
+          {d.expenses.entries.length > 0 && (
+            <details className="text-sm">
+              <summary className="cursor-pointer text-muted-foreground">Ausgaben {year} ({d.expenses.entries.length})</summary>
+              <ul className="divide-y divide-border pt-2">
+                {d.expenses.entries.map((e) => (
+                  <li key={e.id} className="flex items-center gap-2 py-1.5">
+                    <span className="flex-1">
+                      {deDay(e.date)} · {euro(e.amountEur)} {EXPENSE_LABELS[e.category]}
+                      {e.note && <span className="text-muted-foreground"> · {e.note}</span>}
+                    </span>
+                    {canWrite && (
+                      <button type="button" aria-label="Ausgabe löschen" className="text-muted-foreground hover:text-destructive" onClick={() => removeExpense.mutate({ farmId: farm.id, expenseId: e.id })}>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
+
           {d.entries.length > 0 && (
             <details className="text-sm">
               <summary className="cursor-pointer text-muted-foreground">Einträge {year} ({d.entries.length})</summary>
@@ -361,7 +504,7 @@ export default function ErtragPage() {
           <PiggyBank className="h-6 w-6 text-primary" />
           Ertrag & Bilanz
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Was Tiere und Garten im Jahr bringen – und was es im Laden kosten würde.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Was Tiere und Garten im Jahr bringen, was es im Laden kosten würde – und was ihr dafür ausgebt.</p>
       </div>
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Overview farm={farm} />}
     </div>

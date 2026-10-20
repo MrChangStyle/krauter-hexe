@@ -324,4 +324,17 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "farm_prices" ADD CONSTRAINT "farm_prices_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "farm_yields_farm_date_idx" ON "farm_yields" USING btree ("farm_id","date")`,
+  `CREATE TABLE IF NOT EXISTS "farm_expenses" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"date" date NOT NULL,
+	"category" text NOT NULL,
+	"amount_eur" double precision NOT NULL,
+	"note" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_expenses" ADD CONSTRAINT "farm_expenses_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "farm_expenses_farm_date_idx" ON "farm_expenses" USING btree ("farm_id","date")`,
 ];

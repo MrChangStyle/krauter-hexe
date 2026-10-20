@@ -185,6 +185,7 @@ Details in `docs/saatgut.md` (`lib/seeds.ts`, `routes/farm-seeds.ts`, page `/bee
 Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page `/farm/ertrag`; tables `farm_yields`, `farm_prices`).
 - Animal products (eggs, milk, meat, wool) are entered on the page; garden harvests come from `harvest_logs`. `GET /farms/:id/yield-overview/:year` (the year is a path parameter: a path and a query parameter on one operation make the zod codegen export the same name twice).
 - Values use `DEFAULT_PRICES` or the farm's own (`PUT /farms/:id/prices`, `eur: null` resets); fodder harvest counts at 0.30 €/kg. `summarize()` is pure.
+- Expenses (`farm_expenses`, category + € + note, `POST`/`DELETE /farms/:id/expenses`) are summed per category and month; `balance` = value − expenses. The Futterplaner's feed-cost estimate is shown but never subtracted (real feed purchases are entered as expenses).
 - For the running year the overview adds the laying rate (eggs of the last 30 days per hen and day) and the Futterplaner's monthly feed costs; the farm routes reach the AI client through `feedStock`, so tests set `GEMINI_API_KEY`.
 
 ## Installation (Android/PWA)

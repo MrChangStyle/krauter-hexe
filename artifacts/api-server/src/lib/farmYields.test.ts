@@ -5,7 +5,7 @@ vi.hoisted(() => {
   process.env["GEMINI_API_KEY"] ??= "test-key";
 });
 
-const { DEFAULT_PRICES, defaultPrice, layingRate, summarize } = await import("./farmYields");
+const { DEFAULT_PRICES, defaultPrice, layingRate, summarize, summarizeExpenses } = await import("./farmYields");
 const { GARDEN_CATALOG } = await import("./gardenCatalog");
 
 describe("Ertrag – prices", () => {
@@ -57,5 +57,23 @@ describe("Ertrag – summary", () => {
   it("works out eggs per hen and day", () => {
     expect(layingRate(150, 6)).toBe(0.83);
     expect(layingRate(10, 0)).toBeNull();
+  });
+});
+
+describe("Ertrag – expenses", () => {
+  it("sums per category in a fixed order and per month", () => {
+    const e = summarizeExpenses([
+      { category: "vet", date: "2026-03-02", amountEur: 45.5 },
+      { category: "feed", date: "2026-03-10", amountEur: 30 },
+      { category: "feed", date: "2026-05-01", amountEur: 29.99 },
+    ]);
+    expect(e.lines).toEqual([
+      { category: "feed", eur: 59.99 },
+      { category: "vet", eur: 45.5 },
+    ]);
+    expect(e.total).toBe(105.49);
+    expect(e.months[2]).toBe(75.5);
+    expect(e.months[4]).toBe(29.99);
+    expect(summarizeExpenses([])).toEqual({ total: 0, lines: [], months: Array(12).fill(0) });
   });
 });

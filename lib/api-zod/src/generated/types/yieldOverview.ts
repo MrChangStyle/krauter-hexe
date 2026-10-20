@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ExpenseOverview } from './expenseOverview';
 import type { FeedCostEstimate } from './feedCostEstimate';
 import type { LayingRate } from './layingRate';
 import type { YieldEntry } from './yieldEntry';
@@ -14,6 +15,9 @@ export interface YieldOverview {
   entries: YieldEntry[];
   summary: YieldSummary;
   previousTotal: number;
+  expenses: ExpenseOverview;
+  /** Value of the yields minus the expenses entered. */
+  balance: number;
   laying: null | LayingRate;
   feedCost: null | FeedCostEstimate;
 }

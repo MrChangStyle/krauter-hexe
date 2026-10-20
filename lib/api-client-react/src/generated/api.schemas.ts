@@ -968,6 +968,52 @@ export interface YieldSummary {
   total: number;
 }
 
+export type ExpenseCategory = typeof ExpenseCategory[keyof typeof ExpenseCategory];
+
+
+export const ExpenseCategory = {
+  feed: 'feed',
+  vet: 'vet',
+  bedding: 'bedding',
+  seeds: 'seeds',
+  animals: 'animals',
+  equipment: 'equipment',
+  other: 'other',
+} as const;
+
+export interface ExpenseInput {
+  /** YYYY-MM-DD, not in the future */
+  date: string;
+  category: ExpenseCategory;
+  amountEur: number;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  note?: string | null;
+}
+
+export interface ExpenseEntry {
+  id: number;
+  date: string;
+  category: ExpenseCategory;
+  amountEur: number;
+  /** @nullable */
+  note: string | null;
+}
+
+export type ExpenseOverviewLinesItem = {
+  category: ExpenseCategory;
+  eur: number;
+};
+
+export interface ExpenseOverview {
+  total: number;
+  lines: ExpenseOverviewLinesItem[];
+  months: number[];
+  entries: ExpenseEntry[];
+}
+
 export interface LayingRate {
   hens: number;
   eggs: number;
@@ -983,6 +1029,9 @@ export interface YieldOverview {
   entries: YieldEntry[];
   summary: YieldSummary;
   previousTotal: number;
+  expenses: ExpenseOverview;
+  /** Value of the yields minus the expenses entered. */
+  balance: number;
   laying: null | LayingRate;
   feedCost: null | FeedCostEstimate;
 }

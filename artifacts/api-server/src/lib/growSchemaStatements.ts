@@ -80,4 +80,16 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
 	"sent_at" timestamp with time zone DEFAULT now() NOT NULL,
 	CONSTRAINT "grow_push_log_user_id_day_pk" PRIMARY KEY("user_id","day")
 )`,
+  `CREATE TABLE IF NOT EXISTS "grow_checks" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"plant_id" integer NOT NULL,
+	"kind" text NOT NULL,
+	"date" date NOT NULL,
+	"result" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "grow_checks" ADD CONSTRAINT "grow_checks_plant_id_grow_plants_id_fk" FOREIGN KEY ("plant_id") REFERENCES "public"."grow_plants"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "grow_checks_plant_idx" ON "grow_checks" USING btree ("plant_id")`,
 ];

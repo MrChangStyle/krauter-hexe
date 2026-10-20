@@ -2428,6 +2428,62 @@ paths:
           description: Module not unlocked or age not confirmed.
         "404":
           description: Not found.
+  /grow/plants/{plantId}/checks:
+    post:
+      tags: [grow]
+      operationId: checkGrowPlant
+      summary: KI-Check of a plant photo – health or trichomes; the photo is not stored
+      parameters:
+        - name: plantId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowCheckInput"
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowCheck"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+        "409":
+          description: Trichomes outside the bloom.
+        "422":
+          description: Nothing to see on the photo.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: AI not reachable.
+  /grow/checks/{checkId}:
+    delete:
+      tags: [grow]
+      operationId: deleteGrowCheck
+      summary: Delete a KI-Check
+      parameters:
+        - name: checkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Done.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
   /grow/logs/{logId}:
     delete:
       tags: [grow]
@@ -6525,7 +6581,7 @@ components:
           maxLength: 1000
     GrowPlantDetail:
       type: object
-      required: [plant, grow, logs]
+      required: [plant, grow, logs, checks]
       properties:
         plant:
           $ref: "#/components/schemas/GrowPlant"
@@ -6545,6 +6601,91 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/GrowLog"
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowCheck"
+    GrowCheckKind:
+      type: string
+      enum: [health, trichomes]
+    GrowCheckInput:
+      type: object
+      required: [kind, imageData]
+      properties:
+        kind:
+          $ref: "#/components/schemas/GrowCheckKind"
+        imageData:
+          type: string
+          description: data:image/jpeg|png|webp;base64,…
+    GrowHealthFinding:
+      type: object
+      required: [name, category, likely, signs, actions]
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum: [deficiency, excess, pest, disease, environment, other]
+        likely:
+          type: boolean
+        signs:
+          type: [string, 'null']
+        actions:
+          type: array
+          items:
+            type: string
+    GrowHealthResult:
+      type: object
+      required: [status, summary, findings, facts]
+      properties:
+        status:
+          type: string
+          enum: [healthy, watch, problem]
+        summary:
+          type: string
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowHealthFinding"
+        facts:
+          type: array
+          items:
+            type: string
+    GrowTrichomeResult:
+      type: object
+      required: [clear, milky, amber, stage, summary, advice]
+      properties:
+        clear:
+          type: integer
+        milky:
+          type: integer
+        amber:
+          type: integer
+        stage:
+          type: string
+          enum: [early, window, late]
+        summary:
+          type: string
+        advice:
+          type: string
+    GrowCheck:
+      type: object
+      required: [id, kind, date, health, trichomes]
+      properties:
+        id:
+          type: integer
+        kind:
+          $ref: "#/components/schemas/GrowCheckKind"
+        date:
+          type: string
+        health:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/GrowHealthResult"
+        trichomes:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/GrowTrichomeResult"
     FarmDuties:
       type: object
       required: [holdingNumber, housingOrderUntil, species, duties]

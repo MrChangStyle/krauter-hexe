@@ -13,6 +13,10 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
+vi.hoisted(() => {
+  process.env["GEMINI_API_KEY"] ??= "test-key";
+});
+
 let fixedDay = "2026-04-01";
 vi.mock("./monitoring", async (orig) => ({ ...(await orig<object>()), berlinDay: () => fixedDay }));
 

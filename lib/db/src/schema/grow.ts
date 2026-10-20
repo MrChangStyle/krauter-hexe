@@ -106,3 +106,21 @@ export const growPushLogTable = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.day] })],
 );
+
+// KI-Check of a plant photo: health (deficiency, pests, mould, stress) or
+// trichomes (ripeness). Only the result is kept – never the photo.
+export const growChecksTable = pgTable(
+  "grow_checks",
+  {
+    id: serial("id").primaryKey(),
+    plantId: integer("plant_id")
+      .notNull()
+      .references(() => growPlantsTable.id, { onDelete: "cascade" }),
+    // health | trichomes
+    kind: text("kind").notNull(),
+    date: date("date", { mode: "string" }).notNull(),
+    result: jsonb("result").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("grow_checks_plant_idx").on(table.plantId)],
+);

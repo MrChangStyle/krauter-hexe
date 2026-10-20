@@ -1,4 +1,14 @@
-import type { GrowEnvironment, GrowFlowering, GrowMedium, GrowPhaseKey, GrowSeedSex, StrainType } from "@workspace/api-client-react";
+import type {
+  GrowEnvironment,
+  GrowFlowering,
+  GrowHealthFindingCategory,
+  GrowHealthResultStatus,
+  GrowMedium,
+  GrowPhaseKey,
+  GrowSeedSex,
+  GrowTrichomeResultStage,
+  StrainType,
+} from "@workspace/api-client-react";
 
 /** The Grow module can be switched off for builds that go into the app stores. */
 export const GROW_ENABLED = import.meta.env.VITE_DISABLE_GROW !== "true";
@@ -73,3 +83,24 @@ export function rangeText(range: number[] | null | undefined, unit = ""): string
 export function dayText(day: number): string {
   return `Tag ${day} · Woche ${Math.ceil(day / 7)}`;
 }
+
+export const FINDING_LABELS: Record<GrowHealthFindingCategory, string> = {
+  deficiency: "Mangel",
+  excess: "Überdüngung",
+  pest: "Schädling",
+  disease: "Krankheit/Schimmel",
+  environment: "Umwelt-Stress",
+  other: "Sonstiges",
+};
+
+export const HEALTH_STATUS_LABELS: Record<GrowHealthResultStatus, string> = {
+  healthy: "Sieht gesund aus",
+  watch: "Beobachten",
+  problem: "Handlungsbedarf",
+};
+
+export const TRICHOME_STAGE_LABELS: Record<GrowTrichomeResultStage, string> = {
+  early: "Noch zu früh",
+  window: "Erntefenster",
+  late: "Spät – bald ernten",
+};

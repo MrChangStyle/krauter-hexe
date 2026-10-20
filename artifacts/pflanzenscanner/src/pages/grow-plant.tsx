@@ -13,6 +13,7 @@ import {
   type GrowPlan,
   type GrowPlantDetail,
 } from "@workspace/api-client-react";
+import { GrowCheckSection } from "@/components/grow-check";
 import { GrowPlantDialog } from "@/components/grow-plant-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -244,6 +245,8 @@ function Plant({ detail }: { detail: GrowPlantDetail }) {
           ))}
         </ul>
       </section>
+
+      {p.plan.current !== "done" && <GrowCheckSection detail={detail} />}
 
       <section className="space-y-2">
         <h2 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">

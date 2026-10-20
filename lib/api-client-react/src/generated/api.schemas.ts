@@ -1458,10 +1458,88 @@ export type GrowPlantDetailGrow = {
   medium: GrowMedium;
 };
 
+export type GrowCheckKind = typeof GrowCheckKind[keyof typeof GrowCheckKind];
+
+
+export const GrowCheckKind = {
+  health: 'health',
+  trichomes: 'trichomes',
+} as const;
+
+export type GrowHealthResultStatus = typeof GrowHealthResultStatus[keyof typeof GrowHealthResultStatus];
+
+
+export const GrowHealthResultStatus = {
+  healthy: 'healthy',
+  watch: 'watch',
+  problem: 'problem',
+} as const;
+
+export type GrowHealthFindingCategory = typeof GrowHealthFindingCategory[keyof typeof GrowHealthFindingCategory];
+
+
+export const GrowHealthFindingCategory = {
+  deficiency: 'deficiency',
+  excess: 'excess',
+  pest: 'pest',
+  disease: 'disease',
+  environment: 'environment',
+  other: 'other',
+} as const;
+
+export interface GrowHealthFinding {
+  name: string;
+  category: GrowHealthFindingCategory;
+  likely: boolean;
+  /** @nullable */
+  signs: string | null;
+  actions: string[];
+}
+
+export interface GrowHealthResult {
+  status: GrowHealthResultStatus;
+  summary: string;
+  findings: GrowHealthFinding[];
+  facts: string[];
+}
+
+export type GrowTrichomeResultStage = typeof GrowTrichomeResultStage[keyof typeof GrowTrichomeResultStage];
+
+
+export const GrowTrichomeResultStage = {
+  early: 'early',
+  window: 'window',
+  late: 'late',
+} as const;
+
+export interface GrowTrichomeResult {
+  clear: number;
+  milky: number;
+  amber: number;
+  stage: GrowTrichomeResultStage;
+  summary: string;
+  advice: string;
+}
+
+export interface GrowCheck {
+  id: number;
+  kind: GrowCheckKind;
+  date: string;
+  health: null | GrowHealthResult;
+  trichomes: null | GrowTrichomeResult;
+}
+
 export interface GrowPlantDetail {
   plant: GrowPlant;
   grow: GrowPlantDetailGrow;
   logs: GrowLog[];
+  checks: GrowCheck[];
+}
+
+export interface GrowCheckInput {
+  kind: GrowCheckKind;
+  /** data:image/jpeg|png|webp;base64,… */
+  imageData: string;
 }
 
 export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];

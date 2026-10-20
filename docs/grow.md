@@ -26,6 +26,7 @@ Das Modul gibt gärtnerische Tipps. Es ist **keine** Rechtsberatung und gibt **k
 | `grows` | Name, Umgebung (`indoor`/`outdoor`/`greenhouse`), Substrat (`soil`/`coco`/`hydro`), Zeltgröße, Lampe und Watt (nur indoor), archiviert; draußen PLZ und Standort (auf 0,1° gerundet) |
 | `grow_plants` | Name, Sorte, Züchter, Typ (`indica`/`sativa`/`hybrid`/`ruderalis`), `photo`/`auto`, feminisiert/regulär, Blütewochen, Keimdatum, 12/12-Tag, Erntedatum, Nass- und Trockengewicht |
 | `grow_logs` | Tagebuch: Datum, Höhe, Wasser, pH, EC, Notiz |
+| `grow_checks` | KI-Checks einer Pflanze: Art (`health`/`trichomes`), Datum, Ergebnis (JSON) – ohne Foto |
 | `grow_access.push` | Morgen-Push: `off`, `discreet` (Standard), `full` |
 | `grow_push_log` | Ein Grow-Push pro Konto und Tag, mit den Wetter-Warnungen darin (14 Tage) |
 
@@ -76,6 +77,20 @@ Botanisch: Die Gattung ist *Cannabis*, die Art *Cannabis sativa*. Indica, Sativa
   - **Ausführlich**: Warnungen und Schritte mit Pflanzennamen. **Aus**: kein Push.
   - Einstellung auf `/grow` in der Karte „Erinnerungen“ (`PUT /grow/access` mit `push`).
 
+## KI-Check (`lib/growDiagnosis.ts`)
+
+Auf der Pflanzenseite: ein Foto, ausgewertet von Gemini (wie der Pflanzenscan). Das Foto wird nicht gespeichert, nur das Ergebnis (`grow_checks`, max. 20 je Pflanze angezeigt, löschbar). Zählt gegen das KI-Tageslimit (15 pro Konto, eigener Zähler `grow`); ein fehlgeschlagener Check gibt seinen Versuch zurück.
+
+- **Gesundheit**: Mangel oder Überdüngung, Schädlinge, Schimmel/Krankheit, Umwelt-Stress – höchstens 4 Befunde mit Anzeichen und Maßnahmen.
+  - Der Prompt kennt Typ, Sorte, Umgebung, Substrat, Phase, Tag und den letzten Tagebuch-Eintrag.
+  - Ohne KI ergänzt: pH oder EC des letzten Eintrags (höchstens 7 Tage alt) außerhalb des Ziels der Phase („Aus deinem Tagebuch“).
+  - Status: „problem“ nur mit einem wahrscheinlichen Befund, „healthy“ nie gegen einen Tagebuch-Hinweis – sonst „Beobachten“.
+- **Trichome** (nur in Blüte und Spülen, sonst 409): Anteile klar, milchig, bernstein, auf 100 % gerechnet. Die Stufe rechnet die App selbst:
+  - Bernstein ≥ 30 %: spät – bald ernten.
+  - Milchig + bernstein ≥ 70 % und klar ≤ 20 %: Erntefenster.
+  - Sonst: noch zu früh, in 3–4 Tagen erneut prüfen.
+- Keine Pflanze oder Trichome nicht scharf: 422 mit Foto-Tipp, nichts gespeichert.
+
 ## Wissen und Rechtliches
 
 - `/grow/wissen` (`lib/grow-knowledge.ts`):
@@ -87,6 +102,5 @@ Botanisch: Die Gattung ist *Cannabis*, die Art *Cannabis sativa*. Indica, Sativa
 
 ## Später
 
-- KI-Diagnose (Mangel, Schädlinge, Schimmel) und Trichom-Check per Foto.
 - Strom- und Kostenrechner, Anbindung an „Ertrag & Bilanz“.
 - **Affiliate-Empfehlungen**: erst nach Prüfung durch einen Anwalt (§ 6 KCanG Werbeverbot). Dann nur neutrales Zubehör, keine Samen, klar als Werbung gekennzeichnet.

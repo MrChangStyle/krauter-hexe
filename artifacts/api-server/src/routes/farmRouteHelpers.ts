@@ -34,7 +34,7 @@ export function notFound(res: Response) {
   res.status(404).json({ error: 'Nicht gefunden.' });
 }
 
-const AI_AREA = { farm: 'die Farm', garden: 'den Garten' } as const;
+const AI_AREA = { farm: 'die Farm', garden: 'den Garten', grow: 'den Grow' } as const;
 
 /**
  * Records one AI attempt, or answers 429 and returns null. A failed AI call

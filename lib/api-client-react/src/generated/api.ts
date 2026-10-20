@@ -109,6 +109,8 @@ import type {
   GrowAccessEntry,
   GrowAccessInput,
   GrowAgeInput,
+  GrowCheck,
+  GrowCheckInput,
   GrowInput,
   GrowLogInput,
   GrowOverview,
@@ -8098,6 +8100,149 @@ export const useAddGrowLog = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getAddGrowLogMutationOptions(options));
+    }
+
+export const getCheckGrowPlantUrl = (plantId: number,) => {
+
+
+
+
+  return `/api/grow/plants/${plantId}/checks`
+}
+
+/**
+ * @summary KI-Check of a plant photo – health or trichomes; the photo is not stored
+ */
+export const checkGrowPlant = async (plantId: number,
+    growCheckInput: GrowCheckInput, options?: RequestInit): Promise<GrowCheck> => {
+
+  return customFetch<GrowCheck>(getCheckGrowPlantUrl(plantId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growCheckInput)
+  }
+);}
+
+
+
+
+
+export const getCheckGrowPlantMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkGrowPlant>>, TError,{plantId: number;data: BodyType<GrowCheckInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof checkGrowPlant>>, TError,{plantId: number;data: BodyType<GrowCheckInput>}, TContext> => {
+
+const mutationKey = ['checkGrowPlant'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof checkGrowPlant>>, {plantId: number;data: BodyType<GrowCheckInput>}> = (props) => {
+          const {plantId,data} = props ?? {};
+
+          return  checkGrowPlant(plantId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CheckGrowPlantMutationResult = NonNullable<Awaited<ReturnType<typeof checkGrowPlant>>>
+    export type CheckGrowPlantMutationBody = BodyType<GrowCheckInput>
+    export type CheckGrowPlantMutationError = ErrorType<void>
+
+    /**
+ * @summary KI-Check of a plant photo – health or trichomes; the photo is not stored
+ */
+export const useCheckGrowPlant = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkGrowPlant>>, TError,{plantId: number;data: BodyType<GrowCheckInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof checkGrowPlant>>,
+        TError,
+        {plantId: number;data: BodyType<GrowCheckInput>},
+        TContext
+      > => {
+      return useMutation(getCheckGrowPlantMutationOptions(options));
+    }
+
+export const getDeleteGrowCheckUrl = (checkId: number,) => {
+
+
+
+
+  return `/api/grow/checks/${checkId}`
+}
+
+/**
+ * @summary Delete a KI-Check
+ */
+export const deleteGrowCheck = async (checkId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteGrowCheckUrl(checkId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteGrowCheckMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrowCheck>>, TError,{checkId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteGrowCheck>>, TError,{checkId: number}, TContext> => {
+
+const mutationKey = ['deleteGrowCheck'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGrowCheck>>, {checkId: number}> = (props) => {
+          const {checkId} = props ?? {};
+
+          return  deleteGrowCheck(checkId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteGrowCheckMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGrowCheck>>>
+
+    export type DeleteGrowCheckMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a KI-Check
+ */
+export const useDeleteGrowCheck = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrowCheck>>, TError,{checkId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteGrowCheck>>,
+        TError,
+        {checkId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteGrowCheckMutationOptions(options));
     }
 
 export const getDeleteGrowLogUrl = (logId: number,) => {

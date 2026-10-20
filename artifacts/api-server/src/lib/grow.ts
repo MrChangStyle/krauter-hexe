@@ -4,7 +4,7 @@
  * plant or log of someone else is "not found".
  */
 
-import { db, growAccessTable, growLogsTable, growPlantsTable, growsTable, usersTable } from '@workspace/db';
+import { db, growAccessTable, growChecksTable, growLogsTable, growPlantsTable, growsTable, usersTable } from '@workspace/db';
 import { and, asc, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
@@ -24,6 +24,7 @@ import {
   type StrainType,
 } from './growPlan';
 import { geocodePostalCode, roundCoord } from './gardenClimate';
+import type { GrowCheck, GrowCheckKind, HealthResult, TrichomeResult } from './growDiagnosis';
 import { berlinDay } from './monitoring';
 
 // ── Access ────────────────────────────────────────────────────────────────────
@@ -337,7 +338,7 @@ function plantValues(input: PlantInput) {
   };
 }
 
-async function ownPlant(userId: string, plantId: number): Promise<{ plant: PlantRow; grow: GrowRow }> {
+export async function ownPlant(userId: string, plantId: number): Promise<{ plant: PlantRow; grow: GrowRow }> {
   const [row] = await db
     .select({ plant: growPlantsTable, grow: growsTable })
     .from(growPlantsTable)
@@ -381,6 +382,8 @@ export interface PlantDetail {
   plant: GrowPlant;
   grow: { id: number; name: string; environment: GrowEnvironment; medium: GrowMedium };
   logs: GrowLog[];
+  /** KI-Checks, newest first (the last 20). */
+  checks: GrowCheck[];
 }
 
 export async function plantDetail(userId: string, plantId: number, today = berlinDay()): Promise<PlantDetail> {
@@ -390,11 +393,34 @@ export async function plantDetail(userId: string, plantId: number, today = berli
     .from(growLogsTable)
     .where(eq(growLogsTable.plantId, plantId))
     .orderBy(desc(growLogsTable.date), desc(growLogsTable.id));
+  const checks = await db
+    .select()
+    .from(growChecksTable)
+    .where(eq(growChecksTable.plantId, plantId))
+    .orderBy(desc(growChecksTable.createdAt), desc(growChecksTable.id))
+    .limit(20);
   return {
     plant: toPlant(plant, grow, today),
     grow: { id: grow.id, name: grow.name, environment: grow.environment as GrowEnvironment, medium: grow.medium as GrowMedium },
     logs,
+    checks: checks.map((c) => {
+      const kind = c.kind as GrowCheckKind;
+      return {
+        id: c.id,
+        kind,
+        date: c.date,
+        health: kind === 'health' ? (c.result as HealthResult) : null,
+        trichomes: kind === 'trichomes' ? (c.result as TrichomeResult) : null,
+      };
+    }),
   };
+}
+
+export async function deleteCheck(userId: string, checkId: number): Promise<void> {
+  const [c] = await db.select({ plantId: growChecksTable.plantId }).from(growChecksTable).where(eq(growChecksTable.id, checkId));
+  if (!c) throw notFound();
+  await ownPlant(userId, c.plantId);
+  await db.delete(growChecksTable).where(eq(growChecksTable.id, checkId));
 }
 
 export interface LogInput {

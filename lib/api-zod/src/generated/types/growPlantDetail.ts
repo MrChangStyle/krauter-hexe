@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { GrowCheck } from './growCheck';
 import type { GrowLog } from './growLog';
 import type { GrowPlant } from './growPlant';
 import type { GrowPlantDetailGrow } from './growPlantDetailGrow';
@@ -13,4 +14,5 @@ export interface GrowPlantDetail {
   plant: GrowPlant;
   grow: GrowPlantDetailGrow;
   logs: GrowLog[];
+  checks: GrowCheck[];
 }

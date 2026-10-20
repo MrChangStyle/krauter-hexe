@@ -1,6 +1,8 @@
 import { Router, type IRouter, type NextFunction, type Request, type Response } from 'express';
 import {
   AddGrowLogBody,
+  CheckGrowPlantBody,
+  CheckGrowPlantResponse,
   AddGrowPlantBody,
   AddGrowPlantResponse,
   ConfirmGrowAgeBody,
@@ -29,6 +31,7 @@ import {
   confirmAge,
   createGrow,
   deleteGrow,
+  deleteCheck,
   deleteLog,
   deletePlant,
   growAccess,
@@ -40,8 +43,9 @@ import {
   updateGrow,
   updatePlant,
 } from '../lib/grow';
+import { checkPlant } from '../lib/growDiagnosis';
 import { growWeather } from '../lib/growWeather';
-import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
+import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Grow (add-on, adults only): access, grows, plants, Tagebuch. Everything
 // belongs to the signed-in account; the module must be unlocked by the owner
@@ -229,6 +233,32 @@ router.delete(
     const id = idParam(req, 'logId');
     if (id === null) return notFound(res);
     await deleteLog(me(req), id);
+    res.sendStatus(204);
+  }),
+);
+
+router.post(
+  '/grow/plants/:plantId/checks',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'plantId');
+    if (id === null) return notFound(res);
+    const body = CheckGrowPlantBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    const check = await withAiQuota(req, res, 'grow', () => checkPlant(me(req), id, body.data.kind, body.data.imageData));
+    if (check) res.status(201).json(CheckGrowPlantResponse.parse(check));
+  }),
+);
+
+router.delete(
+  '/grow/checks/:checkId',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'checkId');
+    if (id === null) return notFound(res);
+    await deleteCheck(me(req), id);
     res.sendStatus(204);
   }),
 );

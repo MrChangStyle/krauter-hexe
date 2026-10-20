@@ -3637,6 +3637,31 @@ export const GetGrowPlantResponse = zod.object({
   "ph": zod.number().nullable(),
   "ec": zod.number().nullable(),
   "note": zod.string().nullable()
+})),
+  "checks": zod.array(zod.object({
+  "id": zod.number(),
+  "kind": zod.enum(['health', 'trichomes']),
+  "date": zod.string(),
+  "health": zod.union([zod.null(),zod.object({
+  "status": zod.enum(['healthy', 'watch', 'problem']),
+  "summary": zod.string(),
+  "findings": zod.array(zod.object({
+  "name": zod.string(),
+  "category": zod.enum(['deficiency', 'excess', 'pest', 'disease', 'environment', 'other']),
+  "likely": zod.boolean(),
+  "signs": zod.string().nullable(),
+  "actions": zod.array(zod.string())
+})),
+  "facts": zod.array(zod.string())
+})]),
+  "trichomes": zod.union([zod.null(),zod.object({
+  "clear": zod.number(),
+  "milky": zod.number(),
+  "amber": zod.number(),
+  "stage": zod.enum(['early', 'window', 'late']),
+  "summary": zod.string(),
+  "advice": zod.string()
+})])
 }))
 })
 
@@ -3768,6 +3793,55 @@ export const AddGrowLogBody = zod.object({
 })
 
 export const AddGrowLogResponse = zod.void()
+
+
+/**
+ * @summary KI-Check of a plant photo – health or trichomes; the photo is not stored
+ */
+export const CheckGrowPlantParams = zod.object({
+  "plantId": zod.coerce.number()
+})
+
+export const CheckGrowPlantBody = zod.object({
+  "kind": zod.enum(['health', 'trichomes']),
+  "imageData": zod.string().describe('data:image\/jpeg|png|webp;base64,…')
+})
+
+export const CheckGrowPlantResponse = zod.object({
+  "id": zod.number(),
+  "kind": zod.enum(['health', 'trichomes']),
+  "date": zod.string(),
+  "health": zod.union([zod.null(),zod.object({
+  "status": zod.enum(['healthy', 'watch', 'problem']),
+  "summary": zod.string(),
+  "findings": zod.array(zod.object({
+  "name": zod.string(),
+  "category": zod.enum(['deficiency', 'excess', 'pest', 'disease', 'environment', 'other']),
+  "likely": zod.boolean(),
+  "signs": zod.string().nullable(),
+  "actions": zod.array(zod.string())
+})),
+  "facts": zod.array(zod.string())
+})]),
+  "trichomes": zod.union([zod.null(),zod.object({
+  "clear": zod.number(),
+  "milky": zod.number(),
+  "amber": zod.number(),
+  "stage": zod.enum(['early', 'window', 'late']),
+  "summary": zod.string(),
+  "advice": zod.string()
+})])
+})
+
+
+/**
+ * @summary Delete a KI-Check
+ */
+export const DeleteGrowCheckParams = zod.object({
+  "checkId": zod.coerce.number()
+})
+
+export const DeleteGrowCheckResponse = zod.void()
 
 
 /**

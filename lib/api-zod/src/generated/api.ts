@@ -2879,7 +2879,29 @@ export const GetYieldOverviewResponse = zod.object({
   "note": zod.string().nullable()
 }))
 }),
-  "balance": zod.number().describe('Value of the yields minus the expenses entered.'),
+  "sales": zod.object({
+  "revenue": zod.number(),
+  "soldValue": zod.number(),
+  "lines": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "amount": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "revenue": zod.number()
+})),
+  "entries": zod.array(zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "product": zod.string().nullable(),
+  "label": zod.string(),
+  "amount": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "revenueEur": zod.number(),
+  "note": zod.string().nullable()
+}))
+}),
+  "selfSupply": zod.number().describe('Shop value of what the farm kept – all yields minus what was sold.'),
+  "balance": zod.number().describe('Self-supply + sales − expenses.'),
   "laying": zod.union([zod.null(),zod.object({
   "hens": zod.number(),
   "eggs": zod.number(),
@@ -2955,6 +2977,42 @@ export const DeleteExpenseParams = zod.object({
 })
 
 export const DeleteExpenseResponse = zod.void()
+
+
+/**
+ * @summary Enter a sale (caretaker)
+ */
+export const AddSaleParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const addSaleBodyLabelMax = 60;
+
+export const addSaleBodyNoteMax = 500;
+
+
+
+export const AddSaleBody = zod.object({
+  "date": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "product": zod.string().nullish().describe('\"product:eggs\" … or \"crop:tomate\" for the farm\'s own yields; null for anything else (then label).'),
+  "label": zod.string().max(addSaleBodyLabelMax).nullish(),
+  "amount": zod.number().nullish(),
+  "revenueEur": zod.number(),
+  "note": zod.string().max(addSaleBodyNoteMax).nullish()
+})
+
+export const AddSaleResponse = zod.void()
+
+
+/**
+ * @summary Delete a sale (caretaker)
+ */
+export const DeleteSaleParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "saleId": zod.coerce.number()
+})
+
+export const DeleteSaleResponse = zod.void()
 
 
 /**

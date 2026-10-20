@@ -11,6 +11,7 @@ import {
   EXPENSE_CATEGORIES,
   farmAnimalsTable,
   farmExpensesTable,
+  farmSalesTable,
   farmPricesTable,
   farmYieldsTable,
   harvestLogsTable,
@@ -192,6 +193,37 @@ export function summarizeExpenses(rows: { category: string; date: string; amount
   return { total: round2(lines.reduce((s, l) => s + l.eur, 0)), lines, months: months.map(round2) };
 }
 
+export interface SalesSummary {
+  /** What the sales brought in. */
+  revenue: number;
+  /** Shop value of what was sold (only sales of the farm's own yields with an amount). */
+  soldValue: number;
+  lines: { key: string; label: string; amount: number | null; unit: string | null; revenue: number }[];
+}
+
+/** The unit of a sold yield: Stück/l/kg for products, kg for crops. */
+export function saleUnit(product: string | null): string | null {
+  if (!product) return null;
+  if (product.startsWith('crop:')) return 'kg';
+  return PRODUCT_UNITS[product.slice('product:'.length) as FarmProduct]?.unit ?? null;
+}
+
+/** Sales per product (or written-in label), and the shop value of what left the self-supply. */
+export function summarizeSales(rows: { product: string | null; label: string; amount: number | null; revenueEur: number }[], price: (key: string) => number): SalesSummary {
+  const lines = new Map<string, { key: string; label: string; amount: number | null; unit: string | null; revenue: number }>();
+  let soldValue = 0;
+  for (const r of rows) {
+    const key = r.product ?? `label:${r.label}`;
+    const line = lines.get(key) ?? { key, label: r.label, amount: null, unit: saleUnit(r.product), revenue: 0 };
+    line.revenue += r.revenueEur;
+    if (r.amount !== null) line.amount = (line.amount ?? 0) + r.amount;
+    if (r.product && r.amount !== null) soldValue += r.amount * price(r.product);
+    lines.set(key, line);
+  }
+  const out = [...lines.values()].map((l) => ({ ...l, amount: l.amount === null ? null : round2(l.amount), revenue: round2(l.revenue) })).sort((a, b) => b.revenue - a.revenue);
+  return { revenue: round2(out.reduce((s, l) => s + l.revenue, 0)), soldValue: round2(soldValue), lines: out };
+}
+
 /** Eggs per hen and day over the last 30 days (laying rate). */
 export function layingRate(eggs: number, hens: number, days = 30): number | null {
   return hens > 0 ? Math.round((eggs / (hens * days)) * 100) / 100 : null;
@@ -224,12 +256,26 @@ export interface ExpenseEntry {
   note: string | null;
 }
 
+export interface SaleEntry {
+  id: number;
+  date: string;
+  product: string | null;
+  label: string;
+  amount: number | null;
+  unit: string | null;
+  revenueEur: number;
+  note: string | null;
+}
+
 export interface YieldOverview {
   entries: YieldEntry[];
   summary: YieldSummary;
   previousTotal: number;
   expenses: ExpenseSummary & { entries: ExpenseEntry[] };
-  /** Value of the yields minus the expenses entered. */
+  sales: SalesSummary & { entries: SaleEntry[] };
+  /** Shop value of what the farm kept for itself: all yields minus what was sold. */
+  selfSupply: number;
+  /** Self-supply + sales − expenses. */
   balance: number;
   /** This year only: eggs per hen and day over the last 30 days. */
   laying: { hens: number; eggs: number; perHenDay: number } | null;
@@ -262,7 +308,7 @@ export function validYear(raw: unknown, today: string): number {
 export async function yieldOverview(farmId: number, rawYear?: unknown, today = berlinDay()): Promise<YieldOverview> {
   const year = validYear(rawYear, today);
   const price = await priceOf(farmId);
-  const [current, previous, expenseRows, entries] = await Promise.all([
+  const [current, previous, expenseRows, saleRows, entries] = await Promise.all([
     yearData(farmId, year),
     yearData(farmId, year - 1),
     db
@@ -270,6 +316,19 @@ export async function yieldOverview(farmId: number, rawYear?: unknown, today = b
       .from(farmExpensesTable)
       .where(and(eq(farmExpensesTable.farmId, farmId), gte(farmExpensesTable.date, `${year}-01-01`), lte(farmExpensesTable.date, `${year}-12-31`)))
       .orderBy(desc(farmExpensesTable.date), desc(farmExpensesTable.id)),
+    db
+      .select({
+        id: farmSalesTable.id,
+        date: farmSalesTable.date,
+        product: farmSalesTable.product,
+        label: farmSalesTable.label,
+        amount: farmSalesTable.amount,
+        revenueEur: farmSalesTable.revenueEur,
+        note: farmSalesTable.note,
+      })
+      .from(farmSalesTable)
+      .where(and(eq(farmSalesTable.farmId, farmId), gte(farmSalesTable.date, `${year}-01-01`), lte(farmSalesTable.date, `${year}-12-31`)))
+      .orderBy(desc(farmSalesTable.date), desc(farmSalesTable.id)),
     db
       .select({
         id: farmYieldsTable.id,
@@ -311,12 +370,16 @@ export async function yieldOverview(farmId: number, rawYear?: unknown, today = b
   }
   const summary = summarize(year, current.harvests, current.yields, price);
   const expenses = summarizeExpenses(expenseRows);
+  const sales = summarizeSales(saleRows, price);
+  const selfSupply = round2(Math.max(0, summary.total - sales.soldValue));
   return {
     entries: entries.map((e) => ({ ...e, product: e.product as FarmProduct, unit: PRODUCT_UNITS[e.product as FarmProduct].unit })),
     summary,
     previousTotal: summarize(year - 1, previous.harvests, previous.yields, price).total,
     expenses: { ...expenses, entries: expenseRows.map((e) => ({ ...e, category: e.category as ExpenseCategory })) },
-    balance: round2(summary.total - expenses.total),
+    sales: { ...sales, entries: saleRows.map((e) => ({ ...e, unit: saleUnit(e.product) })) },
+    selfSupply,
+    balance: round2(selfSupply + sales.revenue - expenses.total),
     laying,
     feedCost,
   };
@@ -369,6 +432,40 @@ export async function removeExpense(farmId: number, id: number): Promise<void> {
     .delete(farmExpensesTable)
     .where(and(eq(farmExpensesTable.id, id), eq(farmExpensesTable.farmId, farmId)))
     .returning({ id: farmExpensesTable.id });
+  if (deleted.length === 0) throw notFound();
+}
+
+const SALE_PRODUCT = /^(product:(eggs|milk|meat|wool)|crop:[a-z_]{1,40})$/;
+
+export interface SaleInput {
+  date: unknown;
+  product?: string | null;
+  label?: unknown;
+  amount?: number | null;
+  revenueEur: number;
+  note?: unknown;
+}
+
+export async function addSale(farmId: number, input: SaleInput): Promise<void> {
+  const date = validDate(input.date, 'Datum');
+  const product = input.product ?? null;
+  if (product !== null && (!SALE_PRODUCT.test(product) || (product.startsWith('crop:') && !cropByKey(product.slice(5))))) {
+    throw new FarmDataError(400, 'Dieses Produkt gibt es nicht.');
+  }
+  const named = product === null ? null : product.startsWith('crop:') ? cropByKey(product.slice(5))!.name : PRODUCT_UNITS[product.slice(8) as FarmProduct].label;
+  const label = text(input.label, 60, 'Die Bezeichnung') ?? named;
+  if (!label) throw new FarmDataError(400, 'Bitte gib an, was verkauft wurde.');
+  const amount = input.amount ?? null;
+  if (amount !== null && (!Number.isFinite(amount) || amount <= 0 || amount > 100_000)) throw new FarmDataError(400, 'Die Menge ist ungültig.');
+  if (!Number.isFinite(input.revenueEur) || input.revenueEur <= 0 || input.revenueEur > 100_000) throw new FarmDataError(400, 'Der Erlös ist ungültig.');
+  await db.insert(farmSalesTable).values({ farmId, date, product, label, amount, revenueEur: round2(input.revenueEur), note: text(input.note, 500, 'Die Notiz') });
+}
+
+export async function removeSale(farmId: number, id: number): Promise<void> {
+  const deleted = await db
+    .delete(farmSalesTable)
+    .where(and(eq(farmSalesTable.id, id), eq(farmSalesTable.farmId, farmId)))
+    .returning({ id: farmSalesTable.id });
   if (deleted.length === 0) throw notFound();
 }
 

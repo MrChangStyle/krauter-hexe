@@ -150,6 +150,7 @@ import type {
   ReportGroup,
   ResolveReportsInput,
   ResolveReportsResult,
+  SaleInput,
   ScanInsectInput,
   ScanInsectResult,
   Seed,
@@ -6840,6 +6841,151 @@ export const useDeleteExpense = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteExpenseMutationOptions(options));
+    }
+
+export const getAddSaleUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/sales`
+}
+
+/**
+ * @summary Enter a sale (caretaker)
+ */
+export const addSale = async (farmId: number,
+    saleInput: SaleInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAddSaleUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(saleInput)
+  }
+);}
+
+
+
+
+
+export const getAddSaleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addSale>>, TError,{farmId: number;data: BodyType<SaleInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addSale>>, TError,{farmId: number;data: BodyType<SaleInput>}, TContext> => {
+
+const mutationKey = ['addSale'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addSale>>, {farmId: number;data: BodyType<SaleInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  addSale(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddSaleMutationResult = NonNullable<Awaited<ReturnType<typeof addSale>>>
+    export type AddSaleMutationBody = BodyType<SaleInput>
+    export type AddSaleMutationError = ErrorType<void>
+
+    /**
+ * @summary Enter a sale (caretaker)
+ */
+export const useAddSale = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addSale>>, TError,{farmId: number;data: BodyType<SaleInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addSale>>,
+        TError,
+        {farmId: number;data: BodyType<SaleInput>},
+        TContext
+      > => {
+      return useMutation(getAddSaleMutationOptions(options));
+    }
+
+export const getDeleteSaleUrl = (farmId: number,
+    saleId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/sales/${saleId}`
+}
+
+/**
+ * @summary Delete a sale (caretaker)
+ */
+export const deleteSale = async (farmId: number,
+    saleId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteSaleUrl(farmId,saleId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteSaleMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSale>>, TError,{farmId: number;saleId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSale>>, TError,{farmId: number;saleId: number}, TContext> => {
+
+const mutationKey = ['deleteSale'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSale>>, {farmId: number;saleId: number}> = (props) => {
+          const {farmId,saleId} = props ?? {};
+
+          return  deleteSale(farmId,saleId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSaleMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSale>>>
+
+    export type DeleteSaleMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a sale (caretaker)
+ */
+export const useDeleteSale = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSale>>, TError,{farmId: number;saleId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSale>>,
+        TError,
+        {farmId: number;saleId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteSaleMutationOptions(options));
     }
 
 export const getListFarmPricesUrl = (farmId: number,) => {

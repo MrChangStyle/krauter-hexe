@@ -7,6 +7,7 @@ import {
   useListMyScans,
   useListMyInsects,
   useGetLeaderboard,
+  useGetPremium,
   type ManagedUser,
 } from "@workspace/api-client-react";
 import { exportInsectsPdf, exportSelectedPlantsPdf } from "@/lib/pdf-export";
@@ -17,7 +18,7 @@ import {
   Crown, ShieldCheck, Hourglass, Trash2, UserCheck, UserX,
   Pin, Camera, Users, WifiOff, Wifi, Loader2, Clock, AlertCircle,
   RefreshCw, ImageOff, TriangleAlert, Bug, Download, BookHeart, ChevronRight,
-  ChevronDown, Leaf, Trophy, Tractor,
+  ChevronDown, Leaf, Trophy, Tractor, Bell, UserCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,13 +37,9 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
 import { PushNotificationCard } from "@/components/push-notification-card";
 import { AccountCard } from "@/components/account-card";
-import { OrphanCleanupCard } from "@/components/orphan-cleanup-card";
-import { ModerationCard } from "@/components/moderation-card";
-import { CropDraftsCard } from "@/components/crop-drafts-card";
-import { RecipeDraftsCard } from "@/components/recipe-drafts-card";
-import { PremiumAdminCard } from "@/components/premium-admin-card";
-import { OperationsCard } from "@/components/operations-card";
 import { ImageRescueCard } from "@/components/image-rescue-card";
+import { HubGrid, HubTile } from "@/components/hub-tile";
+import { pushSupported } from "@/lib/push";
 import { useFavorites } from "@/lib/use-favorites";
 import {
   useListPlants,
@@ -838,28 +835,27 @@ export function PflanzenretterCard() {
   const leavesCount = own?.leavesCount ?? (me as { leavesCount?: number } | null)?.leavesCount ?? 0;
   const rank = own?.rank ?? null;
 
+  const premium = useGetPremium();
+
   return (
-    <div className="rounded-2xl border bg-card shadow-sm px-4 py-4 flex items-center gap-4">
-      <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-        <Leaf className="w-6 h-6 text-emerald-600" />
+    <div className="rounded-3xl bg-primary text-primary-foreground p-5 shadow-md flex items-center gap-4" data-testid="mehr-hero">
+      <div className="w-12 h-12 rounded-full bg-primary-foreground/15 flex items-center justify-center shrink-0">
+        <Leaf className="w-6 h-6" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold flex items-center gap-1.5">
-          <Trophy className="w-3.5 h-3.5 text-yellow-500" />
-          Pflanzenretter
+        <p className="text-lg font-semibold truncate">{me?.username}</p>
+        <p className="text-sm opacity-90 flex items-center gap-1.5">
+          <Trophy className="w-3.5 h-3.5" />
+          Pflanzenretter{rank ? ` · Rang #${rank}` : ""}
         </p>
-        <p className="text-xs text-muted-foreground font-mono tracking-wide">{me?.username}</p>
+        {premium.data && <p className="text-xs opacity-80 mt-0.5">{premium.data.active ? "Premium aktiv" : "Kostenlos"}</p>}
       </div>
       <div className="text-right shrink-0">
-        <p className="text-lg font-bold text-emerald-600 flex items-center justify-end gap-1">
-          <Leaf className="w-4 h-4" />
+        <p className="text-2xl font-bold flex items-center justify-end gap-1">
+          <Leaf className="w-5 h-5" />
           {leavesCount}
         </p>
-        {rank && (
-          <p className="text-xs text-muted-foreground">
-            Rang #{rank}
-          </p>
-        )}
+        <p className="text-xs opacity-80">Blätter</p>
       </div>
     </div>
   );
@@ -867,7 +863,7 @@ export function PflanzenretterCard() {
 
 // ── Owner: Benutzerverwaltung section ────────────────────────────────────────
 
-function Benutzerverwaltung() {
+export function Benutzerverwaltung() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { user: me } = useAuthContext();
@@ -1029,64 +1025,52 @@ function Benutzerverwaltung() {
  */
 export default function MehrPage() {
   const { user: me } = useAuthContext();
+  const { pendingCount } = useScanQueue();
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-5">
       <div>
-        <h1 className="text-xl font-bold">Mehr</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Farm, Konto, Offline-Fotos und Einstellungen.
-        </p>
+        <h1 className="text-2xl font-bold">Mehr</h1>
+        <p className="text-sm text-muted-foreground mt-1">Konto, Einstellungen und Farm.</p>
       </div>
 
       {me?.username && <PflanzenretterCard />}
 
+      <HubGrid>
+        <HubTile href="/farm" icon={Tractor} label="Farm & Team" hint="Mitglieder, Rollen, Freigaben" tone="bg-lime-100 text-lime-800 dark:bg-lime-950/50 dark:text-lime-300" />
+        <HubTile
+          href="/warteschlange"
+          icon={WifiOff}
+          label="Offline-Fotos"
+          hint="Warten auf den Scan"
+          tone="bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300"
+          badge={pendingCount > 0 ? String(pendingCount) : null}
+        />
+        {pushSupported() && (
+          <HubTile href="#push" icon={Bell} label="Benachrichtigungen" hint="Erinnerungen aufs Handy" tone="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" />
+        )}
+        <HubTile href="#konto" icon={UserCog} label="Konto" hint="Name, Passwort, Rechtliches" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />
+        {me?.isOwner && (
+          <HubTile
+            href="/verwaltung"
+            icon={ShieldCheck}
+            label="Verwaltung"
+            hint="Betrieb, Moderation, Premium, Benutzer"
+            tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300"
+            className={pushSupported() ? "col-span-2" : undefined}
+          />
+        )}
+      </HubGrid>
+
       <ImageRescueCard />
 
-      <div className="rounded-2xl border bg-card divide-y overflow-hidden">
-        <MehrLink href="/farm" icon={Tractor} label="Farm & Team" hint="Tiere, Mitglieder, Rollen und Freigaben" />
-        <MehrLink href="/warteschlange" icon={WifiOff} label="Offline-Fotos" hint="Fotos, die auf den Scan warten" />
+      <div id="push" className="scroll-mt-4">
+        <PushNotificationCard />
       </div>
 
-      <PushNotificationCard />
-
-      <AccountCard />
-
-      {me?.isOwner && (
-        <>
-          <div className="h-px bg-border mt-6" />
-          <OperationsCard />
-          <ModerationCard />
-          <CropDraftsCard />
-          <RecipeDraftsCard />
-          <PremiumAdminCard />
-          <Benutzerverwaltung />
-          <OrphanCleanupCard />
-        </>
-      )}
+      <div id="konto" className="scroll-mt-4">
+        <AccountCard />
+      </div>
     </div>
-  );
-}
-
-function MehrLink({
-  href,
-  icon: Icon,
-  label,
-  hint,
-}: {
-  href: string;
-  icon: React.ElementType;
-  label: string;
-  hint: string;
-}) {
-  return (
-    <Link href={href} className="flex items-center gap-3 px-4 py-3 hover:bg-muted/50 transition-colors">
-      <Icon className="w-5 h-5 text-primary shrink-0" />
-      <span className="flex-1 min-w-0">
-        <span className="block text-sm font-semibold">{label}</span>
-        <span className="block text-xs text-muted-foreground">{hint}</span>
-      </span>
-      <ChevronRight className="w-4 h-4 text-muted-foreground" />
-    </Link>
   );
 }

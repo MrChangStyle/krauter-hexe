@@ -190,6 +190,13 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 - Sales (`farm_sales`: revenue, optional amount, `product` = `product:eggs`/`crop:tomate` or a free label) give `sales.revenue` and `sales.soldValue` (shop value of what was sold); `selfSupply` = value − soldValue, `balance` = selfSupply + revenue − expenses.
 - For the running year the overview adds the laying rate (eggs of the last 30 days per hen and day) and the Futterplaner's monthly feed costs; the farm routes reach the AI client through `feedStock`, so tests set `GEMINI_API_KEY`.
 
+## Grow (Zusatzmodul, ab 18)
+
+Details in `docs/grow.md` (`lib/grow.ts`, `lib/growPlan.ts`, `routes/grow.ts`, schema `grow.ts`; pages `/grow`, `/grow/pflanze/:id`, `/grow/wissen`, `/grow/recht`).
+- Personal data per account (`grows`, `grow_plants`, `grow_logs`; `grow_access` and `grows` are in `PERSONAL_TABLES`). Unlocked per account by the owner (`/admin/grow-access`, the owner always has it), then the account confirms being 18+ and the adults in the household; until then every grow endpoint answers 403.
+- `growPlan.ts` is pure: phases from the germination day, flowering start (12/12 day, 4 weeks indoors, 3 for autoflowers, August outdoors), targets per phase and substrate, dated steps, KCanG check (3 plants and 50 g per adult).
+- Framed as adult home growing under the KCanG, not as medical. Build with `VITE_DISABLE_GROW=true` to hide the module (store builds).
+
 ## Installation (Android/PWA)
 
 The frontend is set up as an installable Progressive Web App via `vite-plugin-pwa` (see `artifacts/pflanzenscanner/vite.config.ts`). On Android, opening the deployed URL in Chrome offers "Zum Startbildschirm hinzufügen" / an automatic install prompt — no Play Store package exists or is needed. Manifest icons live in `artifacts/pflanzenscanner/public/` (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`, generated from `icon.svg`/`maskable-icon.svg`). API calls are excluded from the service worker cache (`NetworkOnly`) so scan/archive data always stays fresh. A redeploy is required after this setup for the manifest/service worker to be live in production.

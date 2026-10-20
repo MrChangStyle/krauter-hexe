@@ -22,6 +22,8 @@ import {
   farmMembershipsTable,
   farmsTable,
   favoritesTable,
+  growAccessTable,
+  growsTable,
   insectScansTable,
   insectsTable,
   plantScansTable,
@@ -55,6 +57,9 @@ export const PERSONAL_TABLES = [
   { name: 'scan_attempts', table: scanAttemptsTable, userId: scanAttemptsTable.userId },
   // Reports this person filed.
   { name: 'reports', table: reportsTable, userId: reportsTable.userId },
+  // Grow: access and the grows (plants and logs go with them).
+  { name: 'grow_access', table: growAccessTable, userId: growAccessTable.userId },
+  { name: 'grows', table: growsTable, userId: growsTable.userId },
   // Farm memberships – deleteAccount first hands over or removes the farms.
   { name: 'farm_memberships', table: farmMembershipsTable, userId: farmMembershipsTable.userId },
 ] as const;

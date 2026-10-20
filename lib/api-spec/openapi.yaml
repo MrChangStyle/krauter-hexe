@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: grow
+    description: Grow – home growing within the KCanG (add-on, adults only)
   - name: feed
     description: Futterplaner – feeds, rations and their check against the need
   - name: monitoring
@@ -2143,6 +2145,320 @@ paths:
                   $ref: "#/components/schemas/PriceItem"
         "400":
           description: Invalid input.
+  /grow/access:
+    get:
+      tags: [grow]
+      operationId: getGrowAccess
+      summary: Grow – is the module unlocked for this account, age confirmed, adults in the household
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowAccess"
+    post:
+      tags: [grow]
+      operationId: confirmGrowAge
+      summary: Confirm being at least 18 and give the adults in the household
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowAgeInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowAccess"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+    put:
+      tags: [grow]
+      operationId: setGrowAdults
+      summary: Change the adults in the household
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowAgeInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowAccess"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+  /grow:
+    get:
+      tags: [grow]
+      operationId: getGrowOverview
+      summary: The account's grows with plants, their plans and the KCanG check
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowOverview"
+        "403":
+          description: Module not unlocked or age not confirmed.
+  /grow/grows:
+    post:
+      tags: [grow]
+      operationId: createGrow
+      summary: Create a grow (indoor tent, outdoor, greenhouse)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowInput"
+      responses:
+        "201":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowOverview"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+  /grow/grows/{growId}:
+    put:
+      tags: [grow]
+      operationId: updateGrow
+      summary: Change or archive a grow
+      parameters:
+        - name: growId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowOverview"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+    delete:
+      tags: [grow]
+      operationId: deleteGrow
+      summary: Delete a grow with its plants
+      parameters:
+        - name: growId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Done.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+  /grow/grows/{growId}/plants:
+    post:
+      tags: [grow]
+      operationId: addGrowPlant
+      summary: Add a plant to a grow
+      parameters:
+        - name: growId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowPlantInput"
+      responses:
+        "201":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowPlant"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+  /grow/plants/{plantId}:
+    get:
+      tags: [grow]
+      operationId: getGrowPlant
+      summary: A plant with its plan and Tagebuch
+      parameters:
+        - name: plantId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowPlantDetail"
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+    put:
+      tags: [grow]
+      operationId: updateGrowPlant
+      summary: Change a plant (incl. 12/12 day and harvest)
+      parameters:
+        - name: plantId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowPlantInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowPlant"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+    delete:
+      tags: [grow]
+      operationId: deleteGrowPlant
+      summary: Delete a plant
+      parameters:
+        - name: plantId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Done.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+  /grow/plants/{plantId}/logs:
+    post:
+      tags: [grow]
+      operationId: addGrowLog
+      summary: Add a Tagebuch entry
+      parameters:
+        - name: plantId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowLogInput"
+      responses:
+        "204":
+          description: Done.
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+  /grow/logs/{logId}:
+    delete:
+      tags: [grow]
+      operationId: deleteGrowLog
+      summary: Delete a Tagebuch entry
+      parameters:
+        - name: logId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Done.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+  /admin/grow-access:
+    get:
+      tags: [grow]
+      operationId: listGrowAccess
+      summary: Owner – accounts with the Grow module
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrowAccessEntry"
+    put:
+      tags: [grow]
+      operationId: setGrowAccess
+      summary: Owner – unlock the Grow module for an account by e-mail, or take it back
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowAccessInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/GrowAccessEntry"
+        "404":
+          description: Not found.
   /farms/{farmId}/duties:
     get:
       tags: [farm]
@@ -5818,6 +6134,335 @@ components:
           type: string
         eur:
           type: [number, 'null']
+    GrowAccess:
+      type: object
+      required: [unlocked, ageConfirmed, adults]
+      properties:
+        unlocked:
+          type: boolean
+        ageConfirmed:
+          type: boolean
+        adults:
+          type: integer
+    GrowAgeInput:
+      type: object
+      required: [adults]
+      properties:
+        adults:
+          type: integer
+    GrowAccessEntry:
+      type: object
+      required: [email, username, unlockedAt]
+      properties:
+        email:
+          type: [string, 'null']
+        username:
+          type: [string, 'null']
+        unlockedAt:
+          type: [string, 'null']
+          format: date-time
+    GrowAccessInput:
+      type: object
+      required: [email, unlocked]
+      properties:
+        email:
+          type: string
+        unlocked:
+          type: boolean
+    GrowEnvironment:
+      type: string
+      enum: [indoor, outdoor, greenhouse]
+    GrowMedium:
+      type: string
+      enum: [soil, coco, hydro]
+    StrainType:
+      type: string
+      enum: [indica, sativa, hybrid, ruderalis]
+    GrowFlowering:
+      type: string
+      enum: [photo, auto]
+    GrowSeedSex:
+      type: string
+      enum: [feminized, regular, unknown]
+    GrowPhaseKey:
+      type: string
+      enum: [germination, seedling, veg, flower, flush, drying, curing, done]
+    GrowPhase:
+      type: object
+      required: [key, from, to]
+      properties:
+        key:
+          $ref: "#/components/schemas/GrowPhaseKey"
+        from:
+          type: string
+        to:
+          type: string
+    GrowRange:
+      type: [array, 'null']
+      items:
+        type: number
+      minItems: 2
+      maxItems: 2
+    GrowTargets:
+      type: object
+      required: [light, tempC, humidity, vpd, ph, ec, feeding, watering]
+      properties:
+        light:
+          type: string
+        tempC:
+          $ref: "#/components/schemas/GrowRange"
+        humidity:
+          $ref: "#/components/schemas/GrowRange"
+        vpd:
+          $ref: "#/components/schemas/GrowRange"
+        ph:
+          $ref: "#/components/schemas/GrowRange"
+        ec:
+          $ref: "#/components/schemas/GrowRange"
+        feeding:
+          type: string
+        watering:
+          type: string
+    GrowStep:
+      type: object
+      required: ["on", text, past]
+      properties:
+        "on":
+          type: string
+        text:
+          type: string
+        past:
+          type: boolean
+    GrowPlan:
+      type: object
+      required: [phases, current, day, harvestOn, flipOn, targets, steps, hints]
+      properties:
+        phases:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowPhase"
+        current:
+          $ref: "#/components/schemas/GrowPhaseKey"
+        day:
+          type: integer
+        harvestOn:
+          type: string
+        flipOn:
+          type: string
+        targets:
+          $ref: "#/components/schemas/GrowTargets"
+        steps:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowStep"
+        hints:
+          type: array
+          items:
+            type: string
+    GrowPlant:
+      type: object
+      required: [id, growId, name, strain, breeder, strainType, flowering, seedSex, flowerWeeks, startedOn, flipOn, harvestedOn, wetGrams, dryGrams, notes, plan]
+      properties:
+        id:
+          type: integer
+        growId:
+          type: integer
+        name:
+          type: string
+        strain:
+          type: [string, 'null']
+        breeder:
+          type: [string, 'null']
+        strainType:
+          $ref: "#/components/schemas/StrainType"
+        flowering:
+          $ref: "#/components/schemas/GrowFlowering"
+        seedSex:
+          $ref: "#/components/schemas/GrowSeedSex"
+        flowerWeeks:
+          type: integer
+        startedOn:
+          type: string
+        flipOn:
+          type: [string, 'null']
+        harvestedOn:
+          type: [string, 'null']
+        wetGrams:
+          type: [number, 'null']
+        dryGrams:
+          type: [number, 'null']
+        notes:
+          type: [string, 'null']
+        plan:
+          $ref: "#/components/schemas/GrowPlan"
+    Grow:
+      type: object
+      required: [id, name, environment, medium, tentSize, lightType, lightWatts, notes, archived, plants]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        environment:
+          $ref: "#/components/schemas/GrowEnvironment"
+        medium:
+          $ref: "#/components/schemas/GrowMedium"
+        tentSize:
+          type: [string, 'null']
+        lightType:
+          type: [string, 'null']
+        lightWatts:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+        archived:
+          type: boolean
+        plants:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowPlant"
+    KcangCheck:
+      type: object
+      required: [activePlants, maxPlants, plantsOver, dryGramsLastYear, maxGrams, gramsOver]
+      properties:
+        activePlants:
+          type: integer
+        maxPlants:
+          type: integer
+        plantsOver:
+          type: boolean
+        dryGramsLastYear:
+          type: number
+        maxGrams:
+          type: number
+        gramsOver:
+          type: boolean
+    GrowOverview:
+      type: object
+      required: [grows, kcang]
+      properties:
+        grows:
+          type: array
+          items:
+            $ref: "#/components/schemas/Grow"
+        kcang:
+          $ref: "#/components/schemas/KcangCheck"
+    GrowInput:
+      type: object
+      required: [name, environment, medium]
+      properties:
+        name:
+          type: string
+          maxLength: 60
+        environment:
+          $ref: "#/components/schemas/GrowEnvironment"
+        medium:
+          $ref: "#/components/schemas/GrowMedium"
+        tentSize:
+          type: [string, 'null']
+          maxLength: 30
+        lightType:
+          type: [string, 'null']
+          maxLength: 30
+        lightWatts:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+        archived:
+          type: boolean
+    GrowPlantInput:
+      type: object
+      required: [name, strainType, flowering, startedOn]
+      properties:
+        name:
+          type: string
+          maxLength: 60
+        strain:
+          type: [string, 'null']
+          maxLength: 60
+        breeder:
+          type: [string, 'null']
+          maxLength: 60
+        strainType:
+          $ref: "#/components/schemas/StrainType"
+        flowering:
+          $ref: "#/components/schemas/GrowFlowering"
+        seedSex:
+          $ref: "#/components/schemas/GrowSeedSex"
+        flowerWeeks:
+          type: [integer, 'null']
+        startedOn:
+          type: string
+          description: YYYY-MM-DD, day of germination
+        flipOn:
+          type: [string, 'null']
+        harvestedOn:
+          type: [string, 'null']
+        wetGrams:
+          type: [number, 'null']
+        dryGrams:
+          type: [number, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 2000
+    GrowLog:
+      type: object
+      required: [id, date, heightCm, waterMl, ph, ec, note]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        heightCm:
+          type: [number, 'null']
+        waterMl:
+          type: [integer, 'null']
+        ph:
+          type: [number, 'null']
+        ec:
+          type: [number, 'null']
+        note:
+          type: [string, 'null']
+    GrowLogInput:
+      type: object
+      required: [date]
+      properties:
+        date:
+          type: string
+        heightCm:
+          type: [number, 'null']
+        waterMl:
+          type: [number, 'null']
+        ph:
+          type: [number, 'null']
+        ec:
+          type: [number, 'null']
+        note:
+          type: [string, 'null']
+          maxLength: 1000
+    GrowPlantDetail:
+      type: object
+      required: [plant, grow, logs]
+      properties:
+        plant:
+          $ref: "#/components/schemas/GrowPlant"
+        grow:
+          type: object
+          required: [id, name, environment, medium]
+          properties:
+            id:
+              type: integer
+            name:
+              type: string
+            environment:
+              $ref: "#/components/schemas/GrowEnvironment"
+            medium:
+              $ref: "#/components/schemas/GrowMedium"
+        logs:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowLog"
     FarmDuties:
       type: object
       required: [holdingNumber, housingOrderUntil, species, duties]

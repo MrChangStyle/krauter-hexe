@@ -1122,6 +1122,292 @@ export interface PriceInput {
   eur: number | null;
 }
 
+export interface GrowAccess {
+  unlocked: boolean;
+  ageConfirmed: boolean;
+  adults: number;
+}
+
+export interface GrowAgeInput {
+  adults: number;
+}
+
+export interface GrowAccessEntry {
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  username: string | null;
+  /** @nullable */
+  unlockedAt: string | null;
+}
+
+export interface GrowAccessInput {
+  email: string;
+  unlocked: boolean;
+}
+
+export type GrowEnvironment = typeof GrowEnvironment[keyof typeof GrowEnvironment];
+
+
+export const GrowEnvironment = {
+  indoor: 'indoor',
+  outdoor: 'outdoor',
+  greenhouse: 'greenhouse',
+} as const;
+
+export type GrowMedium = typeof GrowMedium[keyof typeof GrowMedium];
+
+
+export const GrowMedium = {
+  soil: 'soil',
+  coco: 'coco',
+  hydro: 'hydro',
+} as const;
+
+export type StrainType = typeof StrainType[keyof typeof StrainType];
+
+
+export const StrainType = {
+  indica: 'indica',
+  sativa: 'sativa',
+  hybrid: 'hybrid',
+  ruderalis: 'ruderalis',
+} as const;
+
+export type GrowFlowering = typeof GrowFlowering[keyof typeof GrowFlowering];
+
+
+export const GrowFlowering = {
+  photo: 'photo',
+  auto: 'auto',
+} as const;
+
+export type GrowSeedSex = typeof GrowSeedSex[keyof typeof GrowSeedSex];
+
+
+export const GrowSeedSex = {
+  feminized: 'feminized',
+  regular: 'regular',
+  unknown: 'unknown',
+} as const;
+
+export type GrowPhaseKey = typeof GrowPhaseKey[keyof typeof GrowPhaseKey];
+
+
+export const GrowPhaseKey = {
+  germination: 'germination',
+  seedling: 'seedling',
+  veg: 'veg',
+  flower: 'flower',
+  flush: 'flush',
+  drying: 'drying',
+  curing: 'curing',
+  done: 'done',
+} as const;
+
+export interface GrowPhase {
+  key: GrowPhaseKey;
+  from: string;
+  to: string;
+}
+
+/**
+ * @minItems 2
+ * @maxItems 2
+ * @nullable
+ */
+export type GrowRange = number[] | null;
+
+export interface GrowTargets {
+  light: string;
+  tempC: GrowRange | null;
+  humidity: GrowRange | null;
+  vpd: GrowRange | null;
+  ph: GrowRange | null;
+  ec: GrowRange | null;
+  feeding: string;
+  watering: string;
+}
+
+export interface GrowStep {
+  on: string;
+  text: string;
+  past: boolean;
+}
+
+export interface GrowPlan {
+  phases: GrowPhase[];
+  current: GrowPhaseKey;
+  day: number;
+  harvestOn: string;
+  flipOn: string;
+  targets: GrowTargets;
+  steps: GrowStep[];
+  hints: string[];
+}
+
+export interface GrowPlant {
+  id: number;
+  growId: number;
+  name: string;
+  /** @nullable */
+  strain: string | null;
+  /** @nullable */
+  breeder: string | null;
+  strainType: StrainType;
+  flowering: GrowFlowering;
+  seedSex: GrowSeedSex;
+  flowerWeeks: number;
+  startedOn: string;
+  /** @nullable */
+  flipOn: string | null;
+  /** @nullable */
+  harvestedOn: string | null;
+  /** @nullable */
+  wetGrams: number | null;
+  /** @nullable */
+  dryGrams: number | null;
+  /** @nullable */
+  notes: string | null;
+  plan: GrowPlan;
+}
+
+export interface Grow {
+  id: number;
+  name: string;
+  environment: GrowEnvironment;
+  medium: GrowMedium;
+  /** @nullable */
+  tentSize: string | null;
+  /** @nullable */
+  lightType: string | null;
+  /** @nullable */
+  lightWatts: number | null;
+  /** @nullable */
+  notes: string | null;
+  archived: boolean;
+  plants: GrowPlant[];
+}
+
+export interface KcangCheck {
+  activePlants: number;
+  maxPlants: number;
+  plantsOver: boolean;
+  dryGramsLastYear: number;
+  maxGrams: number;
+  gramsOver: boolean;
+}
+
+export interface GrowOverview {
+  grows: Grow[];
+  kcang: KcangCheck;
+}
+
+export interface GrowInput {
+  /** @maxLength 60 */
+  name: string;
+  environment: GrowEnvironment;
+  medium: GrowMedium;
+  /**
+     * @maxLength 30
+     * @nullable
+     */
+  tentSize?: string | null;
+  /**
+     * @maxLength 30
+     * @nullable
+     */
+  lightType?: string | null;
+  /** @nullable */
+  lightWatts?: number | null;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+  archived?: boolean;
+}
+
+export interface GrowPlantInput {
+  /** @maxLength 60 */
+  name: string;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  strain?: string | null;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  breeder?: string | null;
+  strainType: StrainType;
+  flowering: GrowFlowering;
+  seedSex?: GrowSeedSex;
+  /** @nullable */
+  flowerWeeks?: number | null;
+  /** YYYY-MM-DD, day of germination */
+  startedOn: string;
+  /** @nullable */
+  flipOn?: string | null;
+  /** @nullable */
+  harvestedOn?: string | null;
+  /** @nullable */
+  wetGrams?: number | null;
+  /** @nullable */
+  dryGrams?: number | null;
+  /**
+     * @maxLength 2000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface GrowLog {
+  id: number;
+  date: string;
+  /** @nullable */
+  heightCm: number | null;
+  /** @nullable */
+  waterMl: number | null;
+  /** @nullable */
+  ph: number | null;
+  /** @nullable */
+  ec: number | null;
+  /** @nullable */
+  note: string | null;
+}
+
+export interface GrowLogInput {
+  date: string;
+  /** @nullable */
+  heightCm?: number | null;
+  /** @nullable */
+  waterMl?: number | null;
+  /** @nullable */
+  ph?: number | null;
+  /** @nullable */
+  ec?: number | null;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  note?: string | null;
+}
+
+export type GrowPlantDetailGrow = {
+  id: number;
+  name: string;
+  environment: GrowEnvironment;
+  medium: GrowMedium;
+};
+
+export interface GrowPlantDetail {
+  plant: GrowPlant;
+  grow: GrowPlantDetailGrow;
+  logs: GrowLog[];
+}
+
 export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];
 
 

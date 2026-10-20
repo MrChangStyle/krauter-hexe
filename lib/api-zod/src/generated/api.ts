@@ -3055,6 +3055,710 @@ export const SetFarmPriceResponse = zod.array(SetFarmPriceResponseItem)
 
 
 /**
+ * @summary Grow – is the module unlocked for this account, age confirmed, adults in the household
+ */
+export const GetGrowAccessResponse = zod.object({
+  "unlocked": zod.boolean(),
+  "ageConfirmed": zod.boolean(),
+  "adults": zod.number()
+})
+
+
+/**
+ * @summary Confirm being at least 18 and give the adults in the household
+ */
+export const ConfirmGrowAgeBody = zod.object({
+  "adults": zod.number()
+})
+
+export const ConfirmGrowAgeResponse = zod.object({
+  "unlocked": zod.boolean(),
+  "ageConfirmed": zod.boolean(),
+  "adults": zod.number()
+})
+
+
+/**
+ * @summary Change the adults in the household
+ */
+export const SetGrowAdultsBody = zod.object({
+  "adults": zod.number()
+})
+
+export const SetGrowAdultsResponse = zod.object({
+  "unlocked": zod.boolean(),
+  "ageConfirmed": zod.boolean(),
+  "adults": zod.number()
+})
+
+
+/**
+ * @summary The account's grows with plants, their plans and the KCanG check
+ */
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsTempCMin = 2;
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsTempCMax = 2;
+
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsHumidityMin = 2;
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsHumidityMax = 2;
+
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsVpdMin = 2;
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsVpdMax = 2;
+
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsPhMin = 2;
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsPhMax = 2;
+
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsEcMin = 2;
+export const getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsEcMax = 2;
+
+
+
+export const GetGrowOverviewResponse = zod.object({
+  "grows": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "environment": zod.enum(['indoor', 'outdoor', 'greenhouse']),
+  "medium": zod.enum(['soil', 'coco', 'hydro']),
+  "tentSize": zod.string().nullable(),
+  "lightType": zod.string().nullable(),
+  "lightWatts": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "plants": zod.array(zod.object({
+  "id": zod.number(),
+  "growId": zod.number(),
+  "name": zod.string(),
+  "strain": zod.string().nullable(),
+  "breeder": zod.string().nullable(),
+  "strainType": zod.enum(['indica', 'sativa', 'hybrid', 'ruderalis']),
+  "flowering": zod.enum(['photo', 'auto']),
+  "seedSex": zod.enum(['feminized', 'regular', 'unknown']),
+  "flowerWeeks": zod.number(),
+  "startedOn": zod.string(),
+  "flipOn": zod.string().nullable(),
+  "harvestedOn": zod.string().nullable(),
+  "wetGrams": zod.number().nullable(),
+  "dryGrams": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "plan": zod.object({
+  "phases": zod.array(zod.object({
+  "key": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "from": zod.string(),
+  "to": zod.string()
+})),
+  "current": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "day": zod.number(),
+  "harvestOn": zod.string(),
+  "flipOn": zod.string(),
+  "targets": zod.object({
+  "light": zod.string(),
+  "tempC": zod.array(zod.number()).min(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsTempCMin).max(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsTempCMax).nullable(),
+  "humidity": zod.array(zod.number()).min(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsHumidityMin).max(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsHumidityMax).nullable(),
+  "vpd": zod.array(zod.number()).min(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsVpdMin).max(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsVpdMax).nullable(),
+  "ph": zod.array(zod.number()).min(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsPhMin).max(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsPhMax).nullable(),
+  "ec": zod.array(zod.number()).min(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsEcMin).max(getGrowOverviewResponseGrowsItemPlantsItemPlanTargetsEcMax).nullable(),
+  "feeding": zod.string(),
+  "watering": zod.string()
+}),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "hints": zod.array(zod.string())
+})
+}))
+})),
+  "kcang": zod.object({
+  "activePlants": zod.number(),
+  "maxPlants": zod.number(),
+  "plantsOver": zod.boolean(),
+  "dryGramsLastYear": zod.number(),
+  "maxGrams": zod.number(),
+  "gramsOver": zod.boolean()
+})
+})
+
+
+/**
+ * @summary Create a grow (indoor tent, outdoor, greenhouse)
+ */
+export const createGrowBodyNameMax = 60;
+
+export const createGrowBodyTentSizeMax = 30;
+
+export const createGrowBodyLightTypeMax = 30;
+
+export const createGrowBodyNotesMax = 2000;
+
+
+
+export const CreateGrowBody = zod.object({
+  "name": zod.string().max(createGrowBodyNameMax),
+  "environment": zod.enum(['indoor', 'outdoor', 'greenhouse']),
+  "medium": zod.enum(['soil', 'coco', 'hydro']),
+  "tentSize": zod.string().max(createGrowBodyTentSizeMax).nullish(),
+  "lightType": zod.string().max(createGrowBodyLightTypeMax).nullish(),
+  "lightWatts": zod.number().nullish(),
+  "notes": zod.string().max(createGrowBodyNotesMax).nullish(),
+  "archived": zod.boolean().optional()
+})
+
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsTempCMin = 2;
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsTempCMax = 2;
+
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsHumidityMin = 2;
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsHumidityMax = 2;
+
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsVpdMin = 2;
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsVpdMax = 2;
+
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsPhMin = 2;
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsPhMax = 2;
+
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsEcMin = 2;
+export const createGrowResponseGrowsItemPlantsItemPlanTargetsEcMax = 2;
+
+
+
+export const CreateGrowResponse = zod.object({
+  "grows": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "environment": zod.enum(['indoor', 'outdoor', 'greenhouse']),
+  "medium": zod.enum(['soil', 'coco', 'hydro']),
+  "tentSize": zod.string().nullable(),
+  "lightType": zod.string().nullable(),
+  "lightWatts": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "plants": zod.array(zod.object({
+  "id": zod.number(),
+  "growId": zod.number(),
+  "name": zod.string(),
+  "strain": zod.string().nullable(),
+  "breeder": zod.string().nullable(),
+  "strainType": zod.enum(['indica', 'sativa', 'hybrid', 'ruderalis']),
+  "flowering": zod.enum(['photo', 'auto']),
+  "seedSex": zod.enum(['feminized', 'regular', 'unknown']),
+  "flowerWeeks": zod.number(),
+  "startedOn": zod.string(),
+  "flipOn": zod.string().nullable(),
+  "harvestedOn": zod.string().nullable(),
+  "wetGrams": zod.number().nullable(),
+  "dryGrams": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "plan": zod.object({
+  "phases": zod.array(zod.object({
+  "key": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "from": zod.string(),
+  "to": zod.string()
+})),
+  "current": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "day": zod.number(),
+  "harvestOn": zod.string(),
+  "flipOn": zod.string(),
+  "targets": zod.object({
+  "light": zod.string(),
+  "tempC": zod.array(zod.number()).min(createGrowResponseGrowsItemPlantsItemPlanTargetsTempCMin).max(createGrowResponseGrowsItemPlantsItemPlanTargetsTempCMax).nullable(),
+  "humidity": zod.array(zod.number()).min(createGrowResponseGrowsItemPlantsItemPlanTargetsHumidityMin).max(createGrowResponseGrowsItemPlantsItemPlanTargetsHumidityMax).nullable(),
+  "vpd": zod.array(zod.number()).min(createGrowResponseGrowsItemPlantsItemPlanTargetsVpdMin).max(createGrowResponseGrowsItemPlantsItemPlanTargetsVpdMax).nullable(),
+  "ph": zod.array(zod.number()).min(createGrowResponseGrowsItemPlantsItemPlanTargetsPhMin).max(createGrowResponseGrowsItemPlantsItemPlanTargetsPhMax).nullable(),
+  "ec": zod.array(zod.number()).min(createGrowResponseGrowsItemPlantsItemPlanTargetsEcMin).max(createGrowResponseGrowsItemPlantsItemPlanTargetsEcMax).nullable(),
+  "feeding": zod.string(),
+  "watering": zod.string()
+}),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "hints": zod.array(zod.string())
+})
+}))
+})),
+  "kcang": zod.object({
+  "activePlants": zod.number(),
+  "maxPlants": zod.number(),
+  "plantsOver": zod.boolean(),
+  "dryGramsLastYear": zod.number(),
+  "maxGrams": zod.number(),
+  "gramsOver": zod.boolean()
+})
+})
+
+
+/**
+ * @summary Change or archive a grow
+ */
+export const UpdateGrowParams = zod.object({
+  "growId": zod.coerce.number()
+})
+
+export const updateGrowBodyNameMax = 60;
+
+export const updateGrowBodyTentSizeMax = 30;
+
+export const updateGrowBodyLightTypeMax = 30;
+
+export const updateGrowBodyNotesMax = 2000;
+
+
+
+export const UpdateGrowBody = zod.object({
+  "name": zod.string().max(updateGrowBodyNameMax),
+  "environment": zod.enum(['indoor', 'outdoor', 'greenhouse']),
+  "medium": zod.enum(['soil', 'coco', 'hydro']),
+  "tentSize": zod.string().max(updateGrowBodyTentSizeMax).nullish(),
+  "lightType": zod.string().max(updateGrowBodyLightTypeMax).nullish(),
+  "lightWatts": zod.number().nullish(),
+  "notes": zod.string().max(updateGrowBodyNotesMax).nullish(),
+  "archived": zod.boolean().optional()
+})
+
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsTempCMin = 2;
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsTempCMax = 2;
+
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsHumidityMin = 2;
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsHumidityMax = 2;
+
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsVpdMin = 2;
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsVpdMax = 2;
+
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsPhMin = 2;
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsPhMax = 2;
+
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsEcMin = 2;
+export const updateGrowResponseGrowsItemPlantsItemPlanTargetsEcMax = 2;
+
+
+
+export const UpdateGrowResponse = zod.object({
+  "grows": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "environment": zod.enum(['indoor', 'outdoor', 'greenhouse']),
+  "medium": zod.enum(['soil', 'coco', 'hydro']),
+  "tentSize": zod.string().nullable(),
+  "lightType": zod.string().nullable(),
+  "lightWatts": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "plants": zod.array(zod.object({
+  "id": zod.number(),
+  "growId": zod.number(),
+  "name": zod.string(),
+  "strain": zod.string().nullable(),
+  "breeder": zod.string().nullable(),
+  "strainType": zod.enum(['indica', 'sativa', 'hybrid', 'ruderalis']),
+  "flowering": zod.enum(['photo', 'auto']),
+  "seedSex": zod.enum(['feminized', 'regular', 'unknown']),
+  "flowerWeeks": zod.number(),
+  "startedOn": zod.string(),
+  "flipOn": zod.string().nullable(),
+  "harvestedOn": zod.string().nullable(),
+  "wetGrams": zod.number().nullable(),
+  "dryGrams": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "plan": zod.object({
+  "phases": zod.array(zod.object({
+  "key": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "from": zod.string(),
+  "to": zod.string()
+})),
+  "current": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "day": zod.number(),
+  "harvestOn": zod.string(),
+  "flipOn": zod.string(),
+  "targets": zod.object({
+  "light": zod.string(),
+  "tempC": zod.array(zod.number()).min(updateGrowResponseGrowsItemPlantsItemPlanTargetsTempCMin).max(updateGrowResponseGrowsItemPlantsItemPlanTargetsTempCMax).nullable(),
+  "humidity": zod.array(zod.number()).min(updateGrowResponseGrowsItemPlantsItemPlanTargetsHumidityMin).max(updateGrowResponseGrowsItemPlantsItemPlanTargetsHumidityMax).nullable(),
+  "vpd": zod.array(zod.number()).min(updateGrowResponseGrowsItemPlantsItemPlanTargetsVpdMin).max(updateGrowResponseGrowsItemPlantsItemPlanTargetsVpdMax).nullable(),
+  "ph": zod.array(zod.number()).min(updateGrowResponseGrowsItemPlantsItemPlanTargetsPhMin).max(updateGrowResponseGrowsItemPlantsItemPlanTargetsPhMax).nullable(),
+  "ec": zod.array(zod.number()).min(updateGrowResponseGrowsItemPlantsItemPlanTargetsEcMin).max(updateGrowResponseGrowsItemPlantsItemPlanTargetsEcMax).nullable(),
+  "feeding": zod.string(),
+  "watering": zod.string()
+}),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "hints": zod.array(zod.string())
+})
+}))
+})),
+  "kcang": zod.object({
+  "activePlants": zod.number(),
+  "maxPlants": zod.number(),
+  "plantsOver": zod.boolean(),
+  "dryGramsLastYear": zod.number(),
+  "maxGrams": zod.number(),
+  "gramsOver": zod.boolean()
+})
+})
+
+
+/**
+ * @summary Delete a grow with its plants
+ */
+export const DeleteGrowParams = zod.object({
+  "growId": zod.coerce.number()
+})
+
+export const DeleteGrowResponse = zod.void()
+
+
+/**
+ * @summary Add a plant to a grow
+ */
+export const AddGrowPlantParams = zod.object({
+  "growId": zod.coerce.number()
+})
+
+export const addGrowPlantBodyNameMax = 60;
+
+export const addGrowPlantBodyStrainMax = 60;
+
+export const addGrowPlantBodyBreederMax = 60;
+
+export const addGrowPlantBodyNotesMax = 2000;
+
+
+
+export const AddGrowPlantBody = zod.object({
+  "name": zod.string().max(addGrowPlantBodyNameMax),
+  "strain": zod.string().max(addGrowPlantBodyStrainMax).nullish(),
+  "breeder": zod.string().max(addGrowPlantBodyBreederMax).nullish(),
+  "strainType": zod.enum(['indica', 'sativa', 'hybrid', 'ruderalis']),
+  "flowering": zod.enum(['photo', 'auto']),
+  "seedSex": zod.enum(['feminized', 'regular', 'unknown']).optional(),
+  "flowerWeeks": zod.number().nullish(),
+  "startedOn": zod.string().describe('YYYY-MM-DD, day of germination'),
+  "flipOn": zod.string().nullish(),
+  "harvestedOn": zod.string().nullish(),
+  "wetGrams": zod.number().nullish(),
+  "dryGrams": zod.number().nullish(),
+  "notes": zod.string().max(addGrowPlantBodyNotesMax).nullish()
+})
+
+export const addGrowPlantResponsePlanTargetsTempCMin = 2;
+export const addGrowPlantResponsePlanTargetsTempCMax = 2;
+
+export const addGrowPlantResponsePlanTargetsHumidityMin = 2;
+export const addGrowPlantResponsePlanTargetsHumidityMax = 2;
+
+export const addGrowPlantResponsePlanTargetsVpdMin = 2;
+export const addGrowPlantResponsePlanTargetsVpdMax = 2;
+
+export const addGrowPlantResponsePlanTargetsPhMin = 2;
+export const addGrowPlantResponsePlanTargetsPhMax = 2;
+
+export const addGrowPlantResponsePlanTargetsEcMin = 2;
+export const addGrowPlantResponsePlanTargetsEcMax = 2;
+
+
+
+export const AddGrowPlantResponse = zod.object({
+  "id": zod.number(),
+  "growId": zod.number(),
+  "name": zod.string(),
+  "strain": zod.string().nullable(),
+  "breeder": zod.string().nullable(),
+  "strainType": zod.enum(['indica', 'sativa', 'hybrid', 'ruderalis']),
+  "flowering": zod.enum(['photo', 'auto']),
+  "seedSex": zod.enum(['feminized', 'regular', 'unknown']),
+  "flowerWeeks": zod.number(),
+  "startedOn": zod.string(),
+  "flipOn": zod.string().nullable(),
+  "harvestedOn": zod.string().nullable(),
+  "wetGrams": zod.number().nullable(),
+  "dryGrams": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "plan": zod.object({
+  "phases": zod.array(zod.object({
+  "key": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "from": zod.string(),
+  "to": zod.string()
+})),
+  "current": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "day": zod.number(),
+  "harvestOn": zod.string(),
+  "flipOn": zod.string(),
+  "targets": zod.object({
+  "light": zod.string(),
+  "tempC": zod.array(zod.number()).min(addGrowPlantResponsePlanTargetsTempCMin).max(addGrowPlantResponsePlanTargetsTempCMax).nullable(),
+  "humidity": zod.array(zod.number()).min(addGrowPlantResponsePlanTargetsHumidityMin).max(addGrowPlantResponsePlanTargetsHumidityMax).nullable(),
+  "vpd": zod.array(zod.number()).min(addGrowPlantResponsePlanTargetsVpdMin).max(addGrowPlantResponsePlanTargetsVpdMax).nullable(),
+  "ph": zod.array(zod.number()).min(addGrowPlantResponsePlanTargetsPhMin).max(addGrowPlantResponsePlanTargetsPhMax).nullable(),
+  "ec": zod.array(zod.number()).min(addGrowPlantResponsePlanTargetsEcMin).max(addGrowPlantResponsePlanTargetsEcMax).nullable(),
+  "feeding": zod.string(),
+  "watering": zod.string()
+}),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "hints": zod.array(zod.string())
+})
+})
+
+
+/**
+ * @summary A plant with its plan and Tagebuch
+ */
+export const GetGrowPlantParams = zod.object({
+  "plantId": zod.coerce.number()
+})
+
+export const getGrowPlantResponsePlantPlanTargetsTempCMin = 2;
+export const getGrowPlantResponsePlantPlanTargetsTempCMax = 2;
+
+export const getGrowPlantResponsePlantPlanTargetsHumidityMin = 2;
+export const getGrowPlantResponsePlantPlanTargetsHumidityMax = 2;
+
+export const getGrowPlantResponsePlantPlanTargetsVpdMin = 2;
+export const getGrowPlantResponsePlantPlanTargetsVpdMax = 2;
+
+export const getGrowPlantResponsePlantPlanTargetsPhMin = 2;
+export const getGrowPlantResponsePlantPlanTargetsPhMax = 2;
+
+export const getGrowPlantResponsePlantPlanTargetsEcMin = 2;
+export const getGrowPlantResponsePlantPlanTargetsEcMax = 2;
+
+
+
+export const GetGrowPlantResponse = zod.object({
+  "plant": zod.object({
+  "id": zod.number(),
+  "growId": zod.number(),
+  "name": zod.string(),
+  "strain": zod.string().nullable(),
+  "breeder": zod.string().nullable(),
+  "strainType": zod.enum(['indica', 'sativa', 'hybrid', 'ruderalis']),
+  "flowering": zod.enum(['photo', 'auto']),
+  "seedSex": zod.enum(['feminized', 'regular', 'unknown']),
+  "flowerWeeks": zod.number(),
+  "startedOn": zod.string(),
+  "flipOn": zod.string().nullable(),
+  "harvestedOn": zod.string().nullable(),
+  "wetGrams": zod.number().nullable(),
+  "dryGrams": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "plan": zod.object({
+  "phases": zod.array(zod.object({
+  "key": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "from": zod.string(),
+  "to": zod.string()
+})),
+  "current": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "day": zod.number(),
+  "harvestOn": zod.string(),
+  "flipOn": zod.string(),
+  "targets": zod.object({
+  "light": zod.string(),
+  "tempC": zod.array(zod.number()).min(getGrowPlantResponsePlantPlanTargetsTempCMin).max(getGrowPlantResponsePlantPlanTargetsTempCMax).nullable(),
+  "humidity": zod.array(zod.number()).min(getGrowPlantResponsePlantPlanTargetsHumidityMin).max(getGrowPlantResponsePlantPlanTargetsHumidityMax).nullable(),
+  "vpd": zod.array(zod.number()).min(getGrowPlantResponsePlantPlanTargetsVpdMin).max(getGrowPlantResponsePlantPlanTargetsVpdMax).nullable(),
+  "ph": zod.array(zod.number()).min(getGrowPlantResponsePlantPlanTargetsPhMin).max(getGrowPlantResponsePlantPlanTargetsPhMax).nullable(),
+  "ec": zod.array(zod.number()).min(getGrowPlantResponsePlantPlanTargetsEcMin).max(getGrowPlantResponsePlantPlanTargetsEcMax).nullable(),
+  "feeding": zod.string(),
+  "watering": zod.string()
+}),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "hints": zod.array(zod.string())
+})
+}),
+  "grow": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "environment": zod.enum(['indoor', 'outdoor', 'greenhouse']),
+  "medium": zod.enum(['soil', 'coco', 'hydro'])
+}),
+  "logs": zod.array(zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "heightCm": zod.number().nullable(),
+  "waterMl": zod.number().nullable(),
+  "ph": zod.number().nullable(),
+  "ec": zod.number().nullable(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Change a plant (incl. 12/12 day and harvest)
+ */
+export const UpdateGrowPlantParams = zod.object({
+  "plantId": zod.coerce.number()
+})
+
+export const updateGrowPlantBodyNameMax = 60;
+
+export const updateGrowPlantBodyStrainMax = 60;
+
+export const updateGrowPlantBodyBreederMax = 60;
+
+export const updateGrowPlantBodyNotesMax = 2000;
+
+
+
+export const UpdateGrowPlantBody = zod.object({
+  "name": zod.string().max(updateGrowPlantBodyNameMax),
+  "strain": zod.string().max(updateGrowPlantBodyStrainMax).nullish(),
+  "breeder": zod.string().max(updateGrowPlantBodyBreederMax).nullish(),
+  "strainType": zod.enum(['indica', 'sativa', 'hybrid', 'ruderalis']),
+  "flowering": zod.enum(['photo', 'auto']),
+  "seedSex": zod.enum(['feminized', 'regular', 'unknown']).optional(),
+  "flowerWeeks": zod.number().nullish(),
+  "startedOn": zod.string().describe('YYYY-MM-DD, day of germination'),
+  "flipOn": zod.string().nullish(),
+  "harvestedOn": zod.string().nullish(),
+  "wetGrams": zod.number().nullish(),
+  "dryGrams": zod.number().nullish(),
+  "notes": zod.string().max(updateGrowPlantBodyNotesMax).nullish()
+})
+
+export const updateGrowPlantResponsePlanTargetsTempCMin = 2;
+export const updateGrowPlantResponsePlanTargetsTempCMax = 2;
+
+export const updateGrowPlantResponsePlanTargetsHumidityMin = 2;
+export const updateGrowPlantResponsePlanTargetsHumidityMax = 2;
+
+export const updateGrowPlantResponsePlanTargetsVpdMin = 2;
+export const updateGrowPlantResponsePlanTargetsVpdMax = 2;
+
+export const updateGrowPlantResponsePlanTargetsPhMin = 2;
+export const updateGrowPlantResponsePlanTargetsPhMax = 2;
+
+export const updateGrowPlantResponsePlanTargetsEcMin = 2;
+export const updateGrowPlantResponsePlanTargetsEcMax = 2;
+
+
+
+export const UpdateGrowPlantResponse = zod.object({
+  "id": zod.number(),
+  "growId": zod.number(),
+  "name": zod.string(),
+  "strain": zod.string().nullable(),
+  "breeder": zod.string().nullable(),
+  "strainType": zod.enum(['indica', 'sativa', 'hybrid', 'ruderalis']),
+  "flowering": zod.enum(['photo', 'auto']),
+  "seedSex": zod.enum(['feminized', 'regular', 'unknown']),
+  "flowerWeeks": zod.number(),
+  "startedOn": zod.string(),
+  "flipOn": zod.string().nullable(),
+  "harvestedOn": zod.string().nullable(),
+  "wetGrams": zod.number().nullable(),
+  "dryGrams": zod.number().nullable(),
+  "notes": zod.string().nullable(),
+  "plan": zod.object({
+  "phases": zod.array(zod.object({
+  "key": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "from": zod.string(),
+  "to": zod.string()
+})),
+  "current": zod.enum(['germination', 'seedling', 'veg', 'flower', 'flush', 'drying', 'curing', 'done']),
+  "day": zod.number(),
+  "harvestOn": zod.string(),
+  "flipOn": zod.string(),
+  "targets": zod.object({
+  "light": zod.string(),
+  "tempC": zod.array(zod.number()).min(updateGrowPlantResponsePlanTargetsTempCMin).max(updateGrowPlantResponsePlanTargetsTempCMax).nullable(),
+  "humidity": zod.array(zod.number()).min(updateGrowPlantResponsePlanTargetsHumidityMin).max(updateGrowPlantResponsePlanTargetsHumidityMax).nullable(),
+  "vpd": zod.array(zod.number()).min(updateGrowPlantResponsePlanTargetsVpdMin).max(updateGrowPlantResponsePlanTargetsVpdMax).nullable(),
+  "ph": zod.array(zod.number()).min(updateGrowPlantResponsePlanTargetsPhMin).max(updateGrowPlantResponsePlanTargetsPhMax).nullable(),
+  "ec": zod.array(zod.number()).min(updateGrowPlantResponsePlanTargetsEcMin).max(updateGrowPlantResponsePlanTargetsEcMax).nullable(),
+  "feeding": zod.string(),
+  "watering": zod.string()
+}),
+  "steps": zod.array(zod.object({
+  "on": zod.string(),
+  "text": zod.string(),
+  "past": zod.boolean()
+})),
+  "hints": zod.array(zod.string())
+})
+})
+
+
+/**
+ * @summary Delete a plant
+ */
+export const DeleteGrowPlantParams = zod.object({
+  "plantId": zod.coerce.number()
+})
+
+export const DeleteGrowPlantResponse = zod.void()
+
+
+/**
+ * @summary Add a Tagebuch entry
+ */
+export const AddGrowLogParams = zod.object({
+  "plantId": zod.coerce.number()
+})
+
+export const addGrowLogBodyNoteMax = 1000;
+
+
+
+export const AddGrowLogBody = zod.object({
+  "date": zod.string(),
+  "heightCm": zod.number().nullish(),
+  "waterMl": zod.number().nullish(),
+  "ph": zod.number().nullish(),
+  "ec": zod.number().nullish(),
+  "note": zod.string().max(addGrowLogBodyNoteMax).nullish()
+})
+
+export const AddGrowLogResponse = zod.void()
+
+
+/**
+ * @summary Delete a Tagebuch entry
+ */
+export const DeleteGrowLogParams = zod.object({
+  "logId": zod.coerce.number()
+})
+
+export const DeleteGrowLogResponse = zod.void()
+
+
+/**
+ * @summary Owner – accounts with the Grow module
+ */
+export const ListGrowAccessResponseItem = zod.object({
+  "email": zod.string().nullable(),
+  "username": zod.string().nullable(),
+  "unlockedAt": zod.coerce.date().nullable()
+})
+export const ListGrowAccessResponse = zod.array(ListGrowAccessResponseItem)
+
+
+/**
+ * @summary Owner – unlock the Grow module for an account by e-mail, or take it back
+ */
+export const SetGrowAccessBody = zod.object({
+  "email": zod.string(),
+  "unlocked": zod.boolean()
+})
+
+export const SetGrowAccessResponseItem = zod.object({
+  "email": zod.string().nullable(),
+  "username": zod.string().nullable(),
+  "unlockedAt": zod.coerce.date().nullable()
+})
+export const SetGrowAccessResponse = zod.array(SetGrowAccessResponseItem)
+
+
+/**
  * @summary Pflichten – what keeping the farm's species means on paper, with what is ticked off
  */
 export const GetFarmDutiesParams = zod.object({

@@ -7,6 +7,8 @@ import {
   useListMyScans,
   useListMyInsects,
   useGetLeaderboard,
+  getGetGrowAccessQueryKey,
+  useGetGrowAccess,
   type ManagedUser,
 } from "@workspace/api-client-react";
 import { exportInsectsPdf, exportSelectedPlantsPdf } from "@/lib/pdf-export";
@@ -17,7 +19,7 @@ import {
   Crown, ShieldCheck, Hourglass, Trash2, UserCheck, UserX,
   Pin, Camera, Users, WifiOff, Wifi, Loader2, Clock, AlertCircle,
   RefreshCw, ImageOff, TriangleAlert, Bug, Download, BookHeart, ChevronRight,
-  ChevronDown, Leaf, Trophy, Tractor,
+  ChevronDown, Leaf, Trophy, Tractor, Sprout,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,6 +42,8 @@ import { OrphanCleanupCard } from "@/components/orphan-cleanup-card";
 import { ModerationCard } from "@/components/moderation-card";
 import { CropDraftsCard } from "@/components/crop-drafts-card";
 import { RecipeDraftsCard } from "@/components/recipe-drafts-card";
+import { GrowAccessCard } from "@/components/grow-access-card";
+import { GROW_ENABLED } from "@/lib/grow-labels";
 import { OperationsCard } from "@/components/operations-card";
 import { ImageRescueCard } from "@/components/image-rescue-card";
 import { useFavorites } from "@/lib/use-favorites";
@@ -1028,6 +1032,7 @@ function Benutzerverwaltung() {
  */
 export default function MehrPage() {
   const { user: me } = useAuthContext();
+  const growAccess = useGetGrowAccess({ query: { queryKey: getGetGrowAccessQueryKey(), enabled: GROW_ENABLED && !!me } });
 
   return (
     <div className="px-4 pt-6 pb-4 space-y-5">
@@ -1045,6 +1050,7 @@ export default function MehrPage() {
       <div className="rounded-2xl border bg-card divide-y overflow-hidden">
         <MehrLink href="/farm" icon={Tractor} label="Farm & Team" hint="Tiere, Mitglieder, Rollen und Freigaben" />
         <MehrLink href="/warteschlange" icon={WifiOff} label="Offline-Fotos" hint="Fotos, die auf den Scan warten" />
+        {growAccess.data?.unlocked && <MehrLink href="/grow" icon={Sprout} label="Grow (ab 18)" hint="Eigenanbau: Grow-Plan, Pflege, Tagebuch" />}
       </div>
 
       <PushNotificationCard />
@@ -1058,6 +1064,7 @@ export default function MehrPage() {
           <ModerationCard />
           <CropDraftsCard />
           <RecipeDraftsCard />
+          {GROW_ENABLED && <GrowAccessCard />}
           <Benutzerverwaltung />
           <OrphanCleanupCard />
         </>

@@ -105,6 +105,16 @@ import type {
   GeoReverseInput,
   GeoReverseResult,
   GerminationTestInput,
+  GrowAccess,
+  GrowAccessEntry,
+  GrowAccessInput,
+  GrowAgeInput,
+  GrowInput,
+  GrowLogInput,
+  GrowOverview,
+  GrowPlant,
+  GrowPlantDetail,
+  GrowPlantInput,
   Handover,
   HandoverNoteInput,
   Harvest,
@@ -7135,6 +7145,1099 @@ export const useSetFarmPrice = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSetFarmPriceMutationOptions(options));
+    }
+
+export const getGetGrowAccessUrl = () => {
+
+
+
+
+  return `/api/grow/access`
+}
+
+/**
+ * @summary Grow – is the module unlocked for this account, age confirmed, adults in the household
+ */
+export const getGrowAccess = async ( options?: RequestInit): Promise<GrowAccess> => {
+
+  return customFetch<GrowAccess>(getGetGrowAccessUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGrowAccessQueryKey = () => {
+    return [
+    `/api/grow/access`
+    ] as const;
+    }
+
+
+export const getGetGrowAccessQueryOptions = <TData = Awaited<ReturnType<typeof getGrowAccess>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGrowAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGrowAccessQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGrowAccess>>> = ({ signal }) => getGrowAccess({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGrowAccess>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGrowAccessQueryResult = NonNullable<Awaited<ReturnType<typeof getGrowAccess>>>
+export type GetGrowAccessQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Grow – is the module unlocked for this account, age confirmed, adults in the household
+ */
+
+export function useGetGrowAccess<TData = Awaited<ReturnType<typeof getGrowAccess>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGrowAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGrowAccessQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getConfirmGrowAgeUrl = () => {
+
+
+
+
+  return `/api/grow/access`
+}
+
+/**
+ * @summary Confirm being at least 18 and give the adults in the household
+ */
+export const confirmGrowAge = async (growAgeInput: GrowAgeInput, options?: RequestInit): Promise<GrowAccess> => {
+
+  return customFetch<GrowAccess>(getConfirmGrowAgeUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growAgeInput)
+  }
+);}
+
+
+
+
+
+export const getConfirmGrowAgeMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmGrowAge>>, TError,{data: BodyType<GrowAgeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof confirmGrowAge>>, TError,{data: BodyType<GrowAgeInput>}, TContext> => {
+
+const mutationKey = ['confirmGrowAge'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof confirmGrowAge>>, {data: BodyType<GrowAgeInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  confirmGrowAge(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ConfirmGrowAgeMutationResult = NonNullable<Awaited<ReturnType<typeof confirmGrowAge>>>
+    export type ConfirmGrowAgeMutationBody = BodyType<GrowAgeInput>
+    export type ConfirmGrowAgeMutationError = ErrorType<void>
+
+    /**
+ * @summary Confirm being at least 18 and give the adults in the household
+ */
+export const useConfirmGrowAge = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof confirmGrowAge>>, TError,{data: BodyType<GrowAgeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof confirmGrowAge>>,
+        TError,
+        {data: BodyType<GrowAgeInput>},
+        TContext
+      > => {
+      return useMutation(getConfirmGrowAgeMutationOptions(options));
+    }
+
+export const getSetGrowAdultsUrl = () => {
+
+
+
+
+  return `/api/grow/access`
+}
+
+/**
+ * @summary Change the adults in the household
+ */
+export const setGrowAdults = async (growAgeInput: GrowAgeInput, options?: RequestInit): Promise<GrowAccess> => {
+
+  return customFetch<GrowAccess>(getSetGrowAdultsUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growAgeInput)
+  }
+);}
+
+
+
+
+
+export const getSetGrowAdultsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowAdults>>, TError,{data: BodyType<GrowAgeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setGrowAdults>>, TError,{data: BodyType<GrowAgeInput>}, TContext> => {
+
+const mutationKey = ['setGrowAdults'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setGrowAdults>>, {data: BodyType<GrowAgeInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  setGrowAdults(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetGrowAdultsMutationResult = NonNullable<Awaited<ReturnType<typeof setGrowAdults>>>
+    export type SetGrowAdultsMutationBody = BodyType<GrowAgeInput>
+    export type SetGrowAdultsMutationError = ErrorType<void>
+
+    /**
+ * @summary Change the adults in the household
+ */
+export const useSetGrowAdults = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowAdults>>, TError,{data: BodyType<GrowAgeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setGrowAdults>>,
+        TError,
+        {data: BodyType<GrowAgeInput>},
+        TContext
+      > => {
+      return useMutation(getSetGrowAdultsMutationOptions(options));
+    }
+
+export const getGetGrowOverviewUrl = () => {
+
+
+
+
+  return `/api/grow`
+}
+
+/**
+ * @summary The account's grows with plants, their plans and the KCanG check
+ */
+export const getGrowOverview = async ( options?: RequestInit): Promise<GrowOverview> => {
+
+  return customFetch<GrowOverview>(getGetGrowOverviewUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGrowOverviewQueryKey = () => {
+    return [
+    `/api/grow`
+    ] as const;
+    }
+
+
+export const getGetGrowOverviewQueryOptions = <TData = Awaited<ReturnType<typeof getGrowOverview>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGrowOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGrowOverviewQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGrowOverview>>> = ({ signal }) => getGrowOverview({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGrowOverview>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGrowOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof getGrowOverview>>>
+export type GetGrowOverviewQueryError = ErrorType<void>
+
+
+/**
+ * @summary The account's grows with plants, their plans and the KCanG check
+ */
+
+export function useGetGrowOverview<TData = Awaited<ReturnType<typeof getGrowOverview>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGrowOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGrowOverviewQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateGrowUrl = () => {
+
+
+
+
+  return `/api/grow/grows`
+}
+
+/**
+ * @summary Create a grow (indoor tent, outdoor, greenhouse)
+ */
+export const createGrow = async (growInput: GrowInput, options?: RequestInit): Promise<GrowOverview> => {
+
+  return customFetch<GrowOverview>(getCreateGrowUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growInput)
+  }
+);}
+
+
+
+
+
+export const getCreateGrowMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGrow>>, TError,{data: BodyType<GrowInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createGrow>>, TError,{data: BodyType<GrowInput>}, TContext> => {
+
+const mutationKey = ['createGrow'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createGrow>>, {data: BodyType<GrowInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createGrow(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateGrowMutationResult = NonNullable<Awaited<ReturnType<typeof createGrow>>>
+    export type CreateGrowMutationBody = BodyType<GrowInput>
+    export type CreateGrowMutationError = ErrorType<void>
+
+    /**
+ * @summary Create a grow (indoor tent, outdoor, greenhouse)
+ */
+export const useCreateGrow = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createGrow>>, TError,{data: BodyType<GrowInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createGrow>>,
+        TError,
+        {data: BodyType<GrowInput>},
+        TContext
+      > => {
+      return useMutation(getCreateGrowMutationOptions(options));
+    }
+
+export const getUpdateGrowUrl = (growId: number,) => {
+
+
+
+
+  return `/api/grow/grows/${growId}`
+}
+
+/**
+ * @summary Change or archive a grow
+ */
+export const updateGrow = async (growId: number,
+    growInput: GrowInput, options?: RequestInit): Promise<GrowOverview> => {
+
+  return customFetch<GrowOverview>(getUpdateGrowUrl(growId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateGrowMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateGrow>>, TError,{growId: number;data: BodyType<GrowInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateGrow>>, TError,{growId: number;data: BodyType<GrowInput>}, TContext> => {
+
+const mutationKey = ['updateGrow'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateGrow>>, {growId: number;data: BodyType<GrowInput>}> = (props) => {
+          const {growId,data} = props ?? {};
+
+          return  updateGrow(growId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateGrowMutationResult = NonNullable<Awaited<ReturnType<typeof updateGrow>>>
+    export type UpdateGrowMutationBody = BodyType<GrowInput>
+    export type UpdateGrowMutationError = ErrorType<void>
+
+    /**
+ * @summary Change or archive a grow
+ */
+export const useUpdateGrow = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateGrow>>, TError,{growId: number;data: BodyType<GrowInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateGrow>>,
+        TError,
+        {growId: number;data: BodyType<GrowInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateGrowMutationOptions(options));
+    }
+
+export const getDeleteGrowUrl = (growId: number,) => {
+
+
+
+
+  return `/api/grow/grows/${growId}`
+}
+
+/**
+ * @summary Delete a grow with its plants
+ */
+export const deleteGrow = async (growId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteGrowUrl(growId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteGrowMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrow>>, TError,{growId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteGrow>>, TError,{growId: number}, TContext> => {
+
+const mutationKey = ['deleteGrow'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGrow>>, {growId: number}> = (props) => {
+          const {growId} = props ?? {};
+
+          return  deleteGrow(growId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteGrowMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGrow>>>
+
+    export type DeleteGrowMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a grow with its plants
+ */
+export const useDeleteGrow = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrow>>, TError,{growId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteGrow>>,
+        TError,
+        {growId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteGrowMutationOptions(options));
+    }
+
+export const getAddGrowPlantUrl = (growId: number,) => {
+
+
+
+
+  return `/api/grow/grows/${growId}/plants`
+}
+
+/**
+ * @summary Add a plant to a grow
+ */
+export const addGrowPlant = async (growId: number,
+    growPlantInput: GrowPlantInput, options?: RequestInit): Promise<GrowPlant> => {
+
+  return customFetch<GrowPlant>(getAddGrowPlantUrl(growId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growPlantInput)
+  }
+);}
+
+
+
+
+
+export const getAddGrowPlantMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addGrowPlant>>, TError,{growId: number;data: BodyType<GrowPlantInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addGrowPlant>>, TError,{growId: number;data: BodyType<GrowPlantInput>}, TContext> => {
+
+const mutationKey = ['addGrowPlant'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addGrowPlant>>, {growId: number;data: BodyType<GrowPlantInput>}> = (props) => {
+          const {growId,data} = props ?? {};
+
+          return  addGrowPlant(growId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddGrowPlantMutationResult = NonNullable<Awaited<ReturnType<typeof addGrowPlant>>>
+    export type AddGrowPlantMutationBody = BodyType<GrowPlantInput>
+    export type AddGrowPlantMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a plant to a grow
+ */
+export const useAddGrowPlant = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addGrowPlant>>, TError,{growId: number;data: BodyType<GrowPlantInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addGrowPlant>>,
+        TError,
+        {growId: number;data: BodyType<GrowPlantInput>},
+        TContext
+      > => {
+      return useMutation(getAddGrowPlantMutationOptions(options));
+    }
+
+export const getGetGrowPlantUrl = (plantId: number,) => {
+
+
+
+
+  return `/api/grow/plants/${plantId}`
+}
+
+/**
+ * @summary A plant with its plan and Tagebuch
+ */
+export const getGrowPlant = async (plantId: number, options?: RequestInit): Promise<GrowPlantDetail> => {
+
+  return customFetch<GrowPlantDetail>(getGetGrowPlantUrl(plantId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGrowPlantQueryKey = (plantId: number,) => {
+    return [
+    `/api/grow/plants/${plantId}`
+    ] as const;
+    }
+
+
+export const getGetGrowPlantQueryOptions = <TData = Awaited<ReturnType<typeof getGrowPlant>>, TError = ErrorType<void>>(plantId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGrowPlant>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGrowPlantQueryKey(plantId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGrowPlant>>> = ({ signal }) => getGrowPlant(plantId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: plantId !== null && plantId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGrowPlant>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGrowPlantQueryResult = NonNullable<Awaited<ReturnType<typeof getGrowPlant>>>
+export type GetGrowPlantQueryError = ErrorType<void>
+
+
+/**
+ * @summary A plant with its plan and Tagebuch
+ */
+
+export function useGetGrowPlant<TData = Awaited<ReturnType<typeof getGrowPlant>>, TError = ErrorType<void>>(
+ plantId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGrowPlant>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGrowPlantQueryOptions(plantId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateGrowPlantUrl = (plantId: number,) => {
+
+
+
+
+  return `/api/grow/plants/${plantId}`
+}
+
+/**
+ * @summary Change a plant (incl. 12/12 day and harvest)
+ */
+export const updateGrowPlant = async (plantId: number,
+    growPlantInput: GrowPlantInput, options?: RequestInit): Promise<GrowPlant> => {
+
+  return customFetch<GrowPlant>(getUpdateGrowPlantUrl(plantId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growPlantInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateGrowPlantMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateGrowPlant>>, TError,{plantId: number;data: BodyType<GrowPlantInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateGrowPlant>>, TError,{plantId: number;data: BodyType<GrowPlantInput>}, TContext> => {
+
+const mutationKey = ['updateGrowPlant'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateGrowPlant>>, {plantId: number;data: BodyType<GrowPlantInput>}> = (props) => {
+          const {plantId,data} = props ?? {};
+
+          return  updateGrowPlant(plantId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateGrowPlantMutationResult = NonNullable<Awaited<ReturnType<typeof updateGrowPlant>>>
+    export type UpdateGrowPlantMutationBody = BodyType<GrowPlantInput>
+    export type UpdateGrowPlantMutationError = ErrorType<void>
+
+    /**
+ * @summary Change a plant (incl. 12/12 day and harvest)
+ */
+export const useUpdateGrowPlant = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateGrowPlant>>, TError,{plantId: number;data: BodyType<GrowPlantInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateGrowPlant>>,
+        TError,
+        {plantId: number;data: BodyType<GrowPlantInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateGrowPlantMutationOptions(options));
+    }
+
+export const getDeleteGrowPlantUrl = (plantId: number,) => {
+
+
+
+
+  return `/api/grow/plants/${plantId}`
+}
+
+/**
+ * @summary Delete a plant
+ */
+export const deleteGrowPlant = async (plantId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteGrowPlantUrl(plantId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteGrowPlantMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrowPlant>>, TError,{plantId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteGrowPlant>>, TError,{plantId: number}, TContext> => {
+
+const mutationKey = ['deleteGrowPlant'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGrowPlant>>, {plantId: number}> = (props) => {
+          const {plantId} = props ?? {};
+
+          return  deleteGrowPlant(plantId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteGrowPlantMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGrowPlant>>>
+
+    export type DeleteGrowPlantMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a plant
+ */
+export const useDeleteGrowPlant = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrowPlant>>, TError,{plantId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteGrowPlant>>,
+        TError,
+        {plantId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteGrowPlantMutationOptions(options));
+    }
+
+export const getAddGrowLogUrl = (plantId: number,) => {
+
+
+
+
+  return `/api/grow/plants/${plantId}/logs`
+}
+
+/**
+ * @summary Add a Tagebuch entry
+ */
+export const addGrowLog = async (plantId: number,
+    growLogInput: GrowLogInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAddGrowLogUrl(plantId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growLogInput)
+  }
+);}
+
+
+
+
+
+export const getAddGrowLogMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addGrowLog>>, TError,{plantId: number;data: BodyType<GrowLogInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addGrowLog>>, TError,{plantId: number;data: BodyType<GrowLogInput>}, TContext> => {
+
+const mutationKey = ['addGrowLog'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addGrowLog>>, {plantId: number;data: BodyType<GrowLogInput>}> = (props) => {
+          const {plantId,data} = props ?? {};
+
+          return  addGrowLog(plantId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddGrowLogMutationResult = NonNullable<Awaited<ReturnType<typeof addGrowLog>>>
+    export type AddGrowLogMutationBody = BodyType<GrowLogInput>
+    export type AddGrowLogMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a Tagebuch entry
+ */
+export const useAddGrowLog = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addGrowLog>>, TError,{plantId: number;data: BodyType<GrowLogInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addGrowLog>>,
+        TError,
+        {plantId: number;data: BodyType<GrowLogInput>},
+        TContext
+      > => {
+      return useMutation(getAddGrowLogMutationOptions(options));
+    }
+
+export const getDeleteGrowLogUrl = (logId: number,) => {
+
+
+
+
+  return `/api/grow/logs/${logId}`
+}
+
+/**
+ * @summary Delete a Tagebuch entry
+ */
+export const deleteGrowLog = async (logId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteGrowLogUrl(logId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteGrowLogMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrowLog>>, TError,{logId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteGrowLog>>, TError,{logId: number}, TContext> => {
+
+const mutationKey = ['deleteGrowLog'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGrowLog>>, {logId: number}> = (props) => {
+          const {logId} = props ?? {};
+
+          return  deleteGrowLog(logId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteGrowLogMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGrowLog>>>
+
+    export type DeleteGrowLogMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a Tagebuch entry
+ */
+export const useDeleteGrowLog = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrowLog>>, TError,{logId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteGrowLog>>,
+        TError,
+        {logId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteGrowLogMutationOptions(options));
+    }
+
+export const getListGrowAccessUrl = () => {
+
+
+
+
+  return `/api/admin/grow-access`
+}
+
+/**
+ * @summary Owner – accounts with the Grow module
+ */
+export const listGrowAccess = async ( options?: RequestInit): Promise<GrowAccessEntry[]> => {
+
+  return customFetch<GrowAccessEntry[]>(getListGrowAccessUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListGrowAccessQueryKey = () => {
+    return [
+    `/api/admin/grow-access`
+    ] as const;
+    }
+
+
+export const getListGrowAccessQueryOptions = <TData = Awaited<ReturnType<typeof listGrowAccess>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGrowAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListGrowAccessQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGrowAccess>>> = ({ signal }) => listGrowAccess({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGrowAccess>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListGrowAccessQueryResult = NonNullable<Awaited<ReturnType<typeof listGrowAccess>>>
+export type ListGrowAccessQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Owner – accounts with the Grow module
+ */
+
+export function useListGrowAccess<TData = Awaited<ReturnType<typeof listGrowAccess>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGrowAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListGrowAccessQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetGrowAccessUrl = () => {
+
+
+
+
+  return `/api/admin/grow-access`
+}
+
+/**
+ * @summary Owner – unlock the Grow module for an account by e-mail, or take it back
+ */
+export const setGrowAccess = async (growAccessInput: GrowAccessInput, options?: RequestInit): Promise<GrowAccessEntry[]> => {
+
+  return customFetch<GrowAccessEntry[]>(getSetGrowAccessUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(growAccessInput)
+  }
+);}
+
+
+
+
+
+export const getSetGrowAccessMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowAccess>>, TError,{data: BodyType<GrowAccessInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setGrowAccess>>, TError,{data: BodyType<GrowAccessInput>}, TContext> => {
+
+const mutationKey = ['setGrowAccess'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setGrowAccess>>, {data: BodyType<GrowAccessInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  setGrowAccess(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetGrowAccessMutationResult = NonNullable<Awaited<ReturnType<typeof setGrowAccess>>>
+    export type SetGrowAccessMutationBody = BodyType<GrowAccessInput>
+    export type SetGrowAccessMutationError = ErrorType<void>
+
+    /**
+ * @summary Owner – unlock the Grow module for an account by e-mail, or take it back
+ */
+export const useSetGrowAccess = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowAccess>>, TError,{data: BodyType<GrowAccessInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setGrowAccess>>,
+        TError,
+        {data: BodyType<GrowAccessInput>},
+        TContext
+      > => {
+      return useMutation(getSetGrowAccessMutationOptions(options));
     }
 
 export const getGetFarmDutiesUrl = (farmId: number,) => {

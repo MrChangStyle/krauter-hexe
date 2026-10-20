@@ -3060,7 +3060,8 @@ export const SetFarmPriceResponse = zod.array(SetFarmPriceResponseItem)
 export const GetGrowAccessResponse = zod.object({
   "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
-  "adults": zod.number()
+  "adults": zod.number(),
+  "push": zod.enum(['off', 'discreet', 'full'])
 })
 
 
@@ -3074,21 +3075,24 @@ export const ConfirmGrowAgeBody = zod.object({
 export const ConfirmGrowAgeResponse = zod.object({
   "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
-  "adults": zod.number()
+  "adults": zod.number(),
+  "push": zod.enum(['off', 'discreet', 'full'])
 })
 
 
 /**
- * @summary Change the adults in the household
+ * @summary Change the adults in the household and the morning push
  */
-export const SetGrowAdultsBody = zod.object({
-  "adults": zod.number()
+export const SetGrowSettingsBody = zod.object({
+  "adults": zod.number().optional(),
+  "push": zod.enum(['off', 'discreet', 'full']).optional()
 })
 
-export const SetGrowAdultsResponse = zod.object({
+export const SetGrowSettingsResponse = zod.object({
   "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
-  "adults": zod.number()
+  "adults": zod.number(),
+  "push": zod.enum(['off', 'discreet', 'full'])
 })
 
 
@@ -3123,6 +3127,8 @@ export const GetGrowOverviewResponse = zod.object({
   "lightWatts": zod.number().nullable(),
   "notes": zod.string().nullable(),
   "archived": zod.boolean(),
+  "postalCode": zod.string().nullable(),
+  "hasLocation": zod.boolean(),
   "plants": zod.array(zod.object({
   "id": zod.number(),
   "growId": zod.number(),
@@ -3190,6 +3196,8 @@ export const createGrowBodyLightTypeMax = 30;
 
 export const createGrowBodyNotesMax = 2000;
 
+export const createGrowBodyPostalCodeMax = 5;
+
 
 
 export const CreateGrowBody = zod.object({
@@ -3200,7 +3208,10 @@ export const CreateGrowBody = zod.object({
   "lightType": zod.string().max(createGrowBodyLightTypeMax).nullish(),
   "lightWatts": zod.number().nullish(),
   "notes": zod.string().max(createGrowBodyNotesMax).nullish(),
-  "archived": zod.boolean().optional()
+  "archived": zod.boolean().optional(),
+  "postalCode": zod.string().max(createGrowBodyPostalCodeMax).nullish(),
+  "latitude": zod.number().nullish(),
+  "longitude": zod.number().nullish()
 })
 
 export const createGrowResponseGrowsItemPlantsItemPlanTargetsTempCMin = 2;
@@ -3231,6 +3242,8 @@ export const CreateGrowResponse = zod.object({
   "lightWatts": zod.number().nullable(),
   "notes": zod.string().nullable(),
   "archived": zod.boolean(),
+  "postalCode": zod.string().nullable(),
+  "hasLocation": zod.boolean(),
   "plants": zod.array(zod.object({
   "id": zod.number(),
   "growId": zod.number(),
@@ -3302,6 +3315,8 @@ export const updateGrowBodyLightTypeMax = 30;
 
 export const updateGrowBodyNotesMax = 2000;
 
+export const updateGrowBodyPostalCodeMax = 5;
+
 
 
 export const UpdateGrowBody = zod.object({
@@ -3312,7 +3327,10 @@ export const UpdateGrowBody = zod.object({
   "lightType": zod.string().max(updateGrowBodyLightTypeMax).nullish(),
   "lightWatts": zod.number().nullish(),
   "notes": zod.string().max(updateGrowBodyNotesMax).nullish(),
-  "archived": zod.boolean().optional()
+  "archived": zod.boolean().optional(),
+  "postalCode": zod.string().max(updateGrowBodyPostalCodeMax).nullish(),
+  "latitude": zod.number().nullish(),
+  "longitude": zod.number().nullish()
 })
 
 export const updateGrowResponseGrowsItemPlantsItemPlanTargetsTempCMin = 2;
@@ -3343,6 +3361,8 @@ export const UpdateGrowResponse = zod.object({
   "lightWatts": zod.number().nullable(),
   "notes": zod.string().nullable(),
   "archived": zod.boolean(),
+  "postalCode": zod.string().nullable(),
+  "hasLocation": zod.boolean(),
   "plants": zod.array(zod.object({
   "id": zod.number(),
   "growId": zod.number(),
@@ -3407,6 +3427,35 @@ export const DeleteGrowParams = zod.object({
 })
 
 export const DeleteGrowResponse = zod.void()
+
+
+/**
+ * @summary Outdoor and greenhouse – the forecast and weather warnings for the plants
+ */
+export const GetGrowWeatherParams = zod.object({
+  "growId": zod.coerce.number()
+})
+
+export const GetGrowWeatherResponse = zod.object({
+  "location": zod.union([zod.null(),zod.object({
+  "postalCode": zod.string().nullable(),
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]),
+  "days": zod.array(zod.object({
+  "date": zod.string(),
+  "minTemp": zod.number(),
+  "maxTemp": zod.number(),
+  "precipitationMm": zod.number(),
+  "maxGustKmh": zod.number(),
+  "icon": zod.enum(['sun', 'cloud', 'rain', 'snow', 'storm'])
+})),
+  "warnings": zod.array(zod.object({
+  "kind": zod.enum(['frost', 'heat', 'storm', 'rain']),
+  "date": zod.string(),
+  "text": zod.string()
+}))
+})
 
 
 /**

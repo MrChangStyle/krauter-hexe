@@ -23,20 +23,30 @@ import {
   type SeedSex,
   type StrainType,
 } from './growPlan';
+import { geocodePostalCode, roundCoord } from './gardenClimate';
 import { berlinDay } from './monitoring';
 
 // ── Access ────────────────────────────────────────────────────────────────────
+
+export type GrowPush = 'off' | 'discreet' | 'full';
 
 export interface GrowAccess {
   /** The owner unlocked the module for this account (the owner always has it). */
   unlocked: boolean;
   ageConfirmed: boolean;
   adults: number;
+  /** Morning push: off, discreet (no grow words on the lock screen) or full. */
+  push: GrowPush;
 }
 
 export async function growAccess(userId: string, isOwner: boolean): Promise<GrowAccess> {
   const [row] = await db.select().from(growAccessTable).where(eq(growAccessTable.userId, userId));
-  return { unlocked: isOwner || !!row?.unlockedAt, ageConfirmed: !!row?.ageConfirmedAt, adults: row?.adults ?? 1 };
+  return {
+    unlocked: isOwner || !!row?.unlockedAt,
+    ageConfirmed: !!row?.ageConfirmedAt,
+    adults: row?.adults ?? 1,
+    push: (row?.push as GrowPush | undefined) ?? 'discreet',
+  };
 }
 
 function validAdults(raw: unknown): number {
@@ -57,8 +67,15 @@ export async function confirmAge(userId: string, isOwner: boolean, adults: unkno
   return growAccess(userId, isOwner);
 }
 
-export async function setAdults(userId: string, isOwner: boolean, adults: unknown): Promise<GrowAccess> {
-  await db.update(growAccessTable).set({ adults: validAdults(adults) }).where(eq(growAccessTable.userId, userId));
+/** Adults in the household and the morning push. */
+export async function setGrowSettings(userId: string, isOwner: boolean, input: { adults?: unknown; push?: string }): Promise<GrowAccess> {
+  const set: Partial<typeof growAccessTable.$inferInsert> = {};
+  if (input.adults !== undefined) set.adults = validAdults(input.adults);
+  if (input.push !== undefined) {
+    if (!['off', 'discreet', 'full'].includes(input.push)) throw new FarmDataError(400, 'Bitte wähle aus, wie erinnert werden soll.');
+    set.push = input.push;
+  }
+  if (Object.keys(set).length > 0) await db.update(growAccessTable).set(set).where(eq(growAccessTable.userId, userId));
   return growAccess(userId, isOwner);
 }
 
@@ -117,6 +134,9 @@ export interface Grow {
   lightWatts: number | null;
   notes: string | null;
   archived: boolean;
+  /** Outdoor and greenhouse: where, for the weather. */
+  postalCode: string | null;
+  hasLocation: boolean;
   plants: GrowPlant[];
 }
 
@@ -156,6 +176,8 @@ function toGrow(g: GrowRow, plants: PlantRow[], today: string): Grow {
     lightWatts: g.lightWatts,
     notes: g.notes,
     archived: g.archivedAt !== null,
+    postalCode: g.postalCode,
+    hasLocation: g.latitude !== null && g.longitude !== null,
     plants: plants.filter((p) => p.growId === g.id).map((p) => toPlant(p, g, today)),
   };
 }
@@ -195,6 +217,36 @@ export interface GrowInput {
   lightWatts?: number | null;
   notes?: unknown;
   archived?: boolean;
+  postalCode?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+}
+
+/**
+ * Where an outdoor grow is: the phone's position wins, else the postal code
+ * (both rounded to about 10 km). Not sent at all: stays as it is.
+ */
+async function growLocation(input: GrowInput, current: GrowRow | null) {
+  if (input.environment === 'indoor') return { postalCode: null, latitude: null, longitude: null };
+  if (input.postalCode === undefined && input.latitude === undefined && input.longitude === undefined) {
+    return current ? {} : { postalCode: null, latitude: null, longitude: null };
+  }
+  const lat = input.latitude ?? null;
+  const lon = input.longitude ?? null;
+  const postalCode = input.postalCode?.trim() || null;
+  if (lat !== null && lon !== null) {
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) throw new FarmDataError(400, 'Der Standort ist ungültig.');
+    return { postalCode, latitude: roundCoord(lat), longitude: roundCoord(lon) };
+  }
+  if (!postalCode) return { postalCode: null, latitude: null, longitude: null };
+  if (!/^\d{5}$/.test(postalCode)) throw new FarmDataError(400, 'Die Postleitzahl hat fünf Ziffern.');
+  // Unchanged postal code: keep the place, no new lookup.
+  if (current && current.postalCode === postalCode && current.latitude !== null) {
+    return { postalCode, latitude: current.latitude, longitude: current.longitude };
+  }
+  const found = await geocodePostalCode(postalCode);
+  if (!found) throw new FarmDataError(422, 'Zu dieser Postleitzahl wurde kein Ort gefunden.');
+  return { postalCode, ...found };
 }
 
 function growValues(input: GrowInput) {
@@ -216,13 +268,13 @@ function growValues(input: GrowInput) {
 }
 
 export async function createGrow(userId: string, input: GrowInput): Promise<number> {
-  const [g] = await db.insert(growsTable).values({ userId, ...growValues(input) }).returning({ id: growsTable.id });
+  const [g] = await db.insert(growsTable).values({ userId, ...growValues(input), ...(await growLocation(input, null)) }).returning({ id: growsTable.id });
   return g!.id;
 }
 
 export async function updateGrow(userId: string, growId: number, input: GrowInput): Promise<void> {
   const current = await ownGrow(userId, growId);
-  const set = growValues(input);
+  const set = { ...growValues(input), ...(await growLocation(input, current)) };
   if (input.archived && current.archivedAt) delete (set as { archivedAt?: Date }).archivedAt;
   await db.update(growsTable).set(set).where(eq(growsTable.id, growId));
 }

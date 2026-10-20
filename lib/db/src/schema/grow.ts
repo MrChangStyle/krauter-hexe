@@ -1,4 +1,4 @@
-import { date, doublePrecision, index, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 // Grow (docs/grow.md): the add-on module for growing cannabis at home within
 // the Konsumcannabisgesetz. Personal, not farm data – every row belongs to one
@@ -13,6 +13,8 @@ export const growAccessTable = pgTable("grow_access", {
   ageConfirmedAt: timestamp("age_confirmed_at", { withTimezone: true }),
   adults: integer("adults").notNull().default(1),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  // Morning push: off | discreet (no grow words on the lock screen) | full.
+  push: text("push").notNull().default("discreet"),
 });
 
 // One grow: a tent indoors, a spot outdoors or a greenhouse.
@@ -33,6 +35,10 @@ export const growsTable = pgTable(
     notes: text("notes"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Outdoor and greenhouse: where, for the weather (rounded to 0.1°, about 10 km).
+    postalCode: text("postal_code"),
+    latitude: doublePrecision("latitude"),
+    longitude: doublePrecision("longitude"),
   },
   (table) => [index("grows_user_idx").on(table.userId)],
 );
@@ -86,4 +92,17 @@ export const growLogsTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("grow_logs_plant_idx").on(table.plantId)],
+);
+
+// One grow push per account and Berlin day, with the weather warnings that
+// went out – a rainy spell is pushed once, not every morning.
+export const growPushLogTable = pgTable(
+  "grow_push_log",
+  {
+    userId: text("user_id").notNull(),
+    day: text("day").notNull(),
+    kinds: jsonb("kinds").$type<string[]>().notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.day] })],
 );

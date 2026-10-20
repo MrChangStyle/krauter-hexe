@@ -31,4 +31,13 @@ export interface GrowInput {
      */
   notes?: string | null;
   archived?: boolean;
+  /**
+     * @maxLength 5
+     * @nullable
+     */
+  postalCode?: string | null;
+  /** @nullable */
+  latitude?: number | null;
+  /** @nullable */
+  longitude?: number | null;
 }

@@ -19,6 +19,7 @@ import { sendWeatherDigests } from "./farmWeather";
 import { sendMedicineDigests } from "./medicines";
 import { sendDutyDigests } from "./farmDuties";
 import { sendBreedingDigests } from "./breeding";
+import { sendGrowDigests } from "./growWeather";
 import { removeExpiredMemberships } from "./farmMembers";
 import { sendPushToUser } from "./webPush";
 
@@ -291,6 +292,9 @@ export async function triggerDueNotifications(): Promise<number> {
 
   // ── Zucht: today's steps ──────────────────────────────────────────────────
   triggered += await sendBreedingDigests(hhmm, dateKey);
+
+  // ── Grow: plan steps and weather warnings (discreet by default) ───────────
+  triggered += await sendGrowDigests(hhmm, dateKey);
 
   return triggered;
 }

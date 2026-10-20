@@ -29,6 +29,7 @@ import {
   insectsTable,
   plantScansTable,
   plantsTable,
+  premiumTable,
   pushSubscriptionsTable,
   reportsTable,
   scanAttemptsTable,
@@ -62,6 +63,8 @@ export const PERSONAL_TABLES = [
   { name: 'grow_access', table: growAccessTable, userId: growAccessTable.userId },
   { name: 'grows', table: growsTable, userId: growsTable.userId },
   { name: 'grow_push_log', table: growPushLogTable, userId: growPushLogTable.userId },
+  // Premium (granted or, later, paid).
+  { name: 'premium', table: premiumTable, userId: premiumTable.userId },
   // Farm memberships – deleteAccount first hands over or removes the farms.
   { name: 'farm_memberships', table: farmMembershipsTable, userId: farmMembershipsTable.userId },
 ] as const;

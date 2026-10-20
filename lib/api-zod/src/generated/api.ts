@@ -3055,10 +3055,9 @@ export const SetFarmPriceResponse = zod.array(SetFarmPriceResponseItem)
 
 
 /**
- * @summary Grow – is the module unlocked for this account, age confirmed, adults in the household
+ * @summary Grow – age confirmed, adults in the household, push and tariff
  */
 export const GetGrowAccessResponse = zod.object({
-  "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
   "adults": zod.number(),
   "push": zod.enum(['off', 'discreet', 'full']),
@@ -3074,7 +3073,6 @@ export const ConfirmGrowAgeBody = zod.object({
 })
 
 export const ConfirmGrowAgeResponse = zod.object({
-  "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
   "adults": zod.number(),
   "push": zod.enum(['off', 'discreet', 'full']),
@@ -3092,7 +3090,6 @@ export const SetGrowSettingsBody = zod.object({
 })
 
 export const SetGrowSettingsResponse = zod.object({
-  "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
   "adults": zod.number(),
   "push": zod.enum(['off', 'discreet', 'full']),
@@ -3968,33 +3965,6 @@ export const DeleteGrowLogParams = zod.object({
 })
 
 export const DeleteGrowLogResponse = zod.void()
-
-
-/**
- * @summary Owner – accounts with the Grow module
- */
-export const ListGrowAccessResponseItem = zod.object({
-  "email": zod.string().nullable(),
-  "username": zod.string().nullable(),
-  "unlockedAt": zod.coerce.date().nullable()
-})
-export const ListGrowAccessResponse = zod.array(ListGrowAccessResponseItem)
-
-
-/**
- * @summary Owner – unlock the Grow module for an account by e-mail, or take it back
- */
-export const SetGrowAccessBody = zod.object({
-  "email": zod.string(),
-  "unlocked": zod.boolean()
-})
-
-export const SetGrowAccessResponseItem = zod.object({
-  "email": zod.string().nullable(),
-  "username": zod.string().nullable(),
-  "unlockedAt": zod.coerce.date().nullable()
-})
-export const SetGrowAccessResponse = zod.array(SetGrowAccessResponseItem)
 
 
 /**
@@ -6879,5 +6849,49 @@ export const UnsubscribePushResponse = zod.void()
 export const SendTestPushResponse = zod.object({
   "sent": zod.number()
 })
+
+
+/**
+ * @summary Premium status of the signed-in account
+ */
+export const GetPremiumResponse = zod.object({
+  "active": zod.boolean(),
+  "until": zod.coerce.date().nullable(),
+  "source": zod.string().nullable()
+})
+
+
+/**
+ * @summary Owner – accounts with Premium
+ */
+export const ListPremiumResponseItem = zod.object({
+  "email": zod.string().nullable(),
+  "username": zod.string().nullable(),
+  "source": zod.string(),
+  "until": zod.coerce.date().nullable(),
+  "active": zod.boolean(),
+  "grantedAt": zod.coerce.date()
+})
+export const ListPremiumResponse = zod.array(ListPremiumResponseItem)
+
+
+/**
+ * @summary Owner – grant Premium by e-mail (no end or until a day), or take it back
+ */
+export const SetPremiumBody = zod.object({
+  "email": zod.string(),
+  "active": zod.boolean(),
+  "until": zod.string().nullish().describe('Last day (YYYY-MM-DD); null or missing for no end.')
+})
+
+export const SetPremiumResponseItem = zod.object({
+  "email": zod.string().nullable(),
+  "username": zod.string().nullable(),
+  "source": zod.string(),
+  "until": zod.coerce.date().nullable(),
+  "active": zod.boolean(),
+  "grantedAt": zod.coerce.date()
+})
+export const SetPremiumResponse = zod.array(SetPremiumResponseItem)
 
 

@@ -29,6 +29,7 @@ import farmBreedingRouter from "./farm-breeding";
 import farmSeedsRouter from "./farm-seeds";
 import farmYieldsRouter from "./farm-yields";
 import growRouter from "./grow";
+import premiumRouter from "./premium";
 
 const router: IRouter = Router();
 
@@ -55,6 +56,7 @@ router.use(farmBreedingRouter);
 router.use(farmSeedsRouter);
 router.use(farmYieldsRouter);
 router.use(growRouter);
+router.use(premiumRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);

@@ -1132,12 +1132,41 @@ export const GrowPush = {
 } as const;
 
 export interface GrowAccess {
-  unlocked: boolean;
   ageConfirmed: boolean;
   adults: number;
   push: GrowPush;
   /** @nullable */
   kwhPrice: number | null;
+}
+
+export interface Premium {
+  active: boolean;
+  /** @nullable */
+  until: string | null;
+  /** @nullable */
+  source: string | null;
+}
+
+export interface PremiumEntry {
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  username: string | null;
+  source: string;
+  /** @nullable */
+  until: string | null;
+  active: boolean;
+  grantedAt: string;
+}
+
+export interface PremiumInput {
+  email: string;
+  active: boolean;
+  /**
+     * Last day (YYYY-MM-DD); null or missing for no end.
+     * @nullable
+     */
+  until?: string | null;
 }
 
 export interface GrowSettingsInput {
@@ -1149,20 +1178,6 @@ export interface GrowSettingsInput {
 
 export interface GrowAgeInput {
   adults: number;
-}
-
-export interface GrowAccessEntry {
-  /** @nullable */
-  email: string | null;
-  /** @nullable */
-  username: string | null;
-  /** @nullable */
-  unlockedAt: string | null;
-}
-
-export interface GrowAccessInput {
-  email: string;
-  unlocked: boolean;
 }
 
 export type GrowEnvironment = typeof GrowEnvironment[keyof typeof GrowEnvironment];

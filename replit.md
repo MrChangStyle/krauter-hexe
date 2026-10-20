@@ -190,10 +190,14 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 - Sales (`farm_sales`: revenue, optional amount, `product` = `product:eggs`/`crop:tomate` or a free label) give `sales.revenue` and `sales.soldValue` (shop value of what was sold); `selfSupply` = value − soldValue, `balance` = selfSupply + revenue − expenses.
 - For the running year the overview adds the laying rate (eggs of the last 30 days per hen and day) and the Futterplaner's monthly feed costs; the farm routes reach the AI client through `feedStock`, so tests set `GEMINI_API_KEY`.
 
+## Premium
+
+Details in `docs/premium.md` (`lib/premium.ts`, `routes/premium.ts`, schema `premium.ts`). Paid features are the ones that cost money to run – for now the Grow KI-Check. `GET /premium` gives the account's status (the owner always has it); until payments exist the owner grants it by e-mail, without end or until a day (`/admin/premium`, Mehr → „Premium vergeben“). Table `premium` (one row per account, in `PERSONAL_TABLES`) is meant to be written by a payment provider later (source, plan monthly/yearly, active_until).
+
 ## Grow (Zusatzmodul, ab 18)
 
 Details in `docs/grow.md` (`lib/grow.ts`, `lib/growPlan.ts`, `routes/grow.ts`, schema `grow.ts`; pages `/grow`, `/grow/pflanze/:id`, `/grow/wissen`, `/grow/recht`).
-- Personal data per account (`grows`, `grow_plants`, `grow_logs`; `grow_access` and `grows` are in `PERSONAL_TABLES`). Unlocked per account by the owner (`/admin/grow-access`, the owner always has it), then the account confirms being 18+ and the adults in the household; until then every grow endpoint answers 403.
+- Personal data per account (`grows`, `grow_plants`, `grow_logs`; `grow_access` and `grows` are in `PERSONAL_TABLES`). Free for every approved account once it confirms being 18+ and the adults in the household; until then every grow endpoint answers 403. Only the KI-Check needs Premium (402 without).
 - `growPlan.ts` is pure: phases from the germination day, flowering start (12/12 day, 4 weeks indoors, 3 for autoflowers, August outdoors), targets per phase and substrate, dated steps, KCanG check (3 plants and 50 g per adult).
 - `growWeather.ts`: outdoor/greenhouse grows keep a postal code or rounded position; `GET /grow/grows/:id/weather` gives the forecast and frost/heat/storm/rain-in-bloom warnings. The 07:30 push (`sendGrowDigests`) sends the day's plan steps and fresh warnings once per day (`grow_push_log`, also in `PERSONAL_TABLES`), discreet by default (no grow words on the lock screen), `full` or `off` per account (`grow_access.push`).
 - `growDiagnosis.ts`: KI-Check of a plant photo (`POST /grow/plants/:id/checks`, kind `health` or `trichomes`, AI quota area `grow`). Only the coerced result is stored (`grow_checks`, cascades with the plant), never the photo. Health adds pH/EC facts from the latest Tagebuch entry; the trichome stage is computed from the shares, not taken from the model; trichomes only in flower/flush.

@@ -88,8 +88,6 @@ describe.skipIf(!enabled)("Grow push and weather (real database)", () => {
     return { status: res.status, data: text ? (JSON.parse(text) as any) : null };
   };
   const open = async (who: string) => {
-    as = "owner";
-    await api("PUT", "/admin/grow-access", { email: `${who}@x.de`, unlocked: true });
     as = who;
     await api("POST", "/grow/access", { adults: 1 });
   };
@@ -102,7 +100,7 @@ describe.skipIf(!enabled)("Grow push and weather (real database)", () => {
 
   it("keeps the push setting with the adults", async () => {
     await open("anna");
-    expect((await api("PUT", "/grow/access", { push: "full" })).data).toEqual({ unlocked: true, ageConfirmed: true, adults: 1, push: "full", kwhPrice: null });
+    expect((await api("PUT", "/grow/access", { push: "full" })).data).toEqual({ ageConfirmed: true, adults: 1, push: "full", kwhPrice: null });
     expect((await api("PUT", "/grow/access", { adults: 2 })).data).toMatchObject({ adults: 2, push: "full" });
     expect((await api("PUT", "/grow/access", { push: "loud" })).status).toBe(400);
   });
@@ -181,10 +179,9 @@ describe.skipIf(!enabled)("Grow push and weather (real database)", () => {
     await q("DELETE FROM grow_push_log");
     await api("PUT", "/grow/access", { push: "off" });
     expect(await run(day)).toBe(0);
-    // Locked again: no push either.
+    // Account not approved (any more): no push either.
     await api("PUT", "/grow/access", { push: "discreet" });
-    as = "owner";
-    await api("PUT", "/admin/grow-access", { email: "anna@x.de", unlocked: false });
+    await q("UPDATE users SET approved = false WHERE id = 'anna'");
     expect(await run(day)).toBe(0);
   });
 });

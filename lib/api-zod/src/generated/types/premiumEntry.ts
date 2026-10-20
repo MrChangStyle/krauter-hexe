@@ -6,11 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface GrowAccessEntry {
+export interface PremiumEntry {
   /** @nullable */
   email: string | null;
   /** @nullable */
   username: string | null;
+  source: string;
   /** @nullable */
-  unlockedAt: Date | null;
+  until: Date | null;
+  active: boolean;
+  grantedAt: Date;
 }

@@ -4,8 +4,8 @@
  * plant or log of someone else is "not found".
  */
 
-import { db, growAccessTable, growChecksTable, growLogsTable, growPlantsTable, growsTable, usersTable } from '@workspace/db';
-import { and, asc, desc, eq, inArray, isNotNull } from 'drizzle-orm';
+import { db, growAccessTable, growChecksTable, growLogsTable, growPlantsTable, growsTable } from '@workspace/db';
+import { and, asc, desc, eq, inArray } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
 import { addDays } from './feedSeason';
@@ -31,9 +31,8 @@ import { berlinDay } from './monitoring';
 
 export type GrowPush = 'off' | 'discreet' | 'full';
 
+/** The module is free for every adult account; the AI is Premium (lib/premium.ts). */
 export interface GrowAccess {
-  /** The owner unlocked the module for this account (the owner always has it). */
-  unlocked: boolean;
   ageConfirmed: boolean;
   adults: number;
   /** Morning push: off, discreet (no grow words on the lock screen) or full. */
@@ -42,10 +41,9 @@ export interface GrowAccess {
   kwhPrice: number | null;
 }
 
-export async function growAccess(userId: string, isOwner: boolean): Promise<GrowAccess> {
+export async function growAccess(userId: string): Promise<GrowAccess> {
   const [row] = await db.select().from(growAccessTable).where(eq(growAccessTable.userId, userId));
   return {
-    unlocked: isOwner || !!row?.unlockedAt,
     ageConfirmed: !!row?.ageConfirmedAt,
     adults: row?.adults ?? 1,
     push: (row?.push as GrowPush | undefined) ?? 'discreet',
@@ -60,19 +58,17 @@ function validAdults(raw: unknown): number {
 }
 
 /** The account confirms it is at least 18 and says how many adults live in the household. */
-export async function confirmAge(userId: string, isOwner: boolean, adults: unknown): Promise<GrowAccess> {
-  const access = await growAccess(userId, isOwner);
-  if (!access.unlocked) throw new FarmDataError(403, 'Das Grow-Modul ist für dieses Konto nicht freigeschaltet.');
+export async function confirmAge(userId: string, adults: unknown): Promise<GrowAccess> {
   const n = validAdults(adults);
   await db
     .insert(growAccessTable)
     .values({ userId, ageConfirmedAt: new Date(), adults: n })
     .onConflictDoUpdate({ target: growAccessTable.userId, set: { ageConfirmedAt: new Date(), adults: n } });
-  return growAccess(userId, isOwner);
+  return growAccess(userId);
 }
 
 /** Adults in the household and the morning push. */
-export async function setGrowSettings(userId: string, isOwner: boolean, input: { adults?: unknown; push?: string; kwhPrice?: number | null }): Promise<GrowAccess> {
+export async function setGrowSettings(userId: string, input: { adults?: unknown; push?: string; kwhPrice?: number | null }): Promise<GrowAccess> {
   const set: Partial<typeof growAccessTable.$inferInsert> = {};
   if (input.adults !== undefined) set.adults = validAdults(input.adults);
   if (input.push !== undefined) {
@@ -85,30 +81,10 @@ export async function setGrowSettings(userId: string, isOwner: boolean, input: {
     set.kwhPrice = price === null ? null : Math.round(price * 10000) / 10000;
   }
   if (Object.keys(set).length > 0) await db.update(growAccessTable).set(set).where(eq(growAccessTable.userId, userId));
-  return growAccess(userId, isOwner);
+  return growAccess(userId);
 }
 
 /** Owner: who has the module. */
-export async function listGrowAccess() {
-  return db
-    .select({ email: usersTable.email, username: usersTable.username, unlockedAt: growAccessTable.unlockedAt })
-    .from(growAccessTable)
-    .innerJoin(usersTable, eq(usersTable.id, growAccessTable.userId))
-    .where(isNotNull(growAccessTable.unlockedAt))
-    .orderBy(asc(usersTable.email));
-}
-
-/** Owner: unlock the module for an account (by e-mail), or take it back. */
-export async function setGrowUnlocked(email: string, unlocked: boolean) {
-  const [user] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email.trim().toLowerCase()));
-  if (!user) throw new FarmDataError(404, 'Ein Konto mit dieser E-Mail gibt es nicht.');
-  await db
-    .insert(growAccessTable)
-    .values({ userId: user.id, unlockedAt: unlocked ? new Date() : null })
-    .onConflictDoUpdate({ target: growAccessTable.userId, set: { unlockedAt: unlocked ? new Date() : null } });
-  return listGrowAccess();
-}
-
 // ── Grows ─────────────────────────────────────────────────────────────────────
 
 type GrowRow = typeof growsTable.$inferSelect;

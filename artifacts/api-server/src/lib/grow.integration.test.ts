@@ -1,6 +1,6 @@
 /**
- * Grow against a REAL Postgres, through the HTTP routes: the gate (unlocked by
- * the owner, age confirmed), grows and plants with their plan, the Tagebuch,
+ * Grow against a REAL Postgres, through the HTTP routes: the gate (age
+ * confirmed, free for every adult account), grows and plants with their plan, the Tagebuch,
  * the KCanG check, privacy between accounts and account deletion.
  *
  * Skipped unless TEST_DATABASE_URL equals DATABASE_URL (throwaway database
@@ -66,44 +66,26 @@ describe.skipIf(!enabled)("Grow (real database)", () => {
     const text = await res.text();
     return { status: res.status, data: text ? (JSON.parse(text) as any) : null };
   };
-  const unlock = async (email: string) => {
-    const who = as;
-    as = "owner";
-    const r = await api("PUT", "/admin/grow-access", { email, unlocked: true });
-    as = who;
-    return r;
-  };
   const tent = { name: "Zelt 80", environment: "indoor", medium: "soil", tentSize: "80×80×160", lightType: "LED", lightWatts: 240 };
   const plant = { name: "Lemon 1", strain: "Lemon Haze", breeder: "Testbank", strainType: "hybrid", flowering: "photo", seedSex: "feminized", startedOn: "2026-03-01" };
 
-  it("stays closed until the owner unlocks it and the age is confirmed", async () => {
-    expect((await api("GET", "/grow/access")).data).toEqual({ unlocked: false, ageConfirmed: false, adults: 1, push: "discreet", kwhPrice: null });
-    expect((await api("GET", "/grow")).data.error).toBe("Das Grow-Modul ist für dieses Konto nicht freigeschaltet.");
-    expect((await api("POST", "/grow/access", { adults: 1 })).status).toBe(403);
-    // Only the owner unlocks.
-    expect((await api("PUT", "/admin/grow-access", { email: "anna@x.de", unlocked: true })).status).toBe(403);
-    const list = await unlock("ANNA@x.de");
-    expect(list.data).toEqual([{ email: "anna@x.de", username: null, unlockedAt: expect.any(String) }]);
+  it("stays closed until the age is confirmed – for every account, no unlocking", async () => {
+    expect((await api("GET", "/grow/access")).data).toEqual({ ageConfirmed: false, adults: 1, push: "discreet", kwhPrice: null });
     expect((await api("GET", "/grow")).data.error).toBe("Bitte bestätige zuerst, dass du volljährig bist.");
+    expect((await api("PUT", "/grow/access", { adults: 2 })).status).toBe(403);
     expect((await api("POST", "/grow/access", { adults: 0 })).status).toBe(400);
-    expect((await api("POST", "/grow/access", { adults: 2 })).data).toEqual({ unlocked: true, ageConfirmed: true, adults: 2, push: "discreet", kwhPrice: null });
+    expect((await api("POST", "/grow/access", { adults: 2 })).data).toEqual({ ageConfirmed: true, adults: 2, push: "discreet", kwhPrice: null });
     expect((await api("GET", "/grow")).data).toEqual({
       grows: [],
       kcang: { activePlants: 0, maxPlants: 6, plantsOver: false, dryGramsLastYear: 0, maxGrams: 100, gramsOver: false },
     });
-    // The owner has it without being unlocked, but confirms the age too.
+    // Every account confirms on its own, the owner too.
     as = "owner";
-    expect((await api("GET", "/grow/access")).data).toMatchObject({ unlocked: true, ageConfirmed: false });
-    // Taking it back closes it again.
-    await api("PUT", "/admin/grow-access", { email: "anna@x.de", unlocked: false });
-    expect((await api("GET", "/admin/grow-access")).data).toEqual([]);
-    as = "anna";
+    expect((await api("GET", "/grow/access")).data).toMatchObject({ ageConfirmed: false });
     expect((await api("GET", "/grow")).status).toBe(403);
-    expect((await api("PUT", "/admin/grow-access", { email: "nobody@x.de", unlocked: true })).status).toBe(403);
   });
 
   it("keeps grows, plants and the Tagebuch with their plan", async () => {
-    await unlock("anna@x.de");
     await api("POST", "/grow/access", { adults: 1 });
     let r = await api("POST", "/grow/grows", tent);
     expect(r.status).toBe(201);
@@ -137,7 +119,6 @@ describe.skipIf(!enabled)("Grow (real database)", () => {
   });
 
   it("counts plants and the harvest against the KCanG limits", async () => {
-    await unlock("anna@x.de");
     await api("POST", "/grow/access", { adults: 1 });
     const growId = (await api("POST", "/grow/grows", tent)).data.grows[0].id;
     for (let k = 1; k <= 4; k++) await api("POST", `/grow/grows/${growId}/plants`, { ...plant, name: `P${k}` });
@@ -160,8 +141,6 @@ describe.skipIf(!enabled)("Grow (real database)", () => {
   });
 
   it("keeps every account's grows to itself", async () => {
-    await unlock("anna@x.de");
-    await unlock("bert@x.de");
     await api("POST", "/grow/access", { adults: 1 });
     const growId = (await api("POST", "/grow/grows", tent)).data.grows[0].id;
     const plantId = (await api("POST", `/grow/grows/${growId}/plants`, plant)).data.id;
@@ -176,7 +155,6 @@ describe.skipIf(!enabled)("Grow (real database)", () => {
   });
 
   it("goes with the account", async () => {
-    await unlock("anna@x.de");
     await api("POST", "/grow/access", { adults: 1 });
     const growId = (await api("POST", "/grow/grows", tent)).data.grows[0].id;
     await api("POST", `/grow/grows/${growId}/plants`, plant);

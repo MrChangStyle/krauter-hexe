@@ -106,8 +106,6 @@ import type {
   GeoReverseResult,
   GerminationTestInput,
   GrowAccess,
-  GrowAccessEntry,
-  GrowAccessInput,
   GrowAgeInput,
   GrowCheck,
   GrowCheckInput,
@@ -152,6 +150,9 @@ import type {
   PlantScanResult,
   PlantingProposal,
   PlantingSuggestionInput,
+  Premium,
+  PremiumEntry,
+  PremiumInput,
   PriceInput,
   PriceItem,
   PushPublicKey,
@@ -7162,7 +7163,7 @@ export const getGetGrowAccessUrl = () => {
 }
 
 /**
- * @summary Grow – is the module unlocked for this account, age confirmed, adults in the household
+ * @summary Grow – age confirmed, adults in the household, push and tariff
  */
 export const getGrowAccess = async ( options?: RequestInit): Promise<GrowAccess> => {
 
@@ -7209,7 +7210,7 @@ export type GetGrowAccessQueryError = ErrorType<unknown>
 
 
 /**
- * @summary Grow – is the module unlocked for this account, age confirmed, adults in the household
+ * @summary Grow – age confirmed, adults in the household, push and tariff
  */
 
 export function useGetGrowAccess<TData = Awaited<ReturnType<typeof getGrowAccess>>, TError = ErrorType<unknown>>(
@@ -8536,154 +8537,6 @@ export const useDeleteGrowLog = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteGrowLogMutationOptions(options));
-    }
-
-export const getListGrowAccessUrl = () => {
-
-
-
-
-  return `/api/admin/grow-access`
-}
-
-/**
- * @summary Owner – accounts with the Grow module
- */
-export const listGrowAccess = async ( options?: RequestInit): Promise<GrowAccessEntry[]> => {
-
-  return customFetch<GrowAccessEntry[]>(getListGrowAccessUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getListGrowAccessQueryKey = () => {
-    return [
-    `/api/admin/grow-access`
-    ] as const;
-    }
-
-
-export const getListGrowAccessQueryOptions = <TData = Awaited<ReturnType<typeof listGrowAccess>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGrowAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getListGrowAccessQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listGrowAccess>>> = ({ signal }) => listGrowAccess({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listGrowAccess>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type ListGrowAccessQueryResult = NonNullable<Awaited<ReturnType<typeof listGrowAccess>>>
-export type ListGrowAccessQueryError = ErrorType<unknown>
-
-
-/**
- * @summary Owner – accounts with the Grow module
- */
-
-export function useListGrowAccess<TData = Awaited<ReturnType<typeof listGrowAccess>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listGrowAccess>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getListGrowAccessQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getSetGrowAccessUrl = () => {
-
-
-
-
-  return `/api/admin/grow-access`
-}
-
-/**
- * @summary Owner – unlock the Grow module for an account by e-mail, or take it back
- */
-export const setGrowAccess = async (growAccessInput: GrowAccessInput, options?: RequestInit): Promise<GrowAccessEntry[]> => {
-
-  return customFetch<GrowAccessEntry[]>(getSetGrowAccessUrl(),
-  {
-    ...options,
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(growAccessInput)
-  }
-);}
-
-
-
-
-
-export const getSetGrowAccessMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowAccess>>, TError,{data: BodyType<GrowAccessInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof setGrowAccess>>, TError,{data: BodyType<GrowAccessInput>}, TContext> => {
-
-const mutationKey = ['setGrowAccess'];
-const {mutation: mutationOptions, request: requestOptions} = options ?
-      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
-      options
-      : {...options, mutation: {...options.mutation, mutationKey}}
-      : {mutation: { mutationKey, }, request: undefined};
-
-
-
-
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setGrowAccess>>, {data: BodyType<GrowAccessInput>}> = (props) => {
-          const {data} = props ?? {};
-
-          return  setGrowAccess(data,requestOptions)
-        }
-
-
-
-
-
-
-  return  { mutationFn, ...mutationOptions }}
-
-    export type SetGrowAccessMutationResult = NonNullable<Awaited<ReturnType<typeof setGrowAccess>>>
-    export type SetGrowAccessMutationBody = BodyType<GrowAccessInput>
-    export type SetGrowAccessMutationError = ErrorType<void>
-
-    /**
- * @summary Owner – unlock the Grow module for an account by e-mail, or take it back
- */
-export const useSetGrowAccess = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowAccess>>, TError,{data: BodyType<GrowAccessInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
-        Awaited<ReturnType<typeof setGrowAccess>>,
-        TError,
-        {data: BodyType<GrowAccessInput>},
-        TContext
-      > => {
-      return useMutation(getSetGrowAccessMutationOptions(options));
     }
 
 export const getGetFarmDutiesUrl = (farmId: number,) => {
@@ -16406,5 +16259,230 @@ export const useSendTestPush = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSendTestPushMutationOptions(options));
+    }
+
+export const getGetPremiumUrl = () => {
+
+
+
+
+  return `/api/premium`
+}
+
+/**
+ * @summary Premium status of the signed-in account
+ */
+export const getPremium = async ( options?: RequestInit): Promise<Premium> => {
+
+  return customFetch<Premium>(getGetPremiumUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPremiumQueryKey = () => {
+    return [
+    `/api/premium`
+    ] as const;
+    }
+
+
+export const getGetPremiumQueryOptions = <TData = Awaited<ReturnType<typeof getPremium>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPremium>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPremiumQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPremium>>> = ({ signal }) => getPremium({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPremium>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPremiumQueryResult = NonNullable<Awaited<ReturnType<typeof getPremium>>>
+export type GetPremiumQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Premium status of the signed-in account
+ */
+
+export function useGetPremium<TData = Awaited<ReturnType<typeof getPremium>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPremium>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPremiumQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListPremiumUrl = () => {
+
+
+
+
+  return `/api/admin/premium`
+}
+
+/**
+ * @summary Owner – accounts with Premium
+ */
+export const listPremium = async ( options?: RequestInit): Promise<PremiumEntry[]> => {
+
+  return customFetch<PremiumEntry[]>(getListPremiumUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListPremiumQueryKey = () => {
+    return [
+    `/api/admin/premium`
+    ] as const;
+    }
+
+
+export const getListPremiumQueryOptions = <TData = Awaited<ReturnType<typeof listPremium>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPremium>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListPremiumQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listPremium>>> = ({ signal }) => listPremium({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listPremium>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListPremiumQueryResult = NonNullable<Awaited<ReturnType<typeof listPremium>>>
+export type ListPremiumQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Owner – accounts with Premium
+ */
+
+export function useListPremium<TData = Awaited<ReturnType<typeof listPremium>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listPremium>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListPremiumQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetPremiumUrl = () => {
+
+
+
+
+  return `/api/admin/premium`
+}
+
+/**
+ * @summary Owner – grant Premium by e-mail (no end or until a day), or take it back
+ */
+export const setPremium = async (premiumInput: PremiumInput, options?: RequestInit): Promise<PremiumEntry[]> => {
+
+  return customFetch<PremiumEntry[]>(getSetPremiumUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(premiumInput)
+  }
+);}
+
+
+
+
+
+export const getSetPremiumMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPremium>>, TError,{data: BodyType<PremiumInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setPremium>>, TError,{data: BodyType<PremiumInput>}, TContext> => {
+
+const mutationKey = ['setPremium'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setPremium>>, {data: BodyType<PremiumInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  setPremium(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetPremiumMutationResult = NonNullable<Awaited<ReturnType<typeof setPremium>>>
+    export type SetPremiumMutationBody = BodyType<PremiumInput>
+    export type SetPremiumMutationError = ErrorType<void>
+
+    /**
+ * @summary Owner – grant Premium by e-mail (no end or until a day), or take it back
+ */
+export const useSetPremium = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPremium>>, TError,{data: BodyType<PremiumInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setPremium>>,
+        TError,
+        {data: BodyType<PremiumInput>},
+        TContext
+      > => {
+      return useMutation(getSetPremiumMutationOptions(options));
     }
 

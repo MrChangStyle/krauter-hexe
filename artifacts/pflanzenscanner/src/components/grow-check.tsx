@@ -1,10 +1,11 @@
 import { useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Camera, Loader2, Microscope, Sparkles, Trash2 } from "lucide-react";
+import { Camera, Crown, Loader2, Microscope, Sparkles, Trash2 } from "lucide-react";
 import {
   getGetGrowPlantQueryKey,
   useCheckGrowPlant,
   useDeleteGrowCheck,
+  useGetPremium,
   type GrowCheck,
   type GrowCheckKind,
   type GrowPlantDetail,
@@ -114,6 +115,8 @@ export function GrowCheckSection({ detail }: { detail: GrowPlantDetail }) {
     },
   });
   const remove = useDeleteGrowCheck({ mutation: { onSuccess: refresh } });
+  const premium = useGetPremium();
+  const locked = premium.data?.active === false;
   const busy = preparing || check.isPending;
   const inBloom = p.plan.current === "flower" || p.plan.current === "flush";
   const pick = (k: GrowCheckKind) => {
@@ -147,25 +150,34 @@ export function GrowCheckSection({ detail }: { detail: GrowPlantDetail }) {
           }
         }}
       />
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" className="gap-1.5" disabled={busy} onClick={() => pick("health")}>
-          {busy && kind === "health" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-          Gesundheit prüfen
-        </Button>
-        {inBloom && (
-          <Button size="sm" variant="outline" className="gap-1.5" disabled={busy} onClick={() => pick("trichomes")}>
-            {busy && kind === "trichomes" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Microscope className="h-4 w-4" />}
-            Trichome prüfen
+      {locked ? (
+        <p className="flex items-start gap-2 rounded-xl border border-border bg-card p-3 text-sm" data-testid="grow-check-locked">
+          <Crown className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+          <span>
+            Der KI-Check gehört zu <span className="font-semibold">Premium</span>: Die KI erkennt auf einem Foto Mangel, Schädlinge, Schimmel und Stress und schätzt die Reife der Trichome. Premium gibt es bald als Monats- oder Jahresabo – bis dahin schaltet der Betreiber es auf Anfrage frei.
+          </span>
+        </p>
+      ) : (
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" className="gap-1.5" disabled={busy || !premium.data} onClick={() => pick("health")}>
+            {busy && kind === "health" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
+            Gesundheit prüfen
           </Button>
-        )}
-      </div>
+          {inBloom && (
+            <Button size="sm" variant="outline" className="gap-1.5" disabled={busy || !premium.data} onClick={() => pick("trichomes")}>
+              {busy && kind === "trichomes" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Microscope className="h-4 w-4" />}
+              Trichome prüfen
+            </Button>
+          )}
+        </div>
+      )}
       {busy && <p className="text-sm text-muted-foreground">Die KI schaut sich das Foto an …</p>}
       {error && (
         <p role="alert" className="text-sm text-destructive">
           {error}
         </p>
       )}
-      {detail.checks.length === 0 && !busy && (
+      {detail.checks.length === 0 && !busy && !locked && (
         <p className="text-sm text-muted-foreground">
           Fotografiere Blätter oder Blüten bei Tageslicht: Die KI erkennt Mangel, Schädlinge, Schimmel und Stress und gleicht mit deinem Tagebuch ab.
           {inBloom ? " Für den Trichom-Check ein scharfes Nahfoto einer Blüte (Lupe oder Makro)." : " Den Trichom-Check gibt es ab der Blüte."}

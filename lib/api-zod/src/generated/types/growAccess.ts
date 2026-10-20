@@ -8,7 +8,6 @@
 import type { GrowPush } from './growPush';
 
 export interface GrowAccess {
-  unlocked: boolean;
   ageConfirmed: boolean;
   adults: number;
   push: GrowPush;

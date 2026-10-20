@@ -17,7 +17,7 @@ import {
   Crown, ShieldCheck, Hourglass, Trash2, UserCheck, UserX,
   Pin, Camera, Users, WifiOff, Wifi, Loader2, Clock, AlertCircle,
   RefreshCw, ImageOff, TriangleAlert, Bug, Download, BookHeart, ChevronRight,
-  ChevronDown, Leaf, Trophy, Tractor, Sprout,
+  ChevronDown, Leaf, Trophy, Tractor,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +41,6 @@ import { ModerationCard } from "@/components/moderation-card";
 import { CropDraftsCard } from "@/components/crop-drafts-card";
 import { RecipeDraftsCard } from "@/components/recipe-drafts-card";
 import { PremiumAdminCard } from "@/components/premium-admin-card";
-import { GROW_ENABLED } from "@/lib/grow-labels";
 import { OperationsCard } from "@/components/operations-card";
 import { ImageRescueCard } from "@/components/image-rescue-card";
 import { useFavorites } from "@/lib/use-favorites";
@@ -1047,7 +1046,6 @@ export default function MehrPage() {
       <div className="rounded-2xl border bg-card divide-y overflow-hidden">
         <MehrLink href="/farm" icon={Tractor} label="Farm & Team" hint="Tiere, Mitglieder, Rollen und Freigaben" />
         <MehrLink href="/warteschlange" icon={WifiOff} label="Offline-Fotos" hint="Fotos, die auf den Scan warten" />
-        {GROW_ENABLED && <MehrLink href="/grow" icon={Sprout} label="Grow (ab 18)" hint="Eigenanbau: Grow-Plan, Pflege, Tagebuch" />}
       </div>
 
       <PushNotificationCard />

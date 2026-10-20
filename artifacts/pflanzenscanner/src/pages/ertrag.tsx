@@ -7,8 +7,10 @@ import {
   getGetYieldOverviewQueryKey,
   getListFarmPricesQueryKey,
   useAddExpense,
+  useAddSale,
   useAddYield,
   useDeleteExpense,
+  useDeleteSale,
   useDeleteYield,
   useEnsureOwnFarm,
   useGetYieldOverview,
@@ -170,6 +172,85 @@ function ExpenseForm({ farm, year }: { farm: FarmSummary; year: number }) {
   );
 }
 
+/** A sale: "60 Eier für 30 €", "2 kg Tomaten", or something else by name. */
+function SaleForm({ farm, year, crops }: { farm: FarmSummary; year: number; crops: { key: string; name: string }[] }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const [what, setWhat] = useState("product:eggs");
+  const [label, setLabel] = useState("");
+  const [amount, setAmount] = useState("");
+  const [revenue, setRevenue] = useState("");
+  const [date, setDate] = useState(todayIso());
+  const add = useAddSale({
+    mutation: {
+      onSuccess() {
+        void queryClient.invalidateQueries({ queryKey: getGetYieldOverviewQueryKey(farm.id, year) });
+        toast({ title: `Verkauf eingetragen: ${euro(Number(revenue.replace(",", ".")))}` });
+        setAmount("");
+        setRevenue("");
+        setLabel("");
+      },
+      onError: (err) => toast({ title: "Nicht eingetragen", description: errorText(err, ""), variant: "destructive" }),
+    },
+  });
+  const other = what === "other";
+  const unit = what.startsWith("crop:") ? "kg" : other ? null : PRODUCTS[what.slice(8) as FarmProduct].unit;
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    add.mutate({
+      farmId: farm.id,
+      data: {
+        date,
+        product: other ? null : what,
+        label: other ? label.trim() || null : null,
+        amount: amount ? Number(amount.replace(",", ".")) : null,
+        revenueEur: Number(revenue.replace(",", ".")),
+      },
+    });
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-3">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="s-what">Was</Label>
+        <select id="s-what" className={selectClass} value={what} onChange={(e) => setWhat(e.target.value)}>
+          {(Object.keys(PRODUCTS) as FarmProduct[]).map((p) => (
+            <option key={p} value={`product:${p}`}>
+              {PRODUCTS[p].label}
+            </option>
+          ))}
+          {crops.map((c) => (
+            <option key={c.key} value={`crop:${c.key}`}>
+              {c.name}
+            </option>
+          ))}
+          <option value="other">Etwas anderes</option>
+        </select>
+        {other && <Input aria-label="Was wurde verkauft" maxLength={60} required placeholder="z. B. Eierlikör" value={label} onChange={(e) => setLabel(e.target.value)} />}
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="s-amount">Menge{unit ? ` (${unit})` : ""}</Label>
+          <Input id="s-amount" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="s-revenue">Erlös €</Label>
+          <Input id="s-revenue" inputMode="decimal" required value={revenue} onChange={(e) => setRevenue(e.target.value)} />
+        </div>
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="s-date">Datum</Label>
+        <Input id="s-date" type="date" max={todayIso()} required value={date} onChange={(e) => setDate(e.target.value)} />
+      </div>
+      <Button type="submit" size="sm" disabled={add.isPending} className="gap-1.5">
+        {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+        Verkauf eintragen
+      </Button>
+    </form>
+  );
+}
+
 function MonthChart({ months }: { months: YieldMonth[] }) {
   const data = months.map((m) => ({ name: MONTHS[m.month - 1], value: Math.round((m.garden + m.animals) * 100) / 100, garden: m.garden, animals: m.animals }));
   if (data.every((d) => d.value === 0)) return null;
@@ -265,12 +346,13 @@ function Overview({ farm }: { farm: FarmSummary }) {
   const thisYear = Number(todayIso().slice(0, 4));
   const [year, setYear] = useState(thisYear);
   const [pricing, setPricing] = useState(false);
-  const [tab, setTab] = useState<"yield" | "expense">("yield");
+  const [tab, setTab] = useState<"yield" | "sale" | "expense">("yield");
   const queryClient = useQueryClient();
   const overview = useGetYieldOverview(farm.id, year);
   const refresh = { onSuccess: () => void queryClient.invalidateQueries({ queryKey: getGetYieldOverviewQueryKey(farm.id, year) }) };
   const remove = useDeleteYield({ mutation: refresh });
   const removeExpense = useDeleteExpense({ mutation: refresh });
+  const removeSale = useDeleteSale({ mutation: refresh });
   const canWrite = farm.role !== "guest";
   const d = overview.data;
   const change = d ? changeText(d.summary.total, d.previousTotal) : null;
@@ -280,7 +362,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
       {canWrite && year === thisYear && (
         <div className="space-y-2">
           <div role="tablist" className="flex gap-1 rounded-lg bg-muted p-1 text-sm">
-            {(["yield", "expense"] as const).map((t) => (
+            {(["yield", "sale", "expense"] as const).map((t) => (
               <button
                 key={t}
                 type="button"
@@ -289,7 +371,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
                 className={`flex-1 rounded-md px-3 py-1.5 ${tab === t ? "bg-background font-medium shadow-sm" : "text-muted-foreground"}`}
                 onClick={() => setTab(t)}
               >
-                {t === "yield" ? "Ertrag" : "Ausgabe"}
+                {t === "yield" ? "Ertrag" : t === "sale" ? "Verkauf" : "Ausgabe"}
               </button>
             ))}
           </div>
@@ -297,7 +379,11 @@ function Overview({ farm }: { farm: FarmSummary }) {
             <EntryForm farm={farm} year={year} />
           ) : (
             <div className="rounded-xl border border-border bg-card p-4 text-sm">
-              <ExpenseForm farm={farm} year={year} />
+              {tab === "sale" ? (
+                <SaleForm farm={farm} year={year} crops={(d?.summary.garden.lines ?? []).filter((l) => !l.key.startsWith("label:")).map((l) => ({ key: l.key, name: l.name }))} />
+              ) : (
+                <ExpenseForm farm={farm} year={year} />
+              )}
             </div>
           )}
         </div>
@@ -331,8 +417,20 @@ function Overview({ farm }: { farm: FarmSummary }) {
             {change && <p className="text-xs text-muted-foreground">{change}</p>}
             <MonthChart months={d.summary.months} />
             <p className="text-xs text-muted-foreground">Garten {euro(d.summary.garden.value)} · Tiere {euro(d.summary.animals.value)} – zu euren Preisen.</p>
-            {d.expenses.total > 0 && (
+            {(d.expenses.total > 0 || d.sales.revenue > 0) && (
               <dl className="space-y-1 border-t border-border pt-3">
+                {d.sales.revenue > 0 && (
+                  <>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground">Selbst verbraucht (Wert)</dt>
+                      <dd>{euro(d.selfSupply)}</dd>
+                    </div>
+                    <div className="flex justify-between">
+                      <dt className="text-muted-foreground">Verkauft (Erlös)</dt>
+                      <dd>+ {euro(d.sales.revenue)}</dd>
+                    </div>
+                  </>
+                )}
                 <div className="flex justify-between">
                   <dt className="text-muted-foreground">Ausgaben</dt>
                   <dd>− {euro(d.expenses.total)}</dd>
@@ -368,6 +466,23 @@ function Overview({ farm }: { farm: FarmSummary }) {
                   </p>
                 </div>
               )}
+            </section>
+          )}
+
+          {d.sales.lines.length > 0 && (
+            <section className="space-y-2">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Verkäufe</h2>
+              <table className="w-full text-sm">
+                <tbody className="divide-y divide-border">
+                  {d.sales.lines.map((l) => (
+                    <tr key={l.key}>
+                      <td className="py-1.5">{l.label}</td>
+                      <td className="py-1.5 text-right">{l.amount !== null ? `${num(l.amount)} ${l.unit ?? ""}` : ""}</td>
+                      <td className="py-1.5 text-right font-medium">{euro(l.revenue)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </section>
           )}
 
@@ -433,6 +548,27 @@ function Overview({ farm }: { farm: FarmSummary }) {
               </table>
             )}
           </section>
+
+          {d.sales.entries.length > 0 && (
+            <details className="text-sm">
+              <summary className="cursor-pointer text-muted-foreground">Verkäufe {year} ({d.sales.entries.length})</summary>
+              <ul className="divide-y divide-border pt-2">
+                {d.sales.entries.map((e) => (
+                  <li key={e.id} className="flex items-center gap-2 py-1.5">
+                    <span className="flex-1">
+                      {deDay(e.date)} · {e.amount !== null ? `${num(e.amount)} ${e.unit ?? ""} ` : ""}
+                      {e.label} für {euro(e.revenueEur)}
+                    </span>
+                    {canWrite && (
+                      <button type="button" aria-label="Verkauf löschen" className="text-muted-foreground hover:text-destructive" onClick={() => removeSale.mutate({ farmId: farm.id, saleId: e.id })}>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </details>
+          )}
 
           {d.expenses.entries.length > 0 && (
             <details className="text-sm">

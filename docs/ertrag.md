@@ -32,6 +32,11 @@ Die Seite `/farm/ertrag` zeigt, was Tiere und Garten im Jahr bringen und was das
 - **Bilanz** = Wert der Erträge minus eingetragene Ausgaben.
 - Die Futterkosten-Schätzung des Futterplaners wird **nicht** abgezogen. Echte Futterkäufe trägt man als Ausgabe „Futter“ ein, sonst würden sie doppelt zählen.
 
-## Offen
+## Verkäufe
 
-- Verkäufe und echte Einnahmen getrennt vom Eigenverbrauch.
+- Ein Verkauf hat einen Erlös in €, ein Datum und optional eine Menge (`farm_sales`). Er betrifft eines der eigenen Produkte (`product:eggs` …), eine geerntete Kultur (`crop:tomate`) oder etwas anderes mit Namen, z. B. „Eierlikör“.
+- `summarizeSales()` ist rein und liefert:
+  - den Erlös je Produkt,
+  - den **Ladenwert des Verkauften**: Menge × Preis, nur für eigene Produkte mit Menge.
+- **Selbst verbraucht** = Wert aller Erträge − Ladenwert des Verkauften (nie unter 0). Er zeigt, was die Familie im Laden gespart hat.
+- **Bilanz** = selbst verbraucht + Erlöse − Ausgaben. Ohne Verkäufe ist das wie bisher Wert − Ausgaben.

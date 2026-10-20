@@ -5,7 +5,7 @@ vi.hoisted(() => {
   process.env["GEMINI_API_KEY"] ??= "test-key";
 });
 
-const { DEFAULT_PRICES, defaultPrice, layingRate, summarize, summarizeExpenses } = await import("./farmYields");
+const { DEFAULT_PRICES, defaultPrice, layingRate, saleUnit, summarize, summarizeExpenses, summarizeSales } = await import("./farmYields");
 const { GARDEN_CATALOG } = await import("./gardenCatalog");
 
 describe("Ertrag – prices", () => {
@@ -75,5 +75,29 @@ describe("Ertrag – expenses", () => {
     expect(e.months[2]).toBe(75.5);
     expect(e.months[4]).toBe(29.99);
     expect(summarizeExpenses([])).toEqual({ total: 0, lines: [], months: Array(12).fill(0) });
+  });
+});
+
+describe("Ertrag – sales", () => {
+  it("sums revenue per product and the shop value of what was sold", () => {
+    const s = summarizeSales(
+      [
+        { product: "product:eggs", label: "Eier", amount: 60, revenueEur: 24 },
+        { product: "product:eggs", label: "Eier", amount: 30, revenueEur: 12 },
+        { product: "crop:tomate", label: "Tomate", amount: 2, revenueEur: 7 },
+        { product: null, label: "Kräutersalz", amount: null, revenueEur: 15 },
+      ],
+      defaultPrice,
+    );
+    expect(s.revenue).toBe(58);
+    // 90 eggs × 0.40 + 2 kg tomatoes × 4.
+    expect(s.soldValue).toBe(44);
+    expect(s.lines).toEqual([
+      { key: "product:eggs", label: "Eier", amount: 90, unit: "Stück", revenue: 36 },
+      { key: "label:Kräutersalz", label: "Kräutersalz", amount: null, unit: null, revenue: 15 },
+      { key: "crop:tomate", label: "Tomate", amount: 2, unit: "kg", revenue: 7 },
+    ]);
+    expect(saleUnit("product:milk")).toBe("l");
+    expect(saleUnit(null)).toBeNull();
   });
 });

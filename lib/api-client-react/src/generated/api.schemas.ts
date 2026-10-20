@@ -1028,6 +1028,61 @@ export interface ExpenseOverview {
   entries: ExpenseEntry[];
 }
 
+export interface SaleInput {
+  /** YYYY-MM-DD, not in the future */
+  date: string;
+  /**
+     * "product:eggs" … or "crop:tomate" for the farm's own yields; null for anything else (then label).
+     * @nullable
+     */
+  product?: string | null;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  label?: string | null;
+  /** @nullable */
+  amount?: number | null;
+  revenueEur: number;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  note?: string | null;
+}
+
+export interface SaleEntry {
+  id: number;
+  date: string;
+  /** @nullable */
+  product: string | null;
+  label: string;
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  unit: string | null;
+  revenueEur: number;
+  /** @nullable */
+  note: string | null;
+}
+
+export type SalesOverviewLinesItem = {
+  key: string;
+  label: string;
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  unit: string | null;
+  revenue: number;
+};
+
+export interface SalesOverview {
+  revenue: number;
+  soldValue: number;
+  lines: SalesOverviewLinesItem[];
+  entries: SaleEntry[];
+}
+
 export interface LayingRate {
   hens: number;
   eggs: number;
@@ -1044,7 +1099,10 @@ export interface YieldOverview {
   summary: YieldSummary;
   previousTotal: number;
   expenses: ExpenseOverview;
-  /** Value of the yields minus the expenses entered. */
+  sales: SalesOverview;
+  /** Shop value of what the farm kept – all yields minus what was sold. */
+  selfSupply: number;
+  /** Self-supply + sales − expenses. */
   balance: number;
   laying: null | LayingRate;
   feedCost: null | FeedCostEstimate;

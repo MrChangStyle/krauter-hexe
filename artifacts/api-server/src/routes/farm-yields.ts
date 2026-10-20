@@ -1,8 +1,8 @@
 import { Router, type IRouter } from 'express';
-import { AddExpenseBody, AddYieldBody, GetYieldOverviewResponse, ListFarmPricesResponse, SetFarmPriceBody, SetFarmPriceResponse } from '@workspace/api-zod';
+import { AddExpenseBody, AddSaleBody, AddYieldBody, GetYieldOverviewResponse, ListFarmPricesResponse, SetFarmPriceBody, SetFarmPriceResponse } from '@workspace/api-zod';
 
 import { requireFarm } from '../middlewares/requireFarm';
-import { addExpense, addYield, priceList, removeExpense, removeYield, setPrice, yieldOverview } from '../lib/farmYields';
+import { addExpense, addSale, addYield, priceList, removeExpense, removeSale, removeYield, setPrice, yieldOverview } from '../lib/farmYields';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
 // Ertrag & Bilanz. Reading: every member; writing: caretaker or admin.
@@ -57,6 +57,28 @@ router.delete(
     const id = idParam(req, 'expenseId');
     if (id === null) return notFound(res);
     await removeExpense(req.farm!.farmId, id);
+    res.sendStatus(204);
+  }),
+);
+
+router.post(
+  '/farms/:farmId/sales',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = AddSaleBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    await addSale(req.farm!.farmId, body.data);
+    res.sendStatus(204);
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/sales/:saleId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const id = idParam(req, 'saleId');
+    if (id === null) return notFound(res);
+    await removeSale(req.farm!.farmId, id);
     res.sendStatus(204);
   }),
 );

@@ -2053,6 +2053,49 @@ paths:
           description: Deleted.
         "404":
           description: Not found.
+  /farms/{farmId}/sales:
+    post:
+      tags: [farm]
+      operationId: addSale
+      summary: Enter a sale (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaleInput"
+      responses:
+        "204":
+          description: Saved.
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/sales/{saleId}:
+    delete:
+      tags: [farm]
+      operationId: deleteSale
+      summary: Delete a sale (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: saleId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: Not found.
   /farms/{farmId}/prices:
     get:
       tags: [farm]
@@ -5637,9 +5680,77 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ExpenseEntry"
+    SaleInput:
+      type: object
+      required: [date, revenueEur]
+      properties:
+        date:
+          type: string
+          description: YYYY-MM-DD, not in the future
+        product:
+          type: [string, 'null']
+          description: '"product:eggs" … or "crop:tomate" for the farm''s own yields; null for anything else (then label).'
+        label:
+          type: [string, 'null']
+          maxLength: 60
+        amount:
+          type: [number, 'null']
+        revenueEur:
+          type: number
+        note:
+          type: [string, 'null']
+          maxLength: 500
+    SaleEntry:
+      type: object
+      required: [id, date, product, label, amount, unit, revenueEur, note]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        product:
+          type: [string, 'null']
+        label:
+          type: string
+        amount:
+          type: [number, 'null']
+        unit:
+          type: [string, 'null']
+        revenueEur:
+          type: number
+        note:
+          type: [string, 'null']
+    SalesOverview:
+      type: object
+      required: [revenue, soldValue, lines, entries]
+      properties:
+        revenue:
+          type: number
+        soldValue:
+          type: number
+        lines:
+          type: array
+          items:
+            type: object
+            required: [key, label, amount, unit, revenue]
+            properties:
+              key:
+                type: string
+              label:
+                type: string
+              amount:
+                type: [number, 'null']
+              unit:
+                type: [string, 'null']
+              revenue:
+                type: number
+        entries:
+          type: array
+          items:
+            $ref: "#/components/schemas/SaleEntry"
     YieldOverview:
       type: object
-      required: [entries, summary, previousTotal, expenses, balance, laying, feedCost]
+      required: [entries, summary, previousTotal, expenses, sales, selfSupply, balance, laying, feedCost]
       properties:
         entries:
           type: array
@@ -5651,9 +5762,14 @@ components:
           type: number
         expenses:
           $ref: "#/components/schemas/ExpenseOverview"
+        sales:
+          $ref: "#/components/schemas/SalesOverview"
+        selfSupply:
+          type: number
+          description: Shop value of what the farm kept – all yields minus what was sold.
         balance:
           type: number
-          description: Value of the yields minus the expenses entered.
+          description: Self-supply + sales − expenses.
         laying:
           oneOf:
             - type: 'null'

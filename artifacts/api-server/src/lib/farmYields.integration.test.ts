@@ -169,4 +169,33 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
     expect((await api("DELETE", `/farms/${farmId}/expenses/${id}`)).status).toBe(204);
     expect((await api("GET", Y())).data.balance).toBe(15.01);
   });
+
+  it("keeps sales apart from the self-supply", async () => {
+    await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 100 });
+    await api("POST", `/farms/${farmId}/expenses`, { date: "2026-10-01", category: "feed", amountEur: 20 });
+    expect((await api("POST", `/farms/${farmId}/sales`, { date: "2026-10-05", product: "product:eggs", amount: 60, revenueEur: 30 })).status).toBe(204);
+    await api("POST", `/farms/${farmId}/sales`, { date: "2026-10-06", label: "Eierlikör", revenueEur: 12.5, note: "Hofladen" });
+    const { data } = await api("GET", Y());
+    expect(data.sales).toMatchObject({ revenue: 42.5, soldValue: 24 });
+    expect(data.sales.entries.map((e: any) => [e.label, e.amount, e.unit, e.revenueEur])).toEqual([
+      ["Eierlikör", null, null, 12.5],
+      ["Eier", 60, "Stück", 30],
+    ]);
+    // 100 eggs are worth 40 €, 60 of them were sold (24 €): 16 € kept, plus 42.50 € sold, minus 20 € feed.
+    expect(data.selfSupply).toBe(16);
+    expect(data.balance).toBe(38.5);
+    const bad = async (body: object) => (await api("POST", `/farms/${farmId}/sales`, { date: "2026-10-01", revenueEur: 5, ...body })).data?.error;
+    expect(await bad({})).toBe("Bitte gib an, was verkauft wurde.");
+    expect(await bad({ product: "product:honey" })).toBe("Dieses Produkt gibt es nicht.");
+    expect(await bad({ product: "crop:gibtsnicht" })).toBe("Dieses Produkt gibt es nicht.");
+    expect(await bad({ product: "product:eggs", revenueEur: 0 })).toBe("Der Erlös ist ungültig.");
+    const id = data.sales.entries[0].id;
+    as = "gina";
+    expect((await api("DELETE", `/farms/${farmId}/sales/${id}`)).status).toBe(403);
+    as = "bert";
+    expect((await api("DELETE", `/farms/${otherFarm}/sales/${id}`)).status).toBe(404);
+    as = "anna";
+    expect((await api("DELETE", `/farms/${farmId}/sales/${id}`)).status).toBe(204);
+    expect((await api("GET", Y())).data.sales.revenue).toBe(30);
+  });
 });

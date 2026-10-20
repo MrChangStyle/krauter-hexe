@@ -434,3 +434,24 @@ export const farmExpensesTable = pgTable(
   },
   (table) => [index("farm_expenses_farm_date_idx").on(table.farmId, table.date)],
 );
+
+// Ertrag & Bilanz: what the farm sold and got for it. `product` is
+// "product:eggs" or "crop:tomate" when it is one of the farm's yields (its
+// shop value then leaves the self-supply), null for anything else.
+export const farmSalesTable = pgTable(
+  "farm_sales",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    date: date("date", { mode: "string" }).notNull(),
+    product: text("product"),
+    label: text("label").notNull(),
+    amount: doublePrecision("amount"),
+    revenueEur: doublePrecision("revenue_eur").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("farm_sales_farm_date_idx").on(table.farmId, table.date)],
+);

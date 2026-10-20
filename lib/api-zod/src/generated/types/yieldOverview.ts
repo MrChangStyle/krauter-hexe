@@ -8,6 +8,7 @@
 import type { ExpenseOverview } from './expenseOverview';
 import type { FeedCostEstimate } from './feedCostEstimate';
 import type { LayingRate } from './layingRate';
+import type { SalesOverview } from './salesOverview';
 import type { YieldEntry } from './yieldEntry';
 import type { YieldSummary } from './yieldSummary';
 
@@ -16,7 +17,10 @@ export interface YieldOverview {
   summary: YieldSummary;
   previousTotal: number;
   expenses: ExpenseOverview;
-  /** Value of the yields minus the expenses entered. */
+  sales: SalesOverview;
+  /** Shop value of what the farm kept – all yields minus what was sold. */
+  selfSupply: number;
+  /** Self-supply + sales − expenses. */
   balance: number;
   laying: null | LayingRate;
   feedCost: null | FeedCostEstimate;

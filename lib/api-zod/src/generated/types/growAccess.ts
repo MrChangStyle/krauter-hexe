@@ -5,9 +5,11 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { GrowPush } from './growPush';
 
 export interface GrowAccess {
   unlocked: boolean;
   ageConfirmed: boolean;
   adults: number;
+  push: GrowPush;
 }

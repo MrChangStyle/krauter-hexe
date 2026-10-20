@@ -1122,10 +1122,25 @@ export interface PriceInput {
   eur: number | null;
 }
 
+export type GrowPush = typeof GrowPush[keyof typeof GrowPush];
+
+
+export const GrowPush = {
+  off: 'off',
+  discreet: 'discreet',
+  full: 'full',
+} as const;
+
 export interface GrowAccess {
   unlocked: boolean;
   ageConfirmed: boolean;
   adults: number;
+  push: GrowPush;
+}
+
+export interface GrowSettingsInput {
+  adults?: number;
+  push?: GrowPush;
 }
 
 export interface GrowAgeInput {
@@ -1286,6 +1301,9 @@ export interface Grow {
   /** @nullable */
   notes: string | null;
   archived: boolean;
+  /** @nullable */
+  postalCode: string | null;
+  hasLocation: boolean;
   plants: GrowPlant[];
 }
 
@@ -1326,6 +1344,44 @@ export interface GrowInput {
      */
   notes?: string | null;
   archived?: boolean;
+  /**
+     * @maxLength 5
+     * @nullable
+     */
+  postalCode?: string | null;
+  /** @nullable */
+  latitude?: number | null;
+  /** @nullable */
+  longitude?: number | null;
+}
+
+export interface GrowWeatherLocation {
+  /** @nullable */
+  postalCode: string | null;
+  latitude: number;
+  longitude: number;
+}
+
+export type GrowWeatherWarningKind = typeof GrowWeatherWarningKind[keyof typeof GrowWeatherWarningKind];
+
+
+export const GrowWeatherWarningKind = {
+  frost: 'frost',
+  heat: 'heat',
+  storm: 'storm',
+  rain: 'rain',
+} as const;
+
+export interface GrowWeatherWarning {
+  kind: GrowWeatherWarningKind;
+  date: string;
+  text: string;
+}
+
+export interface GrowWeather {
+  location: null | GrowWeatherLocation;
+  days: DayForecast[];
+  warnings: GrowWeatherWarning[];
 }
 
 export interface GrowPlantInput {

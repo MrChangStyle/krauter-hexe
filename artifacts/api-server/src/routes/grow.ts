@@ -13,8 +13,9 @@ import {
   ListGrowAccessResponse,
   SetGrowAccessBody,
   SetGrowAccessResponse,
-  SetGrowAdultsBody,
-  SetGrowAdultsResponse,
+  GetGrowWeatherResponse,
+  SetGrowSettingsBody,
+  SetGrowSettingsResponse,
   UpdateGrowBody,
   UpdateGrowPlantBody,
   UpdateGrowPlantResponse,
@@ -34,11 +35,12 @@ import {
   growOverview,
   listGrowAccess,
   plantDetail,
-  setAdults,
+  setGrowSettings,
   setGrowUnlocked,
   updateGrow,
   updatePlant,
 } from '../lib/grow';
+import { growWeather } from '../lib/growWeather';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
 // Grow (add-on, adults only): access, grows, plants, Tagebuch. Everything
@@ -87,14 +89,14 @@ router.put(
   '/grow/access',
   requireApproved,
   handle(async (req, res) => {
-    const body = SetGrowAdultsBody.safeParse(req.body);
+    const body = SetGrowSettingsBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
     const access = await growAccess(me(req), req.user!.isOwner);
     if (!access.unlocked || !access.ageConfirmed) {
       res.status(403).json({ error: 'Bitte bestätige zuerst, dass du volljährig bist.' });
       return;
     }
-    res.json(SetGrowAdultsResponse.parse(await setAdults(me(req), req.user!.isOwner, body.data.adults)));
+    res.json(SetGrowSettingsResponse.parse(await setGrowSettings(me(req), req.user!.isOwner, body.data)));
   }),
 );
 
@@ -142,6 +144,17 @@ router.delete(
     if (id === null) return notFound(res);
     await deleteGrow(me(req), id);
     res.sendStatus(204);
+  }),
+);
+
+router.get(
+  '/grow/grows/:growId/weather',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'growId');
+    if (id === null) return notFound(res);
+    res.json(GetGrowWeatherResponse.parse(await growWeather(me(req), id)));
   }),
 );
 

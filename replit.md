@@ -195,6 +195,7 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 Details in `docs/grow.md` (`lib/grow.ts`, `lib/growPlan.ts`, `routes/grow.ts`, schema `grow.ts`; pages `/grow`, `/grow/pflanze/:id`, `/grow/wissen`, `/grow/recht`).
 - Personal data per account (`grows`, `grow_plants`, `grow_logs`; `grow_access` and `grows` are in `PERSONAL_TABLES`). Unlocked per account by the owner (`/admin/grow-access`, the owner always has it), then the account confirms being 18+ and the adults in the household; until then every grow endpoint answers 403.
 - `growPlan.ts` is pure: phases from the germination day, flowering start (12/12 day, 4 weeks indoors, 3 for autoflowers, August outdoors), targets per phase and substrate, dated steps, KCanG check (3 plants and 50 g per adult).
+- `growWeather.ts`: outdoor/greenhouse grows keep a postal code or rounded position; `GET /grow/grows/:id/weather` gives the forecast and frost/heat/storm/rain-in-bloom warnings. The 07:30 push (`sendGrowDigests`) sends the day's plan steps and fresh warnings once per day (`grow_push_log`, also in `PERSONAL_TABLES`), discreet by default (no grow words on the lock screen), `full` or `off` per account (`grow_access.push`).
 - Framed as adult home growing under the KCanG, not as medical. Build with `VITE_DISABLE_GROW=true` to hide the module (store builds).
 
 ## Installation (Android/PWA)

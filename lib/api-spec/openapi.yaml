@@ -2180,14 +2180,14 @@ paths:
           description: Module not unlocked or age not confirmed.
     put:
       tags: [grow]
-      operationId: setGrowAdults
-      summary: Change the adults in the household
+      operationId: setGrowSettings
+      summary: Change the adults in the household and the morning push
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/GrowAgeInput"
+              $ref: "#/components/schemas/GrowSettingsInput"
       responses:
         "200":
           description: OK.
@@ -2278,6 +2278,28 @@ paths:
       responses:
         "204":
           description: Done.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+  /grow/grows/{growId}/weather:
+    get:
+      tags: [grow]
+      operationId: getGrowWeather
+      summary: Outdoor and greenhouse – the forecast and weather warnings for the plants
+      parameters:
+        - name: growId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowWeather"
         "403":
           description: Module not unlocked or age not confirmed.
         "404":
@@ -6136,7 +6158,7 @@ components:
           type: [number, 'null']
     GrowAccess:
       type: object
-      required: [unlocked, ageConfirmed, adults]
+      required: [unlocked, ageConfirmed, adults, push]
       properties:
         unlocked:
           type: boolean
@@ -6144,6 +6166,18 @@ components:
           type: boolean
         adults:
           type: integer
+        push:
+          $ref: "#/components/schemas/GrowPush"
+    GrowPush:
+      type: string
+      enum: ["off", discreet, full]
+    GrowSettingsInput:
+      type: object
+      properties:
+        adults:
+          type: integer
+        push:
+          $ref: "#/components/schemas/GrowPush"
     GrowAgeInput:
       type: object
       required: [adults]
@@ -6297,7 +6331,7 @@ components:
           $ref: "#/components/schemas/GrowPlan"
     Grow:
       type: object
-      required: [id, name, environment, medium, tentSize, lightType, lightWatts, notes, archived, plants]
+      required: [id, name, environment, medium, tentSize, lightType, lightWatts, notes, archived, postalCode, hasLocation, plants]
       properties:
         id:
           type: integer
@@ -6316,6 +6350,10 @@ components:
         notes:
           type: [string, 'null']
         archived:
+          type: boolean
+        postalCode:
+          type: [string, 'null']
+        hasLocation:
           type: boolean
         plants:
           type: array
@@ -6371,6 +6409,50 @@ components:
           maxLength: 2000
         archived:
           type: boolean
+        postalCode:
+          type: [string, 'null']
+          maxLength: 5
+        latitude:
+          type: [number, 'null']
+        longitude:
+          type: [number, 'null']
+    GrowWeatherLocation:
+      type: object
+      required: [postalCode, latitude, longitude]
+      properties:
+        postalCode:
+          type: [string, 'null']
+        latitude:
+          type: number
+        longitude:
+          type: number
+    GrowWeatherWarning:
+      type: object
+      required: [kind, date, text]
+      properties:
+        kind:
+          type: string
+          enum: [frost, heat, storm, rain]
+        date:
+          type: string
+        text:
+          type: string
+    GrowWeather:
+      type: object
+      required: [location, days, warnings]
+      properties:
+        location:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/GrowWeatherLocation"
+        days:
+          type: array
+          items:
+            $ref: "#/components/schemas/DayForecast"
+        warnings:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowWeatherWarning"
     GrowPlantInput:
       type: object
       required: [name, strainType, flowering, startedOn]

@@ -73,7 +73,7 @@ describe.skipIf(!enabled)("Grow (real database)", () => {
   const plant = { name: "Lemon 1", strain: "Lemon Haze", breeder: "Testbank", strainType: "hybrid", flowering: "photo", seedSex: "feminized", startedOn: "2026-03-01" };
 
   it("stays closed until the owner unlocks it and the age is confirmed", async () => {
-    expect((await api("GET", "/grow/access")).data).toEqual({ unlocked: false, ageConfirmed: false, adults: 1 });
+    expect((await api("GET", "/grow/access")).data).toEqual({ unlocked: false, ageConfirmed: false, adults: 1, push: "discreet" });
     expect((await api("GET", "/grow")).data.error).toBe("Das Grow-Modul ist für dieses Konto nicht freigeschaltet.");
     expect((await api("POST", "/grow/access", { adults: 1 })).status).toBe(403);
     // Only the owner unlocks.
@@ -82,7 +82,7 @@ describe.skipIf(!enabled)("Grow (real database)", () => {
     expect(list.data).toEqual([{ email: "anna@x.de", username: null, unlockedAt: expect.any(String) }]);
     expect((await api("GET", "/grow")).data.error).toBe("Bitte bestätige zuerst, dass du volljährig bist.");
     expect((await api("POST", "/grow/access", { adults: 0 })).status).toBe(400);
-    expect((await api("POST", "/grow/access", { adults: 2 })).data).toEqual({ unlocked: true, ageConfirmed: true, adults: 2 });
+    expect((await api("POST", "/grow/access", { adults: 2 })).data).toEqual({ unlocked: true, ageConfirmed: true, adults: 2, push: "discreet" });
     expect((await api("GET", "/grow")).data).toEqual({
       grows: [],
       kcang: { activePlants: 0, maxPlants: 6, plantsOver: false, dryGramsLastYear: 0, maxGrams: 100, gramsOver: false },

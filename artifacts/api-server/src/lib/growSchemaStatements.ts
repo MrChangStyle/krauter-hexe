@@ -12,8 +12,10 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
 	"unlocked_at" timestamp with time zone,
 	"age_confirmed_at" timestamp with time zone,
 	"adults" integer DEFAULT 1 NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"push" text DEFAULT 'discreet' NOT NULL
 )`,
+  `ALTER TABLE "grow_access" ADD COLUMN IF NOT EXISTS "push" text DEFAULT 'discreet' NOT NULL`,
   `CREATE TABLE IF NOT EXISTS "grows" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
@@ -25,8 +27,14 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
 	"light_watts" integer,
 	"notes" text,
 	"archived_at" timestamp with time zone,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"postal_code" text,
+	"latitude" double precision,
+	"longitude" double precision
 )`,
+  `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "postal_code" text`,
+  `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "latitude" double precision`,
+  `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "longitude" double precision`,
   `CREATE TABLE IF NOT EXISTS "grow_plants" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"grow_id" integer NOT NULL,
@@ -65,4 +73,11 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
   `CREATE INDEX IF NOT EXISTS "grows_user_idx" ON "grows" USING btree ("user_id")`,
   `CREATE INDEX IF NOT EXISTS "grow_plants_grow_idx" ON "grow_plants" USING btree ("grow_id")`,
   `CREATE INDEX IF NOT EXISTS "grow_logs_plant_idx" ON "grow_logs" USING btree ("plant_id")`,
+  `CREATE TABLE IF NOT EXISTS "grow_push_log" (
+	"user_id" text NOT NULL,
+	"day" text NOT NULL,
+	"kinds" jsonb NOT NULL,
+	"sent_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "grow_push_log_user_id_day_pk" PRIMARY KEY("user_id","day")
+)`,
 ];

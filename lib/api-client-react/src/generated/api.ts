@@ -115,6 +115,8 @@ import type {
   GrowPlant,
   GrowPlantDetail,
   GrowPlantInput,
+  GrowSettingsInput,
+  GrowWeather,
   Handover,
   HandoverNoteInput,
   Harvest,
@@ -7295,7 +7297,7 @@ export const useConfirmGrowAge = <TError = ErrorType<void>,
       return useMutation(getConfirmGrowAgeMutationOptions(options));
     }
 
-export const getSetGrowAdultsUrl = () => {
+export const getSetGrowSettingsUrl = () => {
 
 
 
@@ -7304,16 +7306,16 @@ export const getSetGrowAdultsUrl = () => {
 }
 
 /**
- * @summary Change the adults in the household
+ * @summary Change the adults in the household and the morning push
  */
-export const setGrowAdults = async (growAgeInput: GrowAgeInput, options?: RequestInit): Promise<GrowAccess> => {
+export const setGrowSettings = async (growSettingsInput: GrowSettingsInput, options?: RequestInit): Promise<GrowAccess> => {
 
-  return customFetch<GrowAccess>(getSetGrowAdultsUrl(),
+  return customFetch<GrowAccess>(getSetGrowSettingsUrl(),
   {
     ...options,
     method: 'PUT',
     headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(growAgeInput)
+    body: JSON.stringify(growSettingsInput)
   }
 );}
 
@@ -7321,11 +7323,11 @@ export const setGrowAdults = async (growAgeInput: GrowAgeInput, options?: Reques
 
 
 
-export const getSetGrowAdultsMutationOptions = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowAdults>>, TError,{data: BodyType<GrowAgeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof setGrowAdults>>, TError,{data: BodyType<GrowAgeInput>}, TContext> => {
+export const getSetGrowSettingsMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowSettings>>, TError,{data: BodyType<GrowSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setGrowSettings>>, TError,{data: BodyType<GrowSettingsInput>}, TContext> => {
 
-const mutationKey = ['setGrowAdults'];
+const mutationKey = ['setGrowSettings'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
       options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
       options
@@ -7335,10 +7337,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setGrowAdults>>, {data: BodyType<GrowAgeInput>}> = (props) => {
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setGrowSettings>>, {data: BodyType<GrowSettingsInput>}> = (props) => {
           const {data} = props ?? {};
 
-          return  setGrowAdults(data,requestOptions)
+          return  setGrowSettings(data,requestOptions)
         }
 
 
@@ -7348,22 +7350,22 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
   return  { mutationFn, ...mutationOptions }}
 
-    export type SetGrowAdultsMutationResult = NonNullable<Awaited<ReturnType<typeof setGrowAdults>>>
-    export type SetGrowAdultsMutationBody = BodyType<GrowAgeInput>
-    export type SetGrowAdultsMutationError = ErrorType<void>
+    export type SetGrowSettingsMutationResult = NonNullable<Awaited<ReturnType<typeof setGrowSettings>>>
+    export type SetGrowSettingsMutationBody = BodyType<GrowSettingsInput>
+    export type SetGrowSettingsMutationError = ErrorType<void>
 
     /**
- * @summary Change the adults in the household
+ * @summary Change the adults in the household and the morning push
  */
-export const useSetGrowAdults = <TError = ErrorType<void>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowAdults>>, TError,{data: BodyType<GrowAgeInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+export const useSetGrowSettings = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGrowSettings>>, TError,{data: BodyType<GrowSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
-        Awaited<ReturnType<typeof setGrowAdults>>,
+        Awaited<ReturnType<typeof setGrowSettings>>,
         TError,
-        {data: BodyType<GrowAgeInput>},
+        {data: BodyType<GrowSettingsInput>},
         TContext
       > => {
-      return useMutation(getSetGrowAdultsMutationOptions(options));
+      return useMutation(getSetGrowSettingsMutationOptions(options));
     }
 
 export const getGetGrowOverviewUrl = () => {
@@ -7656,6 +7658,83 @@ export const useDeleteGrow = <TError = ErrorType<void>,
       > => {
       return useMutation(getDeleteGrowMutationOptions(options));
     }
+
+export const getGetGrowWeatherUrl = (growId: number,) => {
+
+
+
+
+  return `/api/grow/grows/${growId}/weather`
+}
+
+/**
+ * @summary Outdoor and greenhouse – the forecast and weather warnings for the plants
+ */
+export const getGrowWeather = async (growId: number, options?: RequestInit): Promise<GrowWeather> => {
+
+  return customFetch<GrowWeather>(getGetGrowWeatherUrl(growId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGrowWeatherQueryKey = (growId: number,) => {
+    return [
+    `/api/grow/grows/${growId}/weather`
+    ] as const;
+    }
+
+
+export const getGetGrowWeatherQueryOptions = <TData = Awaited<ReturnType<typeof getGrowWeather>>, TError = ErrorType<void>>(growId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGrowWeather>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGrowWeatherQueryKey(growId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGrowWeather>>> = ({ signal }) => getGrowWeather(growId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: growId !== null && growId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGrowWeather>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGrowWeatherQueryResult = NonNullable<Awaited<ReturnType<typeof getGrowWeather>>>
+export type GetGrowWeatherQueryError = ErrorType<void>
+
+
+/**
+ * @summary Outdoor and greenhouse – the forecast and weather warnings for the plants
+ */
+
+export function useGetGrowWeather<TData = Awaited<ReturnType<typeof getGrowWeather>>, TError = ErrorType<void>>(
+ growId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGrowWeather>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGrowWeatherQueryOptions(growId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getAddGrowPlantUrl = (growId: number,) => {
 

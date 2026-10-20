@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BookOpen, ChevronRight, Lock, Plus, Scale, ShieldCheck, Sprout, Trash2, Archive, Loader2 } from "lucide-react";
+import { AlertTriangle, BookOpen, Bell, ChevronRight, Lock, Plus, Scale, ShieldCheck, Sprout, Trash2, Archive, Loader2 } from "lucide-react";
 import {
   getGetGrowAccessQueryKey,
   getGetGrowOverviewQueryKey,
@@ -11,15 +11,17 @@ import {
   useDeleteGrow,
   useGetGrowAccess,
   useGetGrowOverview,
-  useSetGrowAdults,
+  useSetGrowSettings,
   useUpdateGrow,
   type Grow,
   type GrowAccess,
   type GrowEnvironment,
   type GrowMedium,
   type GrowOverview,
+  type GrowPush,
 } from "@workspace/api-client-react";
 import { GrowPlantDialog } from "@/components/grow-plant-dialog";
+import { GrowWeatherCard } from "@/components/grow-weather-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -27,6 +29,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { ENVIRONMENT_LABELS, GROW_ENABLED, MEDIUM_LABELS, PHASE_COLORS, PHASE_LABELS, STRAIN_TYPE_LABELS, FLOWERING_LABELS, dayText } from "@/lib/grow-labels";
 import { deDay } from "@/lib/medicine-labels";
+import { enablePush, isPushEnabled, pushSupported } from "@/lib/push";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -99,7 +102,7 @@ function KcangCard({ overview, access }: { overview: GrowOverview; access: GrowA
   const queryClient = useQueryClient();
   const [editing, setEditing] = useState(false);
   const [adults, setAdults] = useState(String(access.adults));
-  const save = useSetGrowAdults({
+  const save = useSetGrowSettings({
     mutation: {
       onSuccess(data) {
         queryClient.setQueryData(getGetGrowAccessQueryKey(), data);
@@ -148,6 +151,63 @@ function KcangCard({ overview, access }: { overview: GrowOverview; access: GrowA
   );
 }
 
+const PUSH_LABELS: Record<GrowPush, string> = {
+  discreet: "Diskret – nur „Little Farming: 2 Pflegeschritte“",
+  full: "Ausführlich – mit Pflanzen und Schritten",
+  off: "Aus",
+};
+
+/** The morning push with the day's steps and weather warnings. */
+function PushCard({ access }: { access: GrowAccess }) {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+  const save = useSetGrowSettings({
+    mutation: {
+      onSuccess: (data) => queryClient.setQueryData(getGetGrowAccessQueryKey(), data),
+      onError: (err) => toast({ title: "Nicht gespeichert", description: errorText(err, ""), variant: "destructive" }),
+    },
+  });
+  const [device, setDevice] = useState<boolean | null>(null);
+  useEffect(() => {
+    void isPushEnabled().then(setDevice);
+  }, []);
+  async function allow() {
+    const result = await enablePush();
+    setDevice(result.ok);
+    if (!result.ok) {
+      toast({
+        title: "Push nicht aktiviert",
+        description: result.reason === "denied" ? "Benachrichtigungen sind für diese Seite blockiert – bitte in den Browser-Einstellungen erlauben." : "Dieses Gerät unterstützt keine Push-Nachrichten.",
+        variant: "destructive",
+      });
+    }
+  }
+  return (
+    <section className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm">
+      <h2 className="flex items-center gap-2 font-semibold">
+        <Bell className="h-4 w-4 text-primary" />
+        Erinnerungen
+      </h2>
+      <p className="text-muted-foreground">
+        Morgens um 7:30 Uhr eine Push-Nachricht, wenn ein Schritt im Plan ansteht oder das Wetter deinen Pflanzen draußen schaden kann. Diskret steht auf dem Sperrbildschirm nichts vom Grow.
+      </p>
+      <select aria-label="Erinnerungen" className={selectClass} value={access.push} disabled={save.isPending} onChange={(e) => save.mutate({ data: { push: e.target.value as GrowPush } })}>
+        {(Object.keys(PUSH_LABELS) as GrowPush[]).map((k) => (
+          <option key={k} value={k}>
+            {PUSH_LABELS[k]}
+          </option>
+        ))}
+      </select>
+      {access.push !== "off" && device === false && pushSupported() && (
+        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => void allow()}>
+          <Bell className="h-4 w-4" />
+          Auf diesem Gerät erlauben
+        </Button>
+      )}
+    </section>
+  );
+}
+
 function NewGrowDialog({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -157,6 +217,7 @@ function NewGrowDialog({ onClose }: { onClose: () => void }) {
   const [tentSize, setTentSize] = useState("");
   const [lightType, setLightType] = useState("LED");
   const [watts, setWatts] = useState("");
+  const [postalCode, setPostalCode] = useState("");
   const create = useCreateGrow({
     mutation: {
       onSuccess(data) {
@@ -178,6 +239,7 @@ function NewGrowDialog({ onClose }: { onClose: () => void }) {
         tentSize: indoor ? tentSize.trim() || null : null,
         lightType: indoor ? lightType.trim() || null : null,
         lightWatts: indoor && watts ? Number(watts) : null,
+        postalCode: indoor ? null : postalCode.trim() || null,
       },
     });
   }
@@ -230,6 +292,12 @@ function NewGrowDialog({ onClose }: { onClose: () => void }) {
                 <Label htmlFor="g-watts">Watt</Label>
                 <Input id="g-watts" type="number" min={1} max={5000} value={watts} onChange={(e) => setWatts(e.target.value)} />
               </div>
+            </div>
+          )}
+          {!indoor && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="g-plz">Postleitzahl (für Wetter-Warnungen)</Label>
+              <Input id="g-plz" inputMode="numeric" pattern="\d{5}" maxLength={5} className="w-32" value={postalCode} placeholder="optional" onChange={(e) => setPostalCode(e.target.value)} />
             </div>
           )}
           <Button type="submit" disabled={create.isPending}>
@@ -285,6 +353,7 @@ function GrowCard({ grow }: { grow: Grow }) {
           </button>
         </div>
       </div>
+      {grow.environment !== "indoor" && !grow.archived && <GrowWeatherCard grow={grow} growInput={growInput} />}
       {grow.plants.length === 0 ? (
         <p className="text-muted-foreground">Noch keine Pflanze.</p>
       ) : (
@@ -335,6 +404,7 @@ function Overview({ access }: { access: GrowAccess }) {
   return (
     <div className="space-y-4">
       <KcangCard overview={d} access={access} />
+      <PushCard access={access} />
       <div className="grid grid-cols-2 gap-3">
         <Link href="/grow/wissen" className="flex items-center gap-2 rounded-xl border border-border bg-card p-3 text-sm font-medium hover:bg-muted/50">
           <BookOpen className="h-4 w-4 text-primary" />

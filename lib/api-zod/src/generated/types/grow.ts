@@ -23,5 +23,8 @@ export interface Grow {
   /** @nullable */
   notes: string | null;
   archived: boolean;
+  /** @nullable */
+  postalCode: string | null;
+  hasLocation: boolean;
   plants: GrowPlant[];
 }

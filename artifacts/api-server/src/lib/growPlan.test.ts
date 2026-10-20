@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { currentPhase, defaultFlowerWeeks, flowerStart, kcangCheck, phases, plantPlan, steps, targets } from "./growPlan";
+import { currentPhase, defaultFlowerWeeks, flowerStart, kcangCheck, phases, plantPlan, steps, targets, type GrowForPlan, type PlantForPlan } from "./growPlan";
 
 const photo = { strainType: "hybrid" as const, flowering: "photo" as const, seedSex: "feminized" as const, flowerWeeks: 9, startedOn: "2026-03-01", flipOn: null, harvestedOn: null };
 const auto = { ...photo, strainType: "ruderalis" as const, flowering: "auto" as const, flowerWeeks: 7 };
@@ -67,7 +67,7 @@ describe("Grow-Plan – targets and steps", () => {
   });
 
   it("tops photoperiodic plants, never autoflowers, and switches the light only indoors", () => {
-    const texts = (p: typeof photo, g: typeof tent) => steps(p, g, "2026-03-01").map((s) => s.text);
+    const texts = (p: PlantForPlan, g: GrowForPlan) => steps(p, g, "2026-03-01").map((s) => s.text);
     expect(texts(photo, tent).some((t) => t.startsWith("Toppen"))).toBe(true);
     expect(texts(auto, tent).some((t) => t.startsWith("Toppen"))).toBe(false);
     expect(texts(photo, tent).some((t) => t.startsWith("Licht auf 12/12"))).toBe(true);

@@ -1,0 +1,145 @@
+/**
+ * Ertrag & Bilanz against a REAL Postgres, through the HTTP routes: entering
+ * and deleting animal yields, the year overview with garden harvests, own
+ * prices, the laying rate, roles and farm isolation.
+ *
+ * Skipped unless TEST_DATABASE_URL equals DATABASE_URL (throwaway database
+ * with the schema pushed). Truncates tables – never point it at real data.
+ * Run the integration files one after another (--no-file-parallelism).
+ */
+
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import express, { type NextFunction, type Request, type Response } from "express";
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
+
+// The overview reaches the Futterplaner (feed costs), which loads the AI client.
+vi.hoisted(() => {
+  process.env["GEMINI_API_KEY"] ??= "test-key";
+});
+let fixedDay = "2026-10-19";
+vi.mock("./monitoring", async (orig) => ({ ...(await orig<object>()), berlinDay: () => fixedDay }));
+
+const testUrl = process.env["TEST_DATABASE_URL"];
+const enabled =
+  !!testUrl && testUrl === (process.env["NEON_DATABASE_URL"] ?? process.env["DATABASE_URL"]);
+
+describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
+  let server: Server;
+  let base = "";
+  let as = "anna";
+  let farmId = 0;
+  let otherFarm = 0;
+  let herdId = 0;
+
+  async function q<T = Record<string, unknown>>(text: string, params: unknown[] = []) {
+    const { pool } = await import("@workspace/db");
+    return (await pool.query(text, params)).rows as T[];
+  }
+
+  beforeAll(async () => {
+    const app = express();
+    app.use(express.json());
+    app.use((req: Request, _res: Response, next: NextFunction) => {
+      (req as unknown as { user: unknown }).user = { id: as, approved: true };
+      (req as unknown as { isAuthenticated: () => boolean }).isAuthenticated = () => true;
+      next();
+    });
+    app.use((await import("../routes/farm-yields")).default);
+    server = createServer(app);
+    await new Promise<void>((r) => server.listen(0, r));
+    base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
+  });
+
+  afterAll(() => server?.close());
+
+  beforeEach(async () => {
+    await q("TRUNCATE farms, farm_memberships, users RESTART IDENTITY CASCADE");
+    await q(`INSERT INTO users (id, email, approved) VALUES ('anna', 'a@x.de', true), ('gina', 'g@x.de', true), ('bert', 'b@x.de', true)`);
+    const [f] = await q<{ id: number }>("INSERT INTO farms (name) VALUES ('Hof Sonnenblick') RETURNING id");
+    const [g] = await q<{ id: number }>("INSERT INTO farms (name) VALUES ('Hof Bert') RETURNING id");
+    farmId = f!.id;
+    otherFarm = g!.id;
+    await q(`INSERT INTO farm_memberships (farm_id, user_id, role) VALUES ($1, 'anna', 'caretaker'), ($1, 'gina', 'guest'), ($2, 'bert', 'admin')`, [farmId, otherFarm]);
+    const [h] = await q<{ id: number }>("INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Hühner', 'poultry') RETURNING id", [farmId]);
+    herdId = h!.id;
+    as = "anna";
+    fixedDay = "2026-10-19";
+  });
+
+  const api = async (method: string, path: string, body?: unknown) => {
+    const res = await fetch(`${base}${path}`, {
+      method,
+      headers: body ? { "Content-Type": "application/json" } : undefined,
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    const text = await res.text();
+    return { status: res.status, data: text ? (JSON.parse(text) as any) : null };
+  };
+  const Y = (year = 2026) => `/farms/${farmId}/yield-overview/${year}`;
+
+  it("adds eggs, sums the year with the garden and the laying rate", async () => {
+    for (let k = 0; k < 4; k++) {
+      await q("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number) VALUES ($1, $2, $3, 'poultry', 'female', $3)", [farmId, herdId, `H-${k}`]);
+    }
+    expect((await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-10", amount: 60, herdId })).status).toBe(204);
+    await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-08-01", amount: 100 });
+    await api("POST", `/farms/${farmId}/yields`, { product: "milk", date: "2025-05-01", amount: 10 });
+    await q("INSERT INTO harvest_logs (farm_id, season, crop_key, label, cells, harvested_on, amount_kg, use) VALUES ($1, 2026, 'tomate', 'Tomate', 2, '2026-08-20', 5, 'kitchen')", [farmId]);
+    as = "gina";
+    const { status, data } = await api("GET", Y());
+    expect(status).toBe(200);
+    expect(data.entries.map((e: any) => [e.product, e.date, e.amount, e.unit, e.herdName])).toEqual([
+      ["eggs", "2026-10-10", 60, "Stück", "Hühner"],
+      ["eggs", "2026-08-01", 100, "Stück", null],
+    ]);
+    expect(data.summary.animals.lines).toEqual([{ product: "eggs", unit: "Stück", amount: 160, price: 0.4, value: 64 }]);
+    expect(data.summary.garden.lines[0]).toMatchObject({ name: "Tomate", kitchenKg: 5, value: 20 });
+    expect(data.summary.total).toBe(84);
+    expect(data.previousTotal).toBe(15);
+    // 60 eggs from 4 hens in the last 30 days.
+    expect(data.laying).toEqual({ hens: 4, eggs: 60, perHenDay: 0.5 });
+    expect(data.feedCost).toBeNull();
+    // Past years: no laying rate.
+    expect((await api("GET", Y(2025))).data).toMatchObject({ laying: null, summary: { total: 15 } });
+    expect((await api("GET", Y(2027))).status).toBe(400);
+  });
+
+  it("checks the input and deletes", async () => {
+    const bad = async (body: object) => (await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 5, ...body })).status;
+    expect(await bad({ product: "honey" })).toBe(400);
+    expect(await bad({ amount: 0 })).toBe(400);
+    expect(await bad({ date: "2099-01-01" })).toBe(400);
+    const [other] = await q<{ id: number }>("INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Fremd', 'poultry') RETURNING id", [otherFarm]);
+    expect((await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 5, herdId: other!.id })).data.error).toBe("Diese Gruppe gibt es auf der Farm nicht.");
+    await api("POST", `/farms/${farmId}/yields`, { product: "wool", date: "2026-06-01", amount: 2.5 });
+    const id = (await api("GET", Y())).data.entries[0].id;
+    as = "bert";
+    expect((await api("DELETE", `/farms/${otherFarm}/yields/${id}`)).status).toBe(404);
+    as = "gina";
+    expect((await api("DELETE", `/farms/${farmId}/yields/${id}`)).status).toBe(403);
+    as = "anna";
+    expect((await api("DELETE", `/farms/${farmId}/yields/${id}`)).status).toBe(204);
+    expect((await api("GET", Y())).data.entries).toEqual([]);
+  });
+
+  it("uses the farm's own prices", async () => {
+    await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 10 });
+    await q("INSERT INTO harvest_logs (farm_id, season, crop_key, label, cells, harvested_on, amount_kg, use) VALUES ($1, 2026, 'kuerbis', 'Kürbis', 2, '2026-09-20', 8, 'fodder')", [farmId]);
+    let prices = (await api("GET", `/farms/${farmId}/prices`)).data;
+    expect(prices.map((p: any) => p.key)).toEqual(["product:eggs", "product:milk", "product:meat", "product:wool", "fodder", "crop:kuerbis"]);
+    expect(prices[0]).toEqual({ key: "product:eggs", label: "Eier", unit: "Stück", eur: 0.4, own: false });
+    prices = (await api("PUT", `/farms/${farmId}/prices`, { key: "product:eggs", eur: 0.6 })).data;
+    expect(prices[0]).toMatchObject({ eur: 0.6, own: true });
+    await api("PUT", `/farms/${farmId}/prices`, { key: "fodder", eur: 0.5 });
+    expect((await api("GET", Y())).data.summary).toMatchObject({ total: 10, animals: { value: 6 }, garden: { value: 4 } });
+    prices = (await api("PUT", `/farms/${farmId}/prices`, { key: "product:eggs", eur: null })).data;
+    expect(prices[0]).toMatchObject({ eur: 0.4, own: false });
+    expect((await api("PUT", `/farms/${farmId}/prices`, { key: "crop:../x", eur: 1 })).status).toBe(400);
+    expect((await api("PUT", `/farms/${farmId}/prices`, { key: "fodder", eur: -1 })).status).toBe(400);
+    as = "gina";
+    expect((await api("PUT", `/farms/${farmId}/prices`, { key: "fodder", eur: 1 })).status).toBe(403);
+    as = "bert";
+    expect((await api("GET", `/farms/${farmId}/prices`)).status).toBe(404);
+  });
+});

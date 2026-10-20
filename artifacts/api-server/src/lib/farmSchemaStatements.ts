@@ -294,4 +294,34 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "farm_animals" ADD CONSTRAINT "farm_animals_father_id_farm_animals_id_fk" FOREIGN KEY ("father_id") REFERENCES "public"."farm_animals"("id") ON DELETE set null ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "breeding_records_farm_idx" ON "breeding_records" USING btree ("farm_id")`,
+  `CREATE TABLE IF NOT EXISTS "farm_yields" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"product" text NOT NULL,
+	"herd_id" integer,
+	"animal_id" integer,
+	"date" date NOT NULL,
+	"amount" double precision NOT NULL,
+	"note" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `CREATE TABLE IF NOT EXISTS "farm_prices" (
+	"farm_id" integer NOT NULL,
+	"key" text NOT NULL,
+	"eur" double precision NOT NULL,
+	CONSTRAINT "farm_prices_farm_id_key_pk" PRIMARY KEY("farm_id","key")
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_yields" ADD CONSTRAINT "farm_yields_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_yields" ADD CONSTRAINT "farm_yields_herd_id_herds_id_fk" FOREIGN KEY ("herd_id") REFERENCES "public"."herds"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_yields" ADD CONSTRAINT "farm_yields_animal_id_farm_animals_id_fk" FOREIGN KEY ("animal_id") REFERENCES "public"."farm_animals"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_prices" ADD CONSTRAINT "farm_prices_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "farm_yields_farm_date_idx" ON "farm_yields" USING btree ("farm_id","date")`,
 ];

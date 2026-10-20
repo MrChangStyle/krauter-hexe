@@ -8,6 +8,7 @@ import {
   jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   real,
   serial,
   text,
@@ -374,4 +375,41 @@ export const breedingRecordsTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("breeding_records_farm_idx").on(table.farmId)],
+);
+
+// Ertrag & Bilanz (lib/farmYields.ts): what the animals gave – eggs, milk,
+// meat, wool – one row per entry. The garden's harvests are in harvest_logs.
+export const FARM_PRODUCTS = ["eggs", "milk", "meat", "wool"] as const;
+export type FarmProduct = (typeof FARM_PRODUCTS)[number];
+
+export const farmYieldsTable = pgTable(
+  "farm_yields",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    product: text("product").notNull(),
+    herdId: integer("herd_id").references(() => herdsTable.id, { onDelete: "set null" }),
+    animalId: integer("animal_id").references(() => farmAnimalsTable.id, { onDelete: "set null" }),
+    date: date("date", { mode: "string" }).notNull(),
+    amount: doublePrecision("amount").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("farm_yields_farm_date_idx").on(table.farmId, table.date)],
+);
+
+// The farm's own prices for the value of its yields (€ per unit), overriding
+// the defaults in lib/farmYields.ts. Key: "product:eggs", "crop:tomate".
+export const farmPricesTable = pgTable(
+  "farm_prices",
+  {
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    eur: doublePrecision("eur").notNull(),
+  },
+  (table) => [primaryKey({ columns: [table.farmId, table.key] })],
 );

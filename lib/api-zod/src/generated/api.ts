@@ -2814,6 +2814,141 @@ export const RecordGerminationTestResponse = zod.object({
 
 
 /**
+ * @summary Ertrag & Bilanz – entries, garden and animal yields of a year with their value
+ */
+export const GetYieldOverviewParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "year": zod.coerce.number()
+})
+
+export const GetYieldOverviewResponse = zod.object({
+  "entries": zod.array(zod.object({
+  "id": zod.number(),
+  "product": zod.enum(['eggs', 'milk', 'meat', 'wool']),
+  "date": zod.string(),
+  "amount": zod.number(),
+  "unit": zod.string(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "note": zod.string().nullable()
+})),
+  "summary": zod.object({
+  "year": zod.number(),
+  "garden": zod.object({
+  "kg": zod.number(),
+  "value": zod.number(),
+  "lines": zod.array(zod.object({
+  "key": zod.string(),
+  "name": zod.string(),
+  "kitchenKg": zod.number(),
+  "fodderKg": zod.number(),
+  "pricePerKg": zod.number(),
+  "value": zod.number()
+}))
+}),
+  "animals": zod.object({
+  "value": zod.number(),
+  "lines": zod.array(zod.object({
+  "product": zod.enum(['eggs', 'milk', 'meat', 'wool']),
+  "unit": zod.string(),
+  "amount": zod.number(),
+  "price": zod.number(),
+  "value": zod.number()
+}))
+}),
+  "months": zod.array(zod.object({
+  "month": zod.number(),
+  "garden": zod.number(),
+  "animals": zod.number()
+})),
+  "total": zod.number()
+}),
+  "previousTotal": zod.number(),
+  "laying": zod.union([zod.null(),zod.object({
+  "hens": zod.number(),
+  "eggs": zod.number(),
+  "perHenDay": zod.number()
+})]),
+  "feedCost": zod.union([zod.null(),zod.object({
+  "perMonth": zod.number(),
+  "complete": zod.boolean()
+})])
+})
+
+
+/**
+ * @summary Enter eggs, milk, meat or wool (caretaker)
+ */
+export const AddYieldParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const addYieldBodyNoteMax = 500;
+
+
+
+export const AddYieldBody = zod.object({
+  "product": zod.enum(['eggs', 'milk', 'meat', 'wool']),
+  "date": zod.string().describe('YYYY-MM-DD, not in the future'),
+  "amount": zod.number(),
+  "herdId": zod.number().nullish(),
+  "note": zod.string().max(addYieldBodyNoteMax).nullish()
+})
+
+export const AddYieldResponse = zod.void()
+
+
+/**
+ * @summary Delete an entry (caretaker)
+ */
+export const DeleteYieldParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "yieldId": zod.coerce.number()
+})
+
+export const DeleteYieldResponse = zod.void()
+
+
+/**
+ * @summary Prices for the value of the yields (defaults or the farm's own)
+ */
+export const ListFarmPricesParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListFarmPricesResponseItem = zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "unit": zod.string(),
+  "eur": zod.number(),
+  "own": zod.boolean()
+})
+export const ListFarmPricesResponse = zod.array(ListFarmPricesResponseItem)
+
+
+/**
+ * @summary Set a price, or null for the default (caretaker)
+ */
+export const SetFarmPriceParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const SetFarmPriceBody = zod.object({
+  "key": zod.string(),
+  "eur": zod.number().nullable()
+})
+
+export const SetFarmPriceResponseItem = zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "unit": zod.string(),
+  "eur": zod.number(),
+  "own": zod.boolean()
+})
+export const SetFarmPriceResponse = zod.array(SetFarmPriceResponseItem)
+
+
+/**
  * @summary Pflichten – what keeping the farm's species means on paper, with what is ticked off
  */
 export const GetFarmDutiesParams = zod.object({

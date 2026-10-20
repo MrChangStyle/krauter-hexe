@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2 } from "lucide-react";
 import {
   getGetGardenCalendarQueryKey,
+  getGetSeedOverviewQueryKey,
   useCheckGardenEvent,
   useGetGardenCalendar,
   useUncheckGardenEvent,
@@ -10,6 +11,7 @@ import {
   type GardenCalendarEntry,
 } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
+import { amountText } from "@/lib/seed-labels";
 import { cn } from "@/lib/utils";
 import { KIND_COLORS, KIND_DONE, KIND_LABELS, MONTHS, dayRange, todayKey, yearSpan } from "@/lib/garden-calendar";
 
@@ -17,14 +19,26 @@ import { KIND_COLORS, KIND_DONE, KIND_LABELS, MONTHS, dayRange, todayKey, yearSp
 export function useToggleGardenEvent(farmId: number, season: number) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
-  const options = {
-    mutation: {
-      onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetGardenCalendarQueryKey(farmId, season) }),
-      onError: () => toast({ title: "Nicht gespeichert", description: "Bitte versuche es noch einmal.", variant: "destructive" as const }),
-    },
+  const refresh = () => {
+    void queryClient.invalidateQueries({ queryKey: getGetGardenCalendarQueryKey(farmId, season) });
+    // A sowing date takes seed from the stock (and gives it back).
+    void queryClient.invalidateQueries({ queryKey: getGetSeedOverviewQueryKey(farmId) });
   };
-  const check = useCheckGardenEvent(options);
-  const uncheck = useUncheckGardenEvent(options);
+  const onError = () => toast({ title: "Nicht gespeichert", description: "Bitte versuche es noch einmal.", variant: "destructive" as const });
+  const check = useCheckGardenEvent({
+    mutation: {
+      onSuccess(result) {
+        refresh();
+        const use = result.seedUse;
+        if (use) {
+          const what = use.variety ? `${use.name} (${use.variety})` : use.name;
+          toast({ title: `Saatgut abgebucht: ${amountText(use.amount, use.unit)} ${what}`, description: `Noch ${amountText(use.left, use.unit)} im Vorrat.` });
+        }
+      },
+      onError,
+    },
+  });
+  const uncheck = useUncheckGardenEvent({ mutation: { onSuccess: refresh, onError } });
   return {
     pending: check.isPending || uncheck.isPending,
     toggle(entry: GardenCalendarEntry) {

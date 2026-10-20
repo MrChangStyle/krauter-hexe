@@ -5,11 +5,11 @@
  * the years are the usual table values for seed kept cool and dry.
  */
 
-import { bedPlantingsTable, db, seedsTable } from '@workspace/db';
-import { and, asc, eq, gte, isNotNull } from 'drizzle-orm';
+import { BED_CELL_CM, bedPlantingsTable, db, seedUsesTable, seedsTable, type GardenEventKind } from '@workspace/db';
+import { and, asc, eq, gt, gte, inArray, isNotNull, isNull, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
-import { cropByKey } from './gardenCatalog';
+import { cropByKey, type Crop } from './gardenCatalog';
 import { berlinDay } from './monitoring';
 
 /** How seed is saved: self-pollinating, needs isolation, flowers in its second year, or not grown from seed. */
@@ -286,4 +286,91 @@ export async function recordTest(farmId: number, id: number, input: GerminationT
     .where(eq(seedsTable.id, id))
     .returning();
   return toSeed(row!, today);
+}
+
+// ── Sowing takes seed ─────────────────────────────────────────────────────────
+
+/** Thousand-grain weight in g (usual values) – to turn seeds into grams. */
+export const SEED_TKG: Record<string, number> = {
+  tomate: 3, paprika: 7, chili: 6, aubergine: 4, gurke: 25, zucchini: 150, kuerbis: 250,
+  buschbohne: 350, stangenbohne: 400, erbse: 250, moehre: 1.2, pastinake: 4, petersilie: 1.5,
+  sellerie: 0.4, fenchel: 5, dill: 2, koriander: 10, kohlrabi: 3.5, brokkoli: 3.5, blumenkohl: 3.5,
+  weisskohl: 3.5, gruenkohl: 3.5, radieschen: 10, rettich: 12, rucola: 2, spinat: 10, mangold: 15,
+  rote_bete: 15, salat: 1, ringelblume: 10, tagetes: 3, feldsalat: 1.5, mais: 300, zwiebel: 4,
+  lauch: 2.5, schnittlauch: 1.5, basilikum: 1.6, thymian: 0.3, salbei: 8, rosmarin: 1, oregano: 0.1,
+  bohnenkraut: 0.6, kapuzinerkresse: 120, borretsch: 15, erdbeere: 0.3, rhabarber: 15,
+};
+
+/** Seeds per plant: sown in pots one or two each, outside a few more. */
+const SEEDS_PER_PLANT: Record<'sow_indoor' | 'direct_sow', number> = { sow_indoor: 1.5, direct_sow: 2 };
+
+export const SOW_KINDS: GardenEventKind[] = ['sow_indoor', 'direct_sow'];
+
+/** Plants a planting of w × h cells holds at the crop's spacing (at least 1). */
+export function plantsIn(crop: Pick<Crop, 'spacingCm' | 'rowSpacingCm'>, w: number, h: number): number {
+  return Math.max(1, Math.round((w * h * BED_CELL_CM * BED_CELL_CM) / (crop.spacingCm * crop.rowSpacingCm)));
+}
+
+/** Seed one sowing takes, in the lot's unit; null for packets (their count is unknown). */
+export function sowingNeed(crop: Pick<Crop, 'key' | 'spacingCm' | 'rowSpacingCm'>, w: number, h: number, kind: 'sow_indoor' | 'direct_sow', unit: string): number | null {
+  const seeds = Math.ceil(plantsIn(crop, w, h) * SEEDS_PER_PLANT[kind]);
+  if (unit === 'Korn') return seeds;
+  const tkg = SEED_TKG[crop.key];
+  if (unit === 'g' && tkg) return Math.max(0.1, Math.round((seeds * tkg) / 100) / 10);
+  return null;
+}
+
+export interface SeedUse {
+  seedId: number;
+  name: string;
+  variety: string | null;
+  amount: number;
+  unit: string;
+  left: number;
+}
+
+type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
+
+/**
+ * A sowing date was ticked off: take the seed from the best lot of the crop –
+ * one that still germinates well, the oldest first – in Korn or g. Packets are
+ * left alone (how many seeds is unknown). Returns what was taken, or null.
+ */
+export async function takeSeedForSowing(
+  tx: Tx,
+  farmId: number,
+  planting: { id: number; cropKey: string | null; w: number; h: number },
+  kind: GardenEventKind,
+  today = berlinDay(),
+): Promise<SeedUse | null> {
+  if (kind !== 'sow_indoor' && kind !== 'direct_sow') return null;
+  const crop = planting.cropKey ? cropByKey(planting.cropKey) : undefined;
+  if (!crop) return null;
+  const lots = await tx
+    .select()
+    .from(seedsTable)
+    .where(and(eq(seedsTable.farmId, farmId), eq(seedsTable.cropKey, crop.key), isNull(seedsTable.archivedAt), gt(seedsTable.amount, 0), inArray(seedsTable.unit, ['Korn', 'g'])))
+    .orderBy(asc(seedsTable.harvestYear), asc(seedsTable.id));
+  const rank = (row: Row) => (['ok', 'check'].includes(seedStatus(row, today).status) ? 0 : 1);
+  const lot = [...lots].sort((a, b) => rank(a) - rank(b))[0];
+  if (!lot) return null;
+  const need = sowingNeed(crop, planting.w, planting.h, kind, lot.unit);
+  if (need === null) return null;
+  const amount = Math.min(need, lot.amount);
+  const [updated] = await tx
+    .update(seedsTable)
+    .set({ amount: sql`greatest(0, ${seedsTable.amount} - ${amount})` })
+    .where(eq(seedsTable.id, lot.id))
+    .returning({ amount: seedsTable.amount });
+  await tx.insert(seedUsesTable).values({ farmId, seedId: lot.id, plantingId: planting.id, kind, amount });
+  return { seedId: lot.id, name: lot.name, variety: lot.variety, amount, unit: lot.unit, left: updated!.amount };
+}
+
+/** The tick was taken back: the seed goes back into its lot. */
+export async function giveSeedBack(tx: Tx, farmId: number, plantingId: number, kind: GardenEventKind): Promise<void> {
+  const [use] = await tx
+    .delete(seedUsesTable)
+    .where(and(eq(seedUsesTable.farmId, farmId), eq(seedUsesTable.plantingId, plantingId), eq(seedUsesTable.kind, kind)))
+    .returning({ seedId: seedUsesTable.seedId, amount: seedUsesTable.amount });
+  if (use) await tx.update(seedsTable).set({ amount: sql`${seedsTable.amount} + ${use.amount}` }).where(eq(seedsTable.id, use.seedId));
 }

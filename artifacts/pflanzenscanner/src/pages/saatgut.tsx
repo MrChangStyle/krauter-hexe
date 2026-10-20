@@ -377,7 +377,7 @@ export default function SaatgutPage() {
           Saatgut
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Tüten und eigene Samen im Blick: wie lange sie noch keimen, was für die Beete fehlt und wie man selbst Samen gewinnt. Kühl, trocken und dunkel gelagert hält Saatgut am längsten.
+          Tüten und eigene Samen im Blick: wie lange sie noch keimen, was für die Beete fehlt und wie man selbst Samen gewinnt. Wer im Gartenkalender „gesät“ abhakt, bucht das Saatgut automatisch ab – bei Mengen in Korn oder Gramm.
         </p>
       </div>
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Seeds farm={farm} />}

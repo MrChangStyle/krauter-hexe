@@ -5404,7 +5404,7 @@ export const RemovePlantingResponse = zod.void()
 
 
 /**
- * @summary Tick off a date of a planting (caretaker or admin)
+ * @summary Tick off a date of a planting; a sowing date takes seed from the stock (caretaker or admin)
  */
 export const CheckGardenEventParams = zod.object({
   "farmId": zod.coerce.number(),
@@ -5412,7 +5412,16 @@ export const CheckGardenEventParams = zod.object({
   "kind": zod.enum(['sow_indoor', 'direct_sow', 'plant_out', 'harvest'])
 })
 
-export const CheckGardenEventResponse = zod.void()
+export const CheckGardenEventResponse = zod.object({
+  "seedUse": zod.union([zod.null(),zod.object({
+  "seedId": zod.number(),
+  "name": zod.string(),
+  "variety": zod.string().nullable(),
+  "amount": zod.number(),
+  "unit": zod.string(),
+  "left": zod.number()
+})])
+})
 
 
 /**

@@ -25,6 +25,7 @@ import { and, asc, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 import { FarmDataError, notFound } from './farmAnimals';
 import { cropByKey, type Crop } from './gardenCatalog';
 import { loadApprovedCrops } from './gardenCrops';
+import { giveSeedBack, takeSeedForSowing, type SeedUse } from './seeds';
 import { validSeason } from './gardenPlanner';
 import { logger } from './logger';
 import { sendPushToUser } from './webPush';
@@ -159,10 +160,11 @@ export async function farmCalendar(farmId: number, season: number): Promise<Cale
   return entries.sort((a, b) => a.start.localeCompare(b.start) || a.bedName.localeCompare(b.bedName) || a.label.localeCompare(b.label));
 }
 
-export async function setCheck(farmId: number, plantingId: number, kind: GardenEventKind, done: boolean): Promise<void> {
+/** Tick a date off or take the tick back; a sowing date takes seed from the stock (Saatgut) and gives it back. */
+export async function setCheck(farmId: number, plantingId: number, kind: GardenEventKind, done: boolean): Promise<SeedUse | null> {
   await loadApprovedCrops();
   const [planting] = await db
-    .select({ id: bedPlantingsTable.id, cropKey: bedPlantingsTable.cropKey })
+    .select({ id: bedPlantingsTable.id, cropKey: bedPlantingsTable.cropKey, w: bedPlantingsTable.w, h: bedPlantingsTable.h })
     .from(bedPlantingsTable)
     .where(and(eq(bedPlantingsTable.id, plantingId), eq(bedPlantingsTable.farmId, farmId)));
   if (!planting) throw notFound();
@@ -170,13 +172,18 @@ export async function setCheck(farmId: number, plantingId: number, kind: GardenE
   if (!crop || !cropEvents(crop, '05-15', 2000).some((e) => e.kind === kind)) {
     throw new FarmDataError(400, 'Diesen Termin gibt es für diese Pflanze nicht.');
   }
-  if (done) {
-    await db.insert(plantingChecksTable).values({ plantingId, farmId, kind }).onConflictDoNothing();
-  } else {
-    await db
+  return db.transaction(async (tx) => {
+    if (done) {
+      const added = await tx.insert(plantingChecksTable).values({ plantingId, farmId, kind }).onConflictDoNothing().returning();
+      // Ticked twice: the seed was taken the first time.
+      return added.length > 0 ? takeSeedForSowing(tx, farmId, planting, kind) : null;
+    }
+    await tx
       .delete(plantingChecksTable)
       .where(and(eq(plantingChecksTable.plantingId, plantingId), eq(plantingChecksTable.farmId, farmId), eq(plantingChecksTable.kind, kind)));
-  }
+    await giveSeedBack(tx, farmId, plantingId, kind);
+    return null;
+  });
 }
 
 /** All seasons of a bed (newest first) – for crop rotation. */

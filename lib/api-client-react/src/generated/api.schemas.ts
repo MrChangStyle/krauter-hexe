@@ -749,6 +749,20 @@ export interface LineageInput {
   fatherId: number | null;
 }
 
+export interface SeedUse {
+  seedId: number;
+  name: string;
+  /** @nullable */
+  variety: string | null;
+  amount: number;
+  unit: string;
+  left: number;
+}
+
+export interface GardenCheckResult {
+  seedUse: null | SeedUse;
+}
+
 export type SeedStatus = typeof SeedStatus[keyof typeof SeedStatus];
 
 

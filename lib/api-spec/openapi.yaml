@@ -4022,7 +4022,7 @@ paths:
     put:
       tags: [garden]
       operationId: checkGardenEvent
-      summary: Tick off a date of a planting (caretaker or admin)
+      summary: Tick off a date of a planting; a sowing date takes seed from the stock (caretaker or admin)
       parameters:
         - name: farmId
           in: path
@@ -4040,8 +4040,12 @@ paths:
           schema:
             $ref: "#/components/schemas/GardenEventKind"
       responses:
-        "204":
-          description: Ticked off.
+        "200":
+          description: Ticked off; a sowing date took seed from the stock when a lot in Korn or g was there.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenCheckResult"
         "400":
           description: The plant has no such date.
     delete:
@@ -5309,6 +5313,30 @@ components:
           type: [integer, 'null']
         fatherId:
           type: [integer, 'null']
+    GardenCheckResult:
+      type: object
+      required: [seedUse]
+      properties:
+        seedUse:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/SeedUse"
+    SeedUse:
+      type: object
+      required: [seedId, name, variety, amount, unit, left]
+      properties:
+        seedId:
+          type: integer
+        name:
+          type: string
+        variety:
+          type: [string, 'null']
+        amount:
+          type: number
+        unit:
+          type: string
+        left:
+          type: number
     Seed:
       type: object
       required: [id, cropKey, cropName, name, variety, amount, unit, source, harvestYear, useBy, openPollinated, testSown, testGerminated, testedOn, notes, archived, status, goodUntil, germinationRate, saving]

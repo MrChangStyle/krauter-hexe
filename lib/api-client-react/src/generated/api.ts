@@ -98,6 +98,7 @@ import type {
   GardenBed,
   GardenBedInput,
   GardenCalendarEntry,
+  GardenCheckResult,
   GardenEventKind,
   GardenGoals,
   GardenPlan,
@@ -13069,13 +13070,13 @@ export const getCheckGardenEventUrl = (farmId: number,
 }
 
 /**
- * @summary Tick off a date of a planting (caretaker or admin)
+ * @summary Tick off a date of a planting; a sowing date takes seed from the stock (caretaker or admin)
  */
 export const checkGardenEvent = async (farmId: number,
     plantingId: number,
-    kind: GardenEventKind, options?: RequestInit): Promise<void> => {
+    kind: GardenEventKind, options?: RequestInit): Promise<GardenCheckResult> => {
 
-  return customFetch<void>(getCheckGardenEventUrl(farmId,plantingId,kind),
+  return customFetch<GardenCheckResult>(getCheckGardenEventUrl(farmId,plantingId,kind),
   {
     ...options,
     method: 'PUT'
@@ -13120,7 +13121,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type CheckGardenEventMutationError = ErrorType<void>
 
     /**
- * @summary Tick off a date of a planting (caretaker or admin)
+ * @summary Tick off a date of a planting; a sowing date takes seed from the stock (caretaker or admin)
  */
 export const useCheckGardenEvent = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof checkGardenEvent>>, TError,{farmId: number;plantingId: number;kind: GardenEventKind}, TContext>, request?: SecondParameter<typeof customFetch>}

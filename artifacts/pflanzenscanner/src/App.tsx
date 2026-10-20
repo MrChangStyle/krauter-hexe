@@ -64,6 +64,7 @@ import ErtragPage from '@/pages/ertrag';
 import GrowPage from '@/pages/grow';
 import GrowPlantPage from '@/pages/grow-plant';
 import GrowKostenPage from '@/pages/grow-kosten';
+import VerwaltungPage from '@/pages/verwaltung';
 import GrowWissenPage from '@/pages/grow-wissen';
 import GrowRechtPage from '@/pages/grow-recht';
 import { StatusBanner } from '@/components/status-banner';
@@ -140,6 +141,7 @@ function Router() {
         <Route path="/schaedlinge" component={SchaedlingePage} />
         <Route path="/tiere"><Redirect to="/farm" replace /></Route>
         <Route path="/mehr" component={MehrPage} />
+        <Route path="/verwaltung" component={VerwaltungPage} />
         <Route path="/aufgaben" component={AufgabenPage} />
         <Route path="/farm" component={FarmPage} />
         <Route path="/farm/kameras" component={FarmCamerasPage} />

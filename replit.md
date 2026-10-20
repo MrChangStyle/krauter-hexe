@@ -178,6 +178,7 @@ Details in `docs/zucht.md` (`lib/breeding.ts`, `routes/farm-breeding.ts`, page `
 Details in `docs/saatgut.md` (`lib/seeds.ts`, `routes/farm-seeds.ts`, page `/beete/saatgut`; table `seeds`).
 - A lot holds crop (garden catalog key or a free name), variety, amount and unit (Tüten/g/Korn), source, harvest year, the packet's use-by date, samenfest/F1 and the last germination test. Archived instead of deleted when used up.
 - `seedStatus()` is pure: use-by date, else harvest year + `SEED_LIFE` years of the crop; a test from the last 365 days wins (≥ 70 % ok, ≥ 50 % check, below weak).
+- Ticking a sowing date in the garden calendar (`setCheck`) takes seed from the best Korn/g lot of the crop (`takeSeedForSowing`: plants of the planting × 1.5/2 seeds, grams via `SEED_TKG`), recorded in `seed_uses`; taking the tick back gives it back. The PUT answers `200 { seedUse }` (was 204); packets are never touched.
 - `GET /farms/:id/seeds` returns the lots and the plan: crops of `bed_plantings` from this season on without seed in stock (`missing`, Pflanzgut marked `vegetative`) or with only old/weak seed (`check`).
 
 ## Ertrag & Bilanz

@@ -42,8 +42,20 @@ Jede Kultur hat eine Art der Vermehrung. Die Karte zeigt dazu einen Satz, außer
 - **Zweijährig** (`biennial`): z. B. Möhre, Rote Bete, Zwiebel, Lauch.
 - **Vegetativ** (`vegetative`): Knollen, Zehen, Ausläufer oder Teilung.
 
+## Abbuchen beim Säen
+
+Wird im Gartenkalender ein Saattermin („vorziehen“ oder „direkt säen“) abgehakt, nimmt die App das Saatgut aus dem Vorrat (`takeSeedForSowing`).
+- **Welche Tüte**: Saatgut derselben Kultur in Korn oder Gramm, nicht archiviert und nicht leer. Bevorzugt wird Saatgut, das noch gut keimt, darunter das älteste zuerst.
+- **Wie viel**:
+  - Pflanzen der Bepflanzung = Fläche (w × h Felder à 30 × 30 cm) ÷ (Pflanz- × Reihenabstand), mindestens 1.
+  - Pro Pflanze 1,5 Samen beim Vorziehen und 2 beim Direktsäen.
+  - In Gramm über das Tausendkorngewicht (`SEED_TKG`), mindestens 0,1 g.
+  - Nie mehr, als da ist.
+- Tüten bucht die App nicht ab, weil die Zahl der Samen darin unbekannt ist.
+- Was abgebucht wurde, steht in `seed_uses`. Nimmt man den Haken zurück, kommt es zurück in die Tüte. Ein zweiter Haken bucht nichts mehr ab.
+- Der Haken (`PUT …/checks/:kind`) antwortet jetzt mit `200 { seedUse }`; die App zeigt dann „Saatgut abgebucht: 24 Korn Radieschen – noch 176 Korn im Vorrat“.
+
 ## Offen
 
-- Fachliche Prüfung der Jahre.
-- Saatgut beim Säen automatisch abbuchen.
+- Fachliche Prüfung der Jahre und Tausendkorngewichte.
 - Tauschbörse zwischen Höfen.

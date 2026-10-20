@@ -109,8 +109,9 @@ describe.skipIf(!enabled)("Beet-Architekt – Kalender & Fruchtfolge (real datab
     expect(cal.data[0]).toMatchObject({ bedId: bed, bedName: "Hochbeet", label: expect.any(String), done: false, open: true });
 
     // Sown indoors → sowing directly is no longer needed.
-    expect((await api("PUT", `/farms/${farm.anna}/plantings/${gurke}/checks/sow_indoor`)).status).toBe(204);
-    expect((await api("PUT", `/farms/${farm.anna}/plantings/${gurke}/checks/sow_indoor`)).status).toBe(204);
+    // No seed in stock: nothing is taken.
+    expect(await api("PUT", `/farms/${farm.anna}/plantings/${gurke}/checks/sow_indoor`)).toEqual({ status: 200, data: { seedUse: null } });
+    expect((await api("PUT", `/farms/${farm.anna}/plantings/${gurke}/checks/sow_indoor`)).status).toBe(200);
     const after = (await calendar(2026)).data.filter((e: any) => e.plantingId === gurke);
     expect(after.find((e: any) => e.kind === "sow_indoor")).toMatchObject({ done: true, open: false });
     expect(after.find((e: any) => e.kind === "direct_sow")).toMatchObject({ done: false, open: false });
@@ -150,7 +151,7 @@ describe.skipIf(!enabled)("Beet-Architekt – Kalender & Fruchtfolge (real datab
     expect((await calendar(2026)).status).toBe(200);
     expect((await api("PUT", `/farms/${farm.anna}/plantings/${tomate}/checks/plant_out`)).status).toBe(403);
     as = "carl";
-    expect((await api("PUT", `/farms/${farm.anna}/plantings/${tomate}/checks/plant_out`)).status).toBe(204);
+    expect((await api("PUT", `/farms/${farm.anna}/plantings/${tomate}/checks/plant_out`)).status).toBe(200);
   });
 
   it("sends one garden push per farm and day: dates starting today and frost", async () => {

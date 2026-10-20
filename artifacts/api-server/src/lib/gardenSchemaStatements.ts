@@ -194,4 +194,24 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "seeds" ADD CONSTRAINT "seeds_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "seeds_farm_idx" ON "seeds" USING btree ("farm_id")`,
+  `CREATE TABLE IF NOT EXISTS "seed_uses" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"seed_id" integer NOT NULL,
+	"planting_id" integer NOT NULL,
+	"kind" "garden_event_kind" NOT NULL,
+	"amount" double precision NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "seed_uses_planting_kind_unique" UNIQUE("planting_id","kind")
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "seed_uses" ADD CONSTRAINT "seed_uses_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "seed_uses" ADD CONSTRAINT "seed_uses_seed_id_seeds_id_fk" FOREIGN KEY ("seed_id") REFERENCES "public"."seeds"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "seed_uses" ADD CONSTRAINT "seed_uses_planting_id_bed_plantings_id_fk" FOREIGN KEY ("planting_id") REFERENCES "public"."bed_plantings"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "seed_uses_seed_idx" ON "seed_uses" USING btree ("seed_id")`,
 ];

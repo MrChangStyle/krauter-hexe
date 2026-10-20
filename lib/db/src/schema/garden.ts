@@ -1,4 +1,4 @@
-import { boolean, date, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, doublePrecision, index, integer, jsonb, pgEnum, pgTable, primaryKey, serial, text, timestamp, unique } from "drizzle-orm/pg-core";
 import { farmsTable } from "./farm";
 import { plantsTable } from "./plants";
 import { usersTable } from "./auth";
@@ -264,4 +264,26 @@ export const seedsTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("seeds_farm_idx").on(table.farmId)],
+);
+
+// Saatgut: what a ticked-off sowing date took from a seed lot (lib/seeds.ts),
+// so taking the tick back gives it back.
+export const seedUsesTable = pgTable(
+  "seed_uses",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    seedId: integer("seed_id")
+      .notNull()
+      .references(() => seedsTable.id, { onDelete: "cascade" }),
+    plantingId: integer("planting_id")
+      .notNull()
+      .references(() => bedPlantingsTable.id, { onDelete: "cascade" }),
+    kind: gardenEventKindEnum("kind").notNull(),
+    amount: doublePrecision("amount").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [unique("seed_uses_planting_kind_unique").on(table.plantingId, table.kind), index("seed_uses_seed_idx").on(table.seedId)],
 );

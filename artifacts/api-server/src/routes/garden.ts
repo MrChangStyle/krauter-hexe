@@ -16,6 +16,7 @@ import {
   CreateBedBody,
   CreateBedResponse,
   CheckGardenEventParams,
+  CheckGardenEventResponse,
   GetBedHistoryResponse,
   GetBedResponse,
   GetFrostWarningsResponse,
@@ -378,8 +379,9 @@ for (const [method, done] of [['put', true], ['delete', false]] as const) {
     handle(async (req, res) => {
       const params = CheckGardenEventParams.safeParse(req.params);
       if (!params.success) return notFound(res);
-      await setCheck(req.farm!.farmId, params.data.plantingId, params.data.kind, done);
-      res.sendStatus(204);
+      const seedUse = await setCheck(req.farm!.farmId, params.data.plantingId, params.data.kind, done);
+      if (done) res.json(CheckGardenEventResponse.parse({ seedUse }));
+      else res.sendStatus(204);
     }),
   );
 }

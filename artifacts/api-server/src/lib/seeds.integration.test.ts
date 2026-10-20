@@ -13,6 +13,10 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
+// The garden routes load the AI client.
+vi.hoisted(() => {
+  process.env["GEMINI_API_KEY"] ??= "test-key";
+});
 let fixedDay = "2026-10-19";
 vi.mock("./monitoring", async (orig) => ({ ...(await orig<object>()), berlinDay: () => fixedDay }));
 
@@ -41,6 +45,7 @@ describe.skipIf(!enabled)("Saatgut (real database)", () => {
       next();
     });
     app.use((await import("../routes/farm-seeds")).default);
+    app.use((await import("../routes/garden")).default);
     server = createServer(app);
     await new Promise<void>((r) => server.listen(0, r));
     base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
@@ -142,5 +147,42 @@ describe.skipIf(!enabled)("Saatgut (real database)", () => {
     expect((await api("PUT", `/farms/${otherFarm}/seeds/${r.data.id}`, { cropKey: "erbse", amount: 1, unit: "g" })).status).toBe(404);
     expect((await api("POST", `/farms/${otherFarm}/seeds/${r.data.id}/test`, { sown: 10, germinated: 5, testedOn: "2026-10-01" })).status).toBe(404);
     expect((await api("DELETE", `/farms/${otherFarm}/seeds/${r.data.id}`)).status).toBe(404);
+  });
+
+  it("takes seed when a sowing date is ticked off and gives it back", async () => {
+    const [bed] = await q<{ id: number }>("INSERT INTO garden_beds (farm_id, name, type, length_cm, width_cm) VALUES ($1, 'Beet', 'bed', 200, 100) RETURNING id", [farmId]);
+    const [p] = await q<{ id: number }>("INSERT INTO bed_plantings (farm_id, bed_id, season, crop_key, label, x, y, w, h) VALUES ($1, $2, 2026, 'radieschen', 'Radieschen', 0, 0, 1, 1) RETURNING id", [farmId, bed!.id]);
+    const old = (await api("POST", S(), { cropKey: "radieschen", amount: 500, unit: "Korn", harvestYear: 2018 })).data;
+    const fresh = (await api("POST", S(), { cropKey: "radieschen", variety: "Cherry Belle", amount: 200, unit: "Korn", harvestYear: 2025 })).data;
+    await api("POST", S(), { cropKey: "radieschen", amount: 1, unit: "Tüten", harvestYear: 2026 });
+    const tick = await api("PUT", `/farms/${farmId}/plantings/${p!.id}/checks/direct_sow`);
+    expect(tick.status).toBe(200);
+    // The lot that still germinates well, not the old one.
+    expect(tick.data.seedUse).toMatchObject({ seedId: fresh.id, name: "Radieschen", variety: "Cherry Belle", unit: "Korn" });
+    const taken = tick.data.seedUse.amount;
+    expect(taken).toBeGreaterThan(0);
+    expect(tick.data.seedUse.left).toBe(200 - taken);
+    // Ticking again takes nothing more.
+    expect((await api("PUT", `/farms/${farmId}/plantings/${p!.id}/checks/direct_sow`)).data.seedUse).toBeNull();
+    const amounts = async () => Object.fromEntries((await api("GET", S())).data.seeds.map((s: any) => [s.id, s.amount]));
+    expect((await amounts())[old.id]).toBe(500);
+    expect((await amounts())[fresh.id]).toBe(200 - taken);
+    // Taking the tick back gives it back.
+    expect((await api("DELETE", `/farms/${farmId}/plantings/${p!.id}/checks/direct_sow`)).status).toBe(204);
+    expect((await amounts())[fresh.id]).toBe(200);
+    expect(await q("SELECT * FROM seed_uses")).toEqual([]);
+    // Harvest dates take nothing.
+    expect((await api("PUT", `/farms/${farmId}/plantings/${p!.id}/checks/harvest`)).data.seedUse).toBeNull();
+  });
+
+  it("never takes more than is left", async () => {
+    const [bed] = await q<{ id: number }>("INSERT INTO garden_beds (farm_id, name, type, length_cm, width_cm) VALUES ($1, 'Beet', 'bed', 200, 100) RETURNING id", [farmId]);
+    const [p] = await q<{ id: number }>("INSERT INTO bed_plantings (farm_id, bed_id, season, crop_key, label, x, y, w, h) VALUES ($1, $2, 2026, 'radieschen', 'Radieschen', 0, 0, 2, 2) RETURNING id", [farmId, bed!.id]);
+    const lot = (await api("POST", S(), { cropKey: "radieschen", amount: 3, unit: "Korn", harvestYear: 2025 })).data;
+    const tick = await api("PUT", `/farms/${farmId}/plantings/${p!.id}/checks/direct_sow`);
+    expect(tick.data.seedUse).toMatchObject({ seedId: lot.id, amount: 3, left: 0 });
+    expect((await api("GET", S())).data.seeds[0].status).toBe("empty");
+    await api("DELETE", `/farms/${farmId}/plantings/${p!.id}/checks/direct_sow`);
+    expect((await api("GET", S())).data.seeds[0].amount).toBe(3);
   });
 });

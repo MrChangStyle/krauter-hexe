@@ -4,7 +4,7 @@ vi.hoisted(() => {
   process.env["DATABASE_URL"] ??= "postgres://unused@127.0.0.1:1/unused";
 });
 
-const { SEED_LIFE, seedPlan, seedStatus } = await import("./seeds");
+const { SEED_LIFE, SEED_TKG, plantsIn, seedPlan, seedStatus, sowingNeed } = await import("./seeds");
 const { GARDEN_CATALOG } = await import("./gardenCatalog");
 
 const base = { cropKey: "moehre", amount: 2, harvestYear: null, useBy: null, testSown: null, testGerminated: null, testedOn: null, archivedAt: null };
@@ -56,5 +56,29 @@ describe("Saatgut – plan", () => {
       ],
       check: [{ cropKey: "moehre", name: "Möhre", vegetative: false }],
     });
+  });
+});
+
+describe("Saatgut – sowing takes seed", () => {
+  const crop = (key: string) => GARDEN_CATALOG.find((c) => c.key === key)!;
+
+  it("knows a thousand-grain weight for every crop grown from seed", () => {
+    for (const c of GARDEN_CATALOG) {
+      if (SEED_LIFE[c.key]![1] !== "vegetative" && c.key !== "minze") expect(SEED_TKG[c.key], c.key).toBeGreaterThan(0);
+    }
+  });
+
+  it("counts the plants of a planting and the seed to sow them", () => {
+    const radieschen = crop("radieschen");
+    const tomate = crop("tomate");
+    expect(plantsIn(tomate, 2, 2)).toBeGreaterThanOrEqual(1);
+    expect(plantsIn(radieschen, 1, 1)).toBe(Math.round(900 / (radieschen.spacingCm * radieschen.rowSpacingCm)));
+    const plants = plantsIn(tomate, 2, 2);
+    expect(sowingNeed(tomate, 2, 2, "sow_indoor", "Korn")).toBe(Math.ceil(plants * 1.5));
+    expect(sowingNeed(radieschen, 1, 1, "direct_sow", "Korn")).toBe(Math.ceil(plantsIn(radieschen, 1, 1) * 2));
+    // Grams from the thousand-grain weight, at least 0.1 g; packets are unknown.
+    expect(sowingNeed(tomate, 2, 2, "sow_indoor", "g")).toBe(0.1);
+    expect(sowingNeed(crop("buschbohne"), 2, 2, "direct_sow", "g")).toBe(Math.round((Math.ceil(plantsIn(crop("buschbohne"), 2, 2) * 2) * 350) / 100) / 10);
+    expect(sowingNeed(tomate, 2, 2, "sow_indoor", "Tüten")).toBeNull();
   });
 });

@@ -1,0 +1,387 @@
+/**
+ * Grow (docs/grow.md): access to the add-on, the account's grows, plants and
+ * their Tagebuch. Personal data: every query is filtered by the account; a
+ * plant or log of someone else is "not found".
+ */
+
+import { db, growAccessTable, growLogsTable, growPlantsTable, growsTable, usersTable } from '@workspace/db';
+import { and, asc, desc, eq, inArray, isNotNull } from 'drizzle-orm';
+
+import { FarmDataError, notFound, text, validDate } from './farmAnimals';
+import { addDays } from './feedSeason';
+import {
+  GROW_ENVIRONMENTS,
+  GROW_MEDIA,
+  STRAIN_TYPES,
+  defaultFlowerWeeks,
+  kcangCheck,
+  plantPlan,
+  type Flowering,
+  type GrowEnvironment,
+  type GrowMedium,
+  type PlantPlan,
+  type SeedSex,
+  type StrainType,
+} from './growPlan';
+import { berlinDay } from './monitoring';
+
+// ── Access ────────────────────────────────────────────────────────────────────
+
+export interface GrowAccess {
+  /** The owner unlocked the module for this account (the owner always has it). */
+  unlocked: boolean;
+  ageConfirmed: boolean;
+  adults: number;
+}
+
+export async function growAccess(userId: string, isOwner: boolean): Promise<GrowAccess> {
+  const [row] = await db.select().from(growAccessTable).where(eq(growAccessTable.userId, userId));
+  return { unlocked: isOwner || !!row?.unlockedAt, ageConfirmed: !!row?.ageConfirmedAt, adults: row?.adults ?? 1 };
+}
+
+function validAdults(raw: unknown): number {
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 1 || n > 10) throw new FarmDataError(400, 'Bitte 1 bis 10 Erwachsene angeben.');
+  return n;
+}
+
+/** The account confirms it is at least 18 and says how many adults live in the household. */
+export async function confirmAge(userId: string, isOwner: boolean, adults: unknown): Promise<GrowAccess> {
+  const access = await growAccess(userId, isOwner);
+  if (!access.unlocked) throw new FarmDataError(403, 'Das Grow-Modul ist für dieses Konto nicht freigeschaltet.');
+  const n = validAdults(adults);
+  await db
+    .insert(growAccessTable)
+    .values({ userId, ageConfirmedAt: new Date(), adults: n })
+    .onConflictDoUpdate({ target: growAccessTable.userId, set: { ageConfirmedAt: new Date(), adults: n } });
+  return growAccess(userId, isOwner);
+}
+
+export async function setAdults(userId: string, isOwner: boolean, adults: unknown): Promise<GrowAccess> {
+  await db.update(growAccessTable).set({ adults: validAdults(adults) }).where(eq(growAccessTable.userId, userId));
+  return growAccess(userId, isOwner);
+}
+
+/** Owner: who has the module. */
+export async function listGrowAccess() {
+  return db
+    .select({ email: usersTable.email, username: usersTable.username, unlockedAt: growAccessTable.unlockedAt })
+    .from(growAccessTable)
+    .innerJoin(usersTable, eq(usersTable.id, growAccessTable.userId))
+    .where(isNotNull(growAccessTable.unlockedAt))
+    .orderBy(asc(usersTable.email));
+}
+
+/** Owner: unlock the module for an account (by e-mail), or take it back. */
+export async function setGrowUnlocked(email: string, unlocked: boolean) {
+  const [user] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.email, email.trim().toLowerCase()));
+  if (!user) throw new FarmDataError(404, 'Ein Konto mit dieser E-Mail gibt es nicht.');
+  await db
+    .insert(growAccessTable)
+    .values({ userId: user.id, unlockedAt: unlocked ? new Date() : null })
+    .onConflictDoUpdate({ target: growAccessTable.userId, set: { unlockedAt: unlocked ? new Date() : null } });
+  return listGrowAccess();
+}
+
+// ── Grows ─────────────────────────────────────────────────────────────────────
+
+type GrowRow = typeof growsTable.$inferSelect;
+type PlantRow = typeof growPlantsTable.$inferSelect;
+
+export interface GrowPlant {
+  id: number;
+  growId: number;
+  name: string;
+  strain: string | null;
+  breeder: string | null;
+  strainType: StrainType;
+  flowering: Flowering;
+  seedSex: SeedSex;
+  flowerWeeks: number;
+  startedOn: string;
+  flipOn: string | null;
+  harvestedOn: string | null;
+  wetGrams: number | null;
+  dryGrams: number | null;
+  notes: string | null;
+  plan: PlantPlan;
+}
+
+export interface Grow {
+  id: number;
+  name: string;
+  environment: GrowEnvironment;
+  medium: GrowMedium;
+  tentSize: string | null;
+  lightType: string | null;
+  lightWatts: number | null;
+  notes: string | null;
+  archived: boolean;
+  plants: GrowPlant[];
+}
+
+function toPlant(p: PlantRow, g: GrowRow, today: string): GrowPlant {
+  const grow = { environment: g.environment as GrowEnvironment, medium: g.medium as GrowMedium };
+  const plant = {
+    strainType: p.strainType as StrainType,
+    flowering: p.flowering as Flowering,
+    seedSex: p.seedSex as SeedSex,
+    flowerWeeks: p.flowerWeeks,
+    startedOn: p.startedOn,
+    flipOn: p.flipOn,
+    harvestedOn: p.harvestedOn,
+  };
+  return {
+    id: p.id,
+    growId: p.growId,
+    name: p.name,
+    strain: p.strain,
+    breeder: p.breeder,
+    ...plant,
+    wetGrams: p.wetGrams,
+    dryGrams: p.dryGrams,
+    notes: p.notes,
+    plan: plantPlan(plant, grow, today),
+  };
+}
+
+function toGrow(g: GrowRow, plants: PlantRow[], today: string): Grow {
+  return {
+    id: g.id,
+    name: g.name,
+    environment: g.environment as GrowEnvironment,
+    medium: g.medium as GrowMedium,
+    tentSize: g.tentSize,
+    lightType: g.lightType,
+    lightWatts: g.lightWatts,
+    notes: g.notes,
+    archived: g.archivedAt !== null,
+    plants: plants.filter((p) => p.growId === g.id).map((p) => toPlant(p, g, today)),
+  };
+}
+
+export interface GrowOverview {
+  grows: Grow[];
+  kcang: ReturnType<typeof kcangCheck>;
+}
+
+export async function growOverview(userId: string, adults: number, today = berlinDay()): Promise<GrowOverview> {
+  const grows = await db.select().from(growsTable).where(eq(growsTable.userId, userId)).orderBy(asc(growsTable.archivedAt), desc(growsTable.createdAt));
+  const plants = grows.length
+    ? await db.select().from(growPlantsTable).where(inArray(growPlantsTable.growId, grows.map((g) => g.id))).orderBy(asc(growPlantsTable.startedOn), asc(growPlantsTable.id))
+    : [];
+  const active = new Set(grows.filter((g) => !g.archivedAt).map((g) => g.id));
+  const yearAgo = addDays(today, -365);
+  const activePlants = plants.filter((p) => active.has(p.growId) && !p.harvestedOn).length;
+  const dryLastYear = plants.filter((p) => p.harvestedOn && p.harvestedOn >= yearAgo).reduce((s, p) => s + (p.dryGrams ?? 0), 0);
+  return {
+    grows: grows.map((g) => toGrow(g, plants, today)),
+    kcang: kcangCheck(activePlants, adults, Math.round(dryLastYear)),
+  };
+}
+
+async function ownGrow(userId: string, growId: number): Promise<GrowRow> {
+  const [g] = await db.select().from(growsTable).where(and(eq(growsTable.id, growId), eq(growsTable.userId, userId)));
+  if (!g) throw notFound();
+  return g;
+}
+
+export interface GrowInput {
+  name: unknown;
+  environment: string;
+  medium: string;
+  tentSize?: unknown;
+  lightType?: unknown;
+  lightWatts?: number | null;
+  notes?: unknown;
+  archived?: boolean;
+}
+
+function growValues(input: GrowInput) {
+  if (!(GROW_ENVIRONMENTS as string[]).includes(input.environment)) throw new FarmDataError(400, 'Bitte wähle Indoor, Outdoor oder Gewächshaus.');
+  if (!(GROW_MEDIA as string[]).includes(input.medium)) throw new FarmDataError(400, 'Bitte wähle Erde, Kokos oder Hydro.');
+  const watts = input.lightWatts ?? null;
+  if (watts !== null && (!Number.isInteger(watts) || watts < 1 || watts > 5000)) throw new FarmDataError(400, 'Die Lampenleistung liegt zwischen 1 und 5000 W.');
+  const indoor = input.environment === 'indoor';
+  return {
+    name: text(input.name, 60, 'Der Name', true),
+    environment: input.environment,
+    medium: input.medium,
+    tentSize: indoor ? text(input.tentSize, 30, 'Die Zeltgröße') : null,
+    lightType: indoor ? text(input.lightType, 30, 'Die Lampe') : null,
+    lightWatts: indoor ? watts : null,
+    notes: text(input.notes, 2000, 'Die Notiz'),
+    ...(input.archived === undefined ? {} : { archivedAt: input.archived ? new Date() : null }),
+  };
+}
+
+export async function createGrow(userId: string, input: GrowInput): Promise<number> {
+  const [g] = await db.insert(growsTable).values({ userId, ...growValues(input) }).returning({ id: growsTable.id });
+  return g!.id;
+}
+
+export async function updateGrow(userId: string, growId: number, input: GrowInput): Promise<void> {
+  const current = await ownGrow(userId, growId);
+  const set = growValues(input);
+  if (input.archived && current.archivedAt) delete (set as { archivedAt?: Date }).archivedAt;
+  await db.update(growsTable).set(set).where(eq(growsTable.id, growId));
+}
+
+export async function deleteGrow(userId: string, growId: number): Promise<void> {
+  await ownGrow(userId, growId);
+  await db.delete(growsTable).where(eq(growsTable.id, growId));
+}
+
+// ── Plants ────────────────────────────────────────────────────────────────────
+
+export interface PlantInput {
+  name: unknown;
+  strain?: unknown;
+  breeder?: unknown;
+  strainType: string;
+  flowering: string;
+  seedSex?: string;
+  flowerWeeks?: number | null;
+  startedOn: unknown;
+  flipOn?: string | null;
+  harvestedOn?: string | null;
+  wetGrams?: number | null;
+  dryGrams?: number | null;
+  notes?: unknown;
+}
+
+function grams(raw: number | null | undefined, label: string): number | null {
+  if (raw == null) return null;
+  if (!Number.isFinite(raw) || raw < 0 || raw > 100_000) throw new FarmDataError(400, `${label} ist ungültig.`);
+  return Math.round(raw * 10) / 10;
+}
+
+function plantValues(input: PlantInput) {
+  if (!(STRAIN_TYPES as string[]).includes(input.strainType)) throw new FarmDataError(400, 'Bitte wähle Indica, Sativa, Hybrid oder Ruderalis.');
+  if (input.flowering !== 'photo' && input.flowering !== 'auto') throw new FarmDataError(400, 'Bitte wähle photoperiodisch oder Autoflower.');
+  const seedSex = input.seedSex ?? 'unknown';
+  if (!['feminized', 'regular', 'unknown'].includes(seedSex)) throw new FarmDataError(400, 'Bitte wähle feminisiert, regulär oder unbekannt.');
+  const flowerWeeks = input.flowerWeeks ?? defaultFlowerWeeks(input.strainType as StrainType, input.flowering as Flowering);
+  if (!Number.isInteger(flowerWeeks) || flowerWeeks < 5 || flowerWeeks > 16) throw new FarmDataError(400, 'Die Blütezeit liegt zwischen 5 und 16 Wochen.');
+  const startedOn = validDate(input.startedOn, 'Keimdatum');
+  const flipOn = input.flipOn ? validDate(input.flipOn, 'Datum der Umstellung auf 12/12') : null;
+  if (flipOn && flipOn <= startedOn) throw new FarmDataError(400, 'Die Umstellung auf 12/12 liegt nach dem Keimen.');
+  const harvestedOn = input.harvestedOn ? validDate(input.harvestedOn, 'Erntedatum') : null;
+  if (harvestedOn && harvestedOn <= startedOn) throw new FarmDataError(400, 'Die Ernte liegt nach dem Keimen.');
+  return {
+    name: text(input.name, 60, 'Der Name', true),
+    strain: text(input.strain, 60, 'Die Sorte'),
+    breeder: text(input.breeder, 60, 'Der Züchter'),
+    strainType: input.strainType,
+    flowering: input.flowering,
+    seedSex,
+    flowerWeeks,
+    startedOn,
+    flipOn: input.flowering === 'auto' ? null : flipOn,
+    harvestedOn,
+    wetGrams: grams(input.wetGrams, 'Das Nassgewicht'),
+    dryGrams: grams(input.dryGrams, 'Das Trockengewicht'),
+    notes: text(input.notes, 2000, 'Die Notiz'),
+  };
+}
+
+async function ownPlant(userId: string, plantId: number): Promise<{ plant: PlantRow; grow: GrowRow }> {
+  const [row] = await db
+    .select({ plant: growPlantsTable, grow: growsTable })
+    .from(growPlantsTable)
+    .innerJoin(growsTable, eq(growsTable.id, growPlantsTable.growId))
+    .where(and(eq(growPlantsTable.id, plantId), eq(growsTable.userId, userId)));
+  if (!row) throw notFound();
+  return row;
+}
+
+export async function addPlant(userId: string, growId: number, input: PlantInput): Promise<GrowPlant> {
+  const grow = await ownGrow(userId, growId);
+  if (grow.archivedAt) throw new FarmDataError(409, 'Dieser Grow ist archiviert.');
+  const [p] = await db.insert(growPlantsTable).values({ growId, ...plantValues(input) }).returning();
+  return toPlant(p!, grow, berlinDay());
+}
+
+export async function updatePlant(userId: string, plantId: number, input: PlantInput): Promise<GrowPlant> {
+  const { grow } = await ownPlant(userId, plantId);
+  const [p] = await db.update(growPlantsTable).set(plantValues(input)).where(eq(growPlantsTable.id, plantId)).returning();
+  return toPlant(p!, grow, berlinDay());
+}
+
+export async function deletePlant(userId: string, plantId: number): Promise<void> {
+  await ownPlant(userId, plantId);
+  await db.delete(growPlantsTable).where(eq(growPlantsTable.id, plantId));
+}
+
+// ── Tagebuch ──────────────────────────────────────────────────────────────────
+
+export interface GrowLog {
+  id: number;
+  date: string;
+  heightCm: number | null;
+  waterMl: number | null;
+  ph: number | null;
+  ec: number | null;
+  note: string | null;
+}
+
+export interface PlantDetail {
+  plant: GrowPlant;
+  grow: { id: number; name: string; environment: GrowEnvironment; medium: GrowMedium };
+  logs: GrowLog[];
+}
+
+export async function plantDetail(userId: string, plantId: number, today = berlinDay()): Promise<PlantDetail> {
+  const { plant, grow } = await ownPlant(userId, plantId);
+  const logs = await db
+    .select({ id: growLogsTable.id, date: growLogsTable.date, heightCm: growLogsTable.heightCm, waterMl: growLogsTable.waterMl, ph: growLogsTable.ph, ec: growLogsTable.ec, note: growLogsTable.note })
+    .from(growLogsTable)
+    .where(eq(growLogsTable.plantId, plantId))
+    .orderBy(desc(growLogsTable.date), desc(growLogsTable.id));
+  return {
+    plant: toPlant(plant, grow, today),
+    grow: { id: grow.id, name: grow.name, environment: grow.environment as GrowEnvironment, medium: grow.medium as GrowMedium },
+    logs,
+  };
+}
+
+export interface LogInput {
+  date: unknown;
+  heightCm?: number | null;
+  waterMl?: number | null;
+  ph?: number | null;
+  ec?: number | null;
+  note?: unknown;
+}
+
+function range(raw: number | null | undefined, min: number, max: number, label: string): number | null {
+  if (raw == null) return null;
+  if (!Number.isFinite(raw) || raw < min || raw > max) throw new FarmDataError(400, `${label} liegt zwischen ${min} und ${max}.`);
+  return raw;
+}
+
+export async function addLog(userId: string, plantId: number, input: LogInput): Promise<void> {
+  const { plant } = await ownPlant(userId, plantId);
+  const date = validDate(input.date, 'Datum');
+  if (date < plant.startedOn) throw new FarmDataError(400, 'Das Datum liegt vor dem Keimen.');
+  const values = {
+    heightCm: range(input.heightCm, 0, 500, 'Die Höhe (cm)'),
+    waterMl: range(input.waterMl, 0, 50_000, 'Die Wassermenge (ml)'),
+    ph: range(input.ph, 3, 10, 'Der pH-Wert'),
+    ec: range(input.ec, 0, 6, 'Der EC-Wert'),
+    note: text(input.note, 1000, 'Die Notiz'),
+  };
+  if (Object.values(values).every((v) => v === null)) throw new FarmDataError(400, 'Bitte trage mindestens einen Wert oder eine Notiz ein.');
+  await db.insert(growLogsTable).values({ plantId, date, ...values, waterMl: values.waterMl === null ? null : Math.round(values.waterMl) });
+}
+
+export async function deleteLog(userId: string, logId: number): Promise<void> {
+  const [row] = await db
+    .select({ id: growLogsTable.id })
+    .from(growLogsTable)
+    .innerJoin(growPlantsTable, eq(growPlantsTable.id, growLogsTable.plantId))
+    .innerJoin(growsTable, eq(growsTable.id, growPlantsTable.growId))
+    .where(and(eq(growLogsTable.id, logId), eq(growsTable.userId, userId)));
+  if (!row) throw notFound();
+  await db.delete(growLogsTable).where(eq(growLogsTable.id, logId));
+}

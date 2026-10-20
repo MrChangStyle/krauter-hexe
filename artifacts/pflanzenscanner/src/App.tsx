@@ -61,6 +61,10 @@ import PflichtenPage from '@/pages/pflichten';
 import ZuchtPage from '@/pages/zucht';
 import SaatgutPage from '@/pages/saatgut';
 import ErtragPage from '@/pages/ertrag';
+import GrowPage from '@/pages/grow';
+import GrowPlantPage from '@/pages/grow-plant';
+import GrowWissenPage from '@/pages/grow-wissen';
+import GrowRechtPage from '@/pages/grow-recht';
 import { StatusBanner } from '@/components/status-banner';
 
 const queryClient = new QueryClient({
@@ -146,6 +150,10 @@ function Router() {
         <Route path="/farm/pflichten" component={PflichtenPage} />
         <Route path="/farm/zucht" component={ZuchtPage} />
         <Route path="/farm/ertrag" component={ErtragPage} />
+        <Route path="/grow" component={GrowPage} />
+        <Route path="/grow/pflanze/:plantId" component={GrowPlantPage} />
+        <Route path="/grow/wissen" component={GrowWissenPage} />
+        <Route path="/grow/recht" component={GrowRechtPage} />
         <Route path="/farm/:farmId/tier/:animalId" component={FarmAnimalPage} />
         <Route path="/beete" component={BeetePage} />
         <Route path="/beete/kalender" component={GartenKalenderPage} />

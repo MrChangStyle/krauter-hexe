@@ -1,6 +1,10 @@
 import { Router, type IRouter, type NextFunction, type Request, type Response } from 'express';
 import {
+  AddGrowCostBody,
+  AddGrowCostResponse,
   AddGrowLogBody,
+  CheckGrowPlantBody,
+  CheckGrowPlantResponse,
   AddGrowPlantBody,
   AddGrowPlantResponse,
   ConfirmGrowAgeBody,
@@ -8,6 +12,7 @@ import {
   CreateGrowBody,
   CreateGrowResponse,
   GetGrowAccessResponse,
+  GetGrowCostsResponse,
   GetGrowOverviewResponse,
   GetGrowPlantResponse,
   ListGrowAccessResponse,
@@ -29,6 +34,7 @@ import {
   confirmAge,
   createGrow,
   deleteGrow,
+  deleteCheck,
   deleteLog,
   deletePlant,
   growAccess,
@@ -40,8 +46,10 @@ import {
   updateGrow,
   updatePlant,
 } from '../lib/grow';
+import { addCost, deleteCost, growCosts } from '../lib/growCosts';
+import { checkPlant } from '../lib/growDiagnosis';
 import { growWeather } from '../lib/growWeather';
-import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
+import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Grow (add-on, adults only): access, grows, plants, Tagebuch. Everything
 // belongs to the signed-in account; the module must be unlocked by the owner
@@ -61,6 +69,7 @@ async function requireGrow(req: Request, res: Response, next: NextFunction): Pro
     return;
   }
   res.locals.growAdults = access.adults;
+  res.locals.growKwhPrice = access.kwhPrice;
   next();
 }
 
@@ -229,6 +238,69 @@ router.delete(
     const id = idParam(req, 'logId');
     if (id === null) return notFound(res);
     await deleteLog(me(req), id);
+    res.sendStatus(204);
+  }),
+);
+
+router.get(
+  '/grow/grows/:growId/costs',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'growId');
+    if (id === null) return notFound(res);
+    res.json(GetGrowCostsResponse.parse(await growCosts(me(req), id, res.locals.growKwhPrice as number | null)));
+  }),
+);
+
+router.post(
+  '/grow/grows/:growId/costs',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'growId');
+    if (id === null) return notFound(res);
+    const body = AddGrowCostBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    await addCost(me(req), id, body.data);
+    res.status(201).json(AddGrowCostResponse.parse(await growCosts(me(req), id, res.locals.growKwhPrice as number | null)));
+  }),
+);
+
+router.delete(
+  '/grow/costs/:costId',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'costId');
+    if (id === null) return notFound(res);
+    await deleteCost(me(req), id);
+    res.sendStatus(204);
+  }),
+);
+
+router.post(
+  '/grow/plants/:plantId/checks',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'plantId');
+    if (id === null) return notFound(res);
+    const body = CheckGrowPlantBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    const check = await withAiQuota(req, res, 'grow', () => checkPlant(me(req), id, body.data.kind, body.data.imageData));
+    if (check) res.status(201).json(CheckGrowPlantResponse.parse(check));
+  }),
+);
+
+router.delete(
+  '/grow/checks/:checkId',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'checkId');
+    if (id === null) return notFound(res);
+    await deleteCheck(me(req), id);
     res.sendStatus(204);
   }),
 );

@@ -15,6 +15,8 @@ export const growAccessTable = pgTable("grow_access", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   // Morning push: off | discreet (no grow words on the lock screen) | full.
   push: text("push").notNull().default("discreet"),
+  // Strompreis in €/kWh for the cost calculator (null: the app's default).
+  kwhPrice: doublePrecision("kwh_price"),
 });
 
 // One grow: a tent indoors, a spot outdoors or a greenhouse.
@@ -39,6 +41,8 @@ export const growsTable = pgTable(
     postalCode: text("postal_code"),
     latitude: doublePrecision("latitude"),
     longitude: doublePrecision("longitude"),
+    // Indoor: fans, filter and the like, running around the clock (watts).
+    fanWatts: integer("fan_watts"),
   },
   (table) => [index("grows_user_idx").on(table.userId)],
 );
@@ -105,4 +109,40 @@ export const growPushLogTable = pgTable(
     sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.day] })],
+);
+
+// KI-Check of a plant photo: health (deficiency, pests, mould, stress) or
+// trichomes (ripeness). Only the result is kept – never the photo.
+export const growChecksTable = pgTable(
+  "grow_checks",
+  {
+    id: serial("id").primaryKey(),
+    plantId: integer("plant_id")
+      .notNull()
+      .references(() => growPlantsTable.id, { onDelete: "cascade" }),
+    // health | trichomes
+    kind: text("kind").notNull(),
+    date: date("date", { mode: "string" }).notNull(),
+    result: jsonb("result").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("grow_checks_plant_idx").on(table.plantId)],
+);
+
+// What a grow cost: equipment, soil, fertilizer, seeds … (electricity is computed).
+export const growCostsTable = pgTable(
+  "grow_costs",
+  {
+    id: serial("id").primaryKey(),
+    growId: integer("grow_id")
+      .notNull()
+      .references(() => growsTable.id, { onDelete: "cascade" }),
+    date: date("date", { mode: "string" }).notNull(),
+    // equipment | soil | fertilizer | seeds | water | other
+    category: text("category").notNull(),
+    item: text("item").notNull(),
+    amount: doublePrecision("amount").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("grow_costs_grow_idx").on(table.growId)],
 );

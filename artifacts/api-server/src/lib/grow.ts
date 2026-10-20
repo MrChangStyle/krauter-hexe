@@ -4,7 +4,7 @@
  * plant or log of someone else is "not found".
  */
 
-import { db, growAccessTable, growLogsTable, growPlantsTable, growsTable, usersTable } from '@workspace/db';
+import { db, growAccessTable, growChecksTable, growLogsTable, growPlantsTable, growsTable, usersTable } from '@workspace/db';
 import { and, asc, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
@@ -24,6 +24,7 @@ import {
   type StrainType,
 } from './growPlan';
 import { geocodePostalCode, roundCoord } from './gardenClimate';
+import type { GrowCheck, GrowCheckKind, HealthResult, TrichomeResult } from './growDiagnosis';
 import { berlinDay } from './monitoring';
 
 // ── Access ────────────────────────────────────────────────────────────────────
@@ -37,6 +38,8 @@ export interface GrowAccess {
   adults: number;
   /** Morning push: off, discreet (no grow words on the lock screen) or full. */
   push: GrowPush;
+  /** Own electricity tariff in €/kWh for the cost calculator (null: the app's default). */
+  kwhPrice: number | null;
 }
 
 export async function growAccess(userId: string, isOwner: boolean): Promise<GrowAccess> {
@@ -46,6 +49,7 @@ export async function growAccess(userId: string, isOwner: boolean): Promise<Grow
     ageConfirmed: !!row?.ageConfirmedAt,
     adults: row?.adults ?? 1,
     push: (row?.push as GrowPush | undefined) ?? 'discreet',
+    kwhPrice: row?.kwhPrice ?? null,
   };
 }
 
@@ -68,12 +72,17 @@ export async function confirmAge(userId: string, isOwner: boolean, adults: unkno
 }
 
 /** Adults in the household and the morning push. */
-export async function setGrowSettings(userId: string, isOwner: boolean, input: { adults?: unknown; push?: string }): Promise<GrowAccess> {
+export async function setGrowSettings(userId: string, isOwner: boolean, input: { adults?: unknown; push?: string; kwhPrice?: number | null }): Promise<GrowAccess> {
   const set: Partial<typeof growAccessTable.$inferInsert> = {};
   if (input.adults !== undefined) set.adults = validAdults(input.adults);
   if (input.push !== undefined) {
     if (!['off', 'discreet', 'full'].includes(input.push)) throw new FarmDataError(400, 'Bitte wähle aus, wie erinnert werden soll.');
     set.push = input.push;
+  }
+  if (input.kwhPrice !== undefined) {
+    const price = input.kwhPrice;
+    if (price !== null && (!Number.isFinite(price) || price < 0.05 || price > 2)) throw new FarmDataError(400, 'Der Strompreis liegt zwischen 0,05 und 2 € pro kWh.');
+    set.kwhPrice = price === null ? null : Math.round(price * 10000) / 10000;
   }
   if (Object.keys(set).length > 0) await db.update(growAccessTable).set(set).where(eq(growAccessTable.userId, userId));
   return growAccess(userId, isOwner);
@@ -132,6 +141,8 @@ export interface Grow {
   tentSize: string | null;
   lightType: string | null;
   lightWatts: number | null;
+  /** Indoor: fans, filter and the like around the clock. */
+  fanWatts: number | null;
   notes: string | null;
   archived: boolean;
   /** Outdoor and greenhouse: where, for the weather. */
@@ -174,6 +185,7 @@ function toGrow(g: GrowRow, plants: PlantRow[], today: string): Grow {
     tentSize: g.tentSize,
     lightType: g.lightType,
     lightWatts: g.lightWatts,
+    fanWatts: g.fanWatts,
     notes: g.notes,
     archived: g.archivedAt !== null,
     postalCode: g.postalCode,
@@ -215,6 +227,8 @@ export interface GrowInput {
   tentSize?: unknown;
   lightType?: unknown;
   lightWatts?: number | null;
+  /** Not sent: stays as it is. */
+  fanWatts?: number | null;
   notes?: unknown;
   archived?: boolean;
   postalCode?: string | null;
@@ -254,6 +268,8 @@ function growValues(input: GrowInput) {
   if (!(GROW_MEDIA as string[]).includes(input.medium)) throw new FarmDataError(400, 'Bitte wähle Erde, Kokos oder Hydro.');
   const watts = input.lightWatts ?? null;
   if (watts !== null && (!Number.isInteger(watts) || watts < 1 || watts > 5000)) throw new FarmDataError(400, 'Die Lampenleistung liegt zwischen 1 und 5000 W.');
+  const fans = input.fanWatts;
+  if (fans != null && (!Number.isInteger(fans) || fans < 1 || fans > 2000)) throw new FarmDataError(400, 'Lüfter und Filter liegen zwischen 1 und 2000 W.');
   const indoor = input.environment === 'indoor';
   return {
     name: text(input.name, 60, 'Der Name', true),
@@ -262,6 +278,7 @@ function growValues(input: GrowInput) {
     tentSize: indoor ? text(input.tentSize, 30, 'Die Zeltgröße') : null,
     lightType: indoor ? text(input.lightType, 30, 'Die Lampe') : null,
     lightWatts: indoor ? watts : null,
+    ...(fans === undefined && indoor ? {} : { fanWatts: indoor ? fans : null }),
     notes: text(input.notes, 2000, 'Die Notiz'),
     ...(input.archived === undefined ? {} : { archivedAt: input.archived ? new Date() : null }),
   };
@@ -337,7 +354,7 @@ function plantValues(input: PlantInput) {
   };
 }
 
-async function ownPlant(userId: string, plantId: number): Promise<{ plant: PlantRow; grow: GrowRow }> {
+export async function ownPlant(userId: string, plantId: number): Promise<{ plant: PlantRow; grow: GrowRow }> {
   const [row] = await db
     .select({ plant: growPlantsTable, grow: growsTable })
     .from(growPlantsTable)
@@ -381,6 +398,8 @@ export interface PlantDetail {
   plant: GrowPlant;
   grow: { id: number; name: string; environment: GrowEnvironment; medium: GrowMedium };
   logs: GrowLog[];
+  /** KI-Checks, newest first (the last 20). */
+  checks: GrowCheck[];
 }
 
 export async function plantDetail(userId: string, plantId: number, today = berlinDay()): Promise<PlantDetail> {
@@ -390,11 +409,34 @@ export async function plantDetail(userId: string, plantId: number, today = berli
     .from(growLogsTable)
     .where(eq(growLogsTable.plantId, plantId))
     .orderBy(desc(growLogsTable.date), desc(growLogsTable.id));
+  const checks = await db
+    .select()
+    .from(growChecksTable)
+    .where(eq(growChecksTable.plantId, plantId))
+    .orderBy(desc(growChecksTable.createdAt), desc(growChecksTable.id))
+    .limit(20);
   return {
     plant: toPlant(plant, grow, today),
     grow: { id: grow.id, name: grow.name, environment: grow.environment as GrowEnvironment, medium: grow.medium as GrowMedium },
     logs,
+    checks: checks.map((c) => {
+      const kind = c.kind as GrowCheckKind;
+      return {
+        id: c.id,
+        kind,
+        date: c.date,
+        health: kind === 'health' ? (c.result as HealthResult) : null,
+        trichomes: kind === 'trichomes' ? (c.result as TrichomeResult) : null,
+      };
+    }),
   };
+}
+
+export async function deleteCheck(userId: string, checkId: number): Promise<void> {
+  const [c] = await db.select({ plantId: growChecksTable.plantId }).from(growChecksTable).where(eq(growChecksTable.id, checkId));
+  if (!c) throw notFound();
+  await ownPlant(userId, c.plantId);
+  await db.delete(growChecksTable).where(eq(growChecksTable.id, checkId));
 }
 
 export interface LogInput {

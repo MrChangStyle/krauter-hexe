@@ -2428,6 +2428,131 @@ paths:
           description: Module not unlocked or age not confirmed.
         "404":
           description: Not found.
+  /grow/grows/{growId}/costs:
+    get:
+      tags: [grow]
+      operationId: getGrowCosts
+      summary: Strom- und Kostenrechner of a grow
+      parameters:
+        - name: growId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowCosts"
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+    post:
+      tags: [grow]
+      operationId: addGrowCost
+      summary: Enter a cost of a grow (equipment, soil, fertilizer …)
+      parameters:
+        - name: growId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowCostInput"
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowCosts"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+  /grow/costs/{costId}:
+    delete:
+      tags: [grow]
+      operationId: deleteGrowCost
+      summary: Delete a cost
+      parameters:
+        - name: costId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Done.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+  /grow/plants/{plantId}/checks:
+    post:
+      tags: [grow]
+      operationId: checkGrowPlant
+      summary: KI-Check of a plant photo – health or trichomes; the photo is not stored
+      parameters:
+        - name: plantId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrowCheckInput"
+      responses:
+        "201":
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GrowCheck"
+        "400":
+          description: Invalid input.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
+        "409":
+          description: Trichomes outside the bloom.
+        "422":
+          description: Nothing to see on the photo.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: AI not reachable.
+  /grow/checks/{checkId}:
+    delete:
+      tags: [grow]
+      operationId: deleteGrowCheck
+      summary: Delete a KI-Check
+      parameters:
+        - name: checkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Done.
+        "403":
+          description: Module not unlocked or age not confirmed.
+        "404":
+          description: Not found.
   /grow/logs/{logId}:
     delete:
       tags: [grow]
@@ -6158,7 +6283,7 @@ components:
           type: [number, 'null']
     GrowAccess:
       type: object
-      required: [unlocked, ageConfirmed, adults, push]
+      required: [unlocked, ageConfirmed, adults, push, kwhPrice]
       properties:
         unlocked:
           type: boolean
@@ -6168,6 +6293,8 @@ components:
           type: integer
         push:
           $ref: "#/components/schemas/GrowPush"
+        kwhPrice:
+          type: [number, 'null']
     GrowPush:
       type: string
       enum: ["off", discreet, full]
@@ -6178,6 +6305,8 @@ components:
           type: integer
         push:
           $ref: "#/components/schemas/GrowPush"
+        kwhPrice:
+          type: [number, 'null']
     GrowAgeInput:
       type: object
       required: [adults]
@@ -6331,7 +6460,7 @@ components:
           $ref: "#/components/schemas/GrowPlan"
     Grow:
       type: object
-      required: [id, name, environment, medium, tentSize, lightType, lightWatts, notes, archived, postalCode, hasLocation, plants]
+      required: [id, name, environment, medium, tentSize, lightType, lightWatts, fanWatts, notes, archived, postalCode, hasLocation, plants]
       properties:
         id:
           type: integer
@@ -6346,6 +6475,8 @@ components:
         lightType:
           type: [string, 'null']
         lightWatts:
+          type: [integer, 'null']
+        fanWatts:
           type: [integer, 'null']
         notes:
           type: [string, 'null']
@@ -6403,6 +6534,8 @@ components:
           type: [string, 'null']
           maxLength: 30
         lightWatts:
+          type: [integer, 'null']
+        fanWatts:
           type: [integer, 'null']
         notes:
           type: [string, 'null']
@@ -6525,7 +6658,7 @@ components:
           maxLength: 1000
     GrowPlantDetail:
       type: object
-      required: [plant, grow, logs]
+      required: [plant, grow, logs, checks]
       properties:
         plant:
           $ref: "#/components/schemas/GrowPlant"
@@ -6545,6 +6678,187 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/GrowLog"
+        checks:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowCheck"
+    GrowCostCategory:
+      type: string
+      enum: [equipment, soil, fertilizer, seeds, water, other]
+    GrowCostInput:
+      type: object
+      required: [date, category, item, amount]
+      properties:
+        date:
+          type: string
+        category:
+          $ref: "#/components/schemas/GrowCostCategory"
+        item:
+          type: string
+          maxLength: 80
+        amount:
+          type: number
+    GrowCost:
+      type: object
+      required: [id, date, category, item, amount]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        category:
+          $ref: "#/components/schemas/GrowCostCategory"
+        item:
+          type: string
+        amount:
+          type: number
+    GrowEnergy:
+      type: object
+      required: [from, to, lampHours, kwhLamp, kwhFans, kwh, kwhSoFar]
+      properties:
+        from:
+          type: [string, 'null']
+        to:
+          type: [string, 'null']
+        lampHours:
+          type: number
+        kwhLamp:
+          type: number
+        kwhFans:
+          type: number
+        kwh:
+          type: number
+        kwhSoFar:
+          type: number
+    GrowCostLine:
+      type: object
+      required: [category, eur]
+      properties:
+        category:
+          $ref: "#/components/schemas/GrowCostCategory"
+        eur:
+          type: number
+    GrowCostSummary:
+      type: object
+      required: [electricityEur, electricitySoFarEur, itemsEur, byCategory, totalEur, dryGrams, eurPerGram]
+      properties:
+        electricityEur:
+          type: number
+        electricitySoFarEur:
+          type: number
+        itemsEur:
+          type: number
+        byCategory:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowCostLine"
+        totalEur:
+          type: number
+        dryGrams:
+          type: number
+        eurPerGram:
+          type: [number, 'null']
+    GrowCosts:
+      type: object
+      required: [kwhPrice, ownPrice, lightWatts, fanWatts, energy, summary, items]
+      properties:
+        kwhPrice:
+          type: number
+        ownPrice:
+          type: boolean
+        lightWatts:
+          type: [integer, 'null']
+        fanWatts:
+          type: [integer, 'null']
+        energy:
+          $ref: "#/components/schemas/GrowEnergy"
+        summary:
+          $ref: "#/components/schemas/GrowCostSummary"
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowCost"
+    GrowCheckKind:
+      type: string
+      enum: [health, trichomes]
+    GrowCheckInput:
+      type: object
+      required: [kind, imageData]
+      properties:
+        kind:
+          $ref: "#/components/schemas/GrowCheckKind"
+        imageData:
+          type: string
+          description: data:image/jpeg|png|webp;base64,…
+    GrowHealthFinding:
+      type: object
+      required: [name, category, likely, signs, actions]
+      properties:
+        name:
+          type: string
+        category:
+          type: string
+          enum: [deficiency, excess, pest, disease, environment, other]
+        likely:
+          type: boolean
+        signs:
+          type: [string, 'null']
+        actions:
+          type: array
+          items:
+            type: string
+    GrowHealthResult:
+      type: object
+      required: [status, summary, findings, facts]
+      properties:
+        status:
+          type: string
+          enum: [healthy, watch, problem]
+        summary:
+          type: string
+        findings:
+          type: array
+          items:
+            $ref: "#/components/schemas/GrowHealthFinding"
+        facts:
+          type: array
+          items:
+            type: string
+    GrowTrichomeResult:
+      type: object
+      required: [clear, milky, amber, stage, summary, advice]
+      properties:
+        clear:
+          type: integer
+        milky:
+          type: integer
+        amber:
+          type: integer
+        stage:
+          type: string
+          enum: [early, window, late]
+        summary:
+          type: string
+        advice:
+          type: string
+    GrowCheck:
+      type: object
+      required: [id, kind, date, health, trichomes]
+      properties:
+        id:
+          type: integer
+        kind:
+          $ref: "#/components/schemas/GrowCheckKind"
+        date:
+          type: string
+        health:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/GrowHealthResult"
+        trichomes:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/GrowTrichomeResult"
     FarmDuties:
       type: object
       required: [holdingNumber, housingOrderUntil, species, duties]

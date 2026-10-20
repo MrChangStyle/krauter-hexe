@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BookOpen, Bell, ChevronRight, Lock, Plus, Scale, ShieldCheck, Sprout, Trash2, Archive, Loader2 } from "lucide-react";
+import { AlertTriangle, BookOpen, Bell, ChevronRight, Coins, Lock, Plus, Scale, ShieldCheck, Sprout, Trash2, Archive, Loader2 } from "lucide-react";
 import {
   getGetGrowAccessQueryKey,
   getGetGrowOverviewQueryKey,
@@ -217,6 +217,7 @@ function NewGrowDialog({ onClose }: { onClose: () => void }) {
   const [tentSize, setTentSize] = useState("");
   const [lightType, setLightType] = useState("LED");
   const [watts, setWatts] = useState("");
+  const [fans, setFans] = useState("");
   const [postalCode, setPostalCode] = useState("");
   const create = useCreateGrow({
     mutation: {
@@ -239,6 +240,7 @@ function NewGrowDialog({ onClose }: { onClose: () => void }) {
         tentSize: indoor ? tentSize.trim() || null : null,
         lightType: indoor ? lightType.trim() || null : null,
         lightWatts: indoor && watts ? Number(watts) : null,
+        fanWatts: indoor && fans ? Number(fans) : null,
         postalCode: indoor ? null : postalCode.trim() || null,
       },
     });
@@ -292,6 +294,12 @@ function NewGrowDialog({ onClose }: { onClose: () => void }) {
                 <Label htmlFor="g-watts">Watt</Label>
                 <Input id="g-watts" type="number" min={1} max={5000} value={watts} onChange={(e) => setWatts(e.target.value)} />
               </div>
+            </div>
+          )}
+          {indoor && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="g-fans">Lüfter und Filter zusammen in W (für den Stromrechner)</Label>
+              <Input id="g-fans" type="number" min={1} max={2000} className="w-32" value={fans} placeholder="optional" onChange={(e) => setFans(e.target.value)} />
             </div>
           )}
           {!indoor && (
@@ -385,12 +393,20 @@ function GrowCard({ grow }: { grow: Grow }) {
           })}
         </ul>
       )}
-      {!grow.archived && (
-        <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAdding(true)}>
-          <Plus className="h-4 w-4" />
-          Pflanze
+      <div className="flex flex-wrap gap-2">
+        {!grow.archived && (
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setAdding(true)}>
+            <Plus className="h-4 w-4" />
+            Pflanze
+          </Button>
+        )}
+        <Button size="sm" variant="ghost" className="gap-1.5" asChild>
+          <Link href={`/grow/kosten/${grow.id}`}>
+            <Coins className="h-4 w-4" />
+            Strom &amp; Kosten
+          </Link>
         </Button>
-      )}
+      </div>
       {adding && <GrowPlantDialog plant={null} busy={add.isPending} onSubmit={(data) => add.mutate({ growId: grow.id, data })} onClose={() => setAdding(false)} />}
     </section>
   );

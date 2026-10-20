@@ -14,6 +14,10 @@ import express, { type NextFunction, type Request, type Response } from "express
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 
+vi.hoisted(() => {
+  process.env["GEMINI_API_KEY"] ??= "test-key";
+});
+
 import type { DayForecast } from "./farmWeather";
 
 const sendPushToUser = vi.fn(async (_userId: string, _payload: unknown) => 1);
@@ -98,7 +102,7 @@ describe.skipIf(!enabled)("Grow push and weather (real database)", () => {
 
   it("keeps the push setting with the adults", async () => {
     await open("anna");
-    expect((await api("PUT", "/grow/access", { push: "full" })).data).toEqual({ unlocked: true, ageConfirmed: true, adults: 1, push: "full" });
+    expect((await api("PUT", "/grow/access", { push: "full" })).data).toEqual({ unlocked: true, ageConfirmed: true, adults: 1, push: "full", kwhPrice: null });
     expect((await api("PUT", "/grow/access", { adults: 2 })).data).toMatchObject({ adults: 2, push: "full" });
     expect((await api("PUT", "/grow/access", { push: "loud" })).status).toBe(400);
   });

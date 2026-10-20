@@ -1136,11 +1136,15 @@ export interface GrowAccess {
   ageConfirmed: boolean;
   adults: number;
   push: GrowPush;
+  /** @nullable */
+  kwhPrice: number | null;
 }
 
 export interface GrowSettingsInput {
   adults?: number;
   push?: GrowPush;
+  /** @nullable */
+  kwhPrice?: number | null;
 }
 
 export interface GrowAgeInput {
@@ -1299,6 +1303,8 @@ export interface Grow {
   /** @nullable */
   lightWatts: number | null;
   /** @nullable */
+  fanWatts: number | null;
+  /** @nullable */
   notes: string | null;
   archived: boolean;
   /** @nullable */
@@ -1338,6 +1344,8 @@ export interface GrowInput {
   lightType?: string | null;
   /** @nullable */
   lightWatts?: number | null;
+  /** @nullable */
+  fanWatts?: number | null;
   /**
      * @maxLength 2000
      * @nullable
@@ -1458,10 +1466,156 @@ export type GrowPlantDetailGrow = {
   medium: GrowMedium;
 };
 
+export type GrowCheckKind = typeof GrowCheckKind[keyof typeof GrowCheckKind];
+
+
+export const GrowCheckKind = {
+  health: 'health',
+  trichomes: 'trichomes',
+} as const;
+
+export type GrowHealthResultStatus = typeof GrowHealthResultStatus[keyof typeof GrowHealthResultStatus];
+
+
+export const GrowHealthResultStatus = {
+  healthy: 'healthy',
+  watch: 'watch',
+  problem: 'problem',
+} as const;
+
+export type GrowHealthFindingCategory = typeof GrowHealthFindingCategory[keyof typeof GrowHealthFindingCategory];
+
+
+export const GrowHealthFindingCategory = {
+  deficiency: 'deficiency',
+  excess: 'excess',
+  pest: 'pest',
+  disease: 'disease',
+  environment: 'environment',
+  other: 'other',
+} as const;
+
+export interface GrowHealthFinding {
+  name: string;
+  category: GrowHealthFindingCategory;
+  likely: boolean;
+  /** @nullable */
+  signs: string | null;
+  actions: string[];
+}
+
+export interface GrowHealthResult {
+  status: GrowHealthResultStatus;
+  summary: string;
+  findings: GrowHealthFinding[];
+  facts: string[];
+}
+
+export type GrowTrichomeResultStage = typeof GrowTrichomeResultStage[keyof typeof GrowTrichomeResultStage];
+
+
+export const GrowTrichomeResultStage = {
+  early: 'early',
+  window: 'window',
+  late: 'late',
+} as const;
+
+export interface GrowTrichomeResult {
+  clear: number;
+  milky: number;
+  amber: number;
+  stage: GrowTrichomeResultStage;
+  summary: string;
+  advice: string;
+}
+
+export interface GrowCheck {
+  id: number;
+  kind: GrowCheckKind;
+  date: string;
+  health: null | GrowHealthResult;
+  trichomes: null | GrowTrichomeResult;
+}
+
 export interface GrowPlantDetail {
   plant: GrowPlant;
   grow: GrowPlantDetailGrow;
   logs: GrowLog[];
+  checks: GrowCheck[];
+}
+
+export type GrowCostCategory = typeof GrowCostCategory[keyof typeof GrowCostCategory];
+
+
+export const GrowCostCategory = {
+  equipment: 'equipment',
+  soil: 'soil',
+  fertilizer: 'fertilizer',
+  seeds: 'seeds',
+  water: 'water',
+  other: 'other',
+} as const;
+
+export interface GrowCostInput {
+  date: string;
+  category: GrowCostCategory;
+  /** @maxLength 80 */
+  item: string;
+  amount: number;
+}
+
+export interface GrowCost {
+  id: number;
+  date: string;
+  category: GrowCostCategory;
+  item: string;
+  amount: number;
+}
+
+export interface GrowEnergy {
+  /** @nullable */
+  from: string | null;
+  /** @nullable */
+  to: string | null;
+  lampHours: number;
+  kwhLamp: number;
+  kwhFans: number;
+  kwh: number;
+  kwhSoFar: number;
+}
+
+export interface GrowCostLine {
+  category: GrowCostCategory;
+  eur: number;
+}
+
+export interface GrowCostSummary {
+  electricityEur: number;
+  electricitySoFarEur: number;
+  itemsEur: number;
+  byCategory: GrowCostLine[];
+  totalEur: number;
+  dryGrams: number;
+  /** @nullable */
+  eurPerGram: number | null;
+}
+
+export interface GrowCosts {
+  kwhPrice: number;
+  ownPrice: boolean;
+  /** @nullable */
+  lightWatts: number | null;
+  /** @nullable */
+  fanWatts: number | null;
+  energy: GrowEnergy;
+  summary: GrowCostSummary;
+  items: GrowCost[];
+}
+
+export interface GrowCheckInput {
+  kind: GrowCheckKind;
+  /** data:image/jpeg|png|webp;base64,… */
+  imageData: string;
 }
 
 export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];

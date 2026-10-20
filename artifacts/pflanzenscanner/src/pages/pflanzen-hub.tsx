@@ -5,12 +5,14 @@ import {
   CalendarCheck,
   ChevronRight,
   Fence,
+  Leaf,
   Sparkles,
   Sprout,
   Stethoscope,
 } from "lucide-react";
 import { useListTasks } from "@workspace/api-client-react";
-import { cn } from "@/lib/utils";
+import { HubGrid, HubTile } from "@/components/hub-tile";
+import { GROW_ENABLED } from "@/lib/grow-labels";
 
 /**
  * Pflanzen: the hub for everything around plants. Each tile opens one area;
@@ -59,7 +61,26 @@ const AREAS = [
     hint: "Heilkräuter-Ratgeber",
     tone: "bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300",
   },
-] as const;
+  {
+    href: "/beete",
+    icon: Fence,
+    label: "Beet-Architekt",
+    hint: "Beete, Standort, Saatgut",
+    tone: "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300",
+  },
+  // Grow sits right of the Beet-Architekt; builds without it (app stores) leave it out.
+  ...(GROW_ENABLED
+    ? [
+        {
+          href: "/grow",
+          icon: Leaf,
+          label: "Grow",
+          hint: "Eigenanbau ab 18",
+          tone: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300",
+        },
+      ]
+    : []),
+];
 
 function TodayCard() {
   const { data: tasks } = useListTasks();
@@ -94,37 +115,11 @@ export default function PflanzenHubPage() {
 
       <TodayCard />
 
-      <div className="grid grid-cols-2 gap-3">
-        {AREAS.map(({ href, icon: Icon, label, hint, tone }) => (
-          <Link
-            key={href}
-            href={href}
-            className="rounded-2xl border bg-card p-4 flex flex-col gap-3 hover:shadow-md active:scale-[0.98] transition-all"
-          >
-            <span className={cn("w-10 h-10 rounded-xl flex items-center justify-center", tone)}>
-              <Icon className="w-5 h-5" strokeWidth={2} />
-            </span>
-            <span>
-              <span className="block text-sm font-semibold leading-tight">{label}</span>
-              <span className="block text-xs text-muted-foreground mt-0.5">{hint}</span>
-            </span>
-          </Link>
+      <HubGrid>
+        {AREAS.map((area) => (
+          <HubTile key={area.href} {...area} />
         ))}
-      </div>
-
-      <Link
-        href="/beete"
-        className="rounded-2xl border bg-card p-4 flex items-center gap-3 hover:shadow-md active:scale-[0.98] transition-all"
-      >
-        <span className="w-10 h-10 rounded-xl bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300 flex items-center justify-center shrink-0">
-          <Fence className="w-5 h-5" />
-        </span>
-        <span className="flex-1 min-w-0">
-          <span className="block text-sm font-semibold">Beet-Architekt</span>
-          <span className="block text-xs text-muted-foreground">Beete anlegen · Standort, Boden, Frosttermine</span>
-        </span>
-        <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-      </Link>
+      </HubGrid>
     </div>
   );
 }

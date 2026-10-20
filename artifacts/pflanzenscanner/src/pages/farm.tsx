@@ -2,7 +2,6 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  ChevronRight,
   Loader2,
   LogOut,
   Pencil,
@@ -26,7 +25,8 @@ import {
   type FarmRole,
   type FarmSummary,
 } from "@workspace/api-client-react";
-import { FarmDutiesLink } from "@/components/farm-duties-link";
+import { FarmDutiesTile } from "@/components/farm-duties-link";
+import { HubGrid, HubTile } from "@/components/hub-tile";
 import { FarmSetupCard } from "@/components/farm-setup-card";
 import { HousingOrderBanner } from "@/components/housing-order-banner";
 import { FarmWeatherCard } from "@/components/farm-weather-card";
@@ -46,7 +46,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { FarmAnimalsSection } from "@/components/farm-animals-section";
 import { FarmExportCard } from "@/components/farm-export-card";
-import { FarmTasksSection } from "@/components/farm-tasks-section";
+import { FarmTasksSection, FarmTodayCard } from "@/components/farm-tasks-section";
 import {
   FARM_ROLE_HINTS,
   FARM_ROLE_LABELS,
@@ -439,14 +439,11 @@ export default function FarmPage() {
   return (
     <div className="space-y-5 px-4 pb-4 pt-6">
       <div className="space-y-2">
-        <span className="inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-primary">
-          Meine Farm
-        </span>
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
-            <h1 className="truncate text-2xl font-bold">{farm.name}</h1>
-            <p className="text-sm text-muted-foreground">
-              Deine Rolle: {FARM_ROLE_LABELS[farm.role]} ({FARM_ROLE_HINTS[farm.role]})
+            <h1 className="text-2xl font-bold">Tiere</h1>
+            <p className="mt-1 truncate text-sm text-muted-foreground">
+              <span className="font-medium text-foreground">{farm.name}</span> · {FARM_ROLE_LABELS[farm.role]} ({FARM_ROLE_HINTS[farm.role]})
             </p>
           </div>
           {isAdmin && (
@@ -460,26 +457,20 @@ export default function FarmPage() {
             </button>
           )}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {farms && farms.length > 1 && (
-            <select
-              aria-label="Farm wechseln"
-              className={selectClass}
-              value={farm.id}
-              onChange={(e) => select(Number(e.target.value))}
-            >
-              {farms.map((f) => (
-                <option key={f.id} value={f.id}>
-                  {f.name} ({FARM_ROLE_LABELS[f.role]})
-                </option>
-              ))}
-            </select>
-          )}
-          <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openDialog("new")}>
-            <Plus className="h-4 w-4" />
-            Weitere Farm
-          </Button>
-        </div>
+        {farms && farms.length > 1 && (
+          <select
+            aria-label="Farm wechseln"
+            className={selectClass}
+            value={farm.id}
+            onChange={(e) => select(Number(e.target.value))}
+          >
+            {farms.map((f) => (
+              <option key={f.id} value={f.id}>
+                {f.name} ({FARM_ROLE_LABELS[f.role]})
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {farm.accessUntil && (
@@ -489,6 +480,19 @@ export default function FarmPage() {
       )}
 
       <HousingOrderBanner farm={farm} link />
+
+      <FarmTodayCard farm={farm} />
+
+      <HubGrid>
+        <HubTile href="/farm/futter" icon={Wheat} label="Futterplaner" hint="Rationen, Bedarf, Vorrat" tone="bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300" />
+        <HubTile href="/farm/zucht" icon={Baby} label="Zucht" hint="Trächtigkeit, Brut, Jungtiere" tone="bg-pink-100 text-pink-800 dark:bg-pink-950/50 dark:text-pink-300" />
+        <HubTile href="/farm/arzneimittel" icon={Pill} label="Arzneimittel" hint="Vorrat, Charge, Wartezeit" tone="bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" />
+        <FarmDutiesTile farm={farm} />
+        <HubTile href="/farm/ertrag" icon={PiggyBank} label="Ertrag & Bilanz" hint="Eier, Milch, Ernte, Kosten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />
+        <HubTile href="/farm/kameras" icon={Radar} label="Wildtier-Radar" hint="Kameras & Raubtier-Alarm" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />
+        <HubTile href="/farm/uebergabe" icon={Handshake} label="Übergabe" hint="Vertretung für ein paar Tage" tone="bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300" />
+        <HubTile href="#mitglieder" icon={Users} label="Mitglieder" hint="Team, Rollen, Einladungen" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />
+      </HubGrid>
 
       <FarmSetupCard farm={farm} onRename={() => openDialog("rename")} />
 
@@ -504,80 +508,6 @@ export default function FarmPage() {
 
       <FarmExportCard farm={farm} />
 
-      <Link
-        href="/farm/futter"
-        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
-      >
-        <Wheat className="h-5 w-5 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold">Futterplaner</span>
-          <span className="block text-sm text-muted-foreground">Rationen, Bedarf, Ampel und Warnungen</span>
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </Link>
-
-      <Link
-        href="/farm/ertrag"
-        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
-      >
-        <PiggyBank className="h-5 w-5 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold">Ertrag & Bilanz</span>
-          <span className="block text-sm text-muted-foreground">Eier, Milch, Ernte – und was es wert ist</span>
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </Link>
-
-      <Link
-        href="/farm/zucht"
-        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
-      >
-        <Baby className="h-5 w-5 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold">Zucht</span>
-          <span className="block text-sm text-muted-foreground">Trächtigkeit, Brut, Termine und Jungtiere</span>
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </Link>
-
-      <Link
-        href="/farm/uebergabe"
-        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
-      >
-        <Handshake className="h-5 w-5 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold">Übergabe & Vertretung</span>
-          <span className="block text-sm text-muted-foreground">Was jemand wissen muss, der die Tiere ein paar Tage versorgt</span>
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </Link>
-
-      <Link
-        href="/farm/arzneimittel"
-        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
-      >
-        <Pill className="h-5 w-5 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold">Arzneimittel-Vorrat</span>
-          <span className="block text-sm text-muted-foreground">Haltbarkeit, Charge, Wartezeit – direkt in die Krankenakte</span>
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </Link>
-
-      <FarmDutiesLink farm={farm} />
-
-      <Link
-        href="/farm/kameras"
-        className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:bg-muted/50"
-      >
-        <Radar className="h-5 w-5 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1">
-          <span className="block font-semibold">Wildtier-Radar</span>
-          <span className="block text-sm text-muted-foreground">Kameras, Raubtier-Alarm und Ereignisse</span>
-        </span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-      </Link>
-
       <div id="mitglieder" className="scroll-mt-4">
         <MembersCard
           farm={farm}
@@ -588,16 +518,22 @@ export default function FarmPage() {
         />
       </div>
 
-      {isAdmin && (
-        <button
-          type="button"
-          className="flex items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4 hover:text-destructive"
-          onClick={() => openDialog("delete")}
-        >
-          <Trash2 className="h-3.5 w-3.5" />
-          Farm löschen
-        </button>
-      )}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openDialog("new")}>
+          <Plus className="h-4 w-4" />
+          Weitere Farm
+        </Button>
+        {isAdmin && (
+          <button
+            type="button"
+            className="flex items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4 hover:text-destructive"
+            onClick={() => openDialog("delete")}
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            Farm löschen
+          </button>
+        )}
+      </div>
 
       <NameDialog
         open={dialog === "new"}

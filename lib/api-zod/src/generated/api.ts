@@ -3061,7 +3061,8 @@ export const GetGrowAccessResponse = zod.object({
   "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
   "adults": zod.number(),
-  "push": zod.enum(['off', 'discreet', 'full'])
+  "push": zod.enum(['off', 'discreet', 'full']),
+  "kwhPrice": zod.number().nullable()
 })
 
 
@@ -3076,7 +3077,8 @@ export const ConfirmGrowAgeResponse = zod.object({
   "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
   "adults": zod.number(),
-  "push": zod.enum(['off', 'discreet', 'full'])
+  "push": zod.enum(['off', 'discreet', 'full']),
+  "kwhPrice": zod.number().nullable()
 })
 
 
@@ -3085,14 +3087,16 @@ export const ConfirmGrowAgeResponse = zod.object({
  */
 export const SetGrowSettingsBody = zod.object({
   "adults": zod.number().optional(),
-  "push": zod.enum(['off', 'discreet', 'full']).optional()
+  "push": zod.enum(['off', 'discreet', 'full']).optional(),
+  "kwhPrice": zod.number().nullish()
 })
 
 export const SetGrowSettingsResponse = zod.object({
   "unlocked": zod.boolean(),
   "ageConfirmed": zod.boolean(),
   "adults": zod.number(),
-  "push": zod.enum(['off', 'discreet', 'full'])
+  "push": zod.enum(['off', 'discreet', 'full']),
+  "kwhPrice": zod.number().nullable()
 })
 
 
@@ -3125,6 +3129,7 @@ export const GetGrowOverviewResponse = zod.object({
   "tentSize": zod.string().nullable(),
   "lightType": zod.string().nullable(),
   "lightWatts": zod.number().nullable(),
+  "fanWatts": zod.number().nullable(),
   "notes": zod.string().nullable(),
   "archived": zod.boolean(),
   "postalCode": zod.string().nullable(),
@@ -3207,6 +3212,7 @@ export const CreateGrowBody = zod.object({
   "tentSize": zod.string().max(createGrowBodyTentSizeMax).nullish(),
   "lightType": zod.string().max(createGrowBodyLightTypeMax).nullish(),
   "lightWatts": zod.number().nullish(),
+  "fanWatts": zod.number().nullish(),
   "notes": zod.string().max(createGrowBodyNotesMax).nullish(),
   "archived": zod.boolean().optional(),
   "postalCode": zod.string().max(createGrowBodyPostalCodeMax).nullish(),
@@ -3240,6 +3246,7 @@ export const CreateGrowResponse = zod.object({
   "tentSize": zod.string().nullable(),
   "lightType": zod.string().nullable(),
   "lightWatts": zod.number().nullable(),
+  "fanWatts": zod.number().nullable(),
   "notes": zod.string().nullable(),
   "archived": zod.boolean(),
   "postalCode": zod.string().nullable(),
@@ -3326,6 +3333,7 @@ export const UpdateGrowBody = zod.object({
   "tentSize": zod.string().max(updateGrowBodyTentSizeMax).nullish(),
   "lightType": zod.string().max(updateGrowBodyLightTypeMax).nullish(),
   "lightWatts": zod.number().nullish(),
+  "fanWatts": zod.number().nullish(),
   "notes": zod.string().max(updateGrowBodyNotesMax).nullish(),
   "archived": zod.boolean().optional(),
   "postalCode": zod.string().max(updateGrowBodyPostalCodeMax).nullish(),
@@ -3359,6 +3367,7 @@ export const UpdateGrowResponse = zod.object({
   "tentSize": zod.string().nullable(),
   "lightType": zod.string().nullable(),
   "lightWatts": zod.number().nullable(),
+  "fanWatts": zod.number().nullable(),
   "notes": zod.string().nullable(),
   "archived": zod.boolean(),
   "postalCode": zod.string().nullable(),
@@ -3793,6 +3802,113 @@ export const AddGrowLogBody = zod.object({
 })
 
 export const AddGrowLogResponse = zod.void()
+
+
+/**
+ * @summary Strom- und Kostenrechner of a grow
+ */
+export const GetGrowCostsParams = zod.object({
+  "growId": zod.coerce.number()
+})
+
+export const GetGrowCostsResponse = zod.object({
+  "kwhPrice": zod.number(),
+  "ownPrice": zod.boolean(),
+  "lightWatts": zod.number().nullable(),
+  "fanWatts": zod.number().nullable(),
+  "energy": zod.object({
+  "from": zod.string().nullable(),
+  "to": zod.string().nullable(),
+  "lampHours": zod.number(),
+  "kwhLamp": zod.number(),
+  "kwhFans": zod.number(),
+  "kwh": zod.number(),
+  "kwhSoFar": zod.number()
+}),
+  "summary": zod.object({
+  "electricityEur": zod.number(),
+  "electricitySoFarEur": zod.number(),
+  "itemsEur": zod.number(),
+  "byCategory": zod.array(zod.object({
+  "category": zod.enum(['equipment', 'soil', 'fertilizer', 'seeds', 'water', 'other']),
+  "eur": zod.number()
+})),
+  "totalEur": zod.number(),
+  "dryGrams": zod.number(),
+  "eurPerGram": zod.number().nullable()
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "category": zod.enum(['equipment', 'soil', 'fertilizer', 'seeds', 'water', 'other']),
+  "item": zod.string(),
+  "amount": zod.number()
+}))
+})
+
+
+/**
+ * @summary Enter a cost of a grow (equipment, soil, fertilizer …)
+ */
+export const AddGrowCostParams = zod.object({
+  "growId": zod.coerce.number()
+})
+
+export const addGrowCostBodyItemMax = 80;
+
+
+
+export const AddGrowCostBody = zod.object({
+  "date": zod.string(),
+  "category": zod.enum(['equipment', 'soil', 'fertilizer', 'seeds', 'water', 'other']),
+  "item": zod.string().max(addGrowCostBodyItemMax),
+  "amount": zod.number()
+})
+
+export const AddGrowCostResponse = zod.object({
+  "kwhPrice": zod.number(),
+  "ownPrice": zod.boolean(),
+  "lightWatts": zod.number().nullable(),
+  "fanWatts": zod.number().nullable(),
+  "energy": zod.object({
+  "from": zod.string().nullable(),
+  "to": zod.string().nullable(),
+  "lampHours": zod.number(),
+  "kwhLamp": zod.number(),
+  "kwhFans": zod.number(),
+  "kwh": zod.number(),
+  "kwhSoFar": zod.number()
+}),
+  "summary": zod.object({
+  "electricityEur": zod.number(),
+  "electricitySoFarEur": zod.number(),
+  "itemsEur": zod.number(),
+  "byCategory": zod.array(zod.object({
+  "category": zod.enum(['equipment', 'soil', 'fertilizer', 'seeds', 'water', 'other']),
+  "eur": zod.number()
+})),
+  "totalEur": zod.number(),
+  "dryGrams": zod.number(),
+  "eurPerGram": zod.number().nullable()
+}),
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "category": zod.enum(['equipment', 'soil', 'fertilizer', 'seeds', 'water', 'other']),
+  "item": zod.string(),
+  "amount": zod.number()
+}))
+})
+
+
+/**
+ * @summary Delete a cost
+ */
+export const DeleteGrowCostParams = zod.object({
+  "costId": zod.coerce.number()
+})
+
+export const DeleteGrowCostResponse = zod.void()
 
 
 /**

@@ -12,4 +12,6 @@ export interface GrowAccess {
   ageConfirmed: boolean;
   adults: number;
   push: GrowPush;
+  /** @nullable */
+  kwhPrice: number | null;
 }

@@ -1,4 +1,5 @@
 import type {
+  GrowCostCategory,
   GrowEnvironment,
   GrowFlowering,
   GrowHealthFindingCategory,
@@ -103,4 +104,13 @@ export const TRICHOME_STAGE_LABELS: Record<GrowTrichomeResultStage, string> = {
   early: "Noch zu früh",
   window: "Erntefenster",
   late: "Spät – bald ernten",
+};
+
+export const COST_CATEGORY_LABELS: Record<GrowCostCategory, string> = {
+  equipment: "Ausrüstung",
+  soil: "Erde/Substrat",
+  fertilizer: "Dünger",
+  seeds: "Samen",
+  water: "Wasser",
+  other: "Sonstiges",
 };

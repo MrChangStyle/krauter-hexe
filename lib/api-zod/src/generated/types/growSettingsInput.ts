@@ -10,4 +10,6 @@ import type { GrowPush } from './growPush';
 export interface GrowSettingsInput {
   adults?: number;
   push?: GrowPush;
+  /** @nullable */
+  kwhPrice?: number | null;
 }

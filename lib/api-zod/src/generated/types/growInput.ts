@@ -25,6 +25,8 @@ export interface GrowInput {
   lightType?: string | null;
   /** @nullable */
   lightWatts?: number | null;
+  /** @nullable */
+  fanWatts?: number | null;
   /**
      * @maxLength 2000
      * @nullable

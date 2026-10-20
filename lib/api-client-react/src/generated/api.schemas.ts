@@ -1136,11 +1136,15 @@ export interface GrowAccess {
   ageConfirmed: boolean;
   adults: number;
   push: GrowPush;
+  /** @nullable */
+  kwhPrice: number | null;
 }
 
 export interface GrowSettingsInput {
   adults?: number;
   push?: GrowPush;
+  /** @nullable */
+  kwhPrice?: number | null;
 }
 
 export interface GrowAgeInput {
@@ -1299,6 +1303,8 @@ export interface Grow {
   /** @nullable */
   lightWatts: number | null;
   /** @nullable */
+  fanWatts: number | null;
+  /** @nullable */
   notes: string | null;
   archived: boolean;
   /** @nullable */
@@ -1338,6 +1344,8 @@ export interface GrowInput {
   lightType?: string | null;
   /** @nullable */
   lightWatts?: number | null;
+  /** @nullable */
+  fanWatts?: number | null;
   /**
      * @maxLength 2000
      * @nullable
@@ -1534,6 +1542,74 @@ export interface GrowPlantDetail {
   grow: GrowPlantDetailGrow;
   logs: GrowLog[];
   checks: GrowCheck[];
+}
+
+export type GrowCostCategory = typeof GrowCostCategory[keyof typeof GrowCostCategory];
+
+
+export const GrowCostCategory = {
+  equipment: 'equipment',
+  soil: 'soil',
+  fertilizer: 'fertilizer',
+  seeds: 'seeds',
+  water: 'water',
+  other: 'other',
+} as const;
+
+export interface GrowCostInput {
+  date: string;
+  category: GrowCostCategory;
+  /** @maxLength 80 */
+  item: string;
+  amount: number;
+}
+
+export interface GrowCost {
+  id: number;
+  date: string;
+  category: GrowCostCategory;
+  item: string;
+  amount: number;
+}
+
+export interface GrowEnergy {
+  /** @nullable */
+  from: string | null;
+  /** @nullable */
+  to: string | null;
+  lampHours: number;
+  kwhLamp: number;
+  kwhFans: number;
+  kwh: number;
+  kwhSoFar: number;
+}
+
+export interface GrowCostLine {
+  category: GrowCostCategory;
+  eur: number;
+}
+
+export interface GrowCostSummary {
+  electricityEur: number;
+  electricitySoFarEur: number;
+  itemsEur: number;
+  byCategory: GrowCostLine[];
+  totalEur: number;
+  dryGrams: number;
+  /** @nullable */
+  eurPerGram: number | null;
+}
+
+export interface GrowCosts {
+  kwhPrice: number;
+  ownPrice: boolean;
+  /** @nullable */
+  lightWatts: number | null;
+  /** @nullable */
+  fanWatts: number | null;
+  energy: GrowEnergy;
+  summary: GrowCostSummary;
+  items: GrowCost[];
 }
 
 export interface GrowCheckInput {

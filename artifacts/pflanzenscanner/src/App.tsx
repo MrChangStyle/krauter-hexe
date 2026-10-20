@@ -63,6 +63,7 @@ import SaatgutPage from '@/pages/saatgut';
 import ErtragPage from '@/pages/ertrag';
 import GrowPage from '@/pages/grow';
 import GrowPlantPage from '@/pages/grow-plant';
+import GrowKostenPage from '@/pages/grow-kosten';
 import GrowWissenPage from '@/pages/grow-wissen';
 import GrowRechtPage from '@/pages/grow-recht';
 import { StatusBanner } from '@/components/status-banner';
@@ -152,6 +153,7 @@ function Router() {
         <Route path="/farm/ertrag" component={ErtragPage} />
         <Route path="/grow" component={GrowPage} />
         <Route path="/grow/pflanze/:plantId" component={GrowPlantPage} />
+        <Route path="/grow/kosten/:growId" component={GrowKostenPage} />
         <Route path="/grow/wissen" component={GrowWissenPage} />
         <Route path="/grow/recht" component={GrowRechtPage} />
         <Route path="/farm/:farmId/tier/:animalId" component={FarmAnimalPage} />

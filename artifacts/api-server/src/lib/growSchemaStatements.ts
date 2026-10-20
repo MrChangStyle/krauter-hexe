@@ -13,7 +13,8 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
 	"age_confirmed_at" timestamp with time zone,
 	"adults" integer DEFAULT 1 NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
-	"push" text DEFAULT 'discreet' NOT NULL
+	"push" text DEFAULT 'discreet' NOT NULL,
+	"kwh_price" double precision
 )`,
   `ALTER TABLE "grow_access" ADD COLUMN IF NOT EXISTS "push" text DEFAULT 'discreet' NOT NULL`,
   `CREATE TABLE IF NOT EXISTS "grows" (
@@ -30,7 +31,8 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"postal_code" text,
 	"latitude" double precision,
-	"longitude" double precision
+	"longitude" double precision,
+	"fan_watts" integer
 )`,
   `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "postal_code" text`,
   `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "latitude" double precision`,
@@ -92,4 +94,19 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "grow_checks" ADD CONSTRAINT "grow_checks_plant_id_grow_plants_id_fk" FOREIGN KEY ("plant_id") REFERENCES "public"."grow_plants"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "grow_checks_plant_idx" ON "grow_checks" USING btree ("plant_id")`,
+  `ALTER TABLE "grow_access" ADD COLUMN IF NOT EXISTS "kwh_price" double precision`,
+  `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "fan_watts" integer`,
+  `CREATE TABLE IF NOT EXISTS "grow_costs" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"grow_id" integer NOT NULL,
+	"date" date NOT NULL,
+	"category" text NOT NULL,
+	"item" text NOT NULL,
+	"amount" double precision NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "grow_costs" ADD CONSTRAINT "grow_costs_grow_id_grows_id_fk" FOREIGN KEY ("grow_id") REFERENCES "public"."grows"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "grow_costs_grow_idx" ON "grow_costs" USING btree ("grow_id")`,
 ];

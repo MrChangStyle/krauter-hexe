@@ -21,6 +21,8 @@ export interface Grow {
   /** @nullable */
   lightWatts: number | null;
   /** @nullable */
+  fanWatts: number | null;
+  /** @nullable */
   notes: string | null;
   archived: boolean;
   /** @nullable */

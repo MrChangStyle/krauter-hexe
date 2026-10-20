@@ -1,5 +1,7 @@
 import { Router, type IRouter, type NextFunction, type Request, type Response } from 'express';
 import {
+  AddGrowCostBody,
+  AddGrowCostResponse,
   AddGrowLogBody,
   CheckGrowPlantBody,
   CheckGrowPlantResponse,
@@ -10,6 +12,7 @@ import {
   CreateGrowBody,
   CreateGrowResponse,
   GetGrowAccessResponse,
+  GetGrowCostsResponse,
   GetGrowOverviewResponse,
   GetGrowPlantResponse,
   ListGrowAccessResponse,
@@ -43,6 +46,7 @@ import {
   updateGrow,
   updatePlant,
 } from '../lib/grow';
+import { addCost, deleteCost, growCosts } from '../lib/growCosts';
 import { checkPlant } from '../lib/growDiagnosis';
 import { growWeather } from '../lib/growWeather';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
@@ -65,6 +69,7 @@ async function requireGrow(req: Request, res: Response, next: NextFunction): Pro
     return;
   }
   res.locals.growAdults = access.adults;
+  res.locals.growKwhPrice = access.kwhPrice;
   next();
 }
 
@@ -233,6 +238,43 @@ router.delete(
     const id = idParam(req, 'logId');
     if (id === null) return notFound(res);
     await deleteLog(me(req), id);
+    res.sendStatus(204);
+  }),
+);
+
+router.get(
+  '/grow/grows/:growId/costs',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'growId');
+    if (id === null) return notFound(res);
+    res.json(GetGrowCostsResponse.parse(await growCosts(me(req), id, res.locals.growKwhPrice as number | null)));
+  }),
+);
+
+router.post(
+  '/grow/grows/:growId/costs',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'growId');
+    if (id === null) return notFound(res);
+    const body = AddGrowCostBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    await addCost(me(req), id, body.data);
+    res.status(201).json(AddGrowCostResponse.parse(await growCosts(me(req), id, res.locals.growKwhPrice as number | null)));
+  }),
+);
+
+router.delete(
+  '/grow/costs/:costId',
+  requireApproved,
+  requireGrow,
+  handle(async (req, res) => {
+    const id = idParam(req, 'costId');
+    if (id === null) return notFound(res);
+    await deleteCost(me(req), id);
     res.sendStatus(204);
   }),
 );

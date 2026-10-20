@@ -34,3 +34,4 @@ export * from "./monitoring";
 export * from "./feed";
 export * from "./weather";
 export * from "./grow";
+export * from "./premium";

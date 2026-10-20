@@ -65,8 +65,6 @@ describe.skipIf(!enabled)("Grow Strom und Kosten (real database)", () => {
     return { status: res.status, data: text ? (JSON.parse(text) as any) : null };
   };
   const open = async (who: string) => {
-    as = "owner";
-    await api("PUT", "/admin/grow-access", { email: `${who}@x.de`, unlocked: true });
     as = who;
     await api("POST", "/grow/access", { adults: 1 });
   };

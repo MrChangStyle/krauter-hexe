@@ -11,7 +11,9 @@ tags:
   - name: health
     description: Health operations
   - name: grow
-    description: Grow – home growing within the KCanG (add-on, adults only)
+    description: Grow – home growing within the KCanG (adults only)
+  - name: premium
+    description: Premium – the paid features (for now the AI of the Grow module)
   - name: feed
     description: Futterplaner – feeds, rations and their check against the need
   - name: monitoring
@@ -2149,7 +2151,7 @@ paths:
     get:
       tags: [grow]
       operationId: getGrowAccess
-      summary: Grow – is the module unlocked for this account, age confirmed, adults in the household
+      summary: Grow – age confirmed, adults in the household, push and tariff
       responses:
         "200":
           description: OK.
@@ -2177,7 +2179,7 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
     put:
       tags: [grow]
       operationId: setGrowSettings
@@ -2198,7 +2200,7 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
   /grow:
     get:
       tags: [grow]
@@ -2212,7 +2214,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/GrowOverview"
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
   /grow/grows:
     post:
       tags: [grow]
@@ -2234,7 +2236,7 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
   /grow/grows/{growId}:
     put:
       tags: [grow]
@@ -2262,7 +2264,7 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
     delete:
@@ -2279,7 +2281,7 @@ paths:
         "204":
           description: Done.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
   /grow/grows/{growId}/weather:
@@ -2301,7 +2303,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/GrowWeather"
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
   /grow/grows/{growId}/plants:
@@ -2331,7 +2333,7 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
   /grow/plants/{plantId}:
@@ -2353,7 +2355,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/GrowPlantDetail"
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
     put:
@@ -2382,7 +2384,7 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
     delete:
@@ -2399,7 +2401,7 @@ paths:
         "204":
           description: Done.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
   /grow/plants/{plantId}/logs:
@@ -2425,7 +2427,7 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
   /grow/grows/{growId}/costs:
@@ -2447,7 +2449,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/GrowCosts"
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
     post:
@@ -2476,7 +2478,7 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
   /grow/costs/{costId}:
@@ -2494,7 +2496,7 @@ paths:
         "204":
           description: Done.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
   /grow/plants/{plantId}/checks:
@@ -2524,9 +2526,11 @@ paths:
         "400":
           description: Invalid input.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
+        "402":
+          description: Premium needed.
         "409":
           description: Trichomes outside the bloom.
         "422":
@@ -2550,7 +2554,7 @@ paths:
         "204":
           description: Done.
         "403":
-          description: Module not unlocked or age not confirmed.
+          description: Age not confirmed.
         "404":
           description: Not found.
   /grow/logs/{logId}:
@@ -2568,42 +2572,7 @@ paths:
         "204":
           description: Done.
         "403":
-          description: Module not unlocked or age not confirmed.
-        "404":
-          description: Not found.
-  /admin/grow-access:
-    get:
-      tags: [grow]
-      operationId: listGrowAccess
-      summary: Owner – accounts with the Grow module
-      responses:
-        "200":
-          description: OK.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GrowAccessEntry"
-    put:
-      tags: [grow]
-      operationId: setGrowAccess
-      summary: Owner – unlock the Grow module for an account by e-mail, or take it back
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GrowAccessInput"
-      responses:
-        "200":
-          description: OK.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/GrowAccessEntry"
+          description: Age not confirmed.
         "404":
           description: Not found.
   /farms/{farmId}/duties:
@@ -4994,6 +4963,57 @@ paths:
                 $ref: "#/components/schemas/PushTestResult"
         "401":
           description: Not signed in
+  /premium:
+    get:
+      tags: [premium]
+      operationId: getPremium
+      summary: Premium status of the signed-in account
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Premium"
+  /admin/premium:
+    get:
+      tags: [premium]
+      operationId: listPremium
+      summary: Owner – accounts with Premium
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PremiumEntry"
+    put:
+      tags: [premium]
+      operationId: setPremium
+      summary: Owner – grant Premium by e-mail (no end or until a day), or take it back
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PremiumInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PremiumEntry"
+        "400":
+          description: Invalid input.
+        "404":
+          description: No account with this e-mail.
+        "409":
+          description: The owner always has Premium.
 components:
   parameters:
     AuthorizationSessionHeader:
@@ -6283,10 +6303,8 @@ components:
           type: [number, 'null']
     GrowAccess:
       type: object
-      required: [unlocked, ageConfirmed, adults, push, kwhPrice]
+      required: [ageConfirmed, adults, push, kwhPrice]
       properties:
-        unlocked:
-          type: boolean
         ageConfirmed:
           type: boolean
         adults:
@@ -6295,6 +6313,46 @@ components:
           $ref: "#/components/schemas/GrowPush"
         kwhPrice:
           type: [number, 'null']
+    Premium:
+      type: object
+      required: [active, until, source]
+      properties:
+        active:
+          type: boolean
+        until:
+          type: [string, 'null']
+          format: date-time
+        source:
+          type: [string, 'null']
+    PremiumEntry:
+      type: object
+      required: [email, username, source, until, active, grantedAt]
+      properties:
+        email:
+          type: [string, 'null']
+        username:
+          type: [string, 'null']
+        source:
+          type: string
+        until:
+          type: [string, 'null']
+          format: date-time
+        active:
+          type: boolean
+        grantedAt:
+          type: string
+          format: date-time
+    PremiumInput:
+      type: object
+      required: [email, active]
+      properties:
+        email:
+          type: string
+        active:
+          type: boolean
+        until:
+          type: [string, 'null']
+          description: Last day (YYYY-MM-DD); null or missing for no end.
     GrowPush:
       type: string
       enum: ["off", discreet, full]
@@ -6313,25 +6371,6 @@ components:
       properties:
         adults:
           type: integer
-    GrowAccessEntry:
-      type: object
-      required: [email, username, unlockedAt]
-      properties:
-        email:
-          type: [string, 'null']
-        username:
-          type: [string, 'null']
-        unlockedAt:
-          type: [string, 'null']
-          format: date-time
-    GrowAccessInput:
-      type: object
-      required: [email, unlocked]
-      properties:
-        email:
-          type: string
-        unlocked:
-          type: boolean
     GrowEnvironment:
       type: string
       enum: [indoor, outdoor, greenhouse]

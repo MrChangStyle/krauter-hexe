@@ -1,18 +1,18 @@
 # Grow (Zusatzmodul, ab 18)
 
-Das Grow-Modul begleitet den privaten Eigenanbau von Cannabis für Erwachsene im Rahmen des Konsumcannabisgesetzes (KCanG). Es gibt den Anbau im Zelt (Indoor), im Freien (Outdoor) und im Gewächshaus. Grundlage sind feste Regeln, keine KI.
+Das Grow-Modul begleitet den privaten Eigenanbau von Cannabis für Erwachsene im Rahmen des Konsumcannabisgesetzes (KCanG). Es gibt den Anbau im Zelt (Indoor), im Freien (Outdoor) und im Gewächshaus. Grundlage sind feste Regeln; nur der KI-Check nutzt KI und gehört zu Premium (`docs/premium.md`).
 
 Das Modul gibt gärtnerische Tipps. Es ist **keine** Rechtsberatung und gibt **keine** Empfehlungen zum Konsum. Es ist bewusst nicht als „medizinisch“ bezeichnet: Medizinisches Cannabis gibt es nur auf Rezept in der Apotheke, der Eigenanbau läuft über das KCanG.
 
 ## Zugang
 
-- **Zusatzmodul**:
-  - Bis es Tarife gibt, schaltet der Betreiber es pro Konto frei (Mehr → „Grow freischalten“, `PUT /admin/grow-access`). Der Betreiber selbst hat es immer.
-  - Für das Konto gibt es die Tabelle `grow_access` mit `unlocked_at`, `age_confirmed_at` und `adults`.
+- **Kostenlos für jedes Konto ab 18**: alles ohne KI – Grow-Plan, Tagebuch, KCanG-Check, Erinnerungen, Wetter, Strom und Kosten.
+  - **Premium**: der KI-Check (Gesundheit und Trichome), weil jede Anfrage Geld kostet. Ohne Premium antwortet `POST /grow/plants/:id/checks` mit 402. Siehe `docs/premium.md`.
+  - Für das Konto gibt es die Tabelle `grow_access` mit `age_confirmed_at`, `adults`, `push` und `kwh_price`. `unlocked_at` stammt aus der Zeit der Einzel-Freischaltung und wird nicht mehr genutzt.
 - **Ab 18**:
   - Vor dem ersten Grow bestätigt das Konto, dass es volljährig ist.
   - Es gibt an, wie viele Erwachsene im Haushalt leben.
-  - Ohne beides antworten alle Grow-Endpunkte mit 403.
+  - Ohne Bestätigung antworten alle Grow-Endpunkte mit 403.
 - **Nur Web**:
   - Mit `VITE_DISABLE_GROW=true` beim Build ist das Modul komplett ausgeblendet (`GROW_ENABLED`). Das ist für spätere Store-Versionen gedacht, siehe die Richtlinien von Apple und Google.
 - **Privat**:

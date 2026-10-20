@@ -15,9 +15,6 @@ import {
   GetGrowCostsResponse,
   GetGrowOverviewResponse,
   GetGrowPlantResponse,
-  ListGrowAccessResponse,
-  SetGrowAccessBody,
-  SetGrowAccessResponse,
   GetGrowWeatherResponse,
   SetGrowSettingsBody,
   SetGrowSettingsResponse,
@@ -27,7 +24,7 @@ import {
   UpdateGrowResponse,
 } from '@workspace/api-zod';
 
-import { requireApproved, requireOwner } from '../middlewares/requireApproved';
+import { requireApproved } from '../middlewares/requireApproved';
 import {
   addLog,
   addPlant,
@@ -39,31 +36,27 @@ import {
   deletePlant,
   growAccess,
   growOverview,
-  listGrowAccess,
   plantDetail,
   setGrowSettings,
-  setGrowUnlocked,
   updateGrow,
   updatePlant,
 } from '../lib/grow';
 import { addCost, deleteCost, growCosts } from '../lib/growCosts';
 import { checkPlant } from '../lib/growDiagnosis';
 import { growWeather } from '../lib/growWeather';
+import { premiumOf } from '../lib/premium';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
-// Grow (add-on, adults only): access, grows, plants, Tagebuch. Everything
-// belongs to the signed-in account; the module must be unlocked by the owner
-// and the age confirmed before any grow data is read or written.
+// Grow (adults only): access, grows, plants, Tagebuch, weather, costs and the
+// KI-Check. Everything belongs to the signed-in account; the age must be
+// confirmed before any grow data is read or written. Free except the AI, which
+// is Premium (lib/premium.ts).
 
 const router: IRouter = Router();
 
-/** Unlocked and age confirmed – else 403 with what is missing. */
+/** Age confirmed – else 403. */
 async function requireGrow(req: Request, res: Response, next: NextFunction): Promise<void> {
-  const access = await growAccess(req.user!.id, req.user!.isOwner);
-  if (!access.unlocked) {
-    res.status(403).json({ error: 'Das Grow-Modul ist für dieses Konto nicht freigeschaltet.' });
-    return;
-  }
+  const access = await growAccess(req.user!.id);
   if (!access.ageConfirmed) {
     res.status(403).json({ error: 'Bitte bestätige zuerst, dass du volljährig bist.' });
     return;
@@ -80,7 +73,7 @@ router.get(
   '/grow/access',
   requireApproved,
   handle(async (req, res) => {
-    res.json(GetGrowAccessResponse.parse(await growAccess(me(req), req.user!.isOwner)));
+    res.json(GetGrowAccessResponse.parse(await growAccess(me(req))));
   }),
 );
 
@@ -90,7 +83,7 @@ router.post(
   handle(async (req, res) => {
     const body = ConfirmGrowAgeBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
-    res.json(ConfirmGrowAgeResponse.parse(await confirmAge(me(req), req.user!.isOwner, body.data.adults)));
+    res.json(ConfirmGrowAgeResponse.parse(await confirmAge(me(req), body.data.adults)));
   }),
 );
 
@@ -100,12 +93,12 @@ router.put(
   handle(async (req, res) => {
     const body = SetGrowSettingsBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
-    const access = await growAccess(me(req), req.user!.isOwner);
-    if (!access.unlocked || !access.ageConfirmed) {
+    const access = await growAccess(me(req));
+    if (!access.ageConfirmed) {
       res.status(403).json({ error: 'Bitte bestätige zuerst, dass du volljährig bist.' });
       return;
     }
-    res.json(SetGrowSettingsResponse.parse(await setGrowSettings(me(req), req.user!.isOwner, body.data)));
+    res.json(SetGrowSettingsResponse.parse(await setGrowSettings(me(req), body.data)));
   }),
 );
 
@@ -288,6 +281,10 @@ router.post(
     if (id === null) return notFound(res);
     const body = CheckGrowPlantBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
+    if (!(await premiumOf(me(req), req.user!.isOwner)).active) {
+      res.status(402).json({ error: 'Der KI-Check gehört zu Premium.', premium: false });
+      return;
+    }
     const check = await withAiQuota(req, res, 'grow', () => checkPlant(me(req), id, body.data.kind, body.data.imageData));
     if (check) res.status(201).json(CheckGrowPlantResponse.parse(check));
   }),
@@ -302,24 +299,6 @@ router.delete(
     if (id === null) return notFound(res);
     await deleteCheck(me(req), id);
     res.sendStatus(204);
-  }),
-);
-
-router.get(
-  '/admin/grow-access',
-  requireOwner,
-  handle(async (_req, res) => {
-    res.json(ListGrowAccessResponse.parse(await listGrowAccess()));
-  }),
-);
-
-router.put(
-  '/admin/grow-access',
-  requireOwner,
-  handle(async (req, res) => {
-    const body = SetGrowAccessBody.safeParse(req.body);
-    if (!body.success) return badRequest(res);
-    res.json(SetGrowAccessResponse.parse(await setGrowUnlocked(body.data.email, body.data.unlocked)));
   }),
 );
 

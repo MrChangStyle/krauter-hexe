@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BookOpen, Bell, ChevronRight, Coins, Lock, Plus, Scale, ShieldCheck, Sprout, Trash2, Archive, Loader2 } from "lucide-react";
+import { AlertTriangle, BookOpen, Bell, ChevronRight, Coins, Plus, Scale, ShieldCheck, Sprout, Trash2, Archive, Loader2 } from "lucide-react";
 import {
   getGetGrowAccessQueryKey,
   getGetGrowOverviewQueryKey,
@@ -21,6 +21,7 @@ import {
   type GrowPush,
 } from "@workspace/api-client-react";
 import { GrowPlantDialog } from "@/components/grow-plant-dialog";
+import { GrowPremiumCard } from "@/components/grow-premium-card";
 import { GrowWeatherCard } from "@/components/grow-weather-card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -421,6 +422,7 @@ function Overview({ access }: { access: GrowAccess }) {
     <div className="space-y-4">
       <KcangCard overview={d} access={access} />
       <PushCard access={access} />
+      <GrowPremiumCard />
       <div className="grid grid-cols-2 gap-3">
         <Link href="/grow/wissen" className="flex items-center gap-2 rounded-xl border border-border bg-card p-3 text-sm font-medium hover:bg-muted/50">
           <BookOpen className="h-4 w-4 text-primary" />
@@ -459,14 +461,6 @@ export default function GrowPage() {
         <p className="text-sm text-muted-foreground">Dieses Modul ist in dieser Version nicht verfügbar.</p>
       ) : !a ? (
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      ) : !a.unlocked ? (
-        <section className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm">
-          <h2 className="flex items-center gap-2 font-semibold">
-            <Lock className="h-4 w-4 text-primary" />
-            Zusatzmodul
-          </h2>
-          <p className="text-muted-foreground">Grow ist ein Zusatzmodul, das für dein Konto freigeschaltet werden muss.</p>
-        </section>
       ) : !a.ageConfirmed ? (
         <AgeGate />
       ) : (

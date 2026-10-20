@@ -54,6 +54,14 @@ const STATEMENTS = [
   ...FEED_SCHEMA_STATEMENTS,
   // Grow (generated, see growSchemaStatements.ts).
   ...GROW_SCHEMA_STATEMENTS,
+  // Premium (schema/premium.ts).
+  `CREATE TABLE IF NOT EXISTS "premium" (
+	"user_id" text PRIMARY KEY NOT NULL,
+	"source" text DEFAULT 'manual' NOT NULL,
+	"plan" text,
+	"active_until" timestamp with time zone,
+	"granted_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
   // Betrieb: error monitoring, status notice, usage counts (schema/monitoring.ts).
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS last_active_on date",
   `CREATE TABLE IF NOT EXISTS "error_groups" (

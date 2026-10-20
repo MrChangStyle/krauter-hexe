@@ -6,7 +6,7 @@
  */
 
 import { db, growAccessTable, growPlantsTable, growPushLogTable, growsTable, usersTable } from '@workspace/db';
-import { and, eq, inArray, isNotNull, isNull, lt, ne, or } from 'drizzle-orm';
+import { and, eq, inArray, isNotNull, isNull, lt, ne } from 'drizzle-orm';
 
 import { addDays } from './feedSeason';
 import { forecast, type DayForecast } from './farmWeather';
@@ -149,7 +149,6 @@ export async function sendGrowDigests(hhmm: string, day: string): Promise<number
           isNotNull(growAccessTable.ageConfirmedAt),
           ne(growAccessTable.push, 'off'),
           eq(usersTable.approved, true),
-          or(isNotNull(growAccessTable.unlockedAt), eq(usersTable.isOwner, true)),
         ),
       );
     if (accounts.length === 0) return 0;

@@ -4,11 +4,11 @@ import { date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, seri
 // the Konsumcannabisgesetz. Personal, not farm data – every row belongs to one
 // account (lib/accountDeletion.ts removes them with it). Adults only.
 
-// Who may use the module: the owner unlocks it per account (until payments
-// exist), the account confirms its age once and says how many adults live in
-// the household (the KCanG allows 3 plants per adult).
+// Who uses the module: the account confirms its age once and says how many
+// adults live in the household (the KCanG allows 3 plants per adult).
 export const growAccessTable = pgTable("grow_access", {
   userId: text("user_id").primaryKey(),
+  // No longer used: the module is free for every adult since Premium (docs/premium.md).
   unlockedAt: timestamp("unlocked_at", { withTimezone: true }),
   ageConfirmedAt: timestamp("age_confirmed_at", { withTimezone: true }),
   adults: integer("adults").notNull().default(1),

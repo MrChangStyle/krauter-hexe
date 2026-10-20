@@ -259,7 +259,7 @@ export default function GrowKostenPage() {
   const params = useParams<{ growId: string }>();
   const growId = Number(params.growId);
   const access = useGetGrowAccess({ query: { queryKey: getGetGrowAccessQueryKey(), enabled: GROW_ENABLED } });
-  const ready = GROW_ENABLED && !!access.data?.unlocked && !!access.data?.ageConfirmed;
+  const ready = GROW_ENABLED && !!access.data?.ageConfirmed;
   const overview = useGetGrowOverview({ query: { queryKey: getGetGrowOverviewQueryKey(), enabled: ready } });
   const costs = useGetGrowCosts(growId, { query: { queryKey: getGetGrowCostsQueryKey(growId), enabled: ready } });
   const grow = overview.data?.grows.find((g) => g.id === growId);
@@ -270,7 +270,7 @@ export default function GrowKostenPage() {
         Grow
       </Link>
       {!ready && !access.isLoading ? (
-        <p className="text-sm text-muted-foreground">Das Grow-Modul ist für dieses Konto nicht freigeschaltet.</p>
+        <p className="text-sm text-muted-foreground">Bitte bestätige zuerst auf der Grow-Seite, dass du volljährig bist.</p>
       ) : !grow || !costs.data ? (
         overview.isLoading || costs.isLoading || access.isLoading ? (
           <Loader2 className="h-6 w-6 animate-spin text-primary" />

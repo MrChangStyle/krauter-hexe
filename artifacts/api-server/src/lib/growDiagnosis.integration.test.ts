@@ -1,6 +1,6 @@
 /**
  * Grow KI-Check against a REAL Postgres, through the HTTP routes, with the AI
- * replaced: health and trichome checks kept on the plant without the photo,
+ * replaced: Premium only, health and trichome checks kept on the plant without the photo,
  * the Tagebuch facts, trichomes only in the bloom, unreadable photos, the daily
  * limit, privacy between accounts and deleting a check.
  *
@@ -69,18 +69,17 @@ describe.skipIf(!enabled)("Grow KI-Check (real database, AI replaced)", () => {
     return { status: res.status, data: text ? (JSON.parse(text) as any) : null };
   };
   const open = async (who: string) => {
-    as = "owner";
-    await api("PUT", "/admin/grow-access", { email: `${who}@x.de`, unlocked: true });
     as = who;
     await api("POST", "/grow/access", { adults: 1 });
   };
   const plant = { name: "Lemon 1", strainType: "hybrid", flowering: "photo", seedSex: "feminized", startedOn: "2026-03-01" };
 
   beforeEach(async () => {
-    await q("TRUNCATE users, grow_access, grows, scan_attempts RESTART IDENTITY CASCADE");
+    await q("TRUNCATE users, grow_access, grows, scan_attempts, premium RESTART IDENTITY CASCADE");
     await q(`INSERT INTO users (id, email, approved, is_owner) VALUES ('owner', 'o@x.de', true, true), ('anna', 'anna@x.de', true, false), ('bert', 'bert@x.de', true, false)`);
     fixedDay = "2026-04-01";
     runModelChain.mockReset();
+    await q("INSERT INTO premium (user_id) VALUES ('anna'), ('bert')");
     await open("anna");
     const growId = (await api("POST", "/grow/grows", { name: "Zelt", environment: "indoor", medium: "soil" })).data.grows[0].id;
     plantId = (await api("POST", `/grow/grows/${growId}/plants`, plant)).data.id;
@@ -123,6 +122,22 @@ describe.skipIf(!enabled)("Grow KI-Check (real database, AI replaced)", () => {
     // Delete.
     expect((await api("DELETE", `/grow/checks/${r.data.id}`)).status).toBe(204);
     expect((await api("GET", `/grow/plants/${plantId}`)).data.checks).toEqual([]);
+  });
+
+  it("needs Premium – granted without end, until a day, or the owner", async () => {
+    await q("DELETE FROM premium WHERE user_id = 'anna'");
+    let r = await api("POST", `/grow/plants/${plantId}/checks`, { kind: "health", imageData: PHOTO });
+    expect(r).toEqual({ status: 402, data: { error: "Der KI-Check gehört zu Premium.", premium: false } });
+    expect(runModelChain).not.toHaveBeenCalled();
+    expect(await q("SELECT * FROM scan_attempts")).toEqual([]);
+    // Expired yesterday: still no.
+    await q("INSERT INTO premium (user_id, active_until) VALUES ('anna', now() - interval '1 day')");
+    expect((await api("POST", `/grow/plants/${plantId}/checks`, { kind: "health", imageData: PHOTO })).status).toBe(402);
+    // Until tomorrow: yes.
+    await q("UPDATE premium SET active_until = now() + interval '1 day' WHERE user_id = 'anna'");
+    runModelChain.mockResolvedValueOnce({ istPflanze: true, status: "healthy", befunde: [] });
+    r = await api("POST", `/grow/plants/${plantId}/checks`, { kind: "health", imageData: PHOTO });
+    expect(r.status).toBe(201);
   });
 
   it("reads the trichomes only in the bloom", async () => {

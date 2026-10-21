@@ -1,28 +1,18 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Loader2,
-  LogOut,
   Pencil,
   Plus,
   Radar,
   Trash2,
-  UserPlus,
   Users,
-  X, Wheat, Pill, Handshake, Baby, PiggyBank, FileText } from "lucide-react";
+  Wheat, Pill, Handshake, Baby, PiggyBank, FileText } from "lucide-react";
 import {
-  getListFarmMembersQueryKey,
-  useAddFarmMember,
-  useChangeFarmMemberRole,
   useCreateFarm,
   useDeleteFarm,
   useEnsureOwnFarm,
-  useListFarmMembers,
-  useRemoveFarmMember,
   useRenameFarm,
-  type FarmMember,
-  type FarmRole,
   type FarmSummary,
 } from "@workspace/api-client-react";
 import { FarmDutiesTile } from "@/components/farm-duties-link";
@@ -30,7 +20,6 @@ import { HubGrid, HubTile } from "@/components/hub-tile";
 import { FarmSetupCard } from "@/components/farm-setup-card";
 import { HousingOrderBanner } from "@/components/housing-order-banner";
 import { deDay } from "@/lib/medicine-labels";
-import { berlinToday } from "@/lib/weather-labels";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,8 +41,6 @@ import {
   readActiveFarmId,
   writeActiveFarmId,
 } from "@/lib/active-farm";
-
-const ROLES: FarmRole[] = ["admin", "caretaker", "guest"];
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -134,214 +121,6 @@ function NameDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
-}
-
-// ── Members ──────────────────────────────────────────────────────────────────
-
-function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () => void }) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const isAdmin = farm.role === "admin";
-  const members = useListFarmMembers(farm.id);
-  const [email, setEmail] = useState("");
-  const [role, setRole] = useState<FarmRole>("caretaker");
-  // Vertretung: last day of access (empty: no end). Not for admins.
-  const [until, setUntil] = useState("");
-  const [addError, setAddError] = useState<string | null>(null);
-
-  const setList = (list: FarmMember[]) =>
-    queryClient.setQueryData(getListFarmMembersQueryKey(farm.id), list);
-
-  const add = useAddFarmMember({
-    mutation: {
-      onSuccess(list) {
-        setList(list);
-        setEmail("");
-        setUntil("");
-        setAddError(null);
-        toast({ title: "Mitglied hinzugefügt" });
-      },
-      onError: (err) => setAddError(errorText(err, "Das hat nicht geklappt.")),
-    },
-  });
-  const change = useChangeFarmMemberRole({
-    mutation: {
-      onSuccess: setList,
-      onError: (err) =>
-        toast({ title: "Rolle nicht geändert", description: errorText(err, ""), variant: "destructive" }),
-    },
-  });
-  const remove = useRemoveFarmMember({
-    mutation: {
-      onSuccess(_data, vars) {
-        const me = members.data?.find((m) => m.isMe);
-        if (me && vars.userId === me.userId) {
-          toast({ title: "Du hast die Farm verlassen" });
-          onLeft();
-          return;
-        }
-        void queryClient.invalidateQueries({ queryKey: getListFarmMembersQueryKey(farm.id) });
-      },
-      onError: (err) =>
-        toast({ title: "Das hat nicht geklappt", description: errorText(err, ""), variant: "destructive" }),
-    },
-  });
-
-  function submitAdd(event: FormEvent) {
-    event.preventDefault();
-    if (!email.trim()) return;
-    add.mutate({ farmId: farm.id, data: { email: email.trim(), role, accessUntil: role !== "admin" && until ? until : null } });
-  }
-
-  const me = members.data?.find((m) => m.isMe);
-
-  return (
-    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
-      <h2 className="flex items-center gap-2 font-semibold">
-        <Users className="h-4 w-4 text-primary" />
-        Mitglieder
-      </h2>
-
-      {members.isLoading ? (
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-      ) : (
-        <ul className="divide-y divide-border">
-          {(members.data ?? []).map((m) => (
-            <li key={m.userId} className="flex items-center gap-2 py-2">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">
-                  {m.displayName}
-                  {m.isMe && <span className="font-normal text-muted-foreground"> (du)</span>}
-                </p>
-                {m.email && <p className="truncate text-xs text-muted-foreground">{m.email}</p>}
-                {m.accessUntil && (
-                  <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
-                    Vertretung bis {deDay(m.accessUntil)}
-                    {isAdmin && (
-                      <>
-                        {" · "}
-                        <label className="sr-only" htmlFor={`until-${m.userId}`}>{`Vertretung von ${m.displayName} bis`}</label>
-                        <input
-                          id={`until-${m.userId}`}
-                          type="date"
-                          className="rounded border border-input bg-background px-1 text-xs"
-                          value={m.accessUntil}
-                          min={berlinToday()}
-                          onChange={(e) =>
-                            e.target.value && change.mutate({ farmId: farm.id, userId: m.userId, data: { role: m.role, accessUntil: e.target.value } })
-                          }
-                        />
-                      </>
-                    )}
-                  </p>
-                )}
-              </div>
-              {isAdmin ? (
-                <select
-                  aria-label={`Rolle von ${m.displayName}`}
-                  className={selectClass}
-                  value={m.role}
-                  disabled={change.isPending}
-                  onChange={(e) =>
-                    change.mutate({ farmId: farm.id, userId: m.userId, data: { role: e.target.value as FarmRole } })
-                  }
-                >
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>
-                      {FARM_ROLE_LABELS[r]}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs">{FARM_ROLE_LABELS[m.role]}</span>
-              )}
-              {isAdmin && !m.isMe && (
-                <button
-                  type="button"
-                  aria-label={`${m.displayName} entfernen`}
-                  className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-destructive"
-                  disabled={remove.isPending}
-                  onClick={() => {
-                    if (window.confirm(`${m.displayName} von der Farm entfernen?`)) {
-                      remove.mutate({ farmId: farm.id, userId: m.userId });
-                    }
-                  }}
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
-
-      {isAdmin && (
-        <form onSubmit={submitAdd} className="min-w-0 space-y-2 rounded-lg bg-muted/40 p-3">
-          <Label htmlFor="member-email" className="text-xs">
-            Mitglied hinzufügen (die Person braucht ein Little-Farming-Konto)
-          </Label>
-          <Input
-            id="member-email"
-            type="email"
-            inputMode="email"
-            placeholder="name@beispiel.de"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <div className="flex min-w-0 gap-2">
-            <select
-              aria-label="Rolle für das neue Mitglied"
-              className={`${selectClass} min-w-0 flex-1`}
-              value={role}
-              onChange={(e) => setRole(e.target.value as FarmRole)}
-            >
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {FARM_ROLE_LABELS[r]}
-                </option>
-              ))}
-            </select>
-            <Button type="submit" size="sm" className="gap-1.5" disabled={add.isPending || !email.trim()}>
-              {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
-              Hinzufügen
-            </Button>
-          </div>
-          {role !== "admin" && (
-            <div className="flex items-center gap-2">
-              <Label htmlFor="member-until" className="text-xs">
-                Vertretung bis (freiwillig)
-              </Label>
-              <Input id="member-until" type="date" className="h-8 w-40" min={berlinToday()} value={until} onChange={(e) => setUntil(e.target.value)} />
-            </div>
-          )}
-          <p className="text-xs text-muted-foreground">
-            {FARM_ROLE_LABELS[role]}: {FARM_ROLE_HINTS[role]}
-            {role !== "admin" && until && ` Der Zugang endet nach dem ${deDay(until)} von selbst.`}
-          </p>
-          {addError && (
-            <p role="alert" className="text-xs text-destructive">
-              {addError}
-            </p>
-          )}
-        </form>
-      )}
-
-      {me && (members.data?.length ?? 0) > 1 && (
-        <button
-          type="button"
-          className="flex items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4 hover:text-destructive"
-          onClick={() => {
-            if (window.confirm(`„${farm.name}“ verlassen? Du siehst ihre Tiere danach nicht mehr.`)) {
-              remove.mutate({ farmId: farm.id, userId: me.userId });
-            }
-          }}
-        >
-          <LogOut className="h-3.5 w-3.5" />
-          Farm verlassen
-        </button>
-      )}
-    </section>
   );
 }
 
@@ -490,7 +269,7 @@ export default function FarmPage() {
         <HubTile href="/farm/ertrag" icon={PiggyBank} label="Ertrag & Bilanz" hint="Eier, Milch, Ernte, Kosten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />
         <HubTile href="/farm/kameras" icon={Radar} label="Wildtier-Radar" hint="Kameras & Raubtier-Alarm" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />
         <HubTile href="/farm/uebergabe" icon={Handshake} label="Übergabe" hint="Vertretung für ein paar Tage" tone="bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300" />
-        <HubTile href="#mitglieder" icon={Users} label="Mitglieder" hint="Team, Rollen, Einladungen" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />
+        <HubTile href="/farm/mitglieder" icon={Users} label="Mitglieder" hint="Team, Rollen, Einladungen" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />
         <HubTile href="/farm/export" icon={FileText} label="Veterinäramt-Export" hint="Bestandsliste & Medizin als PDF" tone="bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300" />
       </HubGrid>
 
@@ -501,15 +280,6 @@ export default function FarmPage() {
       <FarmAnimalsSection farm={farm} />
 
 
-      <div id="mitglieder" className="scroll-mt-4">
-        <MembersCard
-          farm={farm}
-          onLeft={() => {
-            setActiveId(null);
-            reload();
-          }}
-        />
-      </div>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openDialog("new")}>

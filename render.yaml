@@ -96,6 +96,12 @@ services:
       - key: TURNSTILE_SECRET_KEY
         sync: false
 
+      # --- Vorschau-Schutz (docs/landingpage.md) ---------------------------
+      # Solange gesetzt, zeigt die ganze Seite (Landingpage, App, API) nur ein
+      # Passwortfeld. Leer lassen bzw. löschen, sobald die App öffentlich ist.
+      - key: SITE_PASSWORD
+        sync: false
+
       # --- Umzug auf littlefarming.de ---------------------------------------
       # Alte Adressen, von denen die neue Adresse Gerätedaten (Fotos,
       # Warteschlange) annimmt. Der Umzug selbst startet, sobald PUBLIC_BASE_URL

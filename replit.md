@@ -28,6 +28,7 @@ Eine mobile-first, deutschsprachige Web-App, mit der Nutzer wilde Pflanzen per F
 - Optional env: `REGISTRATION_DAILY_CAP` — max new accounts per rolling 24 h while `OPEN_REGISTRATION=true` (default 50)
 - Optional secrets: `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile on the registration form; only when **both** are set is a token required
 - Optional env: `LEGACY_ORIGINS` — comma-separated old addresses the canonical address accepts device data from in the move helper (render.yaml: `https://kraeuter-hexe.onrender.com`)
+- Optional env: `SITE_PASSWORD` — Vorschau-Schutz: while set, the whole site shows only a password page until it is typed once per device (docs/landingpage.md). Delete it to go public.
 - Optional env: `TRUST_PROXY_HOPS` — proxies in front of the server whose X-Forwarded-For is trusted for `req.ip` (default 1 = Render's proxy)
 
 ## Push-Benachrichtigungen (Cron)
@@ -199,6 +200,8 @@ Demo-Daten (`docs/demo.md`): „Demo-Daten laden“ on `/module` creates a separ
 Einrichtungsassistent and App-Tour (`docs/onboarding.md`): on first start (`settings.onboarded` false, username set) `components/onboarding.tsx` walks through welcome, modules (`module-switches.tsx`), demo data and an optional tour; skipping sets `onboarded`. The tour (`lib/tour.ts`, `components/tour-card.tsx`) shows one explanation card per main page above the bottom bar. Both can be restarted on `/module`.
 
 Farm & Team (`docs/team.md`): `/team` (Mehr tile and the Tiere tile) shows the farm's people – Team and Vertretung (`MembersCard kind`), role help (UI labels Admin / Mitarbeiter / Gast) and Wichtige Kontakte (table `farm_contacts`, `GET/POST/PUT/DELETE /farms/:farmId/contacts`, read by every member, kept by admins, also shown on the Übergabe page).
+
+Landingpage and Vorschau-Schutz (`docs/landingpage.md`): signed-out visitors see `components/landing-page.tsx` before the login form. While env `SITE_PASSWORD` is set, `lib/siteGate.ts` answers every page and API call with a password page (`/api/site-access`) until the visitor typed it (cookie `lf_site`, HMAC of the password; healthz, cron and webhooks stay open); the client's `lib/site-lock.ts` sends a cached app shell there on a 401 with `X-Site-Locked`.
 
 ## Hof-Dashboard
 

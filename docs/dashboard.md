@@ -36,9 +36,20 @@ Die Startseite „Hof“ zeigt einen kompakten Überblick über den Hof. Gescann
 
 Die Daten kommen aus den bestehenden Endpunkten der Module. Für das Dashboard gibt es keinen eigenen Server-Teil. Widgets, auf die ein Konto keinen Zugriff hat (zum Beispiel ein Gast), zeigen „–“.
 
-## Nächster Schritt: selbst anpassen
+## Selbst anpassen
 
-- **Dashboard anpassen**: eine Liste aller `WIDGETS` mit Name und Beschreibung. Dort kann man ein- und ausschalten und die Reihenfolge ändern.
-- **Speichern** pro Konto auf dem Server, damit es auf allen Geräten gleich aussieht. Die Hof-Seite liest dann dieses Layout statt `DEFAULT_LAYOUT`.
-- **Premium-Widgets** (`premium: true`), zum Beispiel ein KI-Widget, sind nur mit Premium auswählbar.
-- **Neues Modul = neues Widget**: einen Eintrag in `WIDGETS` und eine Komponente in `RENDER` ergänzen.
+- Unter den Widgets steht **„Dashboard anpassen“**. Dort sind alle Widgets nach Pflanzen und Tiere gruppiert, jeweils mit Name und Beschreibung.
+  - Mit dem Schalter blendest du ein Widget ein oder aus. Ein neu eingeschaltetes kommt ans Ende seines Bereichs.
+  - Mit den Pfeilen änderst du die Reihenfolge innerhalb des Bereichs.
+  - „Standard wiederherstellen“ setzt das Dashboard zurück.
+- **Gespeichert pro Konto** auf dem Server in der Tabelle `dashboard_layouts` (eine Zeile pro Konto). Sie steht in `PERSONAL_TABLES` und wird mit dem Konto gelöscht.
+  - `GET /dashboard` liefert `{ widgets }`; `null` heißt Standard.
+  - `PUT /dashboard` mit `{ widgets: [...] }` oder `{ widgets: null }`.
+  - Erlaubt sind nur die Ids aus `DashboardWidgetId` in der API. Doppelte fallen weg, ebenso Widgets, die es nicht mehr gibt.
+  - Auch eine leere Liste ist eine gültige Wahl.
+- Grow erscheint nur in Builds mit dem Grow-Modul.
+- **Neues Modul = neues Widget**:
+  1. Die Id in `DashboardWidgetId` (openapi.yaml) eintragen.
+  2. Einen Eintrag in `WIDGETS` und eine Komponente in `RENDER` ergänzen.
+  3. Ein Test prüft, dass beide Listen gleich sind.
+- **Später**: Premium-Widgets (`premium: true`), zum Beispiel ein KI-Widget, sind nur mit Premium auswählbar.

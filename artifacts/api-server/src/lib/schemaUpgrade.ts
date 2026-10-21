@@ -54,6 +54,12 @@ const STATEMENTS = [
   ...FEED_SCHEMA_STATEMENTS,
   // Grow (generated, see growSchemaStatements.ts).
   ...GROW_SCHEMA_STATEMENTS,
+  // Hof-Dashboard (schema/dashboard.ts).
+  `CREATE TABLE IF NOT EXISTS "dashboard_layouts" (
+	"user_id" text PRIMARY KEY NOT NULL,
+	"widgets" jsonb NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
   // Premium (schema/premium.ts).
   `CREATE TABLE IF NOT EXISTS "premium" (
 	"user_id" text PRIMARY KEY NOT NULL,

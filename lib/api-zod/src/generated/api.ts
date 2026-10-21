@@ -6852,6 +6852,38 @@ export const SendTestPushResponse = zod.object({
 
 
 /**
+ * @summary The widgets of the account's Hof-Dashboard (null = the default)
+ */
+export const getDashboardResponseWidgetsMax = 30;
+
+
+
+export const GetDashboardResponse = zod.object({
+  "widgets": zod.array(zod.enum(['plant-tasks', 'garden', 'seeds', 'grow', 'farm-tasks', 'animals', 'duties', 'feed', 'medicines', 'breeding', 'yields'])).max(getDashboardResponseWidgetsMax).nullable()
+})
+
+
+/**
+ * @summary Choose and order the widgets, or null for the default again
+ */
+export const setDashboardBodyWidgetsMax = 30;
+
+
+
+export const SetDashboardBody = zod.object({
+  "widgets": zod.array(zod.enum(['plant-tasks', 'garden', 'seeds', 'grow', 'farm-tasks', 'animals', 'duties', 'feed', 'medicines', 'breeding', 'yields'])).max(setDashboardBodyWidgetsMax).nullable()
+})
+
+export const setDashboardResponseWidgetsMax = 30;
+
+
+
+export const SetDashboardResponse = zod.object({
+  "widgets": zod.array(zod.enum(['plant-tasks', 'garden', 'seeds', 'grow', 'farm-tasks', 'animals', 'duties', 'feed', 'medicines', 'breeding', 'yields'])).max(setDashboardResponseWidgetsMax).nullable()
+})
+
+
+/**
  * @summary Premium status of the signed-in account
  */
 export const GetPremiumResponse = zod.object({

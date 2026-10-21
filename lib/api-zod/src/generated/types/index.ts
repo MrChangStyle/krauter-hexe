@@ -69,6 +69,8 @@ export * from './cropHarvest';
 export * from './cropLight';
 export * from './cropRequestInput';
 export * from './cropRequestResult';
+export * from './dashboardLayout';
+export * from './dashboardWidgetId';
 export * from './dayForecast';
 export * from './dayForecastIcon';
 export * from './deleteAccountInput';

@@ -35,3 +35,4 @@ export * from "./feed";
 export * from "./weather";
 export * from "./grow";
 export * from "./premium";
+export * from "./dashboard";

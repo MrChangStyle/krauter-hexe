@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: grow
     description: Grow – home growing within the KCanG (adults only)
+  - name: dashboard
+    description: Hof-Dashboard – the widgets an account chose
   - name: premium
     description: Premium – the paid features (for now the AI of the Grow module)
   - name: feed
@@ -4963,6 +4965,37 @@ paths:
                 $ref: "#/components/schemas/PushTestResult"
         "401":
           description: Not signed in
+  /dashboard:
+    get:
+      tags: [dashboard]
+      operationId: getDashboard
+      summary: The widgets of the account's Hof-Dashboard (null = the default)
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardLayout"
+    put:
+      tags: [dashboard]
+      operationId: setDashboard
+      summary: Choose and order the widgets, or null for the default again
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DashboardLayout"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardLayout"
+        "400":
+          description: Invalid input.
   /premium:
     get:
       tags: [premium]
@@ -6313,6 +6346,18 @@ components:
           $ref: "#/components/schemas/GrowPush"
         kwhPrice:
           type: [number, 'null']
+    DashboardWidgetId:
+      type: string
+      enum: [plant-tasks, garden, seeds, grow, farm-tasks, animals, duties, feed, medicines, breeding, yields]
+    DashboardLayout:
+      type: object
+      required: [widgets]
+      properties:
+        widgets:
+          type: [array, 'null']
+          maxItems: 30
+          items:
+            $ref: "#/components/schemas/DashboardWidgetId"
     Premium:
       type: object
       required: [active, until, source]

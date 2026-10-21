@@ -190,6 +190,10 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 - Sales (`farm_sales`: revenue, optional amount, `product` = `product:eggs`/`crop:tomate` or a free label) give `sales.revenue` and `sales.soldValue` (shop value of what was sold); `selfSupply` = value − soldValue, `balance` = selfSupply + revenue − expenses.
 - For the running year the overview adds the laying rate (eggs of the last 30 days per hen and day) and the Futterplaner's monthly feed costs; the farm routes reach the AI client through `feedStock`, so tests set `GEMINI_API_KEY`.
 
+## Hof-Dashboard
+
+Details in `docs/dashboard.md`. The home page ("Hof", `pages/scan.tsx` when no scan flow is open) shows a slim weather strip, a one-line Pflanzenretter rank (expands to the top four) and widgets for Pflanzen and Tiere (`components/hof-dashboard.tsx`). `lib/dashboard.ts` holds the registry of all widgets and the default layout; letting the account pick and order its widgets is the next step.
+
 ## Premium
 
 Details in `docs/premium.md` (`lib/premium.ts`, `routes/premium.ts`, schema `premium.ts`). Paid features are the ones that cost money to run – for now the Grow KI-Check. `GET /premium` gives the account's status (the owner always has it); until payments exist the owner grants it by e-mail, without end or until a day (`/admin/premium`, Mehr → „Premium vergeben“). Table `premium` (one row per account, in `PERSONAL_TABLES`) is meant to be written by a payment provider later (source, plan monthly/yearly, active_until).

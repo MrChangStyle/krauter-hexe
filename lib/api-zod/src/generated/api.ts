@@ -6879,6 +6879,33 @@ export const SetSettingsResponse = zod.object({
 
 
 /**
+ * @summary Whether the account has the demo data loaded
+ */
+export const GetDemoStatusResponse = zod.object({
+  "active": zod.boolean(),
+  "farmId": zod.number().nullable().describe('The Demo-Hof, to switch to it.')
+})
+
+
+/**
+ * @summary Create the Demo-Hof with two examples per module (and a demo grow for confirmed adults)
+ */
+export const LoadDemoResponse = zod.object({
+  "active": zod.boolean(),
+  "farmId": zod.number().nullable().describe('The Demo-Hof, to switch to it.')
+})
+
+
+/**
+ * @summary Remove the Demo-Hof with everything on it and the demo grow; real data stays
+ */
+export const DeleteDemoResponse = zod.object({
+  "active": zod.boolean(),
+  "farmId": zod.number().nullable().describe('The Demo-Hof, to switch to it.')
+})
+
+
+/**
  * @summary The widgets of the account's Hof-Dashboard (null = the default)
  */
 export const getDashboardResponseWidgetsMax = 30;

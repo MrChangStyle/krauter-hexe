@@ -1,4 +1,4 @@
-import { date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp } from "drizzle-orm/pg-core";
 
 // Grow (docs/grow.md): the add-on module for growing cannabis at home within
 // the Konsumcannabisgesetz. Personal, not farm data – every row belongs to one
@@ -43,6 +43,8 @@ export const growsTable = pgTable(
     longitude: doublePrecision("longitude"),
     // Indoor: fans, filter and the like, running around the clock (watts).
     fanWatts: integer("fan_watts"),
+    // Example grow of "Demo-Daten laden" (lib/demoData.ts).
+    isDemo: boolean("is_demo").notNull().default(false),
   },
   (table) => [index("grows_user_idx").on(table.userId)],
 );

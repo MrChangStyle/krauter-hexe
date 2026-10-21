@@ -1176,6 +1176,15 @@ export interface UserSettingsInput {
   onboarded?: boolean;
 }
 
+export interface DemoStatus {
+  active: boolean;
+  /**
+     * The Demo-Hof, to switch to it.
+     * @nullable
+     */
+  farmId: number | null;
+}
+
 export type DashboardWidgetId = typeof DashboardWidgetId[keyof typeof DashboardWidgetId];
 
 

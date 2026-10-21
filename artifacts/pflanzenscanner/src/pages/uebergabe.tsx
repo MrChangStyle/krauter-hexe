@@ -203,7 +203,11 @@ export default function UebergabePage() {
           Übergabe & Vertretung
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Für alle, die die Tiere ein paar Tage versorgen. Eine Vertretung legt ein Admin unter Tiere → Mitglieder an: mit „Vertretung bis“ endet der Zugang von selbst.
+          Für alle, die die Tiere ein paar Tage versorgen. Eine Vertretung trägt ein Admin unter{" "}
+          <Link href="/team" className="font-medium text-foreground underline underline-offset-4">
+            Farm &amp; Team
+          </Link>{" "}
+          ein – mit dem Datum „Vertretung bis“ endet der Zugang danach von selbst.
         </p>
       </div>
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Handover farm={farm} />}

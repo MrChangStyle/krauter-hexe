@@ -10,7 +10,7 @@ export const SETUP_STEPS: { key: StepKey; label: string; hint: string; action: s
   { key: "rations", label: "Futter planen", hint: "Rationen mit Ampel und Warnungen.", action: "Zum Futterplaner", href: "/farm/futter" },
   { key: "tasks", label: "Stall-Aufgaben", hint: "Füttern, Ausmisten, Eier sammeln – mit Erinnerung.", action: "Zu den Aufgaben", href: "/farm/aufgaben" },
   { key: "beds", label: "Garten anlegen", hint: "Beete planen, Futter für die Tiere ernten.", action: "Zu den Beeten", href: "/beete" },
-  { key: "members", label: "Familie oder Helfer einladen", hint: "Gemeinsam versorgen, auch als Vertretung.", action: "Zu den Mitgliedern", href: "/farm/mitglieder" },
+  { key: "members", label: "Familie oder Helfer einladen", hint: "Gemeinsam versorgen, auch als Vertretung.", action: "Zu Farm & Team", href: "/team" },
 ];
 
 const GROUP_NAMES: Record<FarmSpecies, string> = {

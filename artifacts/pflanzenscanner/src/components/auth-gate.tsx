@@ -425,10 +425,33 @@ function WaitingForApprovalScreen() {
  */
 function PublicStart() {
   const [view, setView] = useState<"landing" | "login" | "register">(() => (readSignInError(window.location.search) ? "login" : "landing"));
+  const providers = useAuthProviders();
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [view]);
-  if (view === "landing") return <LandingPage onLogin={() => setView("login")} onRegister={() => setView("register")} />;
+  if (view === "landing") {
+    // Straight from the start page – no detour through the form.
+    const google = providers.google ? (
+      <div className="mx-auto flex w-full flex-col items-center gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="w-full gap-2 sm:w-auto"
+          onClick={() => (window.location.href = buildGoogleSignInUrl(`${window.location.pathname}${window.location.search}`))}
+        >
+          <GoogleMark />
+          Mit Google anmelden
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          Mit der Anmeldung über Google akzeptierst du die{" "}
+          <LegalLink path={LEGAL_PATHS.nutzungsbedingungen}>Nutzungsbedingungen</LegalLink> und die{" "}
+          <LegalLink path={LEGAL_PATHS.datenschutz}>Datenschutzerklärung</LegalLink>.
+        </p>
+      </div>
+    ) : null;
+    return <LandingPage onLogin={() => setView("login")} onRegister={() => setView("register")} google={google} />;
+  }
   return <LoginScreen key={view} initialMode={view} onBack={() => setView("landing")} />;
 }
 

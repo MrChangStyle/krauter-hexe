@@ -9,6 +9,8 @@ import { UpdateButton } from "@/components/update-button";
 import { STALE_QUEUE_WARNING_MS } from "@/lib/scan-queue";
 import { useNow } from "@/hooks/use-now";
 import { useModules } from "@/hooks/use-modules";
+import { Onboarding } from "@/components/onboarding";
+import { TourCard } from "@/components/tour-card";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -64,6 +66,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <main className="flex-1 pb-24 w-full max-w-2xl mx-auto flex flex-col">
         {children}
       </main>
+      <Onboarding />
+      <TourCard />
 
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 px-4 pb-safe pt-2 md:pb-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-16">

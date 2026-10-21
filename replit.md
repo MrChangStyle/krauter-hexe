@@ -196,6 +196,8 @@ Details in `docs/module.md`. Every account can hide areas (Pflanzen, Tiere) and 
 
 Demo-Daten (`docs/demo.md`): „Demo-Daten laden“ on `/module` creates a separate farm „Demo-Hof“ (`farms.is_demo`) with two examples per module, plus a demo grow (`grows.is_demo`) for accounts that confirmed their age; „Demo-Daten löschen“ deletes both, real data stays. `lib/demoData.ts`, `GET/POST/DELETE /demo`, client `components/demo-card.tsx`.
 
+Einrichtungsassistent and App-Tour (`docs/onboarding.md`): on first start (`settings.onboarded` false, username set) `components/onboarding.tsx` walks through welcome, modules (`module-switches.tsx`), demo data and an optional tour; skipping sets `onboarded`. The tour (`lib/tour.ts`, `components/tour-card.tsx`) shows one explanation card per main page above the bottom bar. Both can be restarted on `/module`.
+
 ## Hof-Dashboard
 
 Details in `docs/dashboard.md`. The home page ("Hof", `pages/scan.tsx` when no scan flow is open) shows a slim weather strip, a one-line Pflanzenretter rank (expands to the top four) and widgets for Pflanzen and Tiere (`components/hof-dashboard.tsx`). `lib/dashboard.ts` holds the registry of all widgets and the default layout. "Dashboard anpassen" lets the account switch and order widgets; the choice is stored per account (`GET/PUT /dashboard`, table `dashboard_layouts`, in `PERSONAL_TABLES`, ids from `DashboardWidgetId`).

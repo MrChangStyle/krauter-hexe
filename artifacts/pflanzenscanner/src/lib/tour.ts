@@ -1,0 +1,76 @@
+import type { ModuleId } from "@workspace/api-client-react";
+
+/**
+ * App-Tour (docs/onboarding.md): a few explanation cards that walk through the
+ * main pages, one per page, each skippable. Where the tour stands is kept per
+ * device; it is only a display aid.
+ */
+
+export interface TourStep {
+  path: string;
+  title: string;
+  text: string;
+  /** Left out while this area is hidden. */
+  module?: ModuleId;
+}
+
+export const TOUR: readonly TourStep[] = [
+  {
+    path: "/",
+    title: "Dein Hof",
+    text: "Hier siehst du das Wetter und das Wichtigste aus allen Modulen auf einen Blick. Mit „Dashboard anpassen“ legst du fest, was hier steht. Der runde Knopf unten in der Mitte scannt Pflanzen und Insekten.",
+  },
+  {
+    path: "/pflanzen",
+    title: "Pflanzen",
+    text: "Alles rund um Pflanzen als Kacheln: deine Pflanzen, Pflegeplan, Pflanzen-Doc, Beet-Architekt, Saatgut und mehr. Tippe eine Kachel an, um das Modul zu öffnen.",
+    module: "plants",
+  },
+  {
+    path: "/farm",
+    title: "Tiere",
+    text: "Oben stehen die Stall-Aufgaben für heute, darunter die Module als Kacheln und ganz unten deine Tiere. Mit „Hof einrichten“ legst du in wenigen Schritten los.",
+    module: "animals",
+  },
+  {
+    path: "/mehr",
+    title: "Mehr",
+    text: "Konto, Benachrichtigungen und „Meine Module“: Dort blendest du Module ein und aus, lädst oder löschst die Demo-Daten und startest die Einrichtung oder diese Tour noch einmal.",
+  },
+];
+
+/** The steps for this account: hidden areas drop out. */
+export function tourSteps(visible: (id: ModuleId) => boolean): TourStep[] {
+  return TOUR.filter((s) => !s.module || visible(s.module));
+}
+
+const KEY = "lf-tour-step";
+const listeners = new Set<() => void>();
+// Without storage (private mode) the tour still runs for this visit.
+let memory: number | null = null;
+
+/** Index of the current step, or null when no tour runs. */
+export function readTourStep(): number | null {
+  try {
+    const raw = localStorage.getItem(KEY);
+    return raw && /^\d+$/.test(raw) ? Number(raw) : null;
+  } catch {
+    return memory;
+  }
+}
+
+export function setTourStep(step: number | null): void {
+  memory = step;
+  try {
+    if (step === null) localStorage.removeItem(KEY);
+    else localStorage.setItem(KEY, String(step));
+  } catch {
+    /* ignore */
+  }
+  listeners.forEach((l) => l());
+}
+
+export function subscribeTour(listener: () => void): () => void {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+}

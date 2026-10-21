@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { ReportButton } from "@/components/report-button";
 import { Link, useLocation, useSearch } from "wouter";
 import {
   Camera,
@@ -9,8 +8,6 @@ import {
   Bug,
   Clock,
   WifiOff,
-  Trophy,
-  Info,
   Image as ImageIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,11 +15,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MAX_AUTO_ATTEMPTS, useScanQueue, getIsOnline } from "@/lib/scan-queue-context";
 import { Progress } from "@/components/ui/progress";
-import { useScanInsect, useGetLeaderboard, useListCareGuides } from "@workspace/api-client-react";
-import type { LeaderboardEntry, CareGuide } from "@workspace/api-client-react";
+import { useScanInsect, useListCareGuides } from "@workspace/api-client-react";
+import type { CareGuide } from "@workspace/api-client-react";
+import { HofDashboard } from "@/components/hof-dashboard";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
-import { cn } from "@/lib/utils";
 import {
   getMushroomDraft,
   putMushroomDraft,
@@ -63,186 +60,20 @@ function formatBerlinTime(iso: string | null): string {
   );
 }
 
-// ── Leaderboard section ───────────────────────────────────────────────────────
-
-function RankMedal({ rank }: { rank: number }) {
-  if (rank === 1) return <span className="text-yellow-500 text-base">🥇</span>;
-  if (rank === 2) return <span className="text-slate-400 text-base">🥈</span>;
-  if (rank === 3) return <span className="text-amber-600 text-base">🥉</span>;
-  return <span className="text-xs text-muted-foreground tabular-nums w-5 text-center">{rank}</span>;
-}
-
-export function LeaderboardSection({ className }: { className?: string } = {}) {
-  const { data, isLoading } = useGetLeaderboard();
-  const [showInfo, setShowInfo] = useState(false);
-
-  if (isLoading) return null;
-  if (!data || data.top.length === 0) return null;
-
-  // Show top 5 entries; if the current user is outside the top 5 append their
-  // own row with a visual separator so it is always visible.
-  const topFive: LeaderboardEntry[] = data.top.slice(0, 5);
-  const ownOutsideTop = data.own && !topFive.find((e) => e.isCurrentUser);
-
-  return (
-    <div className={cn("w-full max-w-sm mt-2", className)}>
-      <div className="flex items-center gap-2 mb-3">
-        <Trophy className="w-4 h-4 text-yellow-500" />
-        <h2 className="text-sm font-semibold">Pflanzenretter-Rangliste</h2>
-        <button
-          onClick={() => setShowInfo((v) => !v)}
-          className="ml-auto p-1 rounded-full text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
-          aria-label="Info zu Blättern"
-        >
-          <Info className="w-4 h-4" />
-        </button>
-      </div>
-      {showInfo && (
-        <div className="mb-3 rounded-xl border bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800 p-3 text-xs text-emerald-900 dark:text-emerald-200 space-y-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
-          <p className="font-semibold flex items-center gap-1.5">
-            <Leaf className="w-3.5 h-3.5 text-emerald-600" />
-            So verdienst du Blätter 🌿
-          </p>
-          <ul className="space-y-1 pl-1">
-            <li>📷 <strong>+1 Blatt</strong> für jede neu gescannte Pflanze im Archiv</li>
-            <li>🍄 <strong>+1 Blatt</strong> für jeden neu gescannten Pilz</li>
-            <li>🐛 <strong>+1 Blatt</strong> für jedes neu bestimmte Insekt</li>
-            <li>✅ <strong>+1 Blatt</strong> pro abgehaktem Pflegetag in der Pflegeanleitung</li>
-          </ul>
-          <p className="text-emerald-700 dark:text-emerald-400">Bereits bekannte Arten zählen nicht noch einmal.</p>
-        </div>
-      )}
-      <div className="rounded-2xl border bg-card shadow-sm overflow-hidden">
-        {topFive.map((entry, idx) => (
-          <div
-            key={entry.userId}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2 border-b last:border-b-0",
-              entry.isCurrentUser && "bg-emerald-50 dark:bg-emerald-950/20",
-              idx === 0 && "bg-yellow-50/60 dark:bg-yellow-950/20",
-            )}
-          >
-            <RankMedal rank={entry.rank} />
-            <span className={cn(
-              "flex-1 text-sm font-mono tracking-wide truncate",
-              entry.isCurrentUser && "font-bold text-emerald-700 dark:text-emerald-400",
-            )}>
-              {entry.username}
-            </span>
-            {!entry.isCurrentUser && (
-              <ReportButton
-                contentType="username"
-                contentId={entry.userId}
-                variant="icon"
-                what={<>den Namen „{entry.username}“</>}
-              />
-            )}
-            <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-              <Leaf className="w-3 h-3 text-emerald-500" />
-              {entry.leavesCount}
-            </span>
-          </div>
-        ))}
-        {/* Always show own row when outside top 5 */}
-        {ownOutsideTop && data.own && (
-          <>
-            <div className="border-b border-dashed" />
-            <div className="flex items-center gap-3 px-3 py-2 bg-emerald-50 dark:bg-emerald-950/20">
-              <RankMedal rank={data.own.rank} />
-              <span className="flex-1 text-sm font-mono tracking-wide truncate font-bold text-emerald-700 dark:text-emerald-400">
-                {data.own.username}
-              </span>
-              <span className="text-xs text-muted-foreground flex items-center gap-0.5">
-                <Leaf className="w-3 h-3 text-emerald-500" />
-                {data.own.leavesCount}
-              </span>
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Leaf progress ring ────────────────────────────────────────────────────────
-
-function LeafRing({ count, onClick }: { count: number; onClick?: () => void }) {
-  // Progress = position within the current decade (0 → 10 → 20 …)
-  const progress = count <= 0 ? 0 : (count % 10) / 10 || 1; // full ring at multiples of 10
-  const r = 42;
-  const circumference = 2 * Math.PI * r; // ≈ 263.9
-  const offset = circumference * (1 - progress);
-
-  return (
-    <button
-      onClick={onClick}
-      aria-label={`${count} Blätter – zur Rangliste`}
-      className="relative w-[52px] h-[52px] shrink-0 bg-card rounded-full shadow-sm border border-border flex items-center justify-center active:scale-95 transition-transform hover:shadow-md"
-    >
-      <svg
-        className="absolute inset-0 w-full h-full -rotate-90"
-        viewBox="0 0 100 100"
-      >
-        <circle cx="50" cy="50" r={r} stroke="currentColor" strokeWidth="6" fill="none"
-          className="text-muted/40" />
-        <circle cx="50" cy="50" r={r} stroke="currentColor" strokeWidth="6" fill="none"
-          className="text-emerald-600 dark:text-emerald-400"
-          strokeDasharray={circumference}
-          strokeDashoffset={offset}
-          strokeLinecap="round" />
-      </svg>
-      <div className="relative flex flex-col items-center justify-center leading-none">
-        <Leaf className="w-3 h-3 text-emerald-700 dark:text-emerald-400 mb-[1px]" strokeWidth={2.5} />
-        <span className="text-[10px] font-bold text-emerald-900 dark:text-emerald-200 tabular-nums">
-          {count}
-        </span>
-      </div>
-    </button>
-  );
-}
-
 // ── Dynamic greeting header ───────────────────────────────────────────────────
 
-function GreetingHeader({
-  username,
-  leavesCount,
-  pendingGuide,
-  onLeafClick,
-}: {
-  username: string;
-  leavesCount: number;
-  pendingGuide: CareGuide | undefined;
-  onLeafClick: () => void;
-}) {
-  const contextLine = pendingGuide
-    ? `Deine ${pendingGuide.plantName} braucht heute Pflege! 🌱`
-    : "Zeit für einen Waldspaziergang! 🌿";
-
+function GreetingHeader({ username, pendingGuide }: { username: string; pendingGuide: CareGuide | undefined }) {
+  const contextLine = pendingGuide ? `Deine ${pendingGuide.plantName} braucht heute Pflege! 🌱` : "Hier siehst du, was auf deinem Hof los ist.";
   return (
-    <div className="w-full max-w-sm flex items-start justify-between gap-3">
-      <div className="min-w-0">
-        <span className="inline-flex items-center px-2.5 py-0.5 mb-2 rounded-full bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest font-serif">
-          Kräuterhexe
-        </span>
-        <h1 className="text-xl font-medium text-foreground mb-1 leading-snug">
-          Hallo{" "}
-          <span className="font-mono font-bold tracking-tight">
-            {username}
-          </span>{" "}
-          👋
-        </h1>
-        <p className="text-[13px] text-muted-foreground font-medium">
-          {contextLine}
-        </p>
-      </div>
-      <LeafRing count={leavesCount} onClick={onLeafClick} />
+    <div className="w-full">
+      <h1 className="text-2xl font-bold">Hallo {username} 👋</h1>
+      <p className="text-sm text-muted-foreground mt-1">{contextLine}</p>
     </div>
   );
 }
 
 export default function ScanPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const leaderboardRef = useRef<HTMLDivElement>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const { user } = useAuthContext();
   // "insect" → show amber insect-specific error card; "plant" → red plant error
@@ -788,20 +619,13 @@ export default function ScanPage() {
   const isLoading = isPreparing || !!waitingForItemId || isInsectScanning;
 
   return (
-    <div className="flex flex-col h-full items-center justify-start pt-10 px-6 pb-6 gap-8 animate-in fade-in duration-500 min-h-[calc(100vh-80px)]">
+    <div className="flex flex-col h-full items-center justify-start pt-6 px-4 pb-6 gap-5 animate-in fade-in duration-500 min-h-[calc(100vh-80px)]">
 
       <LocationCard loc={loc} />
 
       {user?.username ? (
         /* ── Personalised greeting + leaf ring ────────────────────────── */
-        <GreetingHeader
-          username={user.username}
-          leavesCount={user.leavesCount ?? 0}
-          pendingGuide={pendingCareGuide}
-          onLeafClick={() =>
-            leaderboardRef.current?.scrollIntoView({ behavior: "smooth" })
-          }
-        />
+        <GreetingHeader username={user.username} pendingGuide={pendingCareGuide} />
       ) : (
         /* ── Static fallback for guests / no username yet ─────────────── */
         <div className="text-center space-y-2">
@@ -1131,57 +955,9 @@ export default function ScanPage() {
           </CardContent>
         </Card>
       ) : !errorMsg ? (
-        /* ── Universal scan button + targeted scans ─────────────────────── */
-        <div className="flex flex-col gap-3 w-full max-w-sm">
-
-          {/* Scannen: the server decides plant, mushroom or insect */}
-          <Button
-            size="lg"
-            className="w-full h-auto py-4 rounded-2xl shadow-md hover:shadow-lg transition-all flex-col gap-1"
-            onClick={() => setShowAutoOptions(true)}
-          >
-            <span className="flex items-center text-lg font-semibold">
-              <Camera className="w-6 h-6 mr-2" />
-              Scannen
-            </span>
-            <span className="text-xs font-normal opacity-90">
-              Pflanze, Pilz oder Insekt – wird automatisch erkannt
-            </span>
-          </Button>
-
-          <p className="text-xs text-muted-foreground text-center pt-1">
-            Oder gezielt scannen:
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              variant="outline"
-              className="h-auto py-3 rounded-xl flex-col gap-1 text-sm"
-              onClick={() => setShowPlantOptions(true)}
-            >
-              <Leaf className="w-5 h-5 text-primary" />
-              Pflanze
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto py-3 rounded-xl flex-col gap-1 text-sm border-amber-500/50 bg-amber-50/60 hover:bg-amber-100/70 dark:bg-amber-950/20 dark:hover:bg-amber-950/40 text-foreground"
-              onClick={() => setShowMushroomTopHint(true)}
-            >
-              <span className="text-xl leading-none" aria-hidden="true">🍄</span>
-              Pilz
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto py-3 rounded-xl flex-col gap-1 text-sm"
-              onClick={() => setShowInsectOptions(true)}
-            >
-              <Bug className="w-5 h-5" />
-              Insekt
-            </Button>
-          </div>
-          <p className="text-[11px] text-muted-foreground text-center leading-snug">
-            🍄 Für die Essbarkeit eines Pilzes den Pilz-Scan nutzen: Er
-            fotografiert von oben und von der Seite.
-          </p>
+        /* ── Hof overview: weather, Pflanzenretter, widgets (scans start from the bottom bar) ── */
+        <div className="flex flex-col gap-3 w-full">
+          <HofDashboard />
 
           {!isOnline && (
             <div className="flex items-center justify-center gap-1.5 text-center text-xs text-muted-foreground pt-1">
@@ -1202,12 +978,6 @@ export default function ScanPage() {
         </div>
       ) : null}
 
-      {/* Leaderboard — shown below scan buttons once user has a username */}
-      {!errorMsg && user?.username && (
-        <div ref={leaderboardRef} className="w-full">
-          <LeaderboardSection />
-        </div>
-      )}
     </div>
   );
 }

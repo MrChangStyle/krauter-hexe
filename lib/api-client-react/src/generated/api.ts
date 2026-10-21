@@ -68,6 +68,8 @@ import type {
   ExpenseInput,
   FarmAnimal,
   FarmAnimalInput,
+  FarmContact,
+  FarmContactInput,
   FarmDuties,
   FarmDutyCheckInput,
   FarmDutySettingsInput,
@@ -6120,6 +6122,302 @@ export const useSetLineage = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSetLineageMutationOptions(options));
+    }
+
+export const getListFarmContactsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/contacts`
+}
+
+/**
+ * @summary Farm & Team – the farm's important contacts (every member)
+ */
+export const listFarmContacts = async (farmId: number, options?: RequestInit): Promise<FarmContact[]> => {
+
+  return customFetch<FarmContact[]>(getListFarmContactsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFarmContactsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/contacts`
+    ] as const;
+    }
+
+
+export const getListFarmContactsQueryOptions = <TData = Awaited<ReturnType<typeof listFarmContacts>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFarmContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFarmContactsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFarmContacts>>> = ({ signal }) => listFarmContacts(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFarmContacts>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFarmContactsQueryResult = NonNullable<Awaited<ReturnType<typeof listFarmContacts>>>
+export type ListFarmContactsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Farm & Team – the farm's important contacts (every member)
+ */
+
+export function useListFarmContacts<TData = Awaited<ReturnType<typeof listFarmContacts>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFarmContacts>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFarmContactsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateFarmContactUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/contacts`
+}
+
+/**
+ * @summary Add a contact (admin)
+ */
+export const createFarmContact = async (farmId: number,
+    farmContactInput: FarmContactInput, options?: RequestInit): Promise<FarmContact[]> => {
+
+  return customFetch<FarmContact[]>(getCreateFarmContactUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmContactInput)
+  }
+);}
+
+
+
+
+
+export const getCreateFarmContactMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFarmContact>>, TError,{farmId: number;data: BodyType<FarmContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createFarmContact>>, TError,{farmId: number;data: BodyType<FarmContactInput>}, TContext> => {
+
+const mutationKey = ['createFarmContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createFarmContact>>, {farmId: number;data: BodyType<FarmContactInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  createFarmContact(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateFarmContactMutationResult = NonNullable<Awaited<ReturnType<typeof createFarmContact>>>
+    export type CreateFarmContactMutationBody = BodyType<FarmContactInput>
+    export type CreateFarmContactMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a contact (admin)
+ */
+export const useCreateFarmContact = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createFarmContact>>, TError,{farmId: number;data: BodyType<FarmContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createFarmContact>>,
+        TError,
+        {farmId: number;data: BodyType<FarmContactInput>},
+        TContext
+      > => {
+      return useMutation(getCreateFarmContactMutationOptions(options));
+    }
+
+export const getUpdateFarmContactUrl = (farmId: number,
+    contactId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/contacts/${contactId}`
+}
+
+/**
+ * @summary Change a contact (admin)
+ */
+export const updateFarmContact = async (farmId: number,
+    contactId: number,
+    farmContactInput: FarmContactInput, options?: RequestInit): Promise<FarmContact[]> => {
+
+  return customFetch<FarmContact[]>(getUpdateFarmContactUrl(farmId,contactId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmContactInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateFarmContactMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFarmContact>>, TError,{farmId: number;contactId: number;data: BodyType<FarmContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateFarmContact>>, TError,{farmId: number;contactId: number;data: BodyType<FarmContactInput>}, TContext> => {
+
+const mutationKey = ['updateFarmContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateFarmContact>>, {farmId: number;contactId: number;data: BodyType<FarmContactInput>}> = (props) => {
+          const {farmId,contactId,data} = props ?? {};
+
+          return  updateFarmContact(farmId,contactId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateFarmContactMutationResult = NonNullable<Awaited<ReturnType<typeof updateFarmContact>>>
+    export type UpdateFarmContactMutationBody = BodyType<FarmContactInput>
+    export type UpdateFarmContactMutationError = ErrorType<void>
+
+    /**
+ * @summary Change a contact (admin)
+ */
+export const useUpdateFarmContact = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateFarmContact>>, TError,{farmId: number;contactId: number;data: BodyType<FarmContactInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateFarmContact>>,
+        TError,
+        {farmId: number;contactId: number;data: BodyType<FarmContactInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateFarmContactMutationOptions(options));
+    }
+
+export const getDeleteFarmContactUrl = (farmId: number,
+    contactId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/contacts/${contactId}`
+}
+
+/**
+ * @summary Remove a contact (admin)
+ */
+export const deleteFarmContact = async (farmId: number,
+    contactId: number, options?: RequestInit): Promise<FarmContact[]> => {
+
+  return customFetch<FarmContact[]>(getDeleteFarmContactUrl(farmId,contactId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteFarmContactMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFarmContact>>, TError,{farmId: number;contactId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFarmContact>>, TError,{farmId: number;contactId: number}, TContext> => {
+
+const mutationKey = ['deleteFarmContact'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFarmContact>>, {farmId: number;contactId: number}> = (props) => {
+          const {farmId,contactId} = props ?? {};
+
+          return  deleteFarmContact(farmId,contactId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteFarmContactMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFarmContact>>>
+
+    export type DeleteFarmContactMutationError = ErrorType<void>
+
+    /**
+ * @summary Remove a contact (admin)
+ */
+export const useDeleteFarmContact = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFarmContact>>, TError,{farmId: number;contactId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteFarmContact>>,
+        TError,
+        {farmId: number;contactId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteFarmContactMutationOptions(options));
     }
 
 export const getGetSeedOverviewUrl = (farmId: number,) => {

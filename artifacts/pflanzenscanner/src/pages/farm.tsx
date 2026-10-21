@@ -279,7 +279,7 @@ export default function FarmPage() {
         {visible("yields") && <HubTile href="/farm/ertrag" icon={PiggyBank} label="Ertrag & Bilanz" hint="Eier, Milch, Ernte, Kosten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />}
         {visible("wildlife") && <HubTile href="/farm/kameras" icon={Radar} label="Wildtier-Radar" hint="Kameras & Raubtier-Alarm" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />}
         {visible("handover") && <HubTile href="/farm/uebergabe" icon={Handshake} label="Übergabe" hint="Vertretung für ein paar Tage" tone="bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300" />}
-        {visible("members") && <HubTile href="/farm/mitglieder" icon={Users} label="Mitglieder" hint="Team, Rollen, Einladungen" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />}
+        {visible("members") && <HubTile href="/team" icon={Users} label="Farm & Team" hint="Team, Vertretung, Kontakte" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />}
         {visible("export") && <HubTile href="/farm/export" icon={FileText} label="Veterinäramt-Export" hint="Bestandsliste & Medizin als PDF" tone="bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300" />}
       </HubGrid>
 

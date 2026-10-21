@@ -457,3 +457,29 @@ export const farmSalesTable = pgTable(
   },
   (table) => [index("farm_sales_farm_date_idx").on(table.farmId, table.date)],
 );
+
+// Farm & Team: the farm's important contacts – vet, team, Vertretung, the
+// farmer, family, authorities, suppliers. Every member reads them (the
+// Vertretung needs the vet's number), admins keep them.
+export const FARM_CONTACT_KINDS = ["self", "team", "substitute", "vet", "family", "emergency", "authority", "supplier", "other"] as const;
+export type FarmContactKind = (typeof FARM_CONTACT_KINDS)[number];
+
+export const farmContactsTable = pgTable(
+  "farm_contacts",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    // One of FARM_CONTACT_KINDS (checked by the server).
+    kind: text("kind").notNull(),
+    name: text("name").notNull(),
+    // What they do here, e.g. "Hoftierarzt Großtiere", "Melkerin, Mo–Fr".
+    role: text("role"),
+    phone: text("phone"),
+    email: text("email"),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("farm_contacts_farm_idx").on(table.farmId)],
+);

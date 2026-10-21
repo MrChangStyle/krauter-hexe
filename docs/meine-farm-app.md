@@ -142,7 +142,7 @@ FARM-EBENE, ROLLEN & SICHERHEIT
 - Neu darüber (additiv):
   - farms (id, name, createdAt)
   - farm_memberships (userId → users.id, farmId, role; unique [userId, farmId])
-  - Enum farm_role { admin, caretaker, guest }  (UI: Admin, Tierpfleger, Gast)
+  - Enum farm_role { admin, caretaker, guest }  (UI: Admin, Mitarbeiter, Gast)
     admin: alles inkl. Mitglieder/Kameras · caretaker: Tiere/Medizin/Logs schreiben ·
     guest: nur lesen.
 - Farm-Daten sind privat: nur Mitglieder der Farm sehen sie (anders als das gemeinsame

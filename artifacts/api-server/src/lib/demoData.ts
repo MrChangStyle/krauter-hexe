@@ -14,6 +14,7 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 import { createBreeding } from './breeding';
 import { FarmDataError } from './farmAnimals';
 import { createCamera } from './farmCameras';
+import { createContact } from './farmContacts';
 import { quickStart } from './farmSetup';
 import { addExpense, addYield } from './farmYields';
 import { addDays } from './feedSeason';
@@ -104,6 +105,10 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await addPlanting(farmId, bed.id, year, { cropKey: 'salat', x: 1, y: 1 });
   await createSeed(farmId, { cropKey: 'tomate', variety: 'Ochsenherz', amount: 30, unit: 'Korn', source: 'bought', harvestYear: year - 1 }, today);
   await createSeed(farmId, { cropKey: 'moehre', variety: 'Nantaise', amount: 2, unit: 'g', source: 'bought', harvestYear: year - 3 }, today);
+
+  // Farm & Team: the vet and a helper.
+  await createContact(farmId, { kind: 'vet', name: 'Tierarztpraxis Muster (Demo)', role: 'Großtiere und Geflügel', phone: '0123 456789', note: 'Notdienst über die Praxisnummer' });
+  await createContact(farmId, { kind: 'team', name: 'Lena (Demo)', role: 'Stallhilfe am Wochenende', phone: '0170 0000000' });
 
   // Grow: only for adults who already confirmed their age.
   const [access] = await db.select({ confirmed: growAccessTable.ageConfirmedAt }).from(growAccessTable).where(eq(growAccessTable.userId, userId));

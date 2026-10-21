@@ -1823,6 +1823,116 @@ paths:
                 $ref: "#/components/schemas/Lineage"
         "400":
           description: Invalid parents.
+  /farms/{farmId}/contacts:
+    get:
+      tags: [farm]
+      operationId: listFarmContacts
+      summary: Farm & Team – the farm's important contacts (every member)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Contacts, grouped by kind.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmContact"
+    post:
+      tags: [farm]
+      operationId: createFarmContact
+      summary: Add a contact (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmContactInput"
+      responses:
+        "201":
+          description: All contacts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmContact"
+        "400":
+          description: Invalid input.
+        "409":
+          description: Too many contacts.
+  /farms/{farmId}/contacts/{contactId}:
+    put:
+      tags: [farm]
+      operationId: updateFarmContact
+      summary: Change a contact (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmContactInput"
+      responses:
+        "200":
+          description: All contacts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmContact"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    delete:
+      tags: [farm]
+      operationId: deleteFarmContact
+      summary: Remove a contact (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: All contacts.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FarmContact"
+        "404":
+          description: Not found.
   /farms/{farmId}/seeds:
     get:
       tags: [farm]
@@ -9750,6 +9860,49 @@ components:
         accessUntil:
           type: [string, 'null']
           description: Vertretung – last day of access (YYYY-MM-DD)
+    FarmContactKind:
+      type: string
+      enum: [self, team, substitute, vet, family, emergency, authority, supplier, other]
+    FarmContact:
+      type: object
+      required: [id, kind, name, role, phone, email, note]
+      properties:
+        id:
+          type: integer
+        kind:
+          $ref: "#/components/schemas/FarmContactKind"
+        name:
+          type: string
+        role:
+          type: [string, 'null']
+        phone:
+          type: [string, 'null']
+        email:
+          type: [string, 'null']
+        note:
+          type: [string, 'null']
+    FarmContactInput:
+      type: object
+      required: [kind, name]
+      properties:
+        kind:
+          $ref: "#/components/schemas/FarmContactKind"
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        role:
+          type: [string, 'null']
+          maxLength: 80
+        phone:
+          type: [string, 'null']
+          maxLength: 40
+        email:
+          type: [string, 'null']
+          maxLength: 200
+        note:
+          type: [string, 'null']
+          maxLength: 1000
     FarmNameInput:
       type: object
       required: [name]

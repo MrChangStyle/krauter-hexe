@@ -261,7 +261,7 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
       ) : all.length === 0 ? (
         <p className="text-sm text-muted-foreground">
           {canWrite
-            ? "Noch keine Stall-Aufgaben. Leg z. B. „Füttern – jeden Tag um 7 Uhr“ an; Admins und Tierpfleger bekommen dann eine Push-Erinnerung."
+            ? "Noch keine Stall-Aufgaben. Leg z. B. „Füttern – jeden Tag um 7 Uhr“ an; Admins und Mitarbeiter bekommen dann eine Push-Erinnerung."
             : "Auf dieser Farm gibt es noch keine Stall-Aufgaben."}
         </p>
       ) : (

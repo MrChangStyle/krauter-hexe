@@ -3794,6 +3794,64 @@ export interface FarmMember {
   accessUntil: string | null;
 }
 
+export type FarmContactKind = typeof FarmContactKind[keyof typeof FarmContactKind];
+
+
+export const FarmContactKind = {
+  self: 'self',
+  team: 'team',
+  substitute: 'substitute',
+  vet: 'vet',
+  family: 'family',
+  emergency: 'emergency',
+  authority: 'authority',
+  supplier: 'supplier',
+  other: 'other',
+} as const;
+
+export interface FarmContact {
+  id: number;
+  kind: FarmContactKind;
+  name: string;
+  /** @nullable */
+  role: string | null;
+  /** @nullable */
+  phone: string | null;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  note: string | null;
+}
+
+export interface FarmContactInput {
+  kind: FarmContactKind;
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  name: string;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  role?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  phone?: string | null;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  email?: string | null;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  note?: string | null;
+}
+
 export interface FarmNameInput {
   /**
      * @minLength 1

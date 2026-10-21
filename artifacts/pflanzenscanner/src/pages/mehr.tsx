@@ -1037,7 +1037,7 @@ export default function MehrPage() {
       {me?.username && <PflanzenretterCard />}
 
       <HubGrid>
-        <HubTile href="/farm" icon={Tractor} label="Farm & Team" hint="Mitglieder, Rollen, Freigaben" tone="bg-lime-100 text-lime-800 dark:bg-lime-950/50 dark:text-lime-300" />
+        <HubTile href="/team" icon={Tractor} label="Farm & Team" hint="Team, Vertretung, Kontakte" tone="bg-lime-100 text-lime-800 dark:bg-lime-950/50 dark:text-lime-300" />
         <HubTile
           href="/warteschlange"
           icon={WifiOff}

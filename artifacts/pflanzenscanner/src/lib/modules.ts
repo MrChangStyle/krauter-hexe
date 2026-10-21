@@ -39,7 +39,7 @@ export const MODULES: readonly ModuleDef[] = [
   { id: "yields", area: "tiere", label: "Ertrag & Bilanz", hint: "Eier, Milch, Ernte, Kosten", tier: "base" },
   { id: "wildlife", area: "tiere", label: "Wildtier-Radar", hint: "Kameras & Raubtier-Alarm", tier: "base" },
   { id: "handover", area: "tiere", label: "Übergabe", hint: "Vertretung für ein paar Tage", tier: "base" },
-  { id: "members", area: "tiere", label: "Mitglieder", hint: "Team, Rollen, Einladungen", tier: "base" },
+  { id: "members", area: "tiere", label: "Farm & Team", hint: "Team, Vertretung, Kontakte", tier: "base" },
   { id: "export", area: "tiere", label: "Veterinäramt-Export", hint: "Bestandsliste & Medizin als PDF", tier: "base" },
 ];
 

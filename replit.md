@@ -198,6 +198,8 @@ Demo-Daten (`docs/demo.md`): „Demo-Daten laden“ on `/module` creates a separ
 
 Einrichtungsassistent and App-Tour (`docs/onboarding.md`): on first start (`settings.onboarded` false, username set) `components/onboarding.tsx` walks through welcome, modules (`module-switches.tsx`), demo data and an optional tour; skipping sets `onboarded`. The tour (`lib/tour.ts`, `components/tour-card.tsx`) shows one explanation card per main page above the bottom bar. Both can be restarted on `/module`.
 
+Farm & Team (`docs/team.md`): `/team` (Mehr tile and the Tiere tile) shows the farm's people – Team and Vertretung (`MembersCard kind`), role help (UI labels Admin / Mitarbeiter / Gast) and Wichtige Kontakte (table `farm_contacts`, `GET/POST/PUT/DELETE /farms/:farmId/contacts`, read by every member, kept by admins, also shown on the Übergabe page).
+
 ## Hof-Dashboard
 
 Details in `docs/dashboard.md`. The home page ("Hof", `pages/scan.tsx` when no scan flow is open) shows a slim weather strip, a one-line Pflanzenretter rank (expands to the top four) and widgets for Pflanzen and Tiere (`components/hof-dashboard.tsx`). `lib/dashboard.ts` holds the registry of all widgets and the default layout. "Dashboard anpassen" lets the account switch and order widgets; the choice is stored per account (`GET/PUT /dashboard`, table `dashboard_layouts`, in `PERSONAL_TABLES`, ids from `DashboardWidgetId`).

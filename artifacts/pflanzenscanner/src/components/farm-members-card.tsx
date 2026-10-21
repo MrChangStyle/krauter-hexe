@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogOut, UserPlus, Users, X } from "lucide-react";
+import { Handshake, Loader2, LogOut, UserPlus, Users, X } from "lucide-react";
 import {
   getListFarmMembersQueryKey,
   useAddFarmMember,
@@ -28,8 +28,13 @@ function errorText(err: unknown, fallback: string): string {
 const selectClass =
   "h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
-/** Members of a farm: roles, Vertretung until a day, adding and leaving. */
-export function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () => void }) {
+/**
+ * Members of a farm: roles, adding and leaving. Farm & Team shows it twice –
+ * "team" (no end) and "substitute" (Vertretung, access until a day) – built
+ * the same, worded apart.
+ */
+export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary; onLeft: () => void; kind?: "team" | "substitute" }) {
+  const substitute = kind === "substitute";
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const isAdmin = farm.role === "admin";
@@ -81,23 +86,36 @@ export function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () =>
   function submitAdd(event: FormEvent) {
     event.preventDefault();
     if (!email.trim()) return;
-    add.mutate({ farmId: farm.id, data: { email: email.trim(), role, accessUntil: role !== "admin" && until ? until : null } });
+    if (substitute && !until) {
+      setAddError("Bis wann vertritt die Person? Bitte das Datum angeben.");
+      return;
+    }
+    add.mutate({ farmId: farm.id, data: { email: email.trim(), role, accessUntil: substitute ? until : null } });
   }
 
   const me = members.data?.find((m) => m.isMe);
+  const shown = (members.data ?? []).filter((m) => !!m.accessUntil === substitute);
+  const roles = substitute ? ROLES.filter((r) => r !== "admin") : ROLES;
+  const Icon = substitute ? Handshake : Users;
 
   return (
-    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+    <section className="space-y-3 rounded-xl border border-border bg-card p-4" data-testid={`members-${kind}`}>
       <h2 className="flex items-center gap-2 font-semibold">
-        <Users className="h-4 w-4 text-primary" />
-        Mitglieder
+        <Icon className="h-4 w-4 text-primary" />
+        {substitute ? "Vertretung" : "Team"}
+        <span className="text-sm font-normal text-muted-foreground">({shown.length})</span>
       </h2>
+      {substitute && (
+        <p className="text-xs text-muted-foreground">Wer für ein paar Tage einspringt. Der Zugang endet nach dem gewählten Tag von selbst; die Übergabe-Seite zeigt, was die Vertretung wissen muss.</p>
+      )}
 
       {members.isLoading ? (
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+      ) : shown.length === 0 ? (
+        <p className="text-sm text-muted-foreground">{substitute ? "Gerade vertritt niemand." : "Noch niemand im Team."}</p>
       ) : (
         <ul className="divide-y divide-border">
-          {(members.data ?? []).map((m) => (
+          {shown.map((m) => (
             <li key={m.userId} className="flex items-center gap-2 py-2">
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">
@@ -137,7 +155,7 @@ export function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () =>
                     change.mutate({ farmId: farm.id, userId: m.userId, data: { role: e.target.value as FarmRole } })
                   }
                 >
-                  {ROLES.map((r) => (
+                  {roles.map((r) => (
                     <option key={r} value={r}>
                       {FARM_ROLE_LABELS[r]}
                     </option>
@@ -168,11 +186,11 @@ export function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () =>
 
       {isAdmin && (
         <form onSubmit={submitAdd} className="min-w-0 space-y-2 rounded-lg bg-muted/40 p-3">
-          <Label htmlFor="member-email" className="text-xs">
-            Mitglied hinzufügen (die Person braucht ein Little-Farming-Konto)
+          <Label htmlFor={`member-email-${kind}`} className="text-xs">
+            {substitute ? "Vertretung eintragen" : "Ins Team holen"} (die Person braucht ein Little-Farming-Konto)
           </Label>
           <Input
-            id="member-email"
+            id={`member-email-${kind}`}
             type="email"
             inputMode="email"
             placeholder="name@beispiel.de"
@@ -181,12 +199,12 @@ export function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () =>
           />
           <div className="flex min-w-0 gap-2">
             <select
-              aria-label="Rolle für das neue Mitglied"
+              aria-label={substitute ? "Rolle der Vertretung" : "Rolle für das neue Mitglied"}
               className={`${selectClass} min-w-0 flex-1`}
               value={role}
               onChange={(e) => setRole(e.target.value as FarmRole)}
             >
-              {ROLES.map((r) => (
+              {roles.map((r) => (
                 <option key={r} value={r}>
                   {FARM_ROLE_LABELS[r]}
                 </option>
@@ -197,17 +215,17 @@ export function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () =>
               Hinzufügen
             </Button>
           </div>
-          {role !== "admin" && (
+          {substitute && (
             <div className="flex items-center gap-2">
               <Label htmlFor="member-until" className="text-xs">
-                Vertretung bis (freiwillig)
+                Vertretung bis
               </Label>
               <Input id="member-until" type="date" className="h-8 w-40" min={berlinToday()} value={until} onChange={(e) => setUntil(e.target.value)} />
             </div>
           )}
           <p className="text-xs text-muted-foreground">
             {FARM_ROLE_LABELS[role]}: {FARM_ROLE_HINTS[role]}
-            {role !== "admin" && until && ` Der Zugang endet nach dem ${deDay(until)} von selbst.`}
+            {substitute && until && ` Der Zugang endet nach dem ${deDay(until)} von selbst.`}
           </p>
           {addError && (
             <p role="alert" className="text-xs text-destructive">
@@ -217,7 +235,7 @@ export function MembersCard({ farm, onLeft }: { farm: FarmSummary; onLeft: () =>
         </form>
       )}
 
-      {me && (members.data?.length ?? 0) > 1 && (
+      {me && shown.includes(me) && (members.data?.length ?? 0) > 1 && (
         <button
           type="button"
           className="flex items-center gap-1.5 text-xs text-muted-foreground underline underline-offset-4 hover:text-destructive"

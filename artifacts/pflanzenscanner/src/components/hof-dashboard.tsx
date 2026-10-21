@@ -15,6 +15,7 @@ import {
   MapPin,
   PawPrint,
   PiggyBank,
+  SlidersHorizontal,
   Pill,
   ShieldCheck,
   Sun,
@@ -24,6 +25,7 @@ import {
 } from "lucide-react";
 import {
   useEnsureOwnFarm,
+  useGetDashboard,
   useGetFarmDuties,
   useGetFarmWeather,
   useGetFeedStock,
@@ -41,7 +43,8 @@ import {
   type FarmSummary,
 } from "@workspace/api-client-react";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
-import { DEFAULT_LAYOUT, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
+import { DashboardEditor } from "@/components/dashboard-editor";
+import { effectiveLayout, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
 import { openDuties, speciesCount } from "@/lib/duty-labels";
 import { GROW_ENABLED } from "@/lib/grow-labels";
 import { deDay } from "@/lib/medicine-labels";
@@ -459,20 +462,31 @@ function Area({ area, farm, layout }: { area: WidgetArea; farm: FarmSummary; lay
 }
 
 /** The Hof overview: weather, Pflanzenretter, then the widgets of Pflanzen and Tiere. */
+/** Widgets this build offers: Grow only where the module is in. */
+const available = (id: WidgetId) => id !== "grow" || GROW_ENABLED;
+
 export function HofDashboard() {
   const farm = useActiveFarm();
-  // The account's own choice comes later (docs/dashboard.md); everyone starts here.
-  const layout = DEFAULT_LAYOUT;
+  const saved = useGetDashboard();
+  const [editing, setEditing] = useState(false);
+  // The account's own choice, else the default (docs/dashboard.md).
+  const layout = effectiveLayout(saved.data?.widgets, available);
   return (
     <div className="w-full space-y-4">
       {farm ? <WeatherStrip farm={farm} /> : <div className="h-[72px] rounded-2xl border bg-card animate-pulse" />}
       <LeaderboardStrip />
-      {farm && (
+      {farm && !saved.isLoading && (
         <>
           <Area area="pflanzen" farm={farm} layout={layout} />
           <Area area="tiere" farm={farm} layout={layout} />
+          {layout.length === 0 && <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">Du hast alle Widgets ausgeblendet.</p>}
+          <button type="button" className="mx-auto flex items-center gap-1.5 text-sm text-primary" onClick={() => setEditing(true)}>
+            <SlidersHorizontal className="h-4 w-4" />
+            Dashboard anpassen
+          </button>
         </>
       )}
+      {editing && <DashboardEditor layout={layout} available={available} onClose={() => setEditing(false)} />}
     </div>
   );
 }

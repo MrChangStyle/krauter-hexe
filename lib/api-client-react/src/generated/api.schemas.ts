@@ -1139,6 +1139,31 @@ export interface GrowAccess {
   kwhPrice: number | null;
 }
 
+export type DashboardWidgetId = typeof DashboardWidgetId[keyof typeof DashboardWidgetId];
+
+
+export const DashboardWidgetId = {
+  'plant-tasks': 'plant-tasks',
+  garden: 'garden',
+  seeds: 'seeds',
+  grow: 'grow',
+  'farm-tasks': 'farm-tasks',
+  animals: 'animals',
+  duties: 'duties',
+  feed: 'feed',
+  medicines: 'medicines',
+  breeding: 'breeding',
+  yields: 'yields',
+} as const;
+
+export interface DashboardLayout {
+  /**
+     * @maxItems 30
+     * @nullable
+     */
+  widgets: DashboardWidgetId[] | null;
+}
+
 export interface Premium {
   active: boolean;
   /** @nullable */

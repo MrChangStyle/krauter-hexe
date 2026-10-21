@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_LAYOUT, WIDGETS, plantTaskDue, topCounts, widgetsOf } from "@/lib/dashboard";
+import { DashboardWidgetId } from "@workspace/api-client-react";
+import { DEFAULT_LAYOUT, WIDGETS, effectiveLayout, moveWidget, plantTaskDue, toggleWidget, topCounts, widgetsOf } from "@/lib/dashboard";
 
 describe("Hof-Dashboard", () => {
   it("knows every widget once and starts with a default for both areas", () => {
@@ -9,6 +10,28 @@ describe("Hof-Dashboard", () => {
     expect(widgetsOf(DEFAULT_LAYOUT, "tiere").length).toBeGreaterThan(3);
     // The layout decides the order; unknown ids are skipped.
     expect(widgetsOf(["animals", "farm-tasks", "nope" as never], "tiere").map((w) => w.id)).toEqual(["animals", "farm-tasks"]);
+  });
+
+  it("has a widget for every id the server accepts, and no more", () => {
+    expect(WIDGETS.map((w) => w.id).sort()).toEqual(Object.values(DashboardWidgetId).sort());
+  });
+
+  it("uses the account's layout, else the default, without what this build leaves out", () => {
+    expect(effectiveLayout(null, () => true)).toEqual([...DEFAULT_LAYOUT]);
+    expect(effectiveLayout(["grow", "animals"], () => true)).toEqual(["grow", "animals"]);
+    expect(effectiveLayout(["grow", "animals"], (id) => id !== "grow")).toEqual(["animals"]);
+    expect(effectiveLayout([], () => true)).toEqual([]);
+  });
+
+  it("switches and moves widgets within their area", () => {
+    const layout = ["plant-tasks", "animals", "garden", "duties"] as const;
+    expect(toggleWidget(layout, "animals")).toEqual(["plant-tasks", "garden", "duties"]);
+    expect(toggleWidget(layout, "seeds")).toEqual([...layout, "seeds"]);
+    // garden goes before plant-tasks; the animals in between stay put.
+    expect(moveWidget(layout, "garden", -1)).toEqual(["garden", "animals", "plant-tasks", "duties"]);
+    expect(moveWidget(layout, "duties", -1)).toEqual(["plant-tasks", "duties", "garden", "animals"]);
+    expect(moveWidget(layout, "plant-tasks", -1)).toEqual([...layout]);
+    expect(moveWidget(layout, "duties", 1)).toEqual([...layout]);
   });
 
   it("finds care tasks due by the day", () => {

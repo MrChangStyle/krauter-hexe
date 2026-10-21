@@ -59,6 +59,7 @@ import type {
   CropDraft,
   CropRequestInput,
   CropRequestResult,
+  DashboardLayout,
   DeleteAccountInput,
   DeleteFarmInput,
   DeletePlantInput,
@@ -16259,6 +16260,154 @@ export const useSendTestPush = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSendTestPushMutationOptions(options));
+    }
+
+export const getGetDashboardUrl = () => {
+
+
+
+
+  return `/api/dashboard`
+}
+
+/**
+ * @summary The widgets of the account's Hof-Dashboard (null = the default)
+ */
+export const getDashboard = async ( options?: RequestInit): Promise<DashboardLayout> => {
+
+  return customFetch<DashboardLayout>(getGetDashboardUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDashboardQueryKey = () => {
+    return [
+    `/api/dashboard`
+    ] as const;
+    }
+
+
+export const getGetDashboardQueryOptions = <TData = Awaited<ReturnType<typeof getDashboard>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDashboardQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDashboard>>> = ({ signal }) => getDashboard({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDashboardQueryResult = NonNullable<Awaited<ReturnType<typeof getDashboard>>>
+export type GetDashboardQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary The widgets of the account's Hof-Dashboard (null = the default)
+ */
+
+export function useGetDashboard<TData = Awaited<ReturnType<typeof getDashboard>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDashboard>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDashboardQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetDashboardUrl = () => {
+
+
+
+
+  return `/api/dashboard`
+}
+
+/**
+ * @summary Choose and order the widgets, or null for the default again
+ */
+export const setDashboard = async (dashboardLayout: DashboardLayout, options?: RequestInit): Promise<DashboardLayout> => {
+
+  return customFetch<DashboardLayout>(getSetDashboardUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(dashboardLayout)
+  }
+);}
+
+
+
+
+
+export const getSetDashboardMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setDashboard>>, TError,{data: BodyType<DashboardLayout>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setDashboard>>, TError,{data: BodyType<DashboardLayout>}, TContext> => {
+
+const mutationKey = ['setDashboard'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setDashboard>>, {data: BodyType<DashboardLayout>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  setDashboard(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetDashboardMutationResult = NonNullable<Awaited<ReturnType<typeof setDashboard>>>
+    export type SetDashboardMutationBody = BodyType<DashboardLayout>
+    export type SetDashboardMutationError = ErrorType<void>
+
+    /**
+ * @summary Choose and order the widgets, or null for the default again
+ */
+export const useSetDashboard = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setDashboard>>, TError,{data: BodyType<DashboardLayout>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setDashboard>>,
+        TError,
+        {data: BodyType<DashboardLayout>},
+        TContext
+      > => {
+      return useMutation(getSetDashboardMutationOptions(options));
     }
 
 export const getGetPremiumUrl = () => {

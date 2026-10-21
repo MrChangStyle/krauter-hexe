@@ -18,6 +18,7 @@
 
 import {
   careGuidesTable,
+  dashboardLayoutsTable,
   db,
   farmMembershipsTable,
   farmsTable,
@@ -63,6 +64,8 @@ export const PERSONAL_TABLES = [
   { name: 'grow_access', table: growAccessTable, userId: growAccessTable.userId },
   { name: 'grows', table: growsTable, userId: growsTable.userId },
   { name: 'grow_push_log', table: growPushLogTable, userId: growPushLogTable.userId },
+  // The Hof-Dashboard the account chose.
+  { name: 'dashboard_layouts', table: dashboardLayoutsTable, userId: dashboardLayoutsTable.userId },
   // Premium (granted or, later, paid).
   { name: 'premium', table: premiumTable, userId: premiumTable.userId },
   // Farm memberships – deleteAccount first hands over or removes the farms.

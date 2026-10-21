@@ -30,6 +30,14 @@ Solange die Umgebungsvariable **`SITE_PASSWORD`** gesetzt ist, zeigt die ganze S
 
   Sie haben eigene Geheimnisse.
 - Eine installierte App (aus dem Offline-Speicher) bekommt von der API 401 mit `X-Site-Locked`. Sie springt dann einmal zur Passwortseite (`/api/site-access`) und danach zurück.
+- **Umzug über das Konto** (empfohlen, auch für installierte Apps auf Android und iPhone):
+  - Die alte Adresse lädt Fotos, Scan-Warteschlange und Pilz-Entwurf in kleinen Paketen hoch (`POST /api/move/parcels`, Tabelle `move_parcels`).
+  - Nach dem Anmelden auf der neuen Adresse holt `components/move-pickup.tsx` sie mit Fortschrittsbalken ab und löscht sie auf dem Server.
+  - Reste verschwinden nach 14 Tagen. Höchstens 150 MB je Konto.
+  - Die Tabelle steht in `PERSONAL_TABLES`.
+  - Code: `lib/moveParcels.ts`, `routes/move.ts`, im Client `lib/move-account.ts`.
+- Die Umzugsseiten (`MoveScreen`, `/umzug`) spielen neue App-Versionen sofort ein (`components/auto-update.tsx`). Das Popup „Neue Version“ erscheint dort nicht, und eine installierte App hing sonst auf einem alten Umzugshelfer fest.
+- Gesperrte API-Aufrufe sagen, was zu tun ist: im Browser öffnen und das Seitenpasswort eingeben. Ältere App-Versionen zeigen diesen Text direkt an.
 - Umzug: Beide Fenster zeigen einen Fortschrittsbalken („37 % · 7 von 19“). Hört das neue Fenster 15 Sekunden lang nichts von der alten Adresse, sagt es, was zu tun ist.
 - Umzug mit Passwortschutz: Das neue Fenster des Umzugshelfers fragt zuerst nach dem Seitenpasswort. Es sagt danach so lange alle 2 Sekunden „bereit“, bis die alte Adresse antwortet. Die alte Adresse wartet bis zu 10 Minuten (`lib/move-channel.ts`).
 - **Freischalten für alle:** `SITE_PASSWORD` in Render löschen. Dann ist der Schutz sofort weg.

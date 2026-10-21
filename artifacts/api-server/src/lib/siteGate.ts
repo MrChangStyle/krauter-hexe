@@ -14,6 +14,10 @@ import type { NextFunction, Request, Response } from 'express';
 import { getJwtSecret } from './token';
 
 export const SITE_COOKIE = 'lf_site';
+// Older app versions (from the offline cache) show this text as it is, so it
+// says what to do: the page itself asks for the password.
+export const SITE_LOCKED_MESSAGE =
+  'Diese Seite ist noch nicht öffentlich. Öffne sie im Browser (z. B. Chrome) und gib dort das Seitenpasswort ein.';
 const COOKIE_DAYS = 180;
 export const GATE_PATH = '/api/site-access';
 
@@ -143,7 +147,7 @@ export function siteGate(req: Request, res: Response, next: NextFunction): void 
   }
   if (req.path.startsWith('/api/')) {
     // The app (maybe served by its offline cache) sees this and opens the page.
-    res.status(401).set({ 'X-Site-Locked': '1', 'Cache-Control': 'no-store' }).json({ error: 'Diese Seite ist noch nicht öffentlich.', siteLocked: true });
+    res.status(401).set({ 'X-Site-Locked': '1', 'Cache-Control': 'no-store' }).json({ error: SITE_LOCKED_MESSAGE, siteLocked: true });
     return;
   }
   sendGate(res, 401, safeNext(req.originalUrl), null);

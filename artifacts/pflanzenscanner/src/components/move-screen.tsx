@@ -1,7 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ArrowRight, Download, Leaf, Loader2, PackageOpen, Truck } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MOVED_FLAG_KEY, buildMoveFile, countDeviceData, type MoveCounts } from "@/lib/move";
+import { MOVED_FLAG_KEY, buildMoveFile, countDeviceData, movePercent, type MoveCounts, type MoveProgress } from "@/lib/move";
+import { Progress } from "@/components/ui/progress";
 import { sendDeviceData } from "@/lib/move-channel";
 import { disablePush } from "@/lib/push";
 import { isOldAddress, useAppConfig } from "@/lib/use-app-config";
@@ -53,7 +54,7 @@ function Shell({ children }: { children: ReactNode }) {
 type Phase =
   | { kind: "counting" }
   | { kind: "ready"; counts: MoveCounts }
-  | { kind: "sending"; sent: MoveCounts }
+  | { kind: "sending"; sent: MoveCounts; progress: MoveProgress | null }
   | { kind: "done"; stored: MoveCounts }
   | { kind: "file-saved" }
   | { kind: "error"; message: string; counts: MoveCounts };
@@ -98,12 +99,12 @@ function MoveScreen({ canonical }: { canonical: string }) {
       });
       return;
     }
-    setPhase({ kind: "sending", sent: { images: 0, queue: 0, draft: 0, local: 0 } });
+    setPhase({ kind: "sending", sent: { images: 0, queue: 0, draft: 0, local: 0 }, progress: null });
     try {
       const stored = await sendDeviceData({
         target: win,
         targetOrigin: canonical,
-        onProgress: (sent) => setPhase({ kind: "sending", sent }),
+        onProgress: (sent, progress) => setPhase({ kind: "sending", sent, progress }),
       });
       setMovedFlag(canonical);
       // Push now belongs to the new address; avoid double notifications.
@@ -150,8 +151,17 @@ function MoveScreen({ canonical }: { canonical: string }) {
       <Shell>
         <Truck className="h-8 w-8 text-primary" />
         <p className="text-sm">Daten werden übertragen … bitte beide Fenster offen lassen.</p>
-        <p className="text-sm text-muted-foreground">{describe(phase.sent) || "Warte auf das neue Fenster …"}</p>
-        {!describe(phase.sent) && (
+        {phase.progress ? (
+          <div className="w-full space-y-1.5" data-testid="move-progress">
+            <Progress value={movePercent(phase.progress)} aria-label="Fortschritt des Umzugs" />
+            <p className="text-sm font-medium tabular-nums">
+              {movePercent(phase.progress)} % · {phase.progress.done} von {phase.progress.total}
+            </p>
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">Warte auf das neue Fenster …</p>
+        )}
+        {!phase.progress && (
           <p className="text-xs text-muted-foreground">Fragt das neue Fenster nach einem Passwort? Gib es dort ein – danach startet der Umzug von selbst.</p>
         )}
         <Loader2 className="h-5 w-5 animate-spin text-primary" />

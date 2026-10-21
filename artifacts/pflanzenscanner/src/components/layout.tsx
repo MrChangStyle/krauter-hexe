@@ -8,10 +8,12 @@ import { useAuthContext } from "@/lib/auth-context";
 import { UpdateButton } from "@/components/update-button";
 import { STALE_QUEUE_WARNING_MS } from "@/lib/scan-queue";
 import { useNow } from "@/hooks/use-now";
+import { useModules } from "@/hooks/use-modules";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const { pendingCount, isOnline, pending } = useScanQueue();
+  const { visible } = useModules();
   const now = useNow();
   const hasStaleItem = pending.some((item) => now - item.createdAt > STALE_QUEUE_WARNING_MS);
   const { user, logout } = useAuthContext();
@@ -26,7 +28,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     { path: "/pflanzen", label: "Pflanzen", icon: Sprout,         badge: 0,            prefixes: ["/pflanzen", "/lexikon", "/pflanze/", "/meine-pflanzen", "/aufgaben", "/pflanzendoc", "/pflege-guide", "/schaedlinge", "/insekten-scanner", "/insekt/", "/kraeuter-hexe", "/beete", "/grow"] },
     { path: "#scan",     label: "Scannen",  icon: ScanLine,       badge: 0,            prefixes: [] as string[] },
     { path: "/farm",     label: "Tiere",    icon: PawPrint,       badge: 0,            prefixes: ["/farm", "/tiere"] },
-    { path: "/mehr",     label: "Mehr",     icon: MoreHorizontal, badge: pendingCount, prefixes: ["/mehr", "/warteschlange", "/verwaltung"] },
+    { path: "/mehr",     label: "Mehr",     icon: MoreHorizontal, badge: pendingCount, prefixes: ["/mehr", "/warteschlange", "/verwaltung", "/module"] },
   ];
 
   return (
@@ -65,7 +67,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-border z-50 px-4 pb-safe pt-2 md:pb-4 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
         <div className="max-w-2xl mx-auto flex justify-between items-center h-16">
-          {navItems.map((item) => {
+          {navItems.filter((item) => (item.path === "/pflanzen" ? visible("plants") : item.path === "/farm" ? visible("animals") : true)).map((item) => {
             if (item.path === "#scan") {
               return (
                 <button

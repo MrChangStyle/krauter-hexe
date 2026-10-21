@@ -18,7 +18,7 @@ import {
   Crown, ShieldCheck, Hourglass, Trash2, UserCheck, UserX,
   Pin, Camera, Users, WifiOff, Wifi, Loader2, Clock, AlertCircle,
   RefreshCw, ImageOff, TriangleAlert, Bug, Download, BookHeart, ChevronRight,
-  ChevronDown, Leaf, Trophy, Tractor, Bell, UserCog,
+  ChevronDown, Leaf, Trophy, Tractor, Bell, UserCog, LayoutGrid,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -1049,6 +1049,7 @@ export default function MehrPage() {
         {pushSupported() && (
           <HubTile href="#push" icon={Bell} label="Benachrichtigungen" hint="Erinnerungen aufs Handy" tone="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" />
         )}
+        <HubTile href="/module" icon={LayoutGrid} label="Meine Module" hint="Ein- und ausblenden, Lite/Premium" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />
         <HubTile href="#konto" icon={UserCog} label="Konto" hint="Name, Passwort, Rechtliches" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />
         {me?.isOwner && (
           <HubTile
@@ -1057,7 +1058,7 @@ export default function MehrPage() {
             label="Verwaltung"
             hint="Betrieb, Moderation, Premium, Benutzer"
             tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300"
-            className={pushSupported() ? "col-span-2" : undefined}
+            className={pushSupported() ? undefined : "col-span-2"}
           />
         )}
       </HubGrid>

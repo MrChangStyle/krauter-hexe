@@ -35,6 +35,7 @@ import {
   reportsTable,
   scanAttemptsTable,
   tasksTable,
+  userSettingsTable,
   usersTable,
 } from '@workspace/db';
 import { and, asc, eq, ne } from 'drizzle-orm';
@@ -64,6 +65,8 @@ export const PERSONAL_TABLES = [
   { name: 'grow_access', table: growAccessTable, userId: growAccessTable.userId },
   { name: 'grows', table: growsTable, userId: growsTable.userId },
   { name: 'grow_push_log', table: growPushLogTable, userId: growPushLogTable.userId },
+  // Modules the account hides, first-start assistant.
+  { name: 'user_settings', table: userSettingsTable, userId: userSettingsTable.userId },
   // The Hof-Dashboard the account chose.
   { name: 'dashboard_layouts', table: dashboardLayoutsTable, userId: dashboardLayoutsTable.userId },
   // Premium (granted or, later, paid).

@@ -6852,6 +6852,33 @@ export const SendTestPushResponse = zod.object({
 
 
 /**
+ * @summary Modules the account hides and whether it went through the first-start assistant
+ */
+export const GetSettingsResponse = zod.object({
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])),
+  "onboarded": zod.boolean()
+})
+
+
+/**
+ * @summary Hide or show modules, mark the first-start assistant as done
+ */
+export const setSettingsBodyHiddenModulesMax = 40;
+
+
+
+export const SetSettingsBody = zod.object({
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).max(setSettingsBodyHiddenModulesMax).optional(),
+  "onboarded": zod.boolean().optional()
+})
+
+export const SetSettingsResponse = zod.object({
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])),
+  "onboarded": zod.boolean()
+})
+
+
+/**
  * @summary The widgets of the account's Hof-Dashboard (null = the default)
  */
 export const getDashboardResponseWidgetsMax = 30;

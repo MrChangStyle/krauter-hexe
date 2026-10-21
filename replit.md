@@ -190,6 +190,10 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 - Sales (`farm_sales`: revenue, optional amount, `product` = `product:eggs`/`crop:tomate` or a free label) give `sales.revenue` and `sales.soldValue` (shop value of what was sold); `selfSupply` = value − soldValue, `balance` = selfSupply + revenue − expenses.
 - For the running year the overview adds the laying rate (eggs of the last 30 days per hen and day) and the Futterplaner's monthly feed costs; the farm routes reach the AI client through `feedStock`, so tests set `GEMINI_API_KEY`.
 
+## Module
+
+Details in `docs/module.md`. Every account can hide areas (Pflanzen, Tiere) and single modules under Mehr → „Meine Module“ (`/module`); hidden ones leave the hub tiles, the dashboard and the bottom bar, the data stays. Registry `lib/modules.ts` (ids = `ModuleId` in the API, tier `base` or `lite` → label Lite/Premium), stored per account in `user_settings` (`GET/PUT /settings`, in `PERSONAL_TABLES`, also `onboarded_at` for the first-start assistant).
+
 ## Hof-Dashboard
 
 Details in `docs/dashboard.md`. The home page ("Hof", `pages/scan.tsx` when no scan flow is open) shows a slim weather strip, a one-line Pflanzenretter rank (expands to the top four) and widgets for Pflanzen and Tiere (`components/hof-dashboard.tsx`). `lib/dashboard.ts` holds the registry of all widgets and the default layout. "Dashboard anpassen" lets the account switch and order widgets; the choice is stored per account (`GET/PUT /dashboard`, table `dashboard_layouts`, in `PERSONAL_TABLES`, ids from `DashboardWidgetId`).

@@ -31,6 +31,7 @@ import farmYieldsRouter from "./farm-yields";
 import growRouter from "./grow";
 import premiumRouter from "./premium";
 import dashboardRouter from "./dashboard";
+import settingsRouter from "./settings";
 
 const router: IRouter = Router();
 
@@ -59,6 +60,7 @@ router.use(farmYieldsRouter);
 router.use(growRouter);
 router.use(premiumRouter);
 router.use(dashboardRouter);
+router.use(settingsRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);

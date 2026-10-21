@@ -13,6 +13,7 @@ export function HubTile({
   hint,
   tone,
   badge,
+  tag,
   className: extra,
 }: {
   href: string;
@@ -23,6 +24,8 @@ export function HubTile({
   tone: string;
   /** A small count in the corner, e.g. open duties. */
   badge?: string | null;
+  /** A small label next to the name, e.g. "Lite" or "Premium". */
+  tag?: string | null;
   /** E.g. col-span-2 for a tile across the whole row. */
   className?: string;
 }) {
@@ -35,7 +38,10 @@ export function HubTile({
         {badge && <span className="rounded-full bg-amber-400 px-2 py-0.5 text-[11px] font-medium text-amber-950">{badge}</span>}
       </span>
       <span>
-        <span className="block text-sm font-semibold leading-tight">{label}</span>
+        <span className="block text-sm font-semibold leading-tight">
+          {label}
+          {tag && <span className="ml-1.5 inline-block rounded-full border border-primary/40 px-1.5 py-px align-middle text-[10px] font-medium text-primary">{tag}</span>}
+        </span>
         <span className="block text-xs text-muted-foreground mt-0.5">{hint}</span>
       </span>
     </>

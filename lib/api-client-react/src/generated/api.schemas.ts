@@ -1176,6 +1176,43 @@ export interface UserSettingsInput {
   onboarded?: boolean;
 }
 
+export interface FeedbackInput {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  text: string;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  page?: string | null;
+  voice?: boolean;
+}
+
+export interface FeedbackMarkInput {
+  read: boolean;
+}
+
+export interface FeedbackItem {
+  id: number;
+  text: string;
+  /** @nullable */
+  page: string | null;
+  voice: boolean;
+  author: string;
+  /** @nullable */
+  email: string | null;
+  createdAt: string;
+  /** @nullable */
+  readAt: string | null;
+}
+
+export interface FeedbackList {
+  items: FeedbackItem[];
+  unread: number;
+}
+
 export interface DemoStatus {
   active: boolean;
   /**

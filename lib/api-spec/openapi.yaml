@@ -14,6 +14,8 @@ tags:
     description: Grow – home growing within the KCanG (adults only)
   - name: settings
     description: Module the account uses and the first-start assistant
+  - name: feedback
+    description: Feedback – improvement ideas testers send the owner
   - name: demo
     description: Demo-Daten – example data on a Demo-Hof, removable with one button
   - name: dashboard
@@ -5145,6 +5147,80 @@ paths:
                 $ref: "#/components/schemas/UserSettings"
         "400":
           description: Invalid input.
+  /feedback:
+    post:
+      tags: [feedback]
+      operationId: sendFeedback
+      summary: Send the owner an improvement idea (typed or dictated)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackInput"
+      responses:
+        "201":
+          description: Sent.
+        "400":
+          description: Invalid input.
+        "429":
+          description: Daily limit reached.
+    get:
+      tags: [feedback]
+      operationId: listFeedback
+      summary: All feedback, newest first (owner)
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackList"
+  /feedback/{feedbackId}:
+    put:
+      tags: [feedback]
+      operationId: markFeedback
+      summary: Mark as read or unread (owner)
+      parameters:
+        - name: feedbackId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedbackMarkInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackList"
+        "404":
+          description: Not found.
+    delete:
+      tags: [feedback]
+      operationId: deleteFeedback
+      summary: Delete one message (owner)
+      parameters:
+        - name: feedbackId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeedbackList"
+        "404":
+          description: Not found.
   /demo:
     get:
       tags: [demo]
@@ -6585,6 +6661,55 @@ components:
             $ref: "#/components/schemas/ModuleId"
         onboarded:
           type: boolean
+    FeedbackInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        page:
+          type: [string, 'null']
+          maxLength: 200
+        voice:
+          type: boolean
+    FeedbackMarkInput:
+      type: object
+      required: [read]
+      properties:
+        read:
+          type: boolean
+    FeedbackItem:
+      type: object
+      required: [id, text, page, voice, author, email, createdAt, readAt]
+      properties:
+        id:
+          type: integer
+        text:
+          type: string
+        page:
+          type: [string, 'null']
+        voice:
+          type: boolean
+        author:
+          type: string
+        email:
+          type: [string, 'null']
+        createdAt:
+          type: string
+        readAt:
+          type: [string, 'null']
+    FeedbackList:
+      type: object
+      required: [items, unread]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/FeedbackItem"
+        unread:
+          type: integer
     DemoStatus:
       type: object
       required: [active, farmId]

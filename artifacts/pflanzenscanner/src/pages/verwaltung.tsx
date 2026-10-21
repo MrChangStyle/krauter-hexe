@@ -1,8 +1,9 @@
 import { Link } from "wouter";
-import { Activity, ArrowLeft, Crown, Flag, NotebookPen, Trash2, Users } from "lucide-react";
+import { Activity, ArrowLeft, Crown, Flag, MessageCircle, NotebookPen, Trash2, Users } from "lucide-react";
 import { CropDraftsCard } from "@/components/crop-drafts-card";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { ModerationCard } from "@/components/moderation-card";
+import { FeedbackCard } from "@/components/feedback-card";
 import { OperationsCard } from "@/components/operations-card";
 import { OrphanCleanupCard } from "@/components/orphan-cleanup-card";
 import { PremiumAdminCard } from "@/components/premium-admin-card";
@@ -29,6 +30,8 @@ export default function VerwaltungPage() {
       ) : (
         <>
           <HubGrid>
+            {/* Seven tiles: Feedback, read most often, takes the full width. */}
+            <HubTile href="#feedback" icon={MessageCircle} label="Feedback" hint="Ideen und Wünsche der Tester" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" className="col-span-2" />
             <HubTile href="#betrieb" icon={Activity} label="Betrieb" hint="Fehler, Status, Nutzung" tone="bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300" />
             <HubTile href="#moderation" icon={Flag} label="Moderation" hint="Gemeldete Inhalte" tone="bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" />
             <HubTile href="#entwuerfe" icon={NotebookPen} label="Entwürfe" hint="Pflanzen & Futter-Rezepte" tone="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" />
@@ -39,6 +42,9 @@ export default function VerwaltungPage() {
 
           <div id="betrieb" className="scroll-mt-4">
             <OperationsCard />
+          </div>
+          <div id="feedback" className="scroll-mt-4">
+            <FeedbackCard />
           </div>
           <div id="moderation" className="scroll-mt-4">
             <ModerationCard />

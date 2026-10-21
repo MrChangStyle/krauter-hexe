@@ -7035,6 +7035,90 @@ export const SetSettingsResponse = zod.object({
 
 
 /**
+ * @summary Send the owner an improvement idea (typed or dictated)
+ */
+export const sendFeedbackBodyTextMax = 2000;
+
+export const sendFeedbackBodyPageMax = 200;
+
+
+
+export const SendFeedbackBody = zod.object({
+  "text": zod.string().min(1).max(sendFeedbackBodyTextMax),
+  "page": zod.string().max(sendFeedbackBodyPageMax).nullish(),
+  "voice": zod.boolean().optional()
+})
+
+export const SendFeedbackResponse = zod.void()
+
+
+/**
+ * @summary All feedback, newest first (owner)
+ */
+export const ListFeedbackResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "text": zod.string(),
+  "page": zod.string().nullable(),
+  "voice": zod.boolean(),
+  "author": zod.string(),
+  "email": zod.string().nullable(),
+  "createdAt": zod.string(),
+  "readAt": zod.string().nullable()
+})),
+  "unread": zod.number()
+})
+
+
+/**
+ * @summary Mark as read or unread (owner)
+ */
+export const MarkFeedbackParams = zod.object({
+  "feedbackId": zod.coerce.number()
+})
+
+export const MarkFeedbackBody = zod.object({
+  "read": zod.boolean()
+})
+
+export const MarkFeedbackResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "text": zod.string(),
+  "page": zod.string().nullable(),
+  "voice": zod.boolean(),
+  "author": zod.string(),
+  "email": zod.string().nullable(),
+  "createdAt": zod.string(),
+  "readAt": zod.string().nullable()
+})),
+  "unread": zod.number()
+})
+
+
+/**
+ * @summary Delete one message (owner)
+ */
+export const DeleteFeedbackParams = zod.object({
+  "feedbackId": zod.coerce.number()
+})
+
+export const DeleteFeedbackResponse = zod.object({
+  "items": zod.array(zod.object({
+  "id": zod.number(),
+  "text": zod.string(),
+  "page": zod.string().nullable(),
+  "voice": zod.boolean(),
+  "author": zod.string(),
+  "email": zod.string().nullable(),
+  "createdAt": zod.string(),
+  "readAt": zod.string().nullable()
+})),
+  "unread": zod.number()
+})
+
+
+/**
  * @summary Whether the account has the demo data loaded
  */
 export const GetDemoStatusResponse = zod.object({

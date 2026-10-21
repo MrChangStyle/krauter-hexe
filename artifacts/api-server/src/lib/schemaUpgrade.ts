@@ -61,6 +61,17 @@ const STATEMENTS = [
 	"onboarded_at" timestamp with time zone,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
+  // Feedback (schema/feedback.ts).
+  `CREATE TABLE IF NOT EXISTS "feedback" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"text" text NOT NULL,
+	"page" text,
+	"voice" boolean DEFAULT false NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"read_at" timestamp with time zone
+)`,
+  `CREATE INDEX IF NOT EXISTS "feedback_created_idx" ON "feedback" USING btree ("created_at")`,
   // Umzug über das Konto (schema/move.ts).
   `CREATE TABLE IF NOT EXISTS "move_parcels" (
 	"id" serial PRIMARY KEY NOT NULL,

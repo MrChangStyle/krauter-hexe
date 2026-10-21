@@ -203,6 +203,8 @@ Farm & Team (`docs/team.md`): `/team` (Mehr tile and the Tiere tile) shows the f
 
 Landingpage and Vorschau-Schutz (`docs/landingpage.md`): signed-out visitors see `components/landing-page.tsx` before the login form. While env `SITE_PASSWORD` is set, `lib/siteGate.ts` answers every page and API call with a password page (`/api/site-access`) until the visitor typed it (cookie `lf_site`, HMAC of the password; healthz, cron and webhooks stay open); the client's `lib/site-lock.ts` sends a cached app shell there on a 401 with `X-Site-Locked`.
 
+Feedback (`docs/feedback.md`): a small speech bubble (`components/feedback-bubble.tsx`, in the layout) lets every approved account send the owner an idea, typed or dictated (browser speech recognition, `lib/speech.ts`), with the current page; table `feedback` (in `PERSONAL_TABLES`), `POST /feedback` (20 a day), owner-only list/mark/delete, push to the owner; read under Verwaltung → Feedback.
+
 ## Hof-Dashboard
 
 Details in `docs/dashboard.md`. The home page ("Hof", `pages/scan.tsx` when no scan flow is open) shows a slim weather strip, a one-line Pflanzenretter rank (expands to the top four) and widgets for Pflanzen and Tiere (`components/hof-dashboard.tsx`). `lib/dashboard.ts` holds the registry of all widgets and the default layout. "Dashboard anpassen" lets the account switch and order widgets; the choice is stored per account (`GET/PUT /dashboard`, table `dashboard_layouts`, in `PERSONAL_TABLES`, ids from `DashboardWidgetId`).

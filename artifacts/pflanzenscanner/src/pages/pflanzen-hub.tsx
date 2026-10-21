@@ -10,16 +10,19 @@ import {
   Sprout,
   Stethoscope,
 } from "lucide-react";
-import { useListTasks } from "@workspace/api-client-react";
+import { useGetPremium, useListTasks, type ModuleId } from "@workspace/api-client-react";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { GROW_ENABLED } from "@/lib/grow-labels";
+import { useModules } from "@/hooks/use-modules";
+import { tierLabel } from "@/lib/modules";
 
 /**
  * Pflanzen: the hub for everything around plants. Each tile opens one area;
  * the order follows the agreed Little Farming navigation (design "Option B").
  */
-const AREAS = [
+const AREAS: { module: ModuleId; href: string; icon: typeof Sprout; label: string; hint: string; tone: string }[] = [
   {
+    module: "my-plants",
     href: "/meine-pflanzen",
     icon: Sprout,
     label: "Meine Pflanzen",
@@ -27,6 +30,7 @@ const AREAS = [
     tone: "bg-lime-100 text-lime-800 dark:bg-lime-950/50 dark:text-lime-300",
   },
   {
+    module: "care-plan",
     href: "/aufgaben",
     icon: CalendarCheck,
     label: "Pflegeplan",
@@ -34,6 +38,7 @@ const AREAS = [
     tone: "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300",
   },
   {
+    module: "plant-doc",
     href: "/pflanzendoc",
     icon: Stethoscope,
     label: "Pflanzendoc",
@@ -41,6 +46,7 @@ const AREAS = [
     tone: "bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300",
   },
   {
+    module: "pests",
     href: "/schaedlinge",
     icon: Bug,
     label: "Schädlinge & Nützlinge",
@@ -48,6 +54,7 @@ const AREAS = [
     tone: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
   },
   {
+    module: "lexicon",
     href: "/lexikon",
     icon: BookOpen,
     label: "Lexikon",
@@ -55,6 +62,7 @@ const AREAS = [
     tone: "bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200",
   },
   {
+    module: "herb-witch",
     href: "/kraeuter-hexe",
     icon: Sparkles,
     label: "Kräuter-Hexe",
@@ -62,6 +70,7 @@ const AREAS = [
     tone: "bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300",
   },
   {
+    module: "garden",
     href: "/beete",
     icon: Fence,
     label: "Beet-Architekt",
@@ -72,6 +81,7 @@ const AREAS = [
   ...(GROW_ENABLED
     ? [
         {
+          module: "grow" as const,
           href: "/grow",
           icon: Leaf,
           label: "Grow",
@@ -104,6 +114,8 @@ function TodayCard() {
 }
 
 export default function PflanzenHubPage() {
+  const { visible } = useModules();
+  const premium = useGetPremium();
   return (
     <div className="px-4 pt-6 pb-4 space-y-5">
       <div>
@@ -113,11 +125,11 @@ export default function PflanzenHubPage() {
         </p>
       </div>
 
-      <TodayCard />
+      {visible("care-plan") && <TodayCard />}
 
       <HubGrid>
-        {AREAS.map((area) => (
-          <HubTile key={area.href} {...area} />
+        {AREAS.filter((a) => visible(a.module)).map(({ module, ...area }) => (
+          <HubTile key={area.href} {...area} tag={tierLabel(module, !!premium.data?.active)} />
         ))}
       </HubGrid>
     </div>

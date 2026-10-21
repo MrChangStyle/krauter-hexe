@@ -12,6 +12,8 @@ tags:
     description: Health operations
   - name: grow
     description: Grow – home growing within the KCanG (adults only)
+  - name: settings
+    description: Module the account uses and the first-start assistant
   - name: dashboard
     description: Hof-Dashboard – the widgets an account chose
   - name: premium
@@ -4965,6 +4967,37 @@ paths:
                 $ref: "#/components/schemas/PushTestResult"
         "401":
           description: Not signed in
+  /settings:
+    get:
+      tags: [settings]
+      operationId: getSettings
+      summary: Modules the account hides and whether it went through the first-start assistant
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSettings"
+    put:
+      tags: [settings]
+      operationId: setSettings
+      summary: Hide or show modules, mark the first-start assistant as done
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserSettingsInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserSettings"
+        "400":
+          description: Invalid input.
   /dashboard:
     get:
       tags: [dashboard]
@@ -6346,6 +6379,29 @@ components:
           $ref: "#/components/schemas/GrowPush"
         kwhPrice:
           type: [number, 'null']
+    ModuleId:
+      type: string
+      enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members]
+    UserSettings:
+      type: object
+      required: [hiddenModules, onboarded]
+      properties:
+        hiddenModules:
+          type: array
+          items:
+            $ref: "#/components/schemas/ModuleId"
+        onboarded:
+          type: boolean
+    UserSettingsInput:
+      type: object
+      properties:
+        hiddenModules:
+          type: array
+          maxItems: 40
+          items:
+            $ref: "#/components/schemas/ModuleId"
+        onboarded:
+          type: boolean
     DashboardWidgetId:
       type: string
       enum: [plant-tasks, garden, seeds, grow, farm-tasks, animals, duties, feed, medicines, breeding, yields]

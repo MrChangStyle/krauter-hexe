@@ -1139,6 +1139,43 @@ export interface GrowAccess {
   kwhPrice: number | null;
 }
 
+export type ModuleId = typeof ModuleId[keyof typeof ModuleId];
+
+
+export const ModuleId = {
+  plants: 'plants',
+  'my-plants': 'my-plants',
+  'care-plan': 'care-plan',
+  'plant-doc': 'plant-doc',
+  pests: 'pests',
+  lexicon: 'lexicon',
+  'herb-witch': 'herb-witch',
+  garden: 'garden',
+  grow: 'grow',
+  animals: 'animals',
+  'farm-tasks': 'farm-tasks',
+  feed: 'feed',
+  breeding: 'breeding',
+  medicines: 'medicines',
+  duties: 'duties',
+  yields: 'yields',
+  wildlife: 'wildlife',
+  handover: 'handover',
+  export: 'export',
+  members: 'members',
+} as const;
+
+export interface UserSettings {
+  hiddenModules: ModuleId[];
+  onboarded: boolean;
+}
+
+export interface UserSettingsInput {
+  /** @maxItems 40 */
+  hiddenModules?: ModuleId[];
+  onboarded?: boolean;
+}
+
 export type DashboardWidgetId = typeof DashboardWidgetId[keyof typeof DashboardWidgetId];
 
 

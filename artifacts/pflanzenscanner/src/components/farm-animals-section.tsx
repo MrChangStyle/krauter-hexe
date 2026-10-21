@@ -41,35 +41,26 @@ export function visibleAnimals(
   });
 }
 
-function AnimalCard({ animal, farmId }: { animal: FarmAnimal; farmId: number }) {
+/** One animal as a small tile – four in a row: photo, name, kind. */
+function AnimalTile({ animal, farmId }: { animal: FarmAnimal; farmId: number }) {
   const age = ageText(animal.birthDate);
   return (
     <Link
       href={`/farm/${farmId}/tier/${animal.id}`}
-      className={cn(
-        "flex items-center gap-3 rounded-xl border border-border bg-card p-2.5 transition-colors hover:bg-muted/50",
-        animal.archivedAt && "opacity-60",
-      )}
+      title={`${animal.name} · ${SPECIES_LABELS[animal.species]}${animal.breed ? ` · ${animal.breed}` : ""} · ${SEX_LABELS[animal.sex]}${age ? ` · ${age}` : ""} · ${animal.registrationNumber}`}
+      className={cn("flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-card p-1.5 transition-colors hover:bg-muted/50", animal.archivedAt && "opacity-60")}
     >
       {animal.imageUrl ? (
-        <img src={animal.imageUrl} alt="" loading="lazy" className="h-14 w-14 shrink-0 rounded-lg object-cover" />
+        <img src={animal.imageUrl} alt="" loading="lazy" className="aspect-square w-full rounded-lg object-cover" />
       ) : (
-        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-muted">
+        <span className="flex aspect-square w-full items-center justify-center rounded-lg bg-muted">
           <PawPrint className="h-6 w-6 text-muted-foreground" />
-        </div>
+        </span>
       )}
-      <div className="min-w-0 flex-1">
-        <p className="truncate font-medium">
-          {animal.name}
-          {animal.archivedAt && <span className="ml-1.5 text-xs font-normal text-muted-foreground">(archiviert)</span>}
-        </p>
-        <p className="truncate text-xs text-muted-foreground">
-          {SPECIES_LABELS[animal.species]}
-          {animal.breed ? ` · ${animal.breed}` : ""} · {SEX_LABELS[animal.sex]}
-          {age ? ` · ${age}` : ""}
-        </p>
-        <p className="truncate font-mono text-xs text-muted-foreground">{animal.registrationNumber}</p>
-      </div>
+      <span className="truncate px-0.5 text-xs font-medium leading-tight">{animal.name}</span>
+      <span className="-mt-1 truncate px-0.5 text-[10px] text-muted-foreground">
+        {animal.archivedAt ? "archiviert" : animal.breed || SPECIES_LABELS[animal.species]}
+      </span>
     </Link>
   );
 }
@@ -220,9 +211,9 @@ export function FarmAnimalsSection({ farm }: { farm: FarmSummary }) {
       ) : shown.length === 0 ? (
         <p className="text-sm text-muted-foreground">Keine Tiere in dieser Auswahl.</p>
       ) : (
-        <div className="space-y-2">
+        <div className="grid grid-cols-4 gap-2" data-testid="farm-animal-tiles">
           {shown.map((a) => (
-            <AnimalCard key={a.id} animal={a} farmId={farm.id} />
+            <AnimalTile key={a.id} animal={a} farmId={farm.id} />
           ))}
         </div>
       )}

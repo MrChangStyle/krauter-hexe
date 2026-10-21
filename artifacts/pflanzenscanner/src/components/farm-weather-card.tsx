@@ -20,7 +20,7 @@ function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
 }
 
-function LocationForm({ farm, onDone }: { farm: FarmSummary; onDone?: () => void }) {
+export function LocationForm({ farm, onDone }: { farm: FarmSummary; onDone?: () => void }) {
   const queryClient = useQueryClient();
   const [postalCode, setPostalCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -125,7 +125,7 @@ export function FarmWeatherCard({ farm }: { farm: FarmSummary }) {
             <p className="text-sm text-muted-foreground">Der Wetterdienst ist gerade nicht erreichbar.</p>
           ) : (
             <div className="grid grid-cols-3 gap-2 text-center text-sm">
-              {data.days.map((d) => {
+              {data.days.slice(0, 3).map((d) => {
                 const Icon = ICONS[d.icon];
                 return (
                   <div key={d.date} className="rounded-lg bg-muted/50 p-2">

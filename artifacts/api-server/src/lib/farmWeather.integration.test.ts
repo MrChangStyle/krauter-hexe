@@ -35,7 +35,7 @@ function fakeFetch(input: string | URL | Request, init?: RequestInit): Promise<R
   if (url.startsWith("https://api.brightsky.dev/weather")) {
     weatherCalls.push(url);
     const from = new URL(url).searchParams.get("date")!;
-    const weather = [0, 1, 2, 3].flatMap((i) => {
+    const weather = [0, 1, 2, 3, 4, 5, 6, 7].flatMap((i) => {
       const d = new Date(`${from}T12:00:00Z`);
       d.setUTCDate(d.getUTCDate() + i);
       const date = d.toISOString().slice(0, 10);
@@ -120,13 +120,12 @@ describe.skipIf(!enabled)("Wetter für den Hof (real database, weather replaced)
     const set = await api("PUT", `/farms/${farm.anna}/location`, { postalCode: "10115" });
     expect(set.status).toBe(200);
     expect(set.data.location).toEqual({ source: "farm", postalCode: "10115", latitude: 52.5, longitude: 13.4 });
-    expect(set.data.days.map((d: any) => [d.date, d.minTemp, d.maxTemp])).toEqual([
-      ["2026-12-01", -3, 8],
-      ["2026-12-02", -3, 8],
-      ["2026-12-03", -3, 8],
-    ]);
+    // A week ahead.
+    expect(set.data.days.map((d: any) => [d.date, d.minTemp, d.maxTemp])).toEqual(
+      ["2026-12-01", "2026-12-02", "2026-12-03", "2026-12-04", "2026-12-05", "2026-12-06", "2026-12-07"].map((d) => [d, -3, 8]),
+    );
     expect(set.data.warnings).toEqual([{ kind: "frost", date: "2026-12-01", text: expect.stringMatching(/^Frost bis −3 °C \(heute\): Tränken frostfrei/) }]);
-    expect(weatherCalls.at(-1)).toContain("lat=52.5&lon=13.4&date=2026-12-01&last_date=2026-12-04");
+    expect(weatherCalls.at(-1)).toContain("lat=52.5&lon=13.4&date=2026-12-01&last_date=2026-12-08");
 
     // The phone's position wins and is rounded to about 10 km.
     expect((await api("PUT", `/farms/${farm.anna}/location`, { latitude: 48.13743, longitude: 11.57549 })).data.location).toMatchObject({ latitude: 48.1, longitude: 11.6, postalCode: null });

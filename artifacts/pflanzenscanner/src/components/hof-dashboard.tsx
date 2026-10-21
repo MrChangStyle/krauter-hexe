@@ -1,4 +1,4 @@
-import { useEffect, useState, type ComponentType, type ReactNode } from "react";
+import { useState, type ComponentType, type ReactNode } from "react";
 import { Link } from "wouter";
 import {
   AlertTriangle,
@@ -24,7 +24,6 @@ import {
   Wind,
 } from "lucide-react";
 import {
-  useEnsureOwnFarm,
   useGetDashboard,
   useGetFarmDuties,
   useGetFarmWeather,
@@ -42,8 +41,9 @@ import {
   type DayForecast,
   type FarmSummary,
 } from "@workspace/api-client-react";
-import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
+import { useActiveFarm } from "@/hooks/use-active-farm";
 import { DashboardEditor } from "@/components/dashboard-editor";
+import { LocationForm } from "@/components/farm-weather-card";
 import { effectiveLayout, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
 import { openDuties, speciesCount } from "@/lib/duty-labels";
 import { GROW_ENABLED } from "@/lib/grow-labels";
@@ -52,85 +52,150 @@ import { berlinToday, dayLabel, tempText } from "@/lib/weather-labels";
 import { euro } from "@/lib/yield-labels";
 import { cn } from "@/lib/utils";
 
-/** The account's farm the farm pages show (created on first use, like /farm does). */
-function useActiveFarm(): FarmSummary | null {
-  const [farms, setFarms] = useState<FarmSummary[] | null>(null);
-  const ensure = useEnsureOwnFarm({ mutation: { onSuccess: (list) => setFarms(list) } });
-  useEffect(() => {
-    ensure.mutate();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return farms ? pickActiveFarm(farms, readActiveFarmId()) : null;
-}
-
 // ── Weather ──────────────────────────────────────────────────────────────────
 
 const WEATHER_ICONS: Record<DayForecast["icon"], typeof Sun> = { sun: Sun, cloud: Cloud, rain: CloudRain, snow: CloudSnow, storm: CloudLightning };
 
-/** One slim line: today big, the next two days small, warnings as a chip. */
+/**
+ * One slim line: today big, the next two days small, the first warning. A tap
+ * opens the week – a row per day – with all warnings and the place.
+ */
 function WeatherStrip({ farm }: { farm: FarmSummary }) {
   const weather = useGetFarmWeather(farm.id);
+  const [open, setOpen] = useState(false);
+  const [placing, setPlacing] = useState(false);
+  const isAdmin = farm.role === "admin";
   const data = weather.data;
   if (!data) return <div className="h-[72px] rounded-2xl border bg-card animate-pulse" />;
-  if (!data.location || data.days.length === 0) {
+  if (!data.location) {
     return (
-      <Link href="/farm#wetter" className="flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-sm">
-        <Sun className="h-5 w-5 text-amber-500" />
-        <span className="flex-1 text-muted-foreground">
-          {data.location ? "Der Wetterdienst ist gerade nicht erreichbar." : "Standort festlegen – dann steht hier das Wetter für deinen Hof."}
-        </span>
-      </Link>
+      <div className="space-y-2 rounded-2xl border bg-card px-4 py-3 text-sm" data-testid="hof-weather">
+        <p className="flex items-center gap-2 font-medium">
+          <Sun className="h-5 w-5 text-amber-500" />
+          Wetter für deinen Hof
+        </p>
+        {isAdmin ? (
+          <>
+            <p className="text-muted-foreground">Mit dem Standort warnt die App vor Frost, Hitze, Sturm und Starkregen – mit Tipps für Tiere und Garten.</p>
+            <LocationForm farm={farm} />
+          </>
+        ) : (
+          <p className="text-muted-foreground">Ein Admin des Hofs kann den Standort festlegen.</p>
+        )}
+      </div>
+    );
+  }
+  if (data.days.length === 0) {
+    return (
+      <p className="flex items-center gap-3 rounded-2xl border bg-card px-4 py-3 text-sm text-muted-foreground" data-testid="hof-weather">
+        <Cloud className="h-5 w-5" />
+        Der Wetterdienst ist gerade nicht erreichbar.
+      </p>
     );
   }
   const today = berlinToday();
   const [first, ...rest] = data.days;
   const Icon = WEATHER_ICONS[first!.icon];
+  const lows = data.days.map((d) => d.minTemp);
+  const highs = data.days.map((d) => d.maxTemp);
+  const lo = Math.min(...lows);
+  const span = Math.max(1, Math.max(...highs) - lo);
   return (
-    <Link href="/farm#wetter" className="block rounded-2xl border bg-card px-4 py-3" data-testid="hof-weather">
-      <div className="flex items-center gap-3">
-        <Icon className={cn("h-9 w-9 shrink-0", first!.icon === "sun" ? "text-amber-500" : "text-sky-600")} />
-        <div className="min-w-0 flex-1">
-          <p className="text-lg font-semibold leading-tight tabular-nums">
-            {tempText(first!.maxTemp)} <span className="text-sm font-normal text-muted-foreground">/ {tempText(first!.minTemp)}</span>
-          </p>
-          <p className="flex items-center gap-1 truncate text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3 shrink-0" />
-            {data.location.postalCode ? `PLZ ${data.location.postalCode}` : "Hof"} · heute
-            {first!.precipitationMm >= 0.5 && ` · ${first!.precipitationMm.toLocaleString("de-DE", { maximumFractionDigits: 1 })} l/m²`}
-            {first!.maxGustKmh >= 50 && (
-              <>
-                {" · "}
-                <Wind className="h-3 w-3" />
-                {first!.maxGustKmh} km/h
-              </>
+    <div className="rounded-2xl border bg-card" data-testid="hof-weather">
+      <button type="button" className="block w-full px-4 py-3 text-left" aria-expanded={open} aria-label="Wetter der Woche" onClick={() => setOpen(!open)}>
+        <span className="flex items-center gap-3">
+          <Icon className={cn("h-9 w-9 shrink-0", first!.icon === "sun" ? "text-amber-500" : "text-sky-600")} />
+          <span className="min-w-0 flex-1">
+            <span className="block text-lg font-semibold leading-tight tabular-nums">
+              {tempText(first!.maxTemp)} <span className="text-sm font-normal text-muted-foreground">/ {tempText(first!.minTemp)}</span>
+            </span>
+            <span className="flex items-center gap-1 truncate text-xs text-muted-foreground">
+              <MapPin className="h-3 w-3 shrink-0" />
+              {data.location.postalCode ? `PLZ ${data.location.postalCode}` : "Hof"} · heute
+              {first!.precipitationMm >= 0.5 && ` · ${mm(first!.precipitationMm)}`}
+            </span>
+          </span>
+          {!open && (
+            <span className="flex shrink-0 gap-3 text-center text-xs">
+              {rest.slice(0, 2).map((d) => {
+                const DayIcon = WEATHER_ICONS[d.icon];
+                return (
+                  <span key={d.date} className="block">
+                    <span className="block text-muted-foreground">{dayLabel(d.date, today)}</span>
+                    <DayIcon className="mx-auto my-0.5 h-4 w-4 text-muted-foreground" />
+                    <span className="block tabular-nums">{tempText(d.maxTemp)}</span>
+                  </span>
+                );
+              })}
+            </span>
+          )}
+          <ChevronDown className={cn("h-5 w-5 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
+        </span>
+        {data.warnings.length > 0 && !open && (
+          <span className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="line-clamp-2">
+              {data.warnings[0]!.text}
+              {data.warnings.length > 1 && ` (+${data.warnings.length - 1} weitere)`}
+            </span>
+          </span>
+        )}
+      </button>
+      {open && (
+        <div className="space-y-3 border-t px-4 py-3" data-testid="hof-weather-week">
+          <ul className="space-y-1.5">
+            {data.days.map((d) => {
+              const DayIcon = WEATHER_ICONS[d.icon];
+              return (
+                <li key={d.date} className="grid grid-cols-[4.5rem_1.25rem_2.25rem_1fr_2.25rem] items-center gap-2 text-sm">
+                  <span className={cn("truncate", d.date === today && "font-semibold")}>{dayLabel(d.date, today)}</span>
+                  <DayIcon className={cn("h-5 w-5", d.icon === "sun" ? "text-amber-500" : "text-sky-600")} />
+                  <span className="text-right tabular-nums text-muted-foreground">{tempText(d.minTemp)}</span>
+                  {/* Temperature bar: where the day's range sits in the week. */}
+                  <span className="relative h-1.5 rounded-full bg-muted">
+                    <span
+                      className="absolute h-1.5 rounded-full bg-gradient-to-r from-sky-400 to-amber-400"
+                      style={{ left: `${((d.minTemp - lo) / span) * 100}%`, width: `${Math.max(6, ((d.maxTemp - d.minTemp) / span) * 100)}%` }}
+                    />
+                  </span>
+                  <span className="tabular-nums font-medium">{tempText(d.maxTemp)}</span>
+                  <span className="col-span-5 -mt-1 flex gap-3 pl-[6.25rem] text-[11px] text-muted-foreground">
+                    <span>{d.precipitationMm >= 0.5 ? mm(d.precipitationMm) : "trocken"}</span>
+                    <span className="flex items-center gap-0.5">
+                      <Wind className="h-3 w-3" />
+                      Böen {d.maxGustKmh} km/h
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          {data.warnings.length > 0 && (
+            <ul role="alert" className="space-y-1.5 rounded-lg bg-amber-50 p-2 text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
+              {data.warnings.map((w) => (
+                <li key={w.kind} className="flex gap-1.5">
+                  <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  {w.text}
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
+            <span>Deutscher Wetterdienst (über Bright Sky). Warnungen kommen morgens auch als Push.</span>
+            {isAdmin && (
+              <button type="button" className="shrink-0 underline" onClick={() => setPlacing(!placing)}>
+                Standort ändern
+              </button>
             )}
           </p>
+          {placing && <LocationForm farm={farm} onDone={() => setPlacing(false)} />}
         </div>
-        <div className="flex shrink-0 gap-3 text-center text-xs">
-          {rest.slice(0, 2).map((d) => {
-            const DayIcon = WEATHER_ICONS[d.icon];
-            return (
-              <div key={d.date}>
-                <p className="text-muted-foreground">{dayLabel(d.date, today)}</p>
-                <DayIcon className="mx-auto my-0.5 h-4 w-4 text-muted-foreground" />
-                <p className="tabular-nums">{tempText(d.maxTemp)}</p>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-      {data.warnings.length > 0 && (
-        <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
-          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <span className="line-clamp-2">
-            {data.warnings[0]!.text}
-            {data.warnings.length > 1 && ` (+${data.warnings.length - 1} weitere)`}
-          </span>
-        </p>
       )}
-    </Link>
+    </div>
   );
 }
+
+const mm = (n: number) => `${n.toLocaleString("de-DE", { maximumFractionDigits: 1 })} l/m²`;
 
 // ── Pflanzenretter ───────────────────────────────────────────────────────────
 
@@ -303,7 +368,7 @@ function FarmTasksWidget({ farm }: { farm: FarmSummary }) {
   const due = active.filter((t) => t.isDue);
   return (
     <Widget
-      href="/farm#aufgaben"
+      href="/farm/aufgaben"
       icon={ClipboardList}
       tone={TONES.emerald}
       title="Stall-Aufgaben"
@@ -466,7 +531,7 @@ function Area({ area, farm, layout }: { area: WidgetArea; farm: FarmSummary; lay
 const available = (id: WidgetId) => id !== "grow" || GROW_ENABLED;
 
 export function HofDashboard() {
-  const farm = useActiveFarm();
+  const { farm } = useActiveFarm();
   const saved = useGetDashboard();
   const [editing, setEditing] = useState(false);
   // The account's own choice, else the default (docs/dashboard.md).

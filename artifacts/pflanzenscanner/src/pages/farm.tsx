@@ -10,7 +10,7 @@ import {
   Trash2,
   UserPlus,
   Users,
-  X, Wheat, Pill, Handshake, Baby, PiggyBank } from "lucide-react";
+  X, Wheat, Pill, Handshake, Baby, PiggyBank, FileText } from "lucide-react";
 import {
   getListFarmMembersQueryKey,
   useAddFarmMember,
@@ -29,7 +29,6 @@ import { FarmDutiesTile } from "@/components/farm-duties-link";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { FarmSetupCard } from "@/components/farm-setup-card";
 import { HousingOrderBanner } from "@/components/housing-order-banner";
-import { FarmWeatherCard } from "@/components/farm-weather-card";
 import { deDay } from "@/lib/medicine-labels";
 import { berlinToday } from "@/lib/weather-labels";
 import { Button } from "@/components/ui/button";
@@ -45,8 +44,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { FarmAnimalsSection } from "@/components/farm-animals-section";
-import { FarmExportCard } from "@/components/farm-export-card";
-import { FarmTasksSection, FarmTodayCard } from "@/components/farm-tasks-section";
+import { FarmTasksTile, FarmTodayCard } from "@/components/farm-tasks-section";
 import {
   FARM_ROLE_HINTS,
   FARM_ROLE_LABELS,
@@ -484,6 +482,7 @@ export default function FarmPage() {
       <FarmTodayCard farm={farm} />
 
       <HubGrid>
+        <FarmTasksTile farm={farm} />
         <HubTile href="/farm/futter" icon={Wheat} label="Futterplaner" hint="Rationen, Bedarf, Vorrat" tone="bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300" />
         <HubTile href="/farm/zucht" icon={Baby} label="Zucht" hint="Trächtigkeit, Brut, Jungtiere" tone="bg-pink-100 text-pink-800 dark:bg-pink-950/50 dark:text-pink-300" />
         <HubTile href="/farm/arzneimittel" icon={Pill} label="Arzneimittel" hint="Vorrat, Charge, Wartezeit" tone="bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" />
@@ -492,21 +491,15 @@ export default function FarmPage() {
         <HubTile href="/farm/kameras" icon={Radar} label="Wildtier-Radar" hint="Kameras & Raubtier-Alarm" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />
         <HubTile href="/farm/uebergabe" icon={Handshake} label="Übergabe" hint="Vertretung für ein paar Tage" tone="bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300" />
         <HubTile href="#mitglieder" icon={Users} label="Mitglieder" hint="Team, Rollen, Einladungen" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />
+        <HubTile href="/farm/export" icon={FileText} label="Veterinäramt-Export" hint="Bestandsliste & Medizin als PDF" tone="bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300" />
       </HubGrid>
 
       <FarmSetupCard farm={farm} onRename={() => openDialog("rename")} />
 
-      <div id="wetter" className="scroll-mt-4">
-        <FarmWeatherCard farm={farm} />
-      </div>
 
-      <div id="aufgaben" className="scroll-mt-4">
-        <FarmTasksSection farm={farm} />
-      </div>
 
       <FarmAnimalsSection farm={farm} />
 
-      <FarmExportCard farm={farm} />
 
       <div id="mitglieder" className="scroll-mt-4">
         <MembersCard

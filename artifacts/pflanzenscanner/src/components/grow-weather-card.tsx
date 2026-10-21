@@ -121,7 +121,7 @@ export function GrowWeatherCard({ grow, growInput }: { grow: Grow; growInput: Gr
         <p className="text-muted-foreground">Der Wetterdienst ist gerade nicht erreichbar.</p>
       ) : (
         <div className="grid grid-cols-3 gap-2 text-center">
-          {data.days.map((d) => {
+          {data.days.slice(0, 3).map((d) => {
             const Icon = ICONS[d.icon];
             return (
               <div key={d.date} className="rounded-lg bg-muted/50 p-1.5">

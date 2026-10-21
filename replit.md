@@ -194,6 +194,8 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 
 Details in `docs/module.md`. Every account can hide areas (Pflanzen, Tiere) and single modules under Mehr → „Meine Module“ (`/module`); hidden ones leave the hub tiles, the dashboard and the bottom bar, the data stays. Registry `lib/modules.ts` (ids = `ModuleId` in the API, tier `base` or `lite` → label Lite/Premium), stored per account in `user_settings` (`GET/PUT /settings`, in `PERSONAL_TABLES`, also `onboarded_at` for the first-start assistant).
 
+Demo-Daten (`docs/demo.md`): „Demo-Daten laden“ on `/module` creates a separate farm „Demo-Hof“ (`farms.is_demo`) with two examples per module, plus a demo grow (`grows.is_demo`) for accounts that confirmed their age; „Demo-Daten löschen“ deletes both, real data stays. `lib/demoData.ts`, `GET/POST/DELETE /demo`, client `components/demo-card.tsx`.
+
 ## Hof-Dashboard
 
 Details in `docs/dashboard.md`. The home page ("Hof", `pages/scan.tsx` when no scan flow is open) shows a slim weather strip, a one-line Pflanzenretter rank (expands to the top four) and widgets for Pflanzen and Tiere (`components/hof-dashboard.tsx`). `lib/dashboard.ts` holds the registry of all widgets and the default layout. "Dashboard anpassen" lets the account switch and order widgets; the choice is stored per account (`GET/PUT /dashboard`, table `dashboard_layouts`, in `PERSONAL_TABLES`, ids from `DashboardWidgetId`).

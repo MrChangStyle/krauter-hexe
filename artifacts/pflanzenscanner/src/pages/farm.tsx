@@ -12,6 +12,7 @@ import {
   useCreateFarm,
   useDeleteFarm,
   useEnsureOwnFarm,
+  useGetDemoStatus,
   useRenameFarm,
   type FarmSummary,
 } from "@workspace/api-client-react";
@@ -148,6 +149,7 @@ export default function FarmPage() {
   }, []);
 
   const farm = farms ? pickActiveFarm(farms, activeId) : null;
+  const demo = useGetDemoStatus();
 
   function select(id: number) {
     setActiveId(id);
@@ -251,6 +253,12 @@ export default function FarmPage() {
           </select>
         )}
       </div>
+
+      {demo.data?.farmId === farm.id && (
+        <Link href="/module" className="block rounded-xl border border-sky-300 bg-sky-50 p-3 text-sm text-sky-950 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100" data-testid="demo-banner">
+          Das ist der <span className="font-medium">Demo-Hof</span> mit Beispieldaten. <span className="underline">Demo-Daten löschen</span> geht unter „Meine Module“.
+        </Link>
+      )}
 
       {farm.accessUntil && (
         <Link href="/farm/uebergabe" className="block rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">

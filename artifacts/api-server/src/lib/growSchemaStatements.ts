@@ -32,7 +32,8 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
 	"postal_code" text,
 	"latitude" double precision,
 	"longitude" double precision,
-	"fan_watts" integer
+	"fan_watts" integer,
+	"is_demo" boolean DEFAULT false NOT NULL
 )`,
   `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "postal_code" text`,
   `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "latitude" double precision`,
@@ -96,6 +97,7 @@ export const GROW_SCHEMA_STATEMENTS: readonly string[] = [
   `CREATE INDEX IF NOT EXISTS "grow_checks_plant_idx" ON "grow_checks" USING btree ("plant_id")`,
   `ALTER TABLE "grow_access" ADD COLUMN IF NOT EXISTS "kwh_price" double precision`,
   `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "fan_watts" integer`,
+  `ALTER TABLE "grows" ADD COLUMN IF NOT EXISTS "is_demo" boolean DEFAULT false NOT NULL`,
   `CREATE TABLE IF NOT EXISTS "grow_costs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"grow_id" integer NOT NULL,

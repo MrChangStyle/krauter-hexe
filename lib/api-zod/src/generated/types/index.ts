@@ -76,6 +76,7 @@ export * from './dayForecastIcon';
 export * from './deleteAccountInput';
 export * from './deleteFarmInput';
 export * from './deletePlantInput';
+export * from './demoStatus';
 export * from './errorGroup';
 export * from './errorGroupSource';
 export * from './expenseCategory';

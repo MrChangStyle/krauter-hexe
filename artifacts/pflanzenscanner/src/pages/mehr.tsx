@@ -1049,7 +1049,7 @@ export default function MehrPage() {
         {pushSupported() && (
           <HubTile href="#push" icon={Bell} label="Benachrichtigungen" hint="Erinnerungen aufs Handy" tone="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" />
         )}
-        <HubTile href="/module" icon={LayoutGrid} label="Meine Module" hint="Ein- und ausblenden, Lite/Premium" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />
+        <HubTile href="/module" icon={LayoutGrid} label="Meine Module" hint="Ein- und ausblenden, Demo-Daten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />
         <HubTile href="#konto" icon={UserCog} label="Konto" hint="Name, Passwort, Rechtliches" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />
         {me?.isOwner && (
           <HubTile

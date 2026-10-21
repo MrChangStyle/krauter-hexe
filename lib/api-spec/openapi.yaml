@@ -14,6 +14,8 @@ tags:
     description: Grow – home growing within the KCanG (adults only)
   - name: settings
     description: Module the account uses and the first-start assistant
+  - name: demo
+    description: Demo-Daten – example data on a Demo-Hof, removable with one button
   - name: dashboard
     description: Hof-Dashboard – the widgets an account chose
   - name: premium
@@ -4998,6 +5000,42 @@ paths:
                 $ref: "#/components/schemas/UserSettings"
         "400":
           description: Invalid input.
+  /demo:
+    get:
+      tags: [demo]
+      operationId: getDemoStatus
+      summary: Whether the account has the demo data loaded
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoStatus"
+    post:
+      tags: [demo]
+      operationId: loadDemo
+      summary: Create the Demo-Hof with two examples per module (and a demo grow for confirmed adults)
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoStatus"
+        "409":
+          description: The demo data is already loaded.
+    delete:
+      tags: [demo]
+      operationId: deleteDemo
+      summary: Remove the Demo-Hof with everything on it and the demo grow; real data stays
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DemoStatus"
   /dashboard:
     get:
       tags: [dashboard]
@@ -6402,6 +6440,15 @@ components:
             $ref: "#/components/schemas/ModuleId"
         onboarded:
           type: boolean
+    DemoStatus:
+      type: object
+      required: [active, farmId]
+      properties:
+        active:
+          type: boolean
+        farmId:
+          type: [integer, 'null']
+          description: The Demo-Hof, to switch to it.
     DashboardWidgetId:
       type: string
       enum: [plant-tasks, garden, seeds, grow, farm-tasks, animals, duties, feed, medicines, breeding, yields]

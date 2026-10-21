@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "wouter";
 import { ArrowLeft } from "lucide-react";
 import { getGetSettingsQueryKey, useGetPremium, useSetSettings, type ModuleId } from "@workspace/api-client-react";
+import { DemoCard } from "@/components/demo-card";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useModules } from "@/hooks/use-modules";
@@ -70,6 +71,7 @@ export default function ModulePage() {
             </section>
           );
         })}
+      <DemoCard />
     </div>
   );
 }

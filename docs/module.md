@@ -14,6 +14,10 @@ Little Farming besteht aus zwei Bereichen, **Pflanzen** und **Tiere**, mit je me
 - Ein ausgeblendeter **Bereich** nimmt seinen Reiter aus der unteren Leiste und blendet alle seine Module aus.
 - Die Daten bleiben unverändert erhalten. Wer das Modul wieder einblendet, findet alles wie vorher. Direkte Links funktionieren weiter.
 
+## Demo-Daten
+
+Unten auf der Seite lassen sich Beispieldaten laden und wieder löschen, siehe `docs/demo.md`.
+
 ## Technik
 
 - Das Verzeichnis aller Module ist `MODULES` in `lib/modules.ts`, mit Bereich, Name, Hinweis und `tier` (`base` oder `lite`). Die Ids sind `ModuleId` in der API. Ein Test hält beide Listen gleich.
@@ -26,5 +30,4 @@ Little Farming besteht aus zwei Bereichen, **Pflanzen** und **Tiere**, mit je me
 
 ## Nächste Schritte
 
-- **Demo-Daten**: zwei Beispiel-Einträge je Modul, mit Knopf „Demo-Daten löschen“.
 - **Einrichtungsassistent beim ersten Start**: Begrüßung, Module wählen, Demo-Daten laden, danach Erklärfelder durch die App, jederzeit überspringbar.

@@ -80,7 +80,9 @@ export async function createFarm(userId: string, rawName: unknown): Promise<numb
     const [admins] = await tx
       .select({ n: count() })
       .from(farmMembershipsTable)
-      .where(and(eq(farmMembershipsTable.userId, userId), eq(farmMembershipsTable.role, 'admin')));
+      // The Demo-Hof (docs/demo.md) does not count.
+      .innerJoin(farmsTable, eq(farmsTable.id, farmMembershipsTable.farmId))
+      .where(and(eq(farmMembershipsTable.userId, userId), eq(farmMembershipsTable.role, 'admin'), eq(farmsTable.isDemo, false)));
     if ((admins?.n ?? 0) >= MAX_ADMIN_FARMS) {
       throw new FarmError(409, `Du kannst höchstens ${MAX_ADMIN_FARMS} Farmen als Admin führen.`);
     }

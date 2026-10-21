@@ -88,6 +88,8 @@ export const farmsTable = pgTable("farms", {
   // to keep poultry indoors (Aufstallungspflicht wegen Geflügelpest).
   holdingNumber: text("holding_number"),
   housingOrderUntil: date("housing_order_until", { mode: "string" }),
+  // Demo-Hof with example data (lib/demoData.ts) – "Demo-Daten löschen" removes it whole.
+  isDemo: boolean("is_demo").notNull().default(false),
 });
 
 export const farmMembershipsTable = pgTable(

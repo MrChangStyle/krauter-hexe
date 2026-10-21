@@ -32,6 +32,7 @@ import growRouter from "./grow";
 import premiumRouter from "./premium";
 import dashboardRouter from "./dashboard";
 import settingsRouter from "./settings";
+import demoRouter from "./demo";
 
 const router: IRouter = Router();
 
@@ -61,6 +62,7 @@ router.use(growRouter);
 router.use(premiumRouter);
 router.use(dashboardRouter);
 router.use(settingsRouter);
+router.use(demoRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);

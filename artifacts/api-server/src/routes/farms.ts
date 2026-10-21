@@ -6,6 +6,8 @@ import {
   AddFarmMemberResponse,
   ChangeFarmMemberRoleBody,
   ChangeFarmMemberRoleResponse,
+  SetFarmMemberModulesBody,
+  SetFarmMemberModulesResponse,
   CheckFarmDutyBody,
   CheckFarmDutyResponse,
   CreateFarmBody,
@@ -34,6 +36,7 @@ import { checkDuty, farmDuties, setDutySettings } from '../lib/farmDuties';
 import { handover, setHandoverNote } from '../lib/farmHandover';
 import { FarmDataError } from '../lib/farmAnimals';
 import { dismissSetup, farmSetup, quickStart } from '../lib/farmSetup';
+import { cleanFarmModules } from '../lib/farmModules';
 import { berlinDay } from '../lib/monitoring';
 import { requireApproved } from '../middlewares/requireApproved';
 import { requireFarm } from '../middlewares/requireFarm';
@@ -46,6 +49,7 @@ import {
   ensureOwnFarm,
   listMembers,
   removeMember,
+  setMemberModules,
   renameFarm,
 } from '../lib/farmMembers';
 
@@ -61,7 +65,7 @@ function sendFarmError(res: Response, err: unknown): boolean {
 
 async function myFarms(userId: string) {
   return db
-    .select({ id: farmsTable.id, name: farmsTable.name, role: farmMembershipsTable.role, accessUntil: farmMembershipsTable.accessUntil })
+    .select({ id: farmsTable.id, name: farmsTable.name, role: farmMembershipsTable.role, accessUntil: farmMembershipsTable.accessUntil, modules: farmMembershipsTable.modules })
     .from(farmMembershipsTable)
     .innerJoin(farmsTable, eq(farmsTable.id, farmMembershipsTable.farmId))
     .where(
@@ -70,7 +74,9 @@ async function myFarms(userId: string) {
         or(isNull(farmMembershipsTable.accessUntil), gte(farmMembershipsTable.accessUntil, berlinDay())),
       ),
     )
-    .orderBy(asc(farmMembershipsTable.createdAt), asc(farmMembershipsTable.id));
+    .orderBy(asc(farmMembershipsTable.createdAt), asc(farmMembershipsTable.id))
+    // Admins always have every module.
+    .then((rows) => rows.map((r) => ({ ...r, modules: r.role === 'admin' ? null : r.modules })));
 }
 
 // The farms the signed-in account belongs to, with its role on each.
@@ -101,7 +107,7 @@ router.post('/farms', requireApproved, async (req, res): Promise<void> => {
 
 // One farm – only for its members (requireFarm answers 404 to everyone else).
 router.get('/farms/:farmId', requireFarm('guest'), async (req, res): Promise<void> => {
-  const { farmId, role } = req.farm!;
+  const { farmId, role, modules } = req.farm!;
   const [farm] = await db
     .select({ id: farmsTable.id, name: farmsTable.name })
     .from(farmsTable)
@@ -110,7 +116,7 @@ router.get('/farms/:farmId', requireFarm('guest'), async (req, res): Promise<voi
     res.status(404).json({ error: 'Farm nicht gefunden.' });
     return;
   }
-  res.json(GetFarmResponse.parse({ ...farm, role }));
+  res.json(GetFarmResponse.parse({ ...farm, role, modules: role === 'admin' ? null : modules }));
 });
 
 router.patch('/farms/:farmId', requireFarm('admin'), async (req, res): Promise<void> => {
@@ -121,7 +127,7 @@ router.patch('/farms/:farmId', requireFarm('admin'), async (req, res): Promise<v
   }
   try {
     const name = await renameFarm(req.farm!.farmId, body.data.name);
-    res.json(RenameFarmResponse.parse({ id: req.farm!.farmId, name, role: req.farm!.role }));
+    res.json(RenameFarmResponse.parse({ id: req.farm!.farmId, name, role: req.farm!.role, modules: null }));
   } catch (err) {
     if (!sendFarmError(res, err)) throw err;
   }
@@ -169,6 +175,25 @@ router.patch(
     try {
       await changeRole(req.farm!.farmId, String(req.params['userId']), body.data.role, body.data.accessUntil);
       res.json(ChangeFarmMemberRoleResponse.parse(await listMembers(req.farm!.farmId, req.farm!)));
+    } catch (err) {
+      if (!sendFarmError(res, err)) throw err;
+    }
+  },
+);
+
+// Modul-Freigaben: which farm modules a member may use (null = all).
+router.put(
+  '/farms/:farmId/members/:userId/modules',
+  requireFarm('admin'),
+  async (req, res): Promise<void> => {
+    const body = SetFarmMemberModulesBody.safeParse(req.body);
+    if (!body.success) {
+      res.status(400).json({ error: 'Ungültige Freigaben.' });
+      return;
+    }
+    try {
+      await setMemberModules(req.farm!.farmId, String(req.params['userId']), cleanFarmModules(body.data.modules));
+      res.json(SetFarmMemberModulesResponse.parse(await listMembers(req.farm!.farmId, req.farm!)));
     } catch (err) {
       if (!sendFarmError(res, err)) throw err;
     }

@@ -26,6 +26,7 @@ import { and, count, desc, eq, gte, inArray, isNull, lte, or, sql } from 'drizzl
 
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { deleteFarmPhotos } from './farmMembers';
+import { grantedSql } from './farmModules';
 import { deleteImageByUrl, uploadImage } from './imageStorage';
 import { MODELS, runModelChain } from './plantIdentification';
 import { sendPushToUser } from './webPush';
@@ -406,7 +407,7 @@ async function pushAlarm(farmId: number, cameraName: string, check: PredatorChec
   const members = await db
     .select({ userId: farmMembershipsTable.userId })
     .from(farmMembershipsTable)
-    .where(eq(farmMembershipsTable.farmId, farmId));
+    .where(and(eq(farmMembershipsTable.farmId, farmId), grantedSql('wildlife')));
   for (const { userId } of members) {
     await sendPushToUser(userId, {
       title: `Wildtier-Alarm: ${check.species ?? 'Beutegreifer'}`,

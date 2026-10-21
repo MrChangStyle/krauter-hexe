@@ -11,12 +11,14 @@ import {
   type FarmRole,
   type FarmSummary,
 } from "@workspace/api-client-react";
+import { MemberModulesDialog } from "@/components/member-modules-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { FARM_ROLE_HINTS, FARM_ROLE_LABELS } from "@/lib/active-farm";
 import { deDay } from "@/lib/medicine-labels";
+import { grantSummary } from "@/lib/modules";
 import { berlinToday } from "@/lib/weather-labels";
 
 const ROLES: FarmRole[] = ["admin", "caretaker", "guest"];
@@ -44,6 +46,7 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
   // Vertretung: last day of access (empty: no end). Not for admins.
   const [until, setUntil] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
+  const [grants, setGrants] = useState<FarmMember | null>(null);
 
   const setList = (list: FarmMember[]) =>
     queryClient.setQueryData(getListFarmMembersQueryKey(farm.id), list);
@@ -123,6 +126,11 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
                   {m.isMe && <span className="font-normal text-muted-foreground"> (du)</span>}
                 </p>
                 {m.email && <p className="truncate text-xs text-muted-foreground">{m.email}</p>}
+                {isAdmin && m.role !== "admin" && (
+                  <button type="button" className="text-xs text-primary underline underline-offset-4" onClick={() => setGrants(m)}>
+                    Freigaben: {grantSummary(m.modules)}
+                  </button>
+                )}
                 {m.accessUntil && (
                   <p className="text-xs font-medium text-amber-800 dark:text-amber-300">
                     Vertretung bis {deDay(m.accessUntil)}
@@ -234,6 +242,8 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
           )}
         </form>
       )}
+
+      {grants && <MemberModulesDialog farmId={farm.id} member={grants} onClose={() => setGrants(null)} />}
 
       {me && shown.includes(me) && (members.data?.length ?? 0) > 1 && (
         <button

@@ -9,6 +9,7 @@
  */
 
 import { breedingRecordsTable, db, farmAnimalsTable, farmMembershipsTable, farmPushLogTable, type FarmSpecies } from '@workspace/db';
+import { grantedSql } from './farmModules';
 import { and, asc, desc, eq, inArray, lt, or } from 'drizzle-orm';
 
 import { FarmDataError, freeNumbers, notFound, text, validDate } from './farmAnimals';
@@ -557,7 +558,7 @@ export async function sendBreedingDigests(hhmm: string, day: string): Promise<nu
         const members = await db
           .select({ userId: farmMembershipsTable.userId })
           .from(farmMembershipsTable)
-          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
+          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker']), grantedSql('breeding')));
         for (const { userId } of members) {
           await sendPushToUser(userId, { ...message, tag: `breeding-${farmId}-${day}`, url: '/farm/zucht' });
         }

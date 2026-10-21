@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FarmRole } from './farmRole';
+import type { ModuleId } from './moduleId';
 
 export interface FarmSummary {
   id: number;
@@ -16,4 +17,9 @@ export interface FarmSummary {
      * @nullable
      */
   accessUntil?: string | null;
+  /**
+     * Modul-Freigaben – the farm modules the viewer may use here; null = all
+     * @nullable
+     */
+  modules: ModuleId[] | null;
 }

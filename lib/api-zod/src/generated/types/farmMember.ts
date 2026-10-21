@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FarmRole } from './farmRole';
+import type { ModuleId } from './moduleId';
 
 export interface FarmMember {
   userId: string;
@@ -22,4 +23,9 @@ export interface FarmMember {
      * @nullable
      */
   accessUntil: string | null;
+  /**
+     * Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)
+     * @nullable
+     */
+  modules: ModuleId[] | null;
 }

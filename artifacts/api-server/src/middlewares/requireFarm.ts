@@ -2,6 +2,7 @@ import { type NextFunction, type Request, type Response } from 'express';
 import { db, farmMembershipsTable, type FarmRole } from '@workspace/db';
 import { and, eq } from 'drizzle-orm';
 
+import { canUseModule, moduleOfRequest } from '../lib/farmModuleAccess';
 import { berlinDay } from '../lib/monitoring';
 import { requireApproved } from './requireApproved';
 
@@ -12,7 +13,8 @@ import { requireApproved } from './requireApproved';
  * - the account must be signed in and approved (requireApproved),
  * - it must be a member of exactly that farm – otherwise 404, so a stranger
  *   cannot even tell whether the farm exists,
- * - its role must be at least minRole – otherwise 403.
+ * - its role must be at least minRole – otherwise 403,
+ * - the route's module must be granted to it (Modul-Freigaben, lib/farmModules.ts) – otherwise 403.
  *
  * The app owner gets no automatic access: farm data is private to its members.
  * Handlers then use req.farm.farmId in EVERY query (farmScope / where).
@@ -22,6 +24,8 @@ export interface FarmContext {
   farmId: number;
   userId: string;
   role: FarmRole;
+  /** Granted modules; null = all. */
+  modules: string[] | null;
 }
 
 declare global {
@@ -52,7 +56,7 @@ export function requireFarm(minRole: FarmRole) {
         return;
       }
       const userId = req.user!.id;
-      db.select({ role: farmMembershipsTable.role, accessUntil: farmMembershipsTable.accessUntil })
+      db.select({ role: farmMembershipsTable.role, accessUntil: farmMembershipsTable.accessUntil, modules: farmMembershipsTable.modules })
         .from(farmMembershipsTable)
         .where(and(eq(farmMembershipsTable.farmId, farmId), eq(farmMembershipsTable.userId, userId)))
         .then(([membership]) => {
@@ -65,7 +69,12 @@ export function requireFarm(minRole: FarmRole) {
             res.status(403).json({ error: 'Dafür fehlen dir auf dieser Farm die Rechte.' });
             return;
           }
-          req.farm = { farmId, userId, role: membership.role };
+          const module = moduleOfRequest(req.method, req.path);
+          if (module && !canUseModule(membership.role, membership.modules, module)) {
+            res.status(403).json({ error: 'Dieses Modul ist für dich auf dieser Farm nicht freigegeben.' });
+            return;
+          }
+          req.farm = { farmId, userId, role: membership.role, modules: membership.modules };
           next();
         })
         .catch(next);

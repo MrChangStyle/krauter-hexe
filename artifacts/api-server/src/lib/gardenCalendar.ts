@@ -24,6 +24,7 @@ import { and, asc, desc, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound } from './farmAnimals';
 import { cropByKey, type Crop } from './gardenCatalog';
+import { grantedSql } from './farmModules';
 import { loadApprovedCrops } from './gardenCrops';
 import { giveSeedBack, takeSeedForSowing, type SeedUse } from './seeds';
 import { validSeason } from './gardenPlanner';
@@ -331,7 +332,7 @@ export async function sendGardenDigests(hhmm: string, day: string): Promise<numb
         const members = await db
           .select({ userId: farmMembershipsTable.userId })
           .from(farmMembershipsTable)
-          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
+          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker']), grantedSql('garden')));
         for (const { userId } of members) {
           await sendPushToUser(userId, { ...message, tag: `garden-${farmId}-${day}`, url: '/aufgaben' });
         }

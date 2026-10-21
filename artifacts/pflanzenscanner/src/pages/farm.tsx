@@ -15,6 +15,7 @@ import {
   useGetDemoStatus,
   useRenameFarm,
   type FarmSummary,
+  type ModuleId,
 } from "@workspace/api-client-react";
 import { FarmDutiesTile } from "@/components/farm-duties-link";
 import { HubGrid, HubTile } from "@/components/hub-tile";
@@ -34,6 +35,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useModules } from "@/hooks/use-modules";
+import { farmModuleGranted } from "@/lib/modules";
 import { FarmAnimalsSection } from "@/components/farm-animals-section";
 import { FarmTasksTile, FarmTodayCard } from "@/components/farm-tasks-section";
 import {
@@ -216,6 +218,8 @@ export default function FarmPage() {
   }
 
   const isAdmin = farm.role === "admin";
+  // Hidden by the account, or not granted on this farm (Modul-Freigaben).
+  const show = (id: ModuleId) => visible(id) && farmModuleGranted(farm, id);
 
   return (
     <div className="space-y-5 px-4 pb-4 pt-6">
@@ -268,19 +272,19 @@ export default function FarmPage() {
 
       <HousingOrderBanner farm={farm} link />
 
-      {visible("farm-tasks") && <FarmTodayCard farm={farm} />}
+      {show("farm-tasks") && <FarmTodayCard farm={farm} />}
 
       <HubGrid>
-        {visible("farm-tasks") && <FarmTasksTile farm={farm} />}
-        {visible("feed") && <HubTile href="/farm/futter" icon={Wheat} label="Futterplaner" hint="Rationen, Bedarf, Vorrat" tone="bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300" />}
-        {visible("breeding") && <HubTile href="/farm/zucht" icon={Baby} label="Zucht" hint="Trächtigkeit, Brut, Jungtiere" tone="bg-pink-100 text-pink-800 dark:bg-pink-950/50 dark:text-pink-300" />}
-        {visible("medicines") && <HubTile href="/farm/arzneimittel" icon={Pill} label="Arzneimittel" hint="Vorrat, Charge, Wartezeit" tone="bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" />}
-        {visible("duties") && <FarmDutiesTile farm={farm} />}
-        {visible("yields") && <HubTile href="/farm/ertrag" icon={PiggyBank} label="Ertrag & Bilanz" hint="Eier, Milch, Ernte, Kosten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />}
-        {visible("wildlife") && <HubTile href="/farm/kameras" icon={Radar} label="Wildtier-Radar" hint="Kameras & Raubtier-Alarm" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />}
-        {visible("handover") && <HubTile href="/farm/uebergabe" icon={Handshake} label="Übergabe" hint="Vertretung für ein paar Tage" tone="bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300" />}
-        {visible("members") && <HubTile href="/team" icon={Users} label="Farm & Team" hint="Team, Vertretung, Kontakte" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />}
-        {visible("export") && <HubTile href="/farm/export" icon={FileText} label="Veterinäramt-Export" hint="Bestandsliste & Medizin als PDF" tone="bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300" />}
+        {show("farm-tasks") && <FarmTasksTile farm={farm} />}
+        {show("feed") && <HubTile href="/farm/futter" icon={Wheat} label="Futterplaner" hint="Rationen, Bedarf, Vorrat" tone="bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300" />}
+        {show("breeding") && <HubTile href="/farm/zucht" icon={Baby} label="Zucht" hint="Trächtigkeit, Brut, Jungtiere" tone="bg-pink-100 text-pink-800 dark:bg-pink-950/50 dark:text-pink-300" />}
+        {show("medicines") && <HubTile href="/farm/arzneimittel" icon={Pill} label="Arzneimittel" hint="Vorrat, Charge, Wartezeit" tone="bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" />}
+        {show("duties") && <FarmDutiesTile farm={farm} />}
+        {show("yields") && <HubTile href="/farm/ertrag" icon={PiggyBank} label="Ertrag & Bilanz" hint="Eier, Milch, Ernte, Kosten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />}
+        {show("wildlife") && <HubTile href="/farm/kameras" icon={Radar} label="Wildtier-Radar" hint="Kameras & Raubtier-Alarm" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />}
+        {show("handover") && <HubTile href="/farm/uebergabe" icon={Handshake} label="Übergabe" hint="Vertretung für ein paar Tage" tone="bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300" />}
+        {show("members") && <HubTile href="/team" icon={Users} label="Farm & Team" hint="Team, Vertretung, Kontakte" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />}
+        {show("export") && <HubTile href="/farm/export" icon={FileText} label="Veterinäramt-Export" hint="Bestandsliste & Medizin als PDF" tone="bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300" />}
       </HubGrid>
 
       <FarmSetupCard farm={farm} onRename={() => openDialog("rename")} />

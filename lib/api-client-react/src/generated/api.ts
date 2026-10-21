@@ -78,6 +78,7 @@ import type {
   FarmFeedInput,
   FarmLocationInput,
   FarmMember,
+  FarmMemberModulesInput,
   FarmNameInput,
   FarmSetup,
   FarmSetupDismissInput,
@@ -10698,6 +10699,80 @@ export const useAddFarmMember = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getAddFarmMemberMutationOptions(options));
+    }
+
+export const getSetFarmMemberModulesUrl = (farmId: number,
+    userId: string,) => {
+
+
+
+
+  return `/api/farms/${farmId}/members/${userId}/modules`
+}
+
+/**
+ * @summary Modul-Freigaben – which farm modules a member may use (admin)
+ */
+export const setFarmMemberModules = async (farmId: number,
+    userId: string,
+    farmMemberModulesInput: FarmMemberModulesInput, options?: RequestInit): Promise<FarmMember[]> => {
+
+  return customFetch<FarmMember[]>(getSetFarmMemberModulesUrl(farmId,userId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmMemberModulesInput)
+  }
+);}
+
+
+
+
+
+export const getSetFarmMemberModulesMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmMemberModules>>, TError,{farmId: number;userId: string;data: BodyType<FarmMemberModulesInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setFarmMemberModules>>, TError,{farmId: number;userId: string;data: BodyType<FarmMemberModulesInput>}, TContext> => {
+
+const mutationKey = ['setFarmMemberModules'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setFarmMemberModules>>, {farmId: number;userId: string;data: BodyType<FarmMemberModulesInput>}> = (props) => {
+          const {farmId,userId,data} = props ?? {};
+
+          return  setFarmMemberModules(farmId,userId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetFarmMemberModulesMutationResult = NonNullable<Awaited<ReturnType<typeof setFarmMemberModules>>>
+    export type SetFarmMemberModulesMutationBody = BodyType<FarmMemberModulesInput>
+    export type SetFarmMemberModulesMutationError = ErrorType<void>
+
+    /**
+ * @summary Modul-Freigaben – which farm modules a member may use (admin)
+ */
+export const useSetFarmMemberModules = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmMemberModules>>, TError,{farmId: number;userId: string;data: BodyType<FarmMemberModulesInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setFarmMemberModules>>,
+        TError,
+        {farmId: number;userId: string;data: BodyType<FarmMemberModulesInput>},
+        TContext
+      > => {
+      return useMutation(getSetFarmMemberModulesMutationOptions(options));
     }
 
 export const getChangeFarmMemberRoleUrl = (farmId: number,

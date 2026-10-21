@@ -36,6 +36,24 @@ Unter Mehr → **„Farm & Team“** (`/team`) steht alles über die Menschen au
 - Die Demo-Daten bringen zwei Kontakte mit.
 - Test: `farmContacts.integration.test.ts`.
 
-## Nächster Schritt
+## Modul-Freigaben
 
-**Modul-Freigaben pro Mitglied**: Der Admin hakt an, welche Module ein Mitglied sieht, zum Beispiel nur Stall-Aufgaben und Futter. Der Server setzt das durch. Die Rolle bestimmt weiterhin, ob jemand ansehen oder bearbeiten darf.
+Ein Admin legt für jedes Mitglied fest, welche Farm-Module es sieht: Im Team bzw. bei der Vertretung auf **„Freigaben: Alle Module“** tippen. Zum Beispiel sieht eine Stallhilfe dann nur Stall-Aufgaben und Futterplaner.
+
+- **Rolle und Freigabe greifen ineinander:** Die Freigabe bestimmt, *welche* Module jemand sieht. Die Rolle bestimmt, ob er darin nur ansehen (Gast) oder auch bearbeiten (Mitarbeiter) darf.
+- **Admins haben immer alles.**
+- **Freigeben lassen sich:** Stall-Aufgaben, Futterplaner, Zucht, Arzneimittel, Pflichten & Tierseuchen, Ertrag & Bilanz, Wildtier-Radar, Übergabe, Veterinäramt-Export, Farm & Team und Beet-Architekt (mit Saatgut).
+- **Immer offen** für jedes Mitglied:
+  - die Tiere selbst (Bestand, Gesundheit), denn die Module bauen darauf auf
+  - die wichtigen Kontakte (Notfallnummern)
+  - die Farm verlassen
+- **Der Server setzt das durch:** `requireFarm` ordnet jede Farm-Route über ihren ersten Pfadteil einem Modul zu (`lib/farmModuleAccess.ts`) und antwortet sonst mit 403.
+- **Push-Erinnerungen** gehen nur an Mitglieder mit dem Modul (`grantedSql` in `lib/farmModules.ts`). Das betrifft Stall-Aufgaben, Futter, Zucht, Arzneimittel, Garten und Kamera-Alarm.
+- **In der App:**
+  - Die Kacheln auf der Tiere-Seite und die Hof-Widgets zeigen nur freigegebene Module (`farmModuleGranted` in `lib/modules.ts`).
+  - Der Dialog ist `components/member-modules-dialog.tsx`.
+- **Technik:**
+  - Spalte `farm_memberships.modules` (jsonb; null = alle).
+  - `PUT /farms/:farmId/members/:userId/modules` (nur Admins).
+  - `FarmSummary.modules` und `FarmMember.modules`.
+  - Tests: `farmModules.test.ts`, `farmModules.integration.test.ts`.

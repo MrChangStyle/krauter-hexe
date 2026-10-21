@@ -53,9 +53,11 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"role" "farm_role" DEFAULT 'caretaker' NOT NULL,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"access_until" date,
+	"modules" jsonb,
 	CONSTRAINT "farm_memberships_user_farm_unique" UNIQUE("user_id","farm_id")
 )`,
   `ALTER TABLE "farm_memberships" ADD COLUMN IF NOT EXISTS "access_until" date`,
+  `ALTER TABLE "farm_memberships" ADD COLUMN IF NOT EXISTS "modules" jsonb`,
   `CREATE TABLE IF NOT EXISTS "herds" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

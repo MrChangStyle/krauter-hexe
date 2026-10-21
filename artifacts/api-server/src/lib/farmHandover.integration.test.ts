@@ -82,7 +82,7 @@ describe.skipIf(!enabled)("Vertretung (real database)", () => {
     expect(added.data.find((m: any) => m.userId === "nina")).toMatchObject({ role: "caretaker", accessUntil: "2026-10-26" });
 
     as = "nina";
-    expect((await api("GET", "/farms")).data).toEqual([{ id: farmId, name: "Hof Anna", role: "caretaker", accessUntil: "2026-10-26" }]);
+    expect((await api("GET", "/farms")).data).toEqual([{ id: farmId, name: "Hof Anna", role: "caretaker", accessUntil: "2026-10-26", modules: null }]);
     fixedDay = "2026-10-26";
     expect((await api("GET", `/farms/${farmId}/handover`)).status).toBe(200);
     // The day after: gone, even before the cleanup ran.

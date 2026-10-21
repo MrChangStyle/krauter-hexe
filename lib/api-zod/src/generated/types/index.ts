@@ -104,6 +104,7 @@ export * from './farmLocation';
 export * from './farmLocationInput';
 export * from './farmLocationSource';
 export * from './farmMember';
+export * from './farmMemberModulesInput';
 export * from './farmNameInput';
 export * from './farmProduct';
 export * from './farmRole';

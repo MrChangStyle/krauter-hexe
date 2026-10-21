@@ -11,6 +11,7 @@ import {
   type DeviceStore,
 } from "@/lib/move";
 import { receiveDeviceData, sendDeviceData, type MessagePort } from "@/lib/move-channel";
+import { batchEntries, movePercent } from "@/lib/move";
 
 const IMG = (n: number) => `data:image/jpeg;base64,${"A".repeat(n)}`;
 
@@ -200,23 +201,30 @@ describe("window-to-window transfer", () => {
     });
     const target = memoryStore();
     let done = false;
+    const sentProgress: number[] = [];
+    const received: (number | null)[] = [];
 
     const sending = sendDeviceData({
       target: newWin.target,
       targetOrigin: NEW,
       store: source.store,
       port: bus.portFor(OLD),
+      onProgress: (_sent, p) => sentProgress.push(movePercent(p)),
     });
     const stop = receiveDeviceData({
       opener: oldWin.target,
       allowedOrigins: [OLD],
       store: target.store,
       port: bus.portFor(NEW),
+      onBatch: (_stored, p) => received.push(p ? p.done : null),
       onDone: () => (done = true),
     });
 
     expect(await sending).toEqual({ images: 23, queue: 1, draft: 0, local: 0 });
     stop();
+    // 24 entries: the queue item first, then the photos ten at a time.
+    expect(received).toEqual([1, 11, 21, 24]);
+    expect(sentProgress).toEqual([0, 4, 46, 88, 100]);
     expect(target.images.size).toBe(23);
     expect(done).toBe(true);
   });
@@ -271,5 +279,15 @@ describe("window-to-window transfer", () => {
     await expect(sending).rejects.toThrow(/nicht gemeldet/);
     stop();
     expect(target.images.size).toBe(0);
+  });
+});
+
+describe("progress", () => {
+  it("counts photos, queue and draft, and rounds to whole percent", () => {
+    expect(batchEntries({ images: [{ id: "a", dataUrl: "x" }], queue: [], draft: "d", local: { k: "v" } })).toBe(2);
+    expect(batchEntries({})).toBe(0);
+    expect(movePercent({ done: 7, total: 19 })).toBe(37);
+    expect(movePercent({ done: 19, total: 19 })).toBe(100);
+    expect(movePercent({ done: 0, total: 0 })).toBe(100);
   });
 });

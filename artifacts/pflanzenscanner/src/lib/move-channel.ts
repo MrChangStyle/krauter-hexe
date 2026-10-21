@@ -13,7 +13,10 @@ import {
   NO_COUNTS,
   addCounts,
   applyMoveBatch,
+  batchEntries,
+  countDeviceData,
   packDeviceData,
+  type MoveProgress,
   type DeviceStore,
   type MoveBatch,
   type MoveCounts,
@@ -22,7 +25,8 @@ import {
 
 type MoveMessage =
   | { proto: typeof MOVE_PROTOCOL; type: "ready" }
-  | { proto: typeof MOVE_PROTOCOL; type: "batch"; seq: number; batch: MoveBatch }
+  // progress: added later; older senders leave it out.
+  | { proto: typeof MOVE_PROTOCOL; type: "batch"; seq: number; batch: MoveBatch; progress?: MoveProgress }
   | { proto: typeof MOVE_PROTOCOL; type: "ack"; seq: number; stored: MoveCounts }
   | { proto: typeof MOVE_PROTOCOL; type: "done"; seq: number }
   | { proto: typeof MOVE_PROTOCOL; type: "error"; seq: number; message: string };
@@ -55,7 +59,7 @@ const ACK_TIMEOUT_MS = 60_000;
 export function sendDeviceData(options: {
   target: { postMessage(msg: unknown, origin: string): void };
   targetOrigin: string;
-  onProgress?: (sent: MoveCounts) => void;
+  onProgress?: (sent: MoveCounts, progress: MoveProgress) => void;
   readyTimeoutMs?: number;
   store?: DeviceStore;
   port?: MessagePort;
@@ -112,12 +116,16 @@ export function sendDeviceData(options: {
       try {
         let stored = NO_COUNTS;
         let seq = 0;
+        const counts = await countDeviceData(store);
+        const progress: MoveProgress = { done: 0, total: counts.images + counts.queue + counts.draft };
+        onProgress?.(stored, { ...progress });
         for await (const batch of packDeviceData(store)) {
           seq += 1;
+          progress.done = Math.min(progress.total, progress.done + batchEntries(batch));
           const ack = waitForAck(seq);
-          port.post(target, { proto: MOVE_PROTOCOL, type: "batch", seq, batch }, targetOrigin);
+          port.post(target, { proto: MOVE_PROTOCOL, type: "batch", seq, batch, progress: { ...progress } }, targetOrigin);
           stored = addCounts(stored, await ack);
-          onProgress?.(stored);
+          onProgress?.(stored, { ...progress });
         }
         seq += 1;
         const finished = waitForAck(seq);
@@ -141,7 +149,7 @@ export function sendDeviceData(options: {
 export function receiveDeviceData(options: {
   opener: { postMessage(msg: unknown, origin: string): void };
   allowedOrigins: string[];
-  onBatch?: (stored: MoveCounts) => void;
+  onBatch?: (stored: MoveCounts, progress: MoveProgress | null) => void;
   onDone?: () => void;
   store?: DeviceStore;
   port?: MessagePort;
@@ -160,7 +168,7 @@ export function receiveDeviceData(options: {
       busy = busy.then(async () => {
         try {
           const stored = await applyMoveBatch(data.batch, store);
-          onBatch?.(stored);
+          onBatch?.(stored, data.progress ?? null);
           port.post(opener, { proto: MOVE_PROTOCOL, type: "ack", seq: data.seq, stored }, origin);
         } catch {
           port.post(

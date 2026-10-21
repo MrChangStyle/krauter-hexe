@@ -30,6 +30,7 @@ Solange die Umgebungsvariable **`SITE_PASSWORD`** gesetzt ist, zeigt die ganze S
 
   Sie haben eigene Geheimnisse.
 - Eine installierte App (aus dem Offline-Speicher) bekommt von der API 401 mit `X-Site-Locked`. Sie springt dann einmal zur Passwortseite (`/api/site-access`) und danach zurück.
+- Umzug: Beide Fenster zeigen einen Fortschrittsbalken („37 % · 7 von 19“). Hört das neue Fenster 15 Sekunden lang nichts von der alten Adresse, sagt es, was zu tun ist.
 - Umzug mit Passwortschutz: Das neue Fenster des Umzugshelfers fragt zuerst nach dem Seitenpasswort. Es sagt danach so lange alle 2 Sekunden „bereit“, bis die alte Adresse antwortet. Die alte Adresse wartet bis zu 10 Minuten (`lib/move-channel.ts`).
 - **Freischalten für alle:** `SITE_PASSWORD` in Render löschen. Dann ist der Schutz sofort weg.
 
@@ -43,7 +44,7 @@ Umstellen in Render → Service → Environment:
 
 1. `PUBLIC_BASE_URL` = `https://littlefarming.de`
 2. `LEGACY_ORIGINS` = `https://kraeuter-hexe.onrender.com` (steht schon in render.yaml)
-3. In der Google Cloud Console als „Autorisierte Weiterleitungs-URI“ ergänzen: `https://littlefarming.de/api/auth/google/callback`
+3. In der Google Cloud Console als „Autorisierte Weiterleitungs-URI“ ergänzen: `https://littlefarming.de/api/auth/google/callback`. Den Google-Knopf gibt es nur, wenn in Render **beide** Variablen `GOOGLE_CLIENT_ID` und `GOOGLE_CLIENT_SECRET` gesetzt sind.
 4. Beim Cron-Dienst (cron-job.org) die Adresse auf `https://littlefarming.de/api/cron/trigger-notifications` ändern.
 5. Wer littlefarming.de schützen will: `SITE_PASSWORD` setzen.
 

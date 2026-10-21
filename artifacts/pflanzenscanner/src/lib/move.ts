@@ -44,6 +44,23 @@ export interface MoveBatch {
   local?: Record<string, string>;
 }
 
+/** How far a move is: entries (photos, queue items, draft) handed over of all. */
+export interface MoveProgress {
+  done: number;
+  total: number;
+}
+
+/** Entries in one batch that count for the progress (the small local keys do not). */
+export function batchEntries(batch: MoveBatch): number {
+  return (Array.isArray(batch.images) ? batch.images.length : 0) + (Array.isArray(batch.queue) ? batch.queue.length : 0) + (batch.draft ? 1 : 0);
+}
+
+/** 0–100; an empty move is complete. */
+export function movePercent(progress: MoveProgress): number {
+  if (progress.total <= 0) return 100;
+  return Math.max(0, Math.min(100, Math.round((progress.done / progress.total) * 100)));
+}
+
 export interface MoveCounts {
   images: number;
   queue: number;

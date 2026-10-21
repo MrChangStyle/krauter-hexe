@@ -96,6 +96,16 @@ services:
       - key: TURNSTILE_SECRET_KEY
         sync: false
 
+      # --- Mit Google anmelden ----------------------------------------------
+      # Beide Werte aus der Google Cloud Console (APIs & Dienste → Anmeldedaten
+      # → OAuth-Client "Webanwendung"). Nur wenn BEIDE gesetzt sind, zeigt die
+      # Anmeldung den Google-Knopf. Weiterleitungs-URI dort:
+      # https://littlefarming.de/api/auth/google/callback
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+
       # --- Vorschau-Schutz (docs/landingpage.md) ---------------------------
       # Solange gesetzt, zeigt die ganze Seite (Landingpage, App, API) nur ein
       # Passwortfeld. Leer lassen bzw. löschen, sobald die App öffentlich ist.

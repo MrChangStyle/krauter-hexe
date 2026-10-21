@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { Progress } from "@/components/ui/progress";
 import { ArrowRight, Leaf, Loader2, PackageOpen, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { NO_COUNTS, addCounts, applyMoveBatch, readMoveFile, type MoveCounts } from "@/lib/move";
+import { NO_COUNTS, addCounts, applyMoveBatch, movePercent, readMoveFile, type MoveCounts, type MoveProgress } from "@/lib/move";
 import { receiveDeviceData } from "@/lib/move-channel";
 import { fetchAppConfig } from "@/lib/use-app-config";
 
@@ -15,7 +16,7 @@ function describe(counts: MoveCounts): string {
 
 type State =
   | { kind: "waiting" }
-  | { kind: "receiving"; stored: MoveCounts }
+  | { kind: "receiving"; stored: MoveCounts; progress: MoveProgress | null }
   | { kind: "done"; stored: MoveCounts }
   | { kind: "error"; message: string };
 
@@ -28,6 +29,13 @@ export default function UmzugPage() {
   const [state, setState] = useState<State>({ kind: "waiting" });
   const fileInput = useRef<HTMLInputElement>(null);
   const hasOpener = typeof window !== "undefined" && !!window.opener;
+  // No word from the old address for a while: say what to check.
+  const [slow, setSlow] = useState(false);
+  useEffect(() => {
+    if (state.kind !== "waiting") return;
+    const t = setTimeout(() => setSlow(true), 15_000);
+    return () => clearTimeout(t);
+  }, [state.kind]);
 
   useEffect(() => {
     if (!window.opener) return;
@@ -42,9 +50,9 @@ export default function UmzugPage() {
         stop = receiveDeviceData({
         opener: window.opener as Window,
         allowedOrigins: config.legacyOrigins,
-        onBatch: (stored) => {
+        onBatch: (stored, progress) => {
           total = addCounts(total, stored);
-          setState({ kind: "receiving", stored: total });
+          setState({ kind: "receiving", stored: total, progress });
         },
         onDone: () => setState({ kind: "done", stored: total }),
         });
@@ -57,7 +65,7 @@ export default function UmzugPage() {
     const file = event.target.files?.[0];
     event.target.value = "";
     if (!file) return;
-    setState({ kind: "receiving", stored: NO_COUNTS });
+    setState({ kind: "receiving", stored: NO_COUNTS, progress: null });
     try {
       const batch = await readMoveFile(await file.text());
       const stored = await applyMoveBatch(batch);
@@ -85,9 +93,18 @@ export default function UmzugPage() {
       <div className="flex w-full max-w-sm flex-col items-center gap-4">
         {state.kind === "receiving" && (
           <>
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            {state.progress ? (
+              <div className="w-full space-y-1.5" data-testid="move-progress">
+                <Progress value={movePercent(state.progress)} aria-label="Fortschritt des Umzugs" />
+                <p className="text-sm font-medium tabular-nums">
+                  {movePercent(state.progress)} % · {state.progress.done} von {state.progress.total}
+                </p>
+              </div>
+            ) : (
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            )}
             <p className="text-sm text-muted-foreground">
-              Empfange … {describe(state.stored)} Bitte beide Fenster offen lassen.
+              Verbunden – empfange … {describe(state.stored)} Bitte beide Fenster offen lassen.
             </p>
           </>
         )}
@@ -121,6 +138,11 @@ export default function UmzugPage() {
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 Warte auf die alte Adresse …
+              </p>
+            )}
+            {hasOpener && state.kind === "waiting" && slow && (
+              <p className="rounded-md bg-amber-500/10 px-3 py-2 text-left text-xs text-amber-900 dark:text-amber-200" data-testid="move-slow">
+                Noch keine Verbindung. Ist das Fenster der alten Adresse noch offen? Lade es neu und tippe dort noch einmal auf „Daten mitnehmen und umziehen“. Klappt es weiter nicht, nimm „Als Datei sichern“.
               </p>
             )}
             <p className="text-sm text-muted-foreground">

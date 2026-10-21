@@ -2797,6 +2797,11 @@ export interface FarmSummary {
      * @nullable
      */
   accessUntil?: string | null;
+  /**
+     * Modul-Freigaben – the farm modules the viewer may use here; null = all
+     * @nullable
+     */
+  modules: ModuleId[] | null;
 }
 
 export type AnimalSex = typeof AnimalSex[keyof typeof AnimalSex];
@@ -3792,6 +3797,20 @@ export interface FarmMember {
      * @nullable
      */
   accessUntil: string | null;
+  /**
+     * Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)
+     * @nullable
+     */
+  modules: ModuleId[] | null;
+}
+
+export interface FarmMemberModulesInput {
+  /**
+     * null = all farm modules
+     * @maxItems 40
+     * @nullable
+     */
+  modules: ModuleId[] | null;
 }
 
 export type FarmContactKind = typeof FarmContactKind[keyof typeof FarmContactKind];

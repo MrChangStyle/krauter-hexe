@@ -107,6 +107,9 @@ export const farmMembershipsTable = pgTable(
     // Vertretung: last day of access (Berlin date); null = no end. Expired
     // memberships count as gone and are removed by the minute cron.
     accessUntil: date("access_until", { mode: "string" }),
+    // Modul-Freigaben (docs/team.md): the farm modules this member may use;
+    // null = all. Admins always have all. Checked in requireFarm.
+    modules: jsonb("modules").$type<string[]>(),
   },
   (table) => [
     unique("farm_memberships_user_farm_unique").on(table.userId, table.farmId),

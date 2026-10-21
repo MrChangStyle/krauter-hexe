@@ -4641,7 +4641,8 @@ export const ListMyFarmsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 export const ListMyFarmsResponse = zod.array(ListMyFarmsResponseItem)
 
@@ -4661,7 +4662,8 @@ export const CreateFarmResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 
@@ -4672,7 +4674,8 @@ export const EnsureOwnFarmResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 export const EnsureOwnFarmResponse = zod.array(EnsureOwnFarmResponseItem)
 
@@ -4690,7 +4693,8 @@ export const ListFarmMembersResponseItem = zod.object({
   "email": zod.string().nullable().describe('Only filled in for admins.'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
-  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)')
+  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const ListFarmMembersResponse = zod.array(ListFarmMembersResponseItem)
 
@@ -4718,9 +4722,38 @@ export const AddFarmMemberResponseItem = zod.object({
   "email": zod.string().nullable().describe('Only filled in for admins.'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
-  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)')
+  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const AddFarmMemberResponse = zod.array(AddFarmMemberResponseItem)
+
+
+/**
+ * @summary Modul-Freigaben – which farm modules a member may use (admin)
+ */
+export const SetFarmMemberModulesParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "userId": zod.coerce.string()
+})
+
+export const setFarmMemberModulesBodyModulesMax = 40;
+
+
+
+export const SetFarmMemberModulesBody = zod.object({
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).max(setFarmMemberModulesBodyModulesMax).nullable().describe('null = all farm modules')
+})
+
+export const SetFarmMemberModulesResponseItem = zod.object({
+  "userId": zod.string(),
+  "displayName": zod.string(),
+  "email": zod.string().nullable().describe('Only filled in for admins.'),
+  "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
+  "isMe": zod.boolean(),
+  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+})
+export const SetFarmMemberModulesResponse = zod.array(SetFarmMemberModulesResponseItem)
 
 
 /**
@@ -4742,7 +4775,8 @@ export const ChangeFarmMemberRoleResponseItem = zod.object({
   "email": zod.string().nullable().describe('Only filled in for admins.'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
-  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)')
+  "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const ChangeFarmMemberRoleResponse = zod.array(ChangeFarmMemberRoleResponseItem)
 
@@ -6809,7 +6843,8 @@ export const RenameFarmResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 
@@ -6838,7 +6873,8 @@ export const GetFarmResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)')
+  "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 

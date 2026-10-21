@@ -75,3 +75,22 @@ export function tierLabel(id: ModuleId, premium: boolean): "Lite" | "Premium" | 
 export function toggleModule(hidden: readonly ModuleId[], id: ModuleId): ModuleId[] {
   return hidden.includes(id) ? hidden.filter((m) => m !== id) : [...hidden, id];
 }
+
+/**
+ * Modul-Freigaben (docs/team.md): the farm modules an admin can grant per
+ * member – the same list as FARM_MODULES on the server.
+ */
+export const FARM_MODULE_IDS: readonly ModuleId[] = ["farm-tasks", "feed", "breeding", "medicines", "duties", "yields", "wildlife", "handover", "export", "members", "garden"];
+
+/** Whether the viewer may use `id` on this farm (admins and members without a list: everything). */
+export function farmModuleGranted(farm: { role: string; modules?: readonly ModuleId[] | null } | null | undefined, id: ModuleId): boolean {
+  if (!farm || farm.role === "admin" || !farm.modules) return true;
+  return !FARM_MODULE_IDS.includes(id) || farm.modules.includes(id);
+}
+
+/** "Alle Module" or "3 von 11 Modulen". */
+export function grantSummary(modules: readonly ModuleId[] | null | undefined): string {
+  if (!modules) return "Alle Module";
+  const n = modules.filter((m) => FARM_MODULE_IDS.includes(m)).length;
+  return n === 0 ? "Keine Module" : `${n} von ${FARM_MODULE_IDS.length} Modulen`;
+}

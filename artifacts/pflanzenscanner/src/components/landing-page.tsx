@@ -49,7 +49,7 @@ const STEPS = [
 ];
 
 /** The public start page (docs/landingpage.md): what Little Farming is and does, before signing in. */
-export function LandingPage({ onLogin, onRegister }: { onLogin: () => void; onRegister: () => void }) {
+export function LandingPage({ onLogin, onRegister, google }: { onLogin: () => void; onRegister: () => void; google?: ReactNode }) {
   return (
     <div className="min-h-[100dvh] bg-background">
       <header className="sticky top-0 z-10 border-b bg-card/95 backdrop-blur">
@@ -81,6 +81,7 @@ export function LandingPage({ onLogin, onRegister }: { onLogin: () => void; onRe
               Ich habe schon ein Konto
             </Button>
           </div>
+          {google}
           <a href="#module" className="inline-block text-sm text-muted-foreground underline underline-offset-4">
             Erst die Module ansehen
           </a>

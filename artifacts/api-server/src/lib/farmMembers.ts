@@ -149,6 +149,8 @@ export interface FarmMember {
   isMe: boolean;
   /** Vertretung: last day of access, or null. */
   accessUntil: string | null;
+  /** Modul-Freigaben: granted farm modules, null = all (always null for admins). */
+  modules: string[] | null;
 }
 
 /** A stand-in's last day: today up to a year ahead; never for admins. */
@@ -189,6 +191,7 @@ export async function listMembers(
       userId: farmMembershipsTable.userId,
       role: farmMembershipsTable.role,
       accessUntil: farmMembershipsTable.accessUntil,
+      modules: farmMembershipsTable.modules,
       firstName: usersTable.firstName,
       lastName: usersTable.lastName,
       username: usersTable.username,
@@ -205,6 +208,7 @@ export async function listMembers(
     role: r.role,
     isMe: r.userId === viewer.userId,
     accessUntil: r.accessUntil,
+    modules: r.role === 'admin' ? null : r.modules,
   }));
 }
 
@@ -321,4 +325,14 @@ export async function removeMember(
       .delete(farmMembershipsTable)
       .where(and(eq(farmMembershipsTable.farmId, farmId), eq(farmMembershipsTable.userId, targetUserId)));
   });
+}
+
+/** Modul-Freigaben: which farm modules a member may use (null = all). Admins always have all. */
+export async function setMemberModules(farmId: number, targetUserId: string, modules: string[] | null): Promise<void> {
+  const updated = await db
+    .update(farmMembershipsTable)
+    .set({ modules })
+    .where(and(eq(farmMembershipsTable.farmId, farmId), eq(farmMembershipsTable.userId, targetUserId)))
+    .returning({ role: farmMembershipsTable.role });
+  if (updated.length === 0) throw new FarmError(404, 'Dieses Mitglied gibt es auf der Farm nicht.');
 }

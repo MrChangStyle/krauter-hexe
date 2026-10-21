@@ -9,6 +9,7 @@
  */
 
 import { db, farmMembershipsTable, farmPushLogTable, medicalRecordsTable, medicinesTable, type FarmSpecies } from '@workspace/db';
+import { grantedSql } from './farmModules';
 import { and, asc, eq, inArray, isNotNull, isNull, lt, or, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
@@ -239,7 +240,7 @@ export async function sendMedicineDigests(hhmm: string, day: string): Promise<nu
         const members = await db
           .select({ userId: farmMembershipsTable.userId })
           .from(farmMembershipsTable)
-          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
+          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker']), grantedSql('medicines')));
         for (const { userId } of members) {
           await sendPushToUser(userId, { ...message, tag: `medicines-${farmId}-${day}`, url: '/farm/arzneimittel' });
         }

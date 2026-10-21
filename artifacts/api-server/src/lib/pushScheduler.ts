@@ -17,6 +17,7 @@ import { sendGardenDigests } from "./gardenCalendar";
 import { sendFeedDigests } from "./feedStock";
 import { sendWeatherDigests } from "./farmWeather";
 import { sendMedicineDigests } from "./medicines";
+import { grantedSql } from "./farmModules";
 import { sendDutyDigests } from "./farmDuties";
 import { sendBreedingDigests } from "./breeding";
 import { sendGrowDigests } from "./growWeather";
@@ -222,6 +223,7 @@ export async function triggerDueNotifications(): Promise<number> {
         and(
           eq(farmMembershipsTable.farmId, task.farmId),
           inArray(farmMembershipsTable.role, ["admin", "caretaker"]),
+          grantedSql("farm-tasks"),
         ),
       );
     const target = animalName ?? herdName;

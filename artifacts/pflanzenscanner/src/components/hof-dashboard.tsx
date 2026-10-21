@@ -43,7 +43,7 @@ import {
 } from "@workspace/api-client-react";
 import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useModules } from "@/hooks/use-modules";
-import { WIDGET_MODULE } from "@/lib/modules";
+import { WIDGET_MODULE, farmModuleGranted } from "@/lib/modules";
 import { DashboardEditor } from "@/components/dashboard-editor";
 import { LocationForm } from "@/components/farm-weather-card";
 import { effectiveLayout, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
@@ -535,7 +535,7 @@ export function HofDashboard() {
   const saved = useGetDashboard();
   const modules = useModules();
   // Widgets this build offers (Grow only where the module is in) of modules the account uses.
-  const available = (id: WidgetId) => (id !== "grow" || GROW_ENABLED) && modules.visible(WIDGET_MODULE[id]);
+  const available = (id: WidgetId) => (id !== "grow" || GROW_ENABLED) && modules.visible(WIDGET_MODULE[id]) && farmModuleGranted(farm, WIDGET_MODULE[id]);
   const [editing, setEditing] = useState(false);
   // The account's own choice, else the default (docs/dashboard.md).
   const layout = effectiveLayout(saved.data?.widgets, available);

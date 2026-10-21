@@ -13,7 +13,7 @@ Wer nicht angemeldet ist, sieht zuerst die Landingpage (`components/landing-page
 - „So legst du los“ in drei Schritten
 - Fußzeile mit den Rechtsseiten
 
-„Anmelden“ und „Registrieren“ öffnen das bekannte Formular. „Zurück zur Startseite“ führt wieder zur Landingpage. Ein fehlgeschlagener Google-Login landet direkt im Formular.
+„Anmelden“ und „Registrieren“ öffnen das bekannte Formular. Ist Google eingerichtet, steht „Mit Google anmelden“ direkt unter den beiden Knöpfen. „Zurück zur Startseite“ führt wieder zur Landingpage. Ein fehlgeschlagener Google-Login landet direkt im Formular.
 
 ## Vorschau-Schutz (Passwort vor der ganzen Seite)
 

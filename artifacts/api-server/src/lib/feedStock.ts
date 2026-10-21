@@ -9,6 +9,7 @@
  */
 
 import { db, farmFeedsTable, farmMembershipsTable, feedDigestLogTable, feedStocksTable } from '@workspace/db';
+import { grantedSql } from './farmModules';
 import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound } from './farmAnimals';
@@ -362,7 +363,7 @@ export async function sendFeedDigests(hhmm: string, day: string): Promise<number
         const members = await db
           .select({ userId: farmMembershipsTable.userId })
           .from(farmMembershipsTable)
-          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
+          .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker']), grantedSql('feed')));
         for (const { userId } of members) {
           await sendPushToUser(userId, { ...message, tag: `feed-${farmId}-${day}`, url: '/farm/futter/vorrat' });
         }

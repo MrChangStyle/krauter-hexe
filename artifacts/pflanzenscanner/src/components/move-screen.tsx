@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { MOVED_FLAG_KEY, buildMoveFile, countDeviceData, movePercent, type MoveCounts, type MoveProgress } from "@/lib/move";
 import { Progress } from "@/components/ui/progress";
 import { sendDeviceData } from "@/lib/move-channel";
+import { MoveAccountError, uploadDeviceData } from "@/lib/move-account";
+import { AutoUpdate } from "@/components/auto-update";
 import { disablePush } from "@/lib/push";
 import { isOldAddress, useAppConfig } from "@/lib/use-app-config";
 
@@ -55,6 +57,8 @@ type Phase =
   | { kind: "counting" }
   | { kind: "ready"; counts: MoveCounts }
   | { kind: "sending"; sent: MoveCounts; progress: MoveProgress | null }
+  | { kind: "uploading"; progress: MoveProgress | null }
+  | { kind: "uploaded"; progress: MoveProgress }
   | { kind: "done"; stored: MoveCounts }
   | { kind: "file-saved" }
   | { kind: "error"; message: string; counts: MoveCounts };
@@ -119,6 +123,22 @@ function MoveScreen({ canonical }: { canonical: string }) {
     }
   }
 
+  async function moveByAccount(counts: MoveCounts) {
+    setPhase({ kind: "uploading", progress: null });
+    try {
+      const progress = await uploadDeviceData({ onProgress: (p) => setPhase({ kind: "uploading", progress: p }) });
+      setMovedFlag(canonical);
+      await disablePush().catch(() => undefined);
+      setPhase({ kind: "uploaded", progress });
+    } catch (err) {
+      setPhase({
+        kind: "error",
+        counts,
+        message: err instanceof MoveAccountError ? err.message : "Die Fotos konnten nicht hochgeladen werden. Bist du online?",
+      });
+    }
+  }
+
   async function saveAsFile() {
     const blob = await buildMoveFile();
     const url = URL.createObjectURL(blob);
@@ -136,6 +156,44 @@ function MoveScreen({ canonical }: { canonical: string }) {
     setMovedFlag(canonical);
     void disablePush().catch(() => undefined);
     window.location.href = newAddressFor(canonical);
+  }
+
+  const autoUpdate = <AutoUpdate enabled={phase.kind !== "sending" && phase.kind !== "uploading"} />;
+
+  if (phase.kind === "uploading") {
+    return (
+      <Shell>
+        <Truck className="h-8 w-8 text-primary" />
+        <p className="text-sm">Fotos werden in dein Konto geladen … bitte die App offen lassen.</p>
+        {phase.progress && (
+          <div className="w-full space-y-1.5" data-testid="move-progress">
+            <Progress value={movePercent(phase.progress)} aria-label="Fortschritt des Umzugs" />
+            <p className="text-sm font-medium tabular-nums">
+              {movePercent(phase.progress)} % · {phase.progress.done} von {phase.progress.total}
+            </p>
+          </div>
+        )}
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+      </Shell>
+    );
+  }
+
+  if (phase.kind === "uploaded") {
+    return (
+      <Shell>
+        {autoUpdate}
+        <PackageOpen className="h-8 w-8 text-primary" />
+        <h2 className="text-lg font-semibold">Fotos sind unterwegs</h2>
+        <p className="text-sm text-muted-foreground">
+          {phase.progress.total} {phase.progress.total === 1 ? "Eintrag liegt" : "Einträge liegen"} in deinem Konto bereit. Öffne <strong>{host}</strong> und melde dich an – die App holt sie dann automatisch auf dieses Gerät.
+        </p>
+        <Button className="w-full gap-2" onClick={() => (window.location.href = canonical)}>
+          Weiter zu {host}
+          <ArrowRight className="h-4 w-4" />
+        </Button>
+        <p className="text-xs text-muted-foreground">Tipp: Installiere {host} danach neu auf dem Startbildschirm und lösche die alte App.</p>
+      </Shell>
+    );
   }
 
   if (phase.kind === "counting") {
@@ -212,6 +270,7 @@ function MoveScreen({ canonical }: { canonical: string }) {
   const counts = phase.counts;
   return (
     <Shell>
+      {autoUpdate}
       <Truck className="h-8 w-8 text-primary" />
       <h2 className="text-lg font-semibold">Little Farming ist umgezogen</h2>
       <p className="text-sm text-muted-foreground">
@@ -223,17 +282,20 @@ function MoveScreen({ canonical }: { canonical: string }) {
           {phase.message}
         </p>
       )}
-      <Button className="w-full gap-2" onClick={() => void moveByWindow(counts)}>
+      <Button className="w-full gap-2" onClick={() => void moveByAccount(counts)}>
         <Truck className="h-4 w-4" />
-        Daten mitnehmen und umziehen
+        Über mein Konto umziehen
+      </Button>
+      <Button variant="outline" className="w-full gap-2" onClick={() => void moveByWindow(counts)}>
+        Daten mitnehmen und umziehen (neues Fenster)
       </Button>
       <Button variant="outline" className="w-full gap-2" onClick={() => void saveAsFile()}>
         <Download className="h-4 w-4" />
         Als Datei sichern
       </Button>
       <p className="text-xs text-muted-foreground">
-        Auf diesem Gerät wird nichts gelöscht. Klappt das neue Fenster nicht (z. B. in der
-        installierten App auf dem iPhone), nutze „Als Datei sichern“.
+        Auf diesem Gerät wird nichts gelöscht. „Über mein Konto“ klappt auch in der installierten
+        App; du meldest dich danach auf der neuen Adresse an. Ohne Anmeldung hier geht „Als Datei sichern“.
       </p>
       <button
         type="button"

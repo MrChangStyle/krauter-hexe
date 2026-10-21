@@ -28,6 +28,7 @@ import {
   growsTable,
   insectScansTable,
   insectsTable,
+  moveParcelsTable,
   plantScansTable,
   plantsTable,
   premiumTable,
@@ -69,6 +70,8 @@ export const PERSONAL_TABLES = [
   { name: 'user_settings', table: userSettingsTable, userId: userSettingsTable.userId },
   // The Hof-Dashboard the account chose.
   { name: 'dashboard_layouts', table: dashboardLayoutsTable, userId: dashboardLayoutsTable.userId },
+  // Umzug über das Konto: photos waiting to be picked up.
+  { name: 'move_parcels', table: moveParcelsTable, userId: moveParcelsTable.userId },
   // Premium (granted or, later, paid).
   { name: 'premium', table: premiumTable, userId: premiumTable.userId },
   // Farm memberships – deleteAccount first hands over or removes the farms.

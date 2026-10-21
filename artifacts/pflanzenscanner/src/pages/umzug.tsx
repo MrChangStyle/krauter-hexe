@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { Progress } from "@/components/ui/progress";
+import { AutoUpdate } from "@/components/auto-update";
 import { ArrowRight, Leaf, Loader2, PackageOpen, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NO_COUNTS, addCounts, applyMoveBatch, movePercent, readMoveFile, type MoveCounts, type MoveProgress } from "@/lib/move";
@@ -82,6 +83,7 @@ export default function UmzugPage() {
 
   return (
     <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-background px-6 text-center">
+      <AutoUpdate enabled={state.kind !== "receiving"} />
       <div className="flex flex-col items-center gap-3 mb-6">
         <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
           <Leaf className="h-8 w-8 text-primary" />

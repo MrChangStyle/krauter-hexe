@@ -37,3 +37,4 @@ export * from "./grow";
 export * from "./premium";
 export * from "./dashboard";
 export * from "./settings";
+export * from "./move";

@@ -61,6 +61,16 @@ const STATEMENTS = [
 	"onboarded_at" timestamp with time zone,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
+  // Umzug über das Konto (schema/move.ts).
+  `CREATE TABLE IF NOT EXISTS "move_parcels" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"payload" text NOT NULL,
+	"entries" integer NOT NULL,
+	"bytes" integer NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `CREATE INDEX IF NOT EXISTS "move_parcels_user_idx" ON "move_parcels" USING btree ("user_id","id")`,
   // Hof-Dashboard (schema/dashboard.ts).
   `CREATE TABLE IF NOT EXISTS "dashboard_layouts" (
 	"user_id" text PRIMARY KEY NOT NULL,

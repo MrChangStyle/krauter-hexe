@@ -1,14 +1,16 @@
 import { useLocation } from "wouter";
 import { ChevronRight, Lock, PawPrint, ScanLine, Stethoscope, Wheat, X } from "lucide-react";
+import { useModules } from "@/hooks/use-modules";
 import { cn } from "@/lib/utils";
 
 /**
  * The menu behind the big scan button in the bottom bar: "Bestimmen" (the
  * universal scan) first, then the special scans. Locked entries belong to
- * modules that are not available yet.
+ * modules that are not available yet; hidden modules leave the menu.
  */
 export function ScanSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [, setLocation] = useLocation();
+  const { visible } = useModules();
   if (!open) return null;
 
   const go = (to: string) => {
@@ -67,20 +69,25 @@ export function ScanSheet({ open, onClose }: { open: boolean; onClose: () => voi
             hint="2 Fotos · von oben und von der Seite"
             onClick={() => go("/?scan=pilz")}
           />
-          <SheetRow
-            icon={<PawPrint className="h-5 w-5 text-muted-foreground" />}
-            tone="bg-muted"
-            label="Tier bestimmen"
-            hint="Art und Rasse per Foto · kommt bald"
-            locked
-          />
-          <SheetRow
-            icon={<Wheat className="h-5 w-5 text-muted-foreground" />}
-            tone="bg-muted"
-            label="Futteretikett lesen"
-            hint="Zutaten prüfen · Baustein Futter kommt"
-            locked
-          />
+          {visible("animals") && (
+            <SheetRow
+              icon={<PawPrint className="h-5 w-5 text-sky-700 dark:text-sky-300" />}
+              tone="bg-sky-100 dark:bg-sky-950/50"
+              label="Tier bestimmen"
+              hint="Neues Tier · Art und Rasse per Foto"
+              // The new-animal form suggests species and breed from the photo.
+              onClick={() => go("/farm/tier/neu")}
+            />
+          )}
+          {visible("feed") && (
+            <SheetRow
+              icon={<Wheat className="h-5 w-5 text-yellow-700 dark:text-yellow-300" />}
+              tone="bg-yellow-100 dark:bg-yellow-950/50"
+              label="Futteretikett lesen"
+              hint="Futterplaner · Werte per Foto übernehmen"
+              onClick={() => go("/farm/futter?etikett=1")}
+            />
+          )}
         </div>
       </div>
     </div>

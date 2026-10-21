@@ -615,7 +615,8 @@ function Planner({ farm }: { farm: FarmSummary }) {
       onError: (err) => toast({ title: "Nicht angelegt", description: errorText(err, ""), variant: "destructive" }),
     },
   });
-  const [ownDialog, setOwnDialog] = useState(false);
+  // "Futteretikett lesen" from the scan menu opens the label dialog right away.
+  const [ownDialog, setOwnDialog] = useState(() => canWrite && new URLSearchParams(window.location.search).has("etikett"));
 
   const targets: Target[] = useMemo(() => {
     const active = (animals.data ?? []).filter((a) => !a.archivedAt);

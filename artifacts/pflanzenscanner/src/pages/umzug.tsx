@@ -33,9 +33,13 @@ export default function UmzugPage() {
     if (!window.opener) return;
     let stop: (() => void) | undefined;
     let total = NO_COUNTS;
-    void fetchAppConfig().then((config) => {
-      if (config.legacyOrigins.length === 0) return;
-      stop = receiveDeviceData({
+    void fetchAppConfig()
+      .then((config) => {
+        if (config.legacyOrigins.length === 0) {
+          setState({ kind: "error", message: "Die alte Adresse ist hier nicht eingetragen (LEGACY_ORIGINS). Nutze bitte „Als Datei sichern“ – oder gib dem Betreiber Bescheid." });
+          return;
+        }
+        stop = receiveDeviceData({
         opener: window.opener as Window,
         allowedOrigins: config.legacyOrigins,
         onBatch: (stored) => {
@@ -43,8 +47,9 @@ export default function UmzugPage() {
           setState({ kind: "receiving", stored: total });
         },
         onDone: () => setState({ kind: "done", stored: total }),
-      });
-    });
+        });
+      })
+      .catch(() => setState({ kind: "error", message: "Die Einstellungen konnten nicht geladen werden. Bist du online? Lade die Seite neu." }));
     return () => stop?.();
   }, []);
 

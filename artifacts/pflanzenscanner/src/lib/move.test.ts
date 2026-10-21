@@ -207,7 +207,7 @@ describe("window-to-window transfer", () => {
       store: source.store,
       port: bus.portFor(OLD),
     });
-    receiveDeviceData({
+    const stop = receiveDeviceData({
       opener: oldWin.target,
       allowedOrigins: [OLD],
       store: target.store,
@@ -216,8 +216,36 @@ describe("window-to-window transfer", () => {
     });
 
     expect(await sending).toEqual({ images: 23, queue: 1, draft: 0, local: 0 });
+    stop();
     expect(target.images.size).toBe(23);
     expect(done).toBe(true);
+  });
+
+  it("still moves when the new window says ready before the old one listens", async () => {
+    // As after the site password: the new window is ready first, the old one
+    // (re)starts listening later.
+    const bus = messageBus();
+    const oldWin = bus.windowAt(OLD);
+    const newWin = bus.windowAt(NEW);
+    const target = memoryStore();
+    const stop = receiveDeviceData({
+      opener: oldWin.target,
+      allowedOrigins: [OLD],
+      store: target.store,
+      port: bus.portFor(NEW),
+      readyIntervalMs: 5,
+    });
+    await new Promise((r) => setTimeout(r, 30));
+    const moved = await sendDeviceData({
+      target: newWin.target,
+      targetOrigin: NEW,
+      store: memoryStore({ images: { a: IMG(3), b: IMG(4) } }).store,
+      port: bus.portFor(OLD),
+      readyTimeoutMs: 1_000,
+    });
+    stop();
+    expect(moved.images).toBe(2);
+    expect(target.images.size).toBe(2);
   });
 
   it("ignores data from an address that is not on the allowed list", async () => {
@@ -233,7 +261,7 @@ describe("window-to-window transfer", () => {
       port: bus.portFor("https://evil.example"),
       readyTimeoutMs: 50,
     });
-    receiveDeviceData({
+    const stop = receiveDeviceData({
       opener: evil.target,
       allowedOrigins: [OLD],
       store: target.store,
@@ -241,6 +269,7 @@ describe("window-to-window transfer", () => {
     });
 
     await expect(sending).rejects.toThrow(/nicht gemeldet/);
+    stop();
     expect(target.images.size).toBe(0);
   });
 });

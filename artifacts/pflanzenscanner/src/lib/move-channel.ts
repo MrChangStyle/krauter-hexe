@@ -64,7 +64,8 @@ export function sendDeviceData(options: {
     target,
     targetOrigin,
     onProgress,
-    readyTimeoutMs = 30_000,
+    // Long enough to type the site password in the new window first.
+    readyTimeoutMs = 10 * 60_000,
     store = browserDeviceStore,
     port = windowMessagePort,
   } = options;
@@ -144,12 +145,16 @@ export function receiveDeviceData(options: {
   onDone?: () => void;
   store?: DeviceStore;
   port?: MessagePort;
+  readyIntervalMs?: number;
 }): () => void {
-  const { opener, allowedOrigins, onBatch, onDone, store = browserDeviceStore, port = windowMessagePort } = options;
+  const { opener, allowedOrigins, onBatch, onDone, store = browserDeviceStore, port = windowMessagePort, readyIntervalMs = 2_000 } = options;
   let busy: Promise<void> = Promise.resolve();
+  let repeat: ReturnType<typeof setInterval> | undefined;
 
   const unlisten = port.listen((data, origin) => {
     if (!allowedOrigins.includes(origin) || !isMoveMessage(data)) return;
+    // The old address heard us: no more "ready".
+    clearInterval(repeat);
     if (data.type === "batch") {
       // One batch at a time, in order.
       busy = busy.then(async () => {
@@ -174,12 +179,21 @@ export function receiveDeviceData(options: {
   });
 
   // The opener may be any of the old addresses; only the matching one gets it.
-  for (const origin of allowedOrigins) {
-    try {
-      port.post(opener, { proto: MOVE_PROTOCOL, type: "ready" }, origin);
-    } catch {
-      /* wrong origin for this opener: ignored by the browser */
+  // Said again and again until the old address answers: it may not be
+  // listening yet, or it started over after the site password was typed here.
+  const sayReady = () => {
+    for (const origin of allowedOrigins) {
+      try {
+        port.post(opener, { proto: MOVE_PROTOCOL, type: "ready" }, origin);
+      } catch {
+        /* wrong origin for this opener: ignored by the browser */
+      }
     }
-  }
-  return unlisten;
+  };
+  sayReady();
+  repeat = setInterval(sayReady, readyIntervalMs);
+  return () => {
+    clearInterval(repeat);
+    unlisten();
+  };
 }

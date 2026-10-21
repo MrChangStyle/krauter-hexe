@@ -150,7 +150,10 @@ function MoveScreen({ canonical }: { canonical: string }) {
       <Shell>
         <Truck className="h-8 w-8 text-primary" />
         <p className="text-sm">Daten werden übertragen … bitte beide Fenster offen lassen.</p>
-        <p className="text-sm text-muted-foreground">{describe(phase.sent) || "Vorbereitung …"}</p>
+        <p className="text-sm text-muted-foreground">{describe(phase.sent) || "Warte auf das neue Fenster …"}</p>
+        {!describe(phase.sent) && (
+          <p className="text-xs text-muted-foreground">Fragt das neue Fenster nach einem Passwort? Gib es dort ein – danach startet der Umzug von selbst.</p>
+        )}
         <Loader2 className="h-5 w-5 animate-spin text-primary" />
       </Shell>
     );

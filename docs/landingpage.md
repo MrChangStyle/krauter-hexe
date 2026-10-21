@@ -30,6 +30,7 @@ Solange die Umgebungsvariable **`SITE_PASSWORD`** gesetzt ist, zeigt die ganze S
 
   Sie haben eigene Geheimnisse.
 - Eine installierte App (aus dem Offline-Speicher) bekommt von der API 401 mit `X-Site-Locked`. Sie springt dann einmal zur Passwortseite (`/api/site-access`) und danach zurück.
+- Umzug mit Passwortschutz: Das neue Fenster des Umzugshelfers fragt zuerst nach dem Seitenpasswort. Es sagt danach so lange alle 2 Sekunden „bereit“, bis die alte Adresse antwortet. Die alte Adresse wartet bis zu 10 Minuten (`lib/move-channel.ts`).
 - **Freischalten für alle:** `SITE_PASSWORD` in Render löschen. Dann ist der Schutz sofort weg.
 
 Technik: `api-server/src/lib/siteGate.ts` (mit Test), eingehängt in `app.ts` vor allen Routen; im Client `lib/site-lock.ts`.

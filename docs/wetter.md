@@ -27,7 +27,7 @@ die Tiere dazu.
 
 ## Umgesetzt
 
-Karte „Wetter“ oben unter Tiere (drei Tage, Warnungen, Standort), `GET /farms/:id/weather`,
+Wetter-Streifen oben auf der Hof-Seite: heute und die nächsten zwei Tage, die erste Warnung. Ein Tipp klappt die Woche auf (sieben Tage mit Tiefst- und Höchstwert, Regen und Böen), dazu alle Warnungen und „Standort ändern“. Ohne Standort steht dort das Formular dafür. Push-Nachrichten öffnen die Hof-Seite. API: `GET /farms/:id/weather`,
 `PUT /farms/:id/location`, Push über den Cron (`sendWeatherDigests`, Tabelle
 `weather_digest_log`).
 

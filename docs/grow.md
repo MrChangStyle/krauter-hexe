@@ -68,7 +68,7 @@ Botanisch: Die Gattung ist *Cannabis*, die Art *Cannabis sativa*. Indica, Sativa
 ## Push und Wetter (`lib/growWeather.ts`)
 
 - **Standort**: Outdoor und Gewächshaus bekommen eine PLZ oder den Gerätestandort (beim Anlegen oder in der Karte des Grows). Gespeichert wird nur die Gegend, auf etwa 10 km gerundet. Unveränderte PLZ: keine neue Suche. Ohne Standortangabe beim Ändern bleibt er, wie er ist; indoor wird er gelöscht.
-- **Wetter**: `GET /grow/grows/:id/weather` – drei Tage Vorhersage (DWD über Bright Sky, wie beim Hof) und Warnungen für heute und morgen, nur wenn eine Pflanze an dem Tag im Sämling, Wachstum, Blüte oder Spülen ist:
+- **Wetter**: `GET /grow/grows/:id/weather` – Vorhersage (DWD über Bright Sky, wie beim Hof; die Karte zeigt drei Tage) und Warnungen für heute und morgen, nur wenn eine Pflanze an dem Tag im Sämling, Wachstum, Blüte oder Spülen ist:
   - Frost: Tiefstwert ≤ 2 °C.
   - Hitze: ≥ 32 °C draußen, im Gewächshaus schon ab 28 °C.
   - Sturm: Böen ≥ 60 km/h (nur draußen).

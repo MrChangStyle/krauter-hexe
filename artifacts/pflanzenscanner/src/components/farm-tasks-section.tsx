@@ -16,6 +16,8 @@ import {
   type FarmTaskInput,
   type TaskIntervalUnit,
 } from "@workspace/api-client-react";
+import { Link } from "wouter";
+import { HubTile } from "@/components/hub-tile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -328,8 +330,8 @@ export function FarmTodayCard({ farm }: { farm: FarmSummary }) {
   const active = (tasks.data ?? []).filter((t) => t.isActive);
   const due = active.filter((t) => t.isDue).length;
   return (
-    <a
-      href="#aufgaben"
+    <Link
+      href="/farm/aufgaben"
       className="block rounded-3xl bg-primary text-primary-foreground p-5 space-y-2 shadow-md active:scale-[0.99] transition-transform"
       data-testid="farm-today"
     >
@@ -344,6 +346,22 @@ export function FarmTodayCard({ farm }: { farm: FarmSummary }) {
             ? `${due} ${due === 1 ? "Aufgabe ist" : "Aufgaben sind"} heute fällig`
             : `Heute ist alles erledigt – ${active.length} ${active.length === 1 ? "Aufgabe" : "Aufgaben"} im Plan`}
       </span>
-    </a>
+    </Link>
+  );
+}
+
+/** The Stall-Aufgaben tile on the Tiere page, with what is due today. */
+export function FarmTasksTile({ farm }: { farm: FarmSummary }) {
+  const tasks = useListFarmTasks(farm.id);
+  const due = (tasks.data ?? []).filter((t) => t.isActive && t.isDue).length;
+  return (
+    <HubTile
+      href="/farm/aufgaben"
+      icon={ClipboardList}
+      label="Stall-Aufgaben"
+      hint="Füttern, Ausmisten, Erinnerungen"
+      tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300"
+      badge={due > 0 ? `${due} fällig` : null}
+    />
   );
 }

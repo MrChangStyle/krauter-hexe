@@ -32,7 +32,7 @@ import { sendPushToUser } from './webPush';
 const USER_AGENT = 'LittleFarming/1.0 (+https://littlefarming.de)';
 const TIMEOUT_MS = 8_000;
 const CACHE_MS = 60 * 60 * 1000;
-export const FORECAST_DAYS = 3;
+export const FORECAST_DAYS = 7;
 export const WEATHER_DIGEST_TIME = '07:30';
 
 // ── Location ─────────────────────────────────────────────────────────────────
@@ -148,7 +148,7 @@ export function daysFromHours(records: HourRecord[], firstDay: string, count = F
 
 const cache = new Map<string, { days: DayForecast[]; at: number }>();
 
-/** Three days from today; empty when the weather service does not answer. */
+/** A week from today; empty when the weather service does not answer. */
 export async function forecast(latitude: number, longitude: number, today: string): Promise<DayForecast[]> {
   const key = `${roundCoord(latitude)},${roundCoord(longitude)},${today}`;
   const hit = cache.get(key);
@@ -331,7 +331,7 @@ export async function sendWeatherDigests(hhmm: string, day: string): Promise<num
           .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
         const title = fresh.some((w) => w.kind === 'hardFrost' || w.kind === 'storm') ? 'Unwetter-Warnung für deinen Hof' : 'Wetter-Hinweis für deinen Hof';
         for (const { userId } of members) {
-          await sendPushToUser(userId, { title, body: fresh.map((w) => w.text).join(' '), tag: `weather-${farmId}-${day}`, url: '/farm' });
+          await sendPushToUser(userId, { title, body: fresh.map((w) => w.text).join(' '), tag: `weather-${farmId}-${day}`, url: '/' });
         }
         sent += 1;
       } catch (err) {

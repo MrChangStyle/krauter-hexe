@@ -230,7 +230,7 @@ export async function triggerDueNotifications(): Promise<number> {
         title: "Stall-Aufgabe fällig",
         body: `${task.actionType}${target ? ` – ${target}` : ""} (${farmName})`,
         tag: `farm-task-${task.id}`,
-        url: "/farm",
+        url: "/farm/aufgaben",
       });
     }
     await db

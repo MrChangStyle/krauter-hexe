@@ -5,11 +5,11 @@ Die Startseite „Hof“ zeigt einen kompakten Überblick über den Hof. Gescann
 ## Aufbau (`components/hof-dashboard.tsx`)
 
 1. **Begrüßung**: „Hallo …“ und ein Satz. Gibt es einen offenen Pflege-Guide, ist es ein Hinweis darauf.
-2. **Wetter** als schmaler Streifen:
+2. **Wetter** als schmaler Streifen. Ein Pfeil zeigt, dass er aufklappt: Ein Tipp öffnet die 7-Tage-Vorhersage mit Temperaturbalken, Regen und Böen sowie alle Warnungen und „Standort ändern“.
    - Heute mit Höchst- und Tiefstwert, Regen und Böen.
    - Die nächsten zwei Tage klein daneben.
    - Darunter die erste Warnung des Hofs (Frost, Hitze, Sturm …).
-   - Ohne Standort ein Hinweis, ihn auf der Tiere-Seite festzulegen.
+   - Ohne Standort steht hier direkt das Formular (Postleitzahl oder Gerätestandort, nur für Admins des Hofs).
 3. **Pflanzenretter**: eine Zeile mit dem eigenen Platz und den Blättern. Aufgeklappt zeigt sie die ersten vier, dazu den eigenen Platz, falls er nicht darunter ist.
 4. **Widgets**, gruppiert nach **Pflanzen** und **Tiere**:
    - Jedes Widget hat ein kleines Symbol, einen Namen, eine Kennzahl und eine Zeile Text.

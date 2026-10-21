@@ -14,6 +14,7 @@ Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt dan
 - **Wildtier-Radar**: zwei Kameras, noch ohne Ereignisse.
 - **Beet-Architekt**: ein Hochbeet mit Tomate und ein Gemüsebeet mit Salat, im laufenden Jahr.
 - **Saatgut**: Tomate „Ochsenherz“ und Möhre „Nantaise“.
+- **Farm & Team**: eine Tierarztpraxis und eine Stallhilfe als wichtige Kontakte.
 - **Grow**: ein „Demo-Zelt“ mit zwei Pflanzen, aber nur, wenn das Konto Grow schon freigeschaltet hat (Alter bestätigt).
 
 Pflegeplan, Pflanzen-Doc und Schädlinge bekommen keine Demo-Daten. Sie hängen an eigenen Scans und an der KI.

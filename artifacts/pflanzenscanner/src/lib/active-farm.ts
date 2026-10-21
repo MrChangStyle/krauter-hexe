@@ -31,12 +31,12 @@ export function pickActiveFarm(farms: FarmSummary[], remembered: number | null):
 
 export const FARM_ROLE_LABELS: Record<FarmSummary["role"], string> = {
   admin: "Admin",
-  caretaker: "Tierpfleger",
+  caretaker: "Mitarbeiter",
   guest: "Gast",
 };
 
 export const FARM_ROLE_HINTS: Record<FarmSummary["role"], string> = {
-  admin: "alles, auch Mitglieder verwalten",
-  caretaker: "Tiere und Einträge bearbeiten",
+  admin: "alles, auch das Team verwalten",
+  caretaker: "Einträge anlegen und bearbeiten",
   guest: "nur ansehen",
 };

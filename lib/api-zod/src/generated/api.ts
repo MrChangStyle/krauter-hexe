@@ -2608,6 +2608,126 @@ export const SetLineageResponse = zod.object({
 
 
 /**
+ * @summary Farm & Team – the farm's important contacts (every member)
+ */
+export const ListFarmContactsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListFarmContactsResponseItem = zod.object({
+  "id": zod.number(),
+  "kind": zod.enum(['self', 'team', 'substitute', 'vet', 'family', 'emergency', 'authority', 'supplier', 'other']),
+  "name": zod.string(),
+  "role": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "note": zod.string().nullable()
+})
+export const ListFarmContactsResponse = zod.array(ListFarmContactsResponseItem)
+
+
+/**
+ * @summary Add a contact (admin)
+ */
+export const CreateFarmContactParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createFarmContactBodyNameMax = 80;
+
+export const createFarmContactBodyRoleMax = 80;
+
+export const createFarmContactBodyPhoneMax = 40;
+
+export const createFarmContactBodyEmailMax = 200;
+
+export const createFarmContactBodyNoteMax = 1000;
+
+
+
+export const CreateFarmContactBody = zod.object({
+  "kind": zod.enum(['self', 'team', 'substitute', 'vet', 'family', 'emergency', 'authority', 'supplier', 'other']),
+  "name": zod.string().min(1).max(createFarmContactBodyNameMax),
+  "role": zod.string().max(createFarmContactBodyRoleMax).nullish(),
+  "phone": zod.string().max(createFarmContactBodyPhoneMax).nullish(),
+  "email": zod.string().max(createFarmContactBodyEmailMax).nullish(),
+  "note": zod.string().max(createFarmContactBodyNoteMax).nullish()
+})
+
+export const CreateFarmContactResponseItem = zod.object({
+  "id": zod.number(),
+  "kind": zod.enum(['self', 'team', 'substitute', 'vet', 'family', 'emergency', 'authority', 'supplier', 'other']),
+  "name": zod.string(),
+  "role": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "note": zod.string().nullable()
+})
+export const CreateFarmContactResponse = zod.array(CreateFarmContactResponseItem)
+
+
+/**
+ * @summary Change a contact (admin)
+ */
+export const UpdateFarmContactParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "contactId": zod.coerce.number()
+})
+
+export const updateFarmContactBodyNameMax = 80;
+
+export const updateFarmContactBodyRoleMax = 80;
+
+export const updateFarmContactBodyPhoneMax = 40;
+
+export const updateFarmContactBodyEmailMax = 200;
+
+export const updateFarmContactBodyNoteMax = 1000;
+
+
+
+export const UpdateFarmContactBody = zod.object({
+  "kind": zod.enum(['self', 'team', 'substitute', 'vet', 'family', 'emergency', 'authority', 'supplier', 'other']),
+  "name": zod.string().min(1).max(updateFarmContactBodyNameMax),
+  "role": zod.string().max(updateFarmContactBodyRoleMax).nullish(),
+  "phone": zod.string().max(updateFarmContactBodyPhoneMax).nullish(),
+  "email": zod.string().max(updateFarmContactBodyEmailMax).nullish(),
+  "note": zod.string().max(updateFarmContactBodyNoteMax).nullish()
+})
+
+export const UpdateFarmContactResponseItem = zod.object({
+  "id": zod.number(),
+  "kind": zod.enum(['self', 'team', 'substitute', 'vet', 'family', 'emergency', 'authority', 'supplier', 'other']),
+  "name": zod.string(),
+  "role": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "note": zod.string().nullable()
+})
+export const UpdateFarmContactResponse = zod.array(UpdateFarmContactResponseItem)
+
+
+/**
+ * @summary Remove a contact (admin)
+ */
+export const DeleteFarmContactParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "contactId": zod.coerce.number()
+})
+
+export const DeleteFarmContactResponseItem = zod.object({
+  "id": zod.number(),
+  "kind": zod.enum(['self', 'team', 'substitute', 'vet', 'family', 'emergency', 'authority', 'supplier', 'other']),
+  "name": zod.string(),
+  "role": zod.string().nullable(),
+  "phone": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "note": zod.string().nullable()
+})
+export const DeleteFarmContactResponse = zod.array(DeleteFarmContactResponseItem)
+
+
+/**
  * @summary Saatgut – the farm's seeds with how long they germinate, and what the bed plan still needs
  */
 export const GetSeedOverviewParams = zod.object({

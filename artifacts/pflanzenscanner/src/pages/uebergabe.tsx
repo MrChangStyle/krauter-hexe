@@ -12,6 +12,7 @@ import {
   useSetHandoverNote,
   type FarmSummary,
 } from "@workspace/api-client-react";
+import { FarmContactsCard } from "@/components/farm-contacts-card";
 import { FarmWeatherCard } from "@/components/farm-weather-card";
 import { HousingOrderBanner } from "@/components/housing-order-banner";
 import { Button } from "@/components/ui/button";
@@ -172,8 +173,9 @@ function Handover({ farm }: { farm: FarmSummary }) {
 
       <Section icon={Phone} title="Bei Fragen">
         <p>{h.contacts.map((c) => c.displayName).join(", ")} (Admin)</p>
-        <p className="text-xs text-muted-foreground">Telefonnummern stehen am besten in der Notiz oben.</p>
       </Section>
+
+      <FarmContactsCard farm={farm} compact />
     </div>
   );
 }

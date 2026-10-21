@@ -41,7 +41,7 @@ export function HubTile({
     </>
   );
   const className = cn("rounded-2xl border bg-card p-4 flex flex-col gap-3 hover:shadow-md active:scale-[0.98] transition-all", extra);
-  // In-page anchors (#mitglieder) are plain links; areas are router links.
+  // In-page anchors (#push, #konto) are plain links; areas are router links.
   return href.startsWith("#") ? (
     <a href={href} className={className}>
       {inner}

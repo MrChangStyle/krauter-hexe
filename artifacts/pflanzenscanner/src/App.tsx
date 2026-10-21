@@ -67,6 +67,7 @@ import GrowKostenPage from '@/pages/grow-kosten';
 import VerwaltungPage from '@/pages/verwaltung';
 import FarmAufgabenPage from '@/pages/farm-aufgaben';
 import FarmExportPage from '@/pages/farm-export';
+import FarmMitgliederPage from '@/pages/farm-mitglieder';
 import GrowWissenPage from '@/pages/grow-wissen';
 import GrowRechtPage from '@/pages/grow-recht';
 import { StatusBanner } from '@/components/status-banner';
@@ -155,6 +156,7 @@ function Router() {
         <Route path="/farm/pflichten" component={PflichtenPage} />
         <Route path="/farm/aufgaben" component={FarmAufgabenPage} />
         <Route path="/farm/export" component={FarmExportPage} />
+        <Route path="/farm/mitglieder" component={FarmMitgliederPage} />
         <Route path="/farm/zucht" component={ZuchtPage} />
         <Route path="/farm/ertrag" component={ErtragPage} />
         <Route path="/grow" component={GrowPage} />

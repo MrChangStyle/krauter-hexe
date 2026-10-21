@@ -35,6 +35,7 @@ import dashboardRouter from "./dashboard";
 import settingsRouter from "./settings";
 import demoRouter from "./demo";
 import moveRouter from "./move";
+import feedbackRouter from "./feedback";
 
 const router: IRouter = Router();
 
@@ -67,6 +68,7 @@ router.use(dashboardRouter);
 router.use(settingsRouter);
 router.use(demoRouter);
 router.use(moveRouter);
+router.use(feedbackRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);

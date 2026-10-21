@@ -19,7 +19,7 @@ const enabled =
 
 describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", () => {
   const TABLES =
-    "favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, grow_access, grows, grow_push_log, premium, dashboard_layouts, user_settings, move_parcels, farm_memberships, farms, plants, insects, users";
+    "favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, grow_access, grows, grow_push_log, premium, dashboard_layouts, user_settings, move_parcels, feedback, farm_memberships, farms, plants, insects, users";
 
   async function load() {
     const { pool } = await import("@workspace/db");
@@ -81,6 +81,7 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
     await pool.query(`INSERT INTO dashboard_layouts (user_id, widgets) VALUES ($1, '[]')`, [userId]);
     await pool.query(`INSERT INTO user_settings (user_id) VALUES ($1)`, [userId]);
     await pool.query(`INSERT INTO move_parcels (user_id, payload, entries, bytes) VALUES ($1, '{}', 0, 2)`, [userId]);
+    await pool.query(`INSERT INTO feedback (user_id, text) VALUES ($1, 'Idee')`, [userId]);
     // A farm of one's own, and membership in a shared farm (as admin).
     const own = await pool.query(`INSERT INTO farms (name) VALUES ($1) RETURNING id`, [`Hof ${label}`]);
     await pool.query(
@@ -125,6 +126,7 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       dashboard_layouts: 1,
       user_settings: 1,
       move_parcels: 1,
+      feedback: 1,
       farm_memberships: 1,
       farms: 1,
       plants: 1,

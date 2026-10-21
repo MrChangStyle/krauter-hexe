@@ -99,6 +99,9 @@ import type {
   FeedRemindersResult,
   FeedStockCountInput,
   FeedStockOverview,
+  FeedbackInput,
+  FeedbackList,
+  FeedbackMarkInput,
   FrostWarning,
   GardenBed,
   GardenBedInput,
@@ -16784,6 +16787,297 @@ export const useSetSettings = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSetSettingsMutationOptions(options));
+    }
+
+export const getSendFeedbackUrl = () => {
+
+
+
+
+  return `/api/feedback`
+}
+
+/**
+ * @summary Send the owner an improvement idea (typed or dictated)
+ */
+export const sendFeedback = async (feedbackInput: FeedbackInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getSendFeedbackUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(feedbackInput)
+  }
+);}
+
+
+
+
+
+export const getSendFeedbackMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendFeedback>>, TError,{data: BodyType<FeedbackInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof sendFeedback>>, TError,{data: BodyType<FeedbackInput>}, TContext> => {
+
+const mutationKey = ['sendFeedback'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof sendFeedback>>, {data: BodyType<FeedbackInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  sendFeedback(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SendFeedbackMutationResult = NonNullable<Awaited<ReturnType<typeof sendFeedback>>>
+    export type SendFeedbackMutationBody = BodyType<FeedbackInput>
+    export type SendFeedbackMutationError = ErrorType<void>
+
+    /**
+ * @summary Send the owner an improvement idea (typed or dictated)
+ */
+export const useSendFeedback = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof sendFeedback>>, TError,{data: BodyType<FeedbackInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof sendFeedback>>,
+        TError,
+        {data: BodyType<FeedbackInput>},
+        TContext
+      > => {
+      return useMutation(getSendFeedbackMutationOptions(options));
+    }
+
+export const getListFeedbackUrl = () => {
+
+
+
+
+  return `/api/feedback`
+}
+
+/**
+ * @summary All feedback, newest first (owner)
+ */
+export const listFeedback = async ( options?: RequestInit): Promise<FeedbackList> => {
+
+  return customFetch<FeedbackList>(getListFeedbackUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFeedbackQueryKey = () => {
+    return [
+    `/api/feedback`
+    ] as const;
+    }
+
+
+export const getListFeedbackQueryOptions = <TData = Awaited<ReturnType<typeof listFeedback>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedback>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFeedbackQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFeedback>>> = ({ signal }) => listFeedback({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFeedback>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFeedbackQueryResult = NonNullable<Awaited<ReturnType<typeof listFeedback>>>
+export type ListFeedbackQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary All feedback, newest first (owner)
+ */
+
+export function useListFeedback<TData = Awaited<ReturnType<typeof listFeedback>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedback>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFeedbackQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getMarkFeedbackUrl = (feedbackId: number,) => {
+
+
+
+
+  return `/api/feedback/${feedbackId}`
+}
+
+/**
+ * @summary Mark as read or unread (owner)
+ */
+export const markFeedback = async (feedbackId: number,
+    feedbackMarkInput: FeedbackMarkInput, options?: RequestInit): Promise<FeedbackList> => {
+
+  return customFetch<FeedbackList>(getMarkFeedbackUrl(feedbackId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(feedbackMarkInput)
+  }
+);}
+
+
+
+
+
+export const getMarkFeedbackMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markFeedback>>, TError,{feedbackId: number;data: BodyType<FeedbackMarkInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof markFeedback>>, TError,{feedbackId: number;data: BodyType<FeedbackMarkInput>}, TContext> => {
+
+const mutationKey = ['markFeedback'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof markFeedback>>, {feedbackId: number;data: BodyType<FeedbackMarkInput>}> = (props) => {
+          const {feedbackId,data} = props ?? {};
+
+          return  markFeedback(feedbackId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MarkFeedbackMutationResult = NonNullable<Awaited<ReturnType<typeof markFeedback>>>
+    export type MarkFeedbackMutationBody = BodyType<FeedbackMarkInput>
+    export type MarkFeedbackMutationError = ErrorType<void>
+
+    /**
+ * @summary Mark as read or unread (owner)
+ */
+export const useMarkFeedback = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markFeedback>>, TError,{feedbackId: number;data: BodyType<FeedbackMarkInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof markFeedback>>,
+        TError,
+        {feedbackId: number;data: BodyType<FeedbackMarkInput>},
+        TContext
+      > => {
+      return useMutation(getMarkFeedbackMutationOptions(options));
+    }
+
+export const getDeleteFeedbackUrl = (feedbackId: number,) => {
+
+
+
+
+  return `/api/feedback/${feedbackId}`
+}
+
+/**
+ * @summary Delete one message (owner)
+ */
+export const deleteFeedback = async (feedbackId: number, options?: RequestInit): Promise<FeedbackList> => {
+
+  return customFetch<FeedbackList>(getDeleteFeedbackUrl(feedbackId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteFeedbackMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFeedback>>, TError,{feedbackId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFeedback>>, TError,{feedbackId: number}, TContext> => {
+
+const mutationKey = ['deleteFeedback'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFeedback>>, {feedbackId: number}> = (props) => {
+          const {feedbackId} = props ?? {};
+
+          return  deleteFeedback(feedbackId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteFeedbackMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFeedback>>>
+
+    export type DeleteFeedbackMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete one message (owner)
+ */
+export const useDeleteFeedback = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFeedback>>, TError,{feedbackId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteFeedback>>,
+        TError,
+        {feedbackId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteFeedbackMutationOptions(options));
     }
 
 export const getGetDemoStatusUrl = () => {

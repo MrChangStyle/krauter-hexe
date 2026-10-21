@@ -28,6 +28,6 @@ Unten auf der Seite lassen sich Beispieldaten laden und wieder löschen, siehe `
   - Unbekannte oder doppelte Ids fallen weg.
 - `useModules()` (`hooks/use-modules.ts`) liefert `visible(id)`. Solange die Einstellungen laden oder offline fehlen, ist alles sichtbar.
 
-## Nächste Schritte
+## Einrichtung
 
-- **Einrichtungsassistent beim ersten Start**: Begrüßung, Module wählen, Demo-Daten laden, danach Erklärfelder durch die App, jederzeit überspringbar.
+Beim ersten Start führt ein Assistent durch die Modulauswahl und die Demo-Daten. Danach gibt es eine App-Tour, siehe `docs/onboarding.md`.

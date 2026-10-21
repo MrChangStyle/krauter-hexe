@@ -1,33 +1,19 @@
+import { Link, useLocation } from "wouter";
+import { ArrowLeft, Lightbulb, RotateCcw } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { ArrowLeft } from "lucide-react";
-import { getGetSettingsQueryKey, useGetPremium, useSetSettings, type ModuleId } from "@workspace/api-client-react";
+import { getGetSettingsQueryKey, useSetSettings } from "@workspace/api-client-react";
 import { DemoCard } from "@/components/demo-card";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
-import { useModules } from "@/hooks/use-modules";
-import { GROW_ENABLED } from "@/lib/grow-labels";
-import { MODULES, tierLabel, toggleModule, type ModuleArea } from "@/lib/modules";
-import { cn } from "@/lib/utils";
+import { ModuleSwitches } from "@/components/module-switches";
+import { startTour } from "@/components/tour-card";
+import { Button } from "@/components/ui/button";
 
-const AREAS: { area: ModuleArea; label: string }[] = [
-  { area: "pflanzen", label: "Pflanzen" },
-  { area: "tiere", label: "Tiere" },
-];
-
-/** /module – "Meine Module": which areas and modules this account uses. */
+/** /module – "Meine Module": which areas and modules this account uses, demo data, setup again. */
 export default function ModulePage() {
   const queryClient = useQueryClient();
-  const { toast } = useToast();
-  const { settings, hidden } = useModules();
-  const premium = useGetPremium();
-  const save = useSetSettings({
-    mutation: {
-      onSuccess: (data) => queryClient.setQueryData(getGetSettingsQueryKey(), data),
-      onError: () => toast({ title: "Nicht gespeichert", description: "Bitte versuche es noch einmal.", variant: "destructive" }),
-    },
+  const [, navigate] = useLocation();
+  const restart = useSetSettings({
+    mutation: { onSuccess: (data) => queryClient.setQueryData(getGetSettingsQueryKey(), data) },
   });
-  const flip = (id: ModuleId) => save.mutate({ data: { hiddenModules: toggleModule(hidden, id) } });
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
@@ -42,36 +28,22 @@ export default function ModulePage() {
       <p className="rounded-xl border bg-card p-3 text-xs text-muted-foreground">
         <span className="font-medium text-foreground">Lite</span> heißt: kostenlos nutzbar, Premium bringt mehr (z. B. die KI). Module ohne Kennzeichnung gehören fest zur App.
       </p>
-      {settings.data &&
-        AREAS.map(({ area, label }) => {
-          const areaDef = MODULES.find((m) => m.area === area && m.isArea)!;
-          const areaOn = !hidden.includes(areaDef.id);
-          return (
-            <section key={area} className="space-y-2" data-testid={`module-${area}`}>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">{label}</h2>
-              <ul className="divide-y rounded-xl border bg-card">
-                {MODULES.filter((m) => m.area === area && (m.id !== "grow" || GROW_ENABLED)).map((m) => {
-                  const on = !hidden.includes(m.id);
-                  const tag = tierLabel(m.id, !!premium.data?.active);
-                  const muted = !m.isArea && !areaOn;
-                  return (
-                    <li key={m.id} className={cn("flex items-center gap-3 px-3 py-2.5", m.isArea && "bg-muted/40")}>
-                      <span className={cn("min-w-0 flex-1", muted && "opacity-50")}>
-                        <span className={cn("block text-sm", m.isArea ? "font-semibold" : "font-medium")}>
-                          {m.label}
-                          {tag && <span className="ml-1.5 rounded-full border border-primary/40 px-1.5 py-px text-[10px] font-medium text-primary">{tag}</span>}
-                        </span>
-                        <span className="block text-xs text-muted-foreground">{m.hint}</span>
-                      </span>
-                      <Switch checked={on} disabled={save.isPending || muted} aria-label={`${m.label} anzeigen`} onCheckedChange={() => flip(m.id)} />
-                    </li>
-                  );
-                })}
-              </ul>
-            </section>
-          );
-        })}
+      <ModuleSwitches />
       <DemoCard />
+      <section className="space-y-2 rounded-xl border bg-card p-4" data-testid="setup-card">
+        <h2 className="font-semibold">Einrichtung und Erklärungen</h2>
+        <p className="text-sm text-muted-foreground">Den Einrichtungsassistenten vom ersten Start noch einmal durchgehen oder die kurze Tour durch die App ansehen.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" className="gap-1.5" disabled={restart.isPending} onClick={() => restart.mutate({ data: { onboarded: false } })}>
+            <RotateCcw className="h-4 w-4" />
+            Einrichtung neu starten
+          </Button>
+          <Button variant="outline" className="gap-1.5" onClick={() => startTour(navigate)}>
+            <Lightbulb className="h-4 w-4" />
+            App-Tour starten
+          </Button>
+        </div>
+      </section>
     </div>
   );
 }

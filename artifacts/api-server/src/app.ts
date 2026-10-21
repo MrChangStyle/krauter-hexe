@@ -6,6 +6,7 @@ import { authMiddleware } from "./middlewares/authMiddleware";
 import { logger } from "./lib/logger";
 import { errorHandler } from "./middlewares/errorHandler";
 import { mountWebClient, resolveWebClientDir } from "./lib/webClient";
+import { GATE_PATH, siteGate, siteGateRoutes } from "./lib/siteGate";
 
 const app: Express = express();
 
@@ -46,6 +47,10 @@ app.use(cookieParser());
 // Plant photos are sent as base64 data URLs, so the default JSON limit is too small.
 app.use(express.json({ limit: "15mb" }));
 app.use(express.urlencoded({ extended: true, limit: "15mb" }));
+// Vorschau-Schutz: while SITE_PASSWORD is set, nothing but the password page
+// until the visitor has typed it (machines with their own secrets excepted).
+app.all(GATE_PATH, siteGateRoutes);
+app.use(siteGate);
 // Loads the user from the session (if any) on every request.
 app.use(authMiddleware);
 

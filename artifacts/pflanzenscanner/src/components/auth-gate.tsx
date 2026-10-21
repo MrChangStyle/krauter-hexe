@@ -15,6 +15,7 @@ import {
 import { useAuthProviders } from "@/lib/use-auth-providers";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 import { TurnstileWidget, type TurnstileHandle } from "@/components/turnstile-widget";
+import { LandingPage } from "@/components/landing-page";
 
 /** Google's four-colour "G", the mark their brand guidelines ask for. */
 function GoogleMark() {
@@ -88,9 +89,9 @@ function LegalFooter() {
   );
 }
 
-function LoginScreen() {
+function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" | "register"; onBack?: () => void }) {
   const { login, register } = useAuthContext();
-  const [mode, setMode] = useState<"login" | "register">("login");
+  const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [registrationCode, setRegistrationCode] = useState("");
@@ -343,6 +344,11 @@ function LoginScreen() {
           ? "Ich habe schon ein Konto – anmelden"
           : "Noch kein Konto? Jetzt anlegen"}
       </button>
+      {onBack && (
+        <button type="button" className="mt-3 text-sm text-muted-foreground underline underline-offset-4" onClick={onBack}>
+          Zurück zur Startseite
+        </button>
+      )}
 
       <LegalFooter />
     </FullScreenCentered>
@@ -412,6 +418,20 @@ function WaitingForApprovalScreen() {
   );
 }
 
+/**
+ * Signed out: the landing page first (docs/landingpage.md), the login form
+ * after "Anmelden" or "Registrieren". A failed Google sign-in comes back to
+ * the form straight away.
+ */
+function PublicStart() {
+  const [view, setView] = useState<"landing" | "login" | "register">(() => (readSignInError(window.location.search) ? "login" : "landing"));
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [view]);
+  if (view === "landing") return <LandingPage onLogin={() => setView("login")} onRegister={() => setView("register")} />;
+  return <LoginScreen key={view} initialMode={view} onBack={() => setView("landing")} />;
+}
+
 // Renders the app only for signed-in AND approved accounts. Everyone else
 // sees either the login screen or the waiting-for-approval screen - no plant
 // data is fetched or shown before that.
@@ -427,7 +447,7 @@ export default function AuthGate({ children }: { children: ReactNode }) {
   }
 
   if (!isAuthenticated) {
-    return <LoginScreen />;
+    return <PublicStart />;
   }
 
   if (!user?.approved) {

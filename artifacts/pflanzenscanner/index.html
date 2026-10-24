@@ -8,6 +8,16 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
     <title>Little Farming</title>
+    <script>
+      // Darstellung (src/lib/theme.ts) before the first paint, so dark mode does not flash.
+      try {
+        var t = localStorage.getItem("lf-theme");
+        if (t === "dark" || (t !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+          document.documentElement.style.colorScheme = "dark";
+        }
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>

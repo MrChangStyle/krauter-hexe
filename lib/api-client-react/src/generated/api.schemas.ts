@@ -1165,15 +1165,83 @@ export const ModuleId = {
   members: 'members',
 } as const;
 
+/**
+ * What a push is about – each can be switched off (docs/benachrichtigungen.md)
+ */
+export type PushTopic = typeof PushTopic[keyof typeof PushTopic];
+
+
+export const PushTopic = {
+  'plant-care': 'plant-care',
+  'farm-tasks': 'farm-tasks',
+  feed: 'feed',
+  medicines: 'medicines',
+  breeding: 'breeding',
+  duties: 'duties',
+  weather: 'weather',
+  garden: 'garden',
+  grow: 'grow',
+  wildlife: 'wildlife',
+  admin: 'admin',
+} as const;
+
+/**
+ * No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes
+ */
+export interface QuietHours {
+  /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
+  from: string;
+  /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
+  to: string;
+}
+
 export interface UserSettings {
   hiddenModules: ModuleId[];
   onboarded: boolean;
+  /** Push topics switched off */
+  pushOff: PushTopic[];
+  quietHours: QuietHours | null;
 }
 
 export interface UserSettingsInput {
   /** @maxItems 40 */
   hiddenModules?: ModuleId[];
   onboarded?: boolean;
+  /** @maxItems 20 */
+  pushOff?: PushTopic[];
+  quietHours?: QuietHours | null;
+}
+
+export interface SearchItem {
+  title: string;
+  /** @nullable */
+  subtitle: string | null;
+  href: string;
+}
+
+export type SearchGroupKind = typeof SearchGroupKind[keyof typeof SearchGroupKind];
+
+
+export const SearchGroupKind = {
+  plants: 'plants',
+  insects: 'insects',
+  animals: 'animals',
+  herds: 'herds',
+  beds: 'beds',
+  seeds: 'seeds',
+  medicines: 'medicines',
+  feeds: 'feeds',
+  contacts: 'contacts',
+} as const;
+
+export interface SearchGroup {
+  kind: SearchGroupKind;
+  label: string;
+  items: SearchItem[];
+}
+
+export interface SearchResult {
+  groups: SearchGroup[];
 }
 
 export interface FeedbackInput {
@@ -4110,5 +4178,13 @@ export type AuthorizationSessionHeaderParameter = string;
 
 export type ListPlantsParams = {
 category?: PlantCategory;
+};
+
+export type SearchParams = {
+/**
+ * @maxLength 100
+ */
+q: string;
+farmId?: number;
 };
 

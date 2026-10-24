@@ -6,9 +6,14 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ModuleId } from './moduleId';
+import type { PushTopic } from './pushTopic';
+import type { QuietHours } from './quietHours';
 
 export interface UserSettingsInput {
   /** @maxItems 40 */
   hiddenModules?: ModuleId[];
   onboarded?: boolean;
+  /** @maxItems 20 */
+  pushOff?: PushTopic[];
+  quietHours?: QuietHours | null;
 }

@@ -334,7 +334,7 @@ export async function sendGardenDigests(hhmm: string, day: string): Promise<numb
           .from(farmMembershipsTable)
           .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker']), grantedSql('garden')));
         for (const { userId } of members) {
-          await sendPushToUser(userId, { ...message, tag: `garden-${farmId}-${day}`, url: '/aufgaben' });
+          await sendPushToUser(userId, { topic: 'garden', ...message, tag: `garden-${farmId}-${day}`, url: '/aufgaben' });
         }
         sent += 1;
       } catch (err) {

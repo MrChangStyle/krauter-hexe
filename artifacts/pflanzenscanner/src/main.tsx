@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import { installErrorReporter } from './lib/error-reporter'
 import { installSiteLockRedirect } from './lib/site-lock'
+import { applyTheme, watchSystemTheme } from './lib/theme'
 import './index.css'
 
 // Ask the browser to keep our local data (queued photos, own scans) even when
@@ -16,6 +17,10 @@ if (typeof navigator !== 'undefined' && navigator.storage?.persist) {
 
 // Before the site is public, an app from the offline cache goes to the password page first.
 installSiteLockRedirect()
+
+// Hell, dunkel oder wie das Gerät (Mehr → Darstellung).
+applyTheme()
+watchSystemTheme()
 
 // Uncaught errors go to the owner's error monitor (no personal data).
 installErrorReporter()

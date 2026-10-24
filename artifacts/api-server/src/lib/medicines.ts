@@ -242,7 +242,7 @@ export async function sendMedicineDigests(hhmm: string, day: string): Promise<nu
           .from(farmMembershipsTable)
           .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker']), grantedSql('medicines')));
         for (const { userId } of members) {
-          await sendPushToUser(userId, { ...message, tag: `medicines-${farmId}-${day}`, url: '/farm/arzneimittel' });
+          await sendPushToUser(userId, { topic: 'medicines', ...message, tag: `medicines-${farmId}-${day}`, url: '/farm/arzneimittel' });
         }
         sent += 1;
       } catch (err) {

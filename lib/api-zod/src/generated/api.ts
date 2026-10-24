@@ -7010,9 +7010,18 @@ export const SendTestPushResponse = zod.object({
 /**
  * @summary Modules the account hides and whether it went through the first-start assistant
  */
+export const getSettingsResponseQuietHoursOneFromRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+export const getSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+
+
 export const GetSettingsResponse = zod.object({
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])),
-  "onboarded": zod.boolean()
+  "onboarded": zod.boolean(),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
+  "quietHours": zod.union([zod.object({
+  "from": zod.string().regex(getSettingsResponseQuietHoursOneFromRegExp),
+  "to": zod.string().regex(getSettingsResponseQuietHoursOneToRegExp)
+}).describe('No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes'),zod.null()])
 })
 
 
@@ -7021,16 +7030,59 @@ export const GetSettingsResponse = zod.object({
  */
 export const setSettingsBodyHiddenModulesMax = 40;
 
+export const setSettingsBodyPushOffMax = 20;
+
+export const setSettingsBodyQuietHoursOneFromRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+export const setSettingsBodyQuietHoursOneToRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
 
 
 export const SetSettingsBody = zod.object({
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).max(setSettingsBodyHiddenModulesMax).optional(),
-  "onboarded": zod.boolean().optional()
+  "onboarded": zod.boolean().optional(),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).max(setSettingsBodyPushOffMax).optional(),
+  "quietHours": zod.union([zod.object({
+  "from": zod.string().regex(setSettingsBodyQuietHoursOneFromRegExp),
+  "to": zod.string().regex(setSettingsBodyQuietHoursOneToRegExp)
+}).describe('No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes'),zod.null()]).optional()
 })
+
+export const setSettingsResponseQuietHoursOneFromRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+export const setSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+
 
 export const SetSettingsResponse = zod.object({
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])),
-  "onboarded": zod.boolean()
+  "onboarded": zod.boolean(),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
+  "quietHours": zod.union([zod.object({
+  "from": zod.string().regex(setSettingsResponseQuietHoursOneFromRegExp),
+  "to": zod.string().regex(setSettingsResponseQuietHoursOneToRegExp)
+}).describe('No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes'),zod.null()])
+})
+
+
+/**
+ * @summary Search the plant and insect archive and the given farm (members only, granted modules only)
+ */
+export const searchQueryQMax = 100;
+
+
+
+export const SearchQueryParams = zod.object({
+  "q": zod.coerce.string().max(searchQueryQMax),
+  "farmId": zod.coerce.number().optional()
+})
+
+export const SearchResponse = zod.object({
+  "groups": zod.array(zod.object({
+  "kind": zod.enum(['plants', 'insects', 'animals', 'herds', 'beds', 'seeds', 'medicines', 'feeds', 'contacts']),
+  "label": zod.string(),
+  "items": zod.array(zod.object({
+  "title": zod.string(),
+  "subtitle": zod.string().nullable(),
+  "href": zod.string()
+}))
+}))
 })
 
 

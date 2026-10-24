@@ -394,7 +394,7 @@ export async function sendDutyDigests(hhmm: string, day: string): Promise<number
           .from(farmMembershipsTable)
           .where(and(eq(farmMembershipsTable.farmId, farmId), eq(farmMembershipsTable.role, 'admin'), isNull(farmMembershipsTable.accessUntil)));
         for (const { userId } of admins) {
-          await sendPushToUser(userId, { ...message, tag: `duties-${farmId}-${day}`, url: '/farm/pflichten' });
+          await sendPushToUser(userId, { topic: 'duties', ...message, tag: `duties-${farmId}-${day}`, url: '/farm/pflichten' });
         }
         sent += 1;
       } catch (err) {

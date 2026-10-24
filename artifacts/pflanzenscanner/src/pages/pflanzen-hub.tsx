@@ -10,11 +10,12 @@ import {
   Sprout,
   Stethoscope,
 } from "lucide-react";
-import { useGetPremium, useListTasks, type ModuleId } from "@workspace/api-client-react";
+import { useGetPremium, useListMyFarms, useListTasks, type ModuleId } from "@workspace/api-client-react";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { GROW_ENABLED } from "@/lib/grow-labels";
 import { useModules } from "@/hooks/use-modules";
-import { tierLabel } from "@/lib/modules";
+import { farmModuleGranted, tierLabel } from "@/lib/modules";
+import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 
 /**
  * Pflanzen: the hub for everything around plants. Each tile opens one area;
@@ -116,6 +117,9 @@ function TodayCard() {
 export default function PflanzenHubPage() {
   const { visible } = useModules();
   const premium = useGetPremium();
+  // The Beet-Architekt belongs to the farm: hidden when not granted there (Modul-Freigaben).
+  const farms = useListMyFarms();
+  const farm = farms.data ? pickActiveFarm(farms.data, readActiveFarmId()) : null;
   return (
     <div className="px-4 pt-6 pb-4 space-y-5">
       <div>
@@ -128,7 +132,7 @@ export default function PflanzenHubPage() {
       {visible("care-plan") && <TodayCard />}
 
       <HubGrid>
-        {AREAS.filter((a) => visible(a.module)).map(({ module, ...area }) => (
+        {AREAS.filter((a) => visible(a.module) && farmModuleGranted(farm, a.module)).map(({ module, ...area }) => (
           <HubTile key={area.href} {...area} tag={tierLabel(module, !!premium.data?.active)} />
         ))}
       </HubGrid>

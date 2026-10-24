@@ -212,8 +212,10 @@ export function DatenschutzPage() {
         <p>
           Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung
           der Verarbeitung, Datenübertragbarkeit und Widerspruch sowie das
-          Recht, eine Einwilligung jederzeit zu widerrufen. Schreib uns dazu an
-          die oben genannte E-Mail-Adresse. Außerdem kannst du dich bei einer
+          Recht, eine Einwilligung jederzeit zu widerrufen. Eine Kopie deiner
+          Daten lädst du jederzeit selbst unter „Mehr → Konto → Meine Daten
+          herunterladen“ herunter. Für alles andere schreib uns an die oben
+          genannte E-Mail-Adresse. Außerdem kannst du dich bei einer
           Datenschutz-Aufsichtsbehörde beschweren.
         </p>
       </section>

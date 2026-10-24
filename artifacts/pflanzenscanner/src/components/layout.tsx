@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { useState } from "react";
-import { Home, Sprout, ScanLine, PawPrint, MoreHorizontal, WifiOff, LogOut, Leaf } from "lucide-react";
+import { Home, Sprout, ScanLine, PawPrint, MoreHorizontal, WifiOff, LogOut, Leaf, Search } from "lucide-react";
 import { ScanSheet } from "@/components/scan-sheet";
 import { cn } from "@/lib/utils";
 import { useScanQueue } from "@/lib/scan-queue-context";
@@ -44,6 +44,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             Little Farming
           </span>
           <div className="flex items-center gap-1">
+            <Link
+              href="/suche"
+              aria-label="Suche"
+              title="Suche"
+              className="flex items-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Search className="h-4 w-4" />
+            </Link>
             <UpdateButton />
             <button
               type="button"

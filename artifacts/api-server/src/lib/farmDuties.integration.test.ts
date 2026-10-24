@@ -158,6 +158,7 @@ describe.skipIf(!enabled)("Pflichten (real database)", () => {
       [
         "anna",
         {
+          topic: "duties",
           title: "Bestandsmeldung fällig",
           body: "Stand 1. Januar laut App: Ziegen 1. Bitte bis 15.01. an Tierseuchenkasse und HI-Tier melden und in der App abhaken.",
           tag: `duties-${farmId}-2027-01-02`,

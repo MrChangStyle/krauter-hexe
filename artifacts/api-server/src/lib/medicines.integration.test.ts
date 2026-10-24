@@ -134,7 +134,7 @@ describe.skipIf(!enabled)("Arzneimittel-Vorrat (real database)", () => {
     expect(await sendMedicineDigests("07:30", "2026-10-19")).toBe(1);
     expect(await sendMedicineDigests("07:45", "2026-10-19")).toBe(0);
     expect(sendPushToUser.mock.calls).toEqual([
-      ["anna", { title: "Arzneimittel-Vorrat", body: "In 30 Tagen läuft ab: Flubenol.", tag: `medicines-${farm.anna}-2026-10-19`, url: "/farm/arzneimittel" }],
+      ["anna", { topic: "medicines", title: "Arzneimittel-Vorrat", body: "In 30 Tagen läuft ab: Flubenol.", tag: `medicines-${farm.anna}-2026-10-19`, url: "/farm/arzneimittel" }],
     ]);
     expect(await sendMedicineDigests("07:30", "2026-10-20")).toBe(0);
     expect(await sendMedicineDigests("07:30", "2026-11-18")).toBe(1);

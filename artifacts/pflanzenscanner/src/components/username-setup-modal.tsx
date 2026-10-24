@@ -39,7 +39,7 @@ export function UsernameSetupModal({ onSave }: UsernameSetupModalProps) {
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 backdrop-blur-sm px-4">
       <div className="w-full max-w-sm rounded-3xl border bg-card shadow-xl p-8 flex flex-col items-center gap-6">
         {/* Icon */}
-        <div className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-950/60 flex items-center justify-center">
           <Leaf className="w-8 h-8 text-emerald-600" />
         </div>
 

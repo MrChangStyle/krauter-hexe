@@ -49,7 +49,7 @@ export async function sendFeedback(userId: string, input: FeedbackInput, now = n
   const owners = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.isOwner, true));
   for (const owner of owners) {
     if (owner.id === userId) continue;
-    await sendPushToUser(owner.id, {
+    await sendPushToUser(owner.id, { topic: 'admin',
       title: 'Neues Feedback',
       body: body.length > 120 ? `${body.slice(0, 117)}…` : body,
       tag: 'feedback',

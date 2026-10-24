@@ -205,6 +205,13 @@ Landingpage and Vorschau-Schutz (`docs/landingpage.md`): signed-out visitors see
 
 Feedback (`docs/feedback.md`): a small speech bubble (`components/feedback-bubble.tsx`, in the layout) lets every approved account send the owner an idea, typed or dictated (browser speech recognition, `lib/speech.ts`), with the current page; table `feedback` (in `PERSONAL_TABLES`), `POST /feedback` (20 a day), owner-only list/mark/delete, push to the owner; read under Verwaltung → Feedback.
 
+Darstellung: hell, dunkel oder wie das Gerät (Mehr → Darstellung, `components/theme-card.tsx`, `lib/theme.ts`, per device in `lf-theme`); an inline script in `index.html` sets the `.dark` class before the first paint. New colour classes need a `dark:` variant.
+
+Benachrichtigungen (`docs/benachrichtigungen.md`): every push carries a `topic` (`PushTopic`); `sendPushToUser` drops it when the account switched the topic off or is in its quiet time (`user_settings.push_off`, `quiet_start/end`; the predator alarm ignores quiet time). Settings under Mehr → Benachrichtigungen (`components/push-topics-card.tsx`).
+
+Suche (`docs/suche.md`): magnifier in the header → `/suche`; app pages matched on the client (`lib/search-pages.ts`), archive and active farm via `GET /search` (`lib/search.ts`; farm results only for members and only from granted modules).
+Datenexport (`docs/datenexport.md`): „Meine Daten herunterladen“ im Konto → `GET /api/auth/user/export` (`lib/dataExport.ts`): Profil, `PERSONAL_TABLES`, Mitgliedschaften und alle Daten der Farmen, die man als Admin leitet; ohne Geheimnisse und eingebettete Fotos.
+
 ## Hof-Dashboard
 
 Details in `docs/dashboard.md`. The home page ("Hof", `pages/scan.tsx` when no scan flow is open) shows a slim weather strip, a one-line Pflanzenretter rank (expands to the top four) and widgets for Pflanzen and Tiere (`components/hof-dashboard.tsx`). `lib/dashboard.ts` holds the registry of all widgets and the default layout. "Dashboard anpassen" lets the account switch and order widgets; the choice is stored per account (`GET/PUT /dashboard`, table `dashboard_layouts`, in `PERSONAL_TABLES`, ids from `DashboardWidgetId`).

@@ -152,6 +152,7 @@ describe.skipIf(!enabled)("Grow push and weather (real database)", () => {
     weather = { maxGustKmh: 75 };
     expect(await run(day)).toBe(1);
     expect(sendPushToUser).toHaveBeenCalledWith("anna", {
+      topic: "grow",
       title: "Little Farming",
       body: expect.stringMatching(/^Heute: \d+ Pflegeschritte? für deine Pflanzen und ein Wetterhinweis\.$/),
       tag: `grow-${day}`,

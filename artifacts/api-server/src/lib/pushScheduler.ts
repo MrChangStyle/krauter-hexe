@@ -173,7 +173,7 @@ export async function triggerDueNotifications(): Promise<number> {
       berlinDayKey(task.lastNotifiedAt) === dateKey;
     if (alreadySentToday || !isTaskDue(task, dateKey)) continue;
 
-    await sendPushToUser(task.userId, {
+    await sendPushToUser(task.userId, { topic: "plant-care",
       title: "Pflanzenaufgabe fällig",
       body: `Zeit zum ${task.actionType} für ${plantName ?? "deine Pflanze"}!`,
       tag: `task-${task.id}`,
@@ -228,7 +228,7 @@ export async function triggerDueNotifications(): Promise<number> {
       );
     const target = animalName ?? herdName;
     for (const { userId } of members) {
-      await sendPushToUser(userId, {
+      await sendPushToUser(userId, { topic: "farm-tasks",
         title: "Stall-Aufgabe fällig",
         body: `${task.actionType}${target ? ` – ${target}` : ""} (${farmName})`,
         tag: `farm-task-${task.id}`,
@@ -263,7 +263,7 @@ export async function triggerDueNotifications(): Promise<number> {
     const actions = guideActionsForToday(guide, dateKey);
     if (actions.length === 0) continue;
 
-    await sendPushToUser(guide.userId, {
+    await sendPushToUser(guide.userId, { topic: "plant-care",
       title: "Pflege-Guide Erinnerung",
       body: `Heute steht ${actions.join(" & ")} für ${guide.plantName} an!`,
       tag: `care-guide-${guide.id}`,

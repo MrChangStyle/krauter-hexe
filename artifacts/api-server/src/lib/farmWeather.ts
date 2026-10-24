@@ -331,7 +331,7 @@ export async function sendWeatherDigests(hhmm: string, day: string): Promise<num
           .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
         const title = fresh.some((w) => w.kind === 'hardFrost' || w.kind === 'storm') ? 'Unwetter-Warnung für deinen Hof' : 'Wetter-Hinweis für deinen Hof';
         for (const { userId } of members) {
-          await sendPushToUser(userId, { title, body: fresh.map((w) => w.text).join(' '), tag: `weather-${farmId}-${day}`, url: '/' });
+          await sendPushToUser(userId, { topic: 'weather', title, body: fresh.map((w) => w.text).join(' '), tag: `weather-${farmId}-${day}`, url: '/' });
         }
         sent += 1;
       } catch (err) {

@@ -397,6 +397,7 @@ export interface YieldInput {
   amount: number;
   herdId?: number | null;
   animalId?: number | null;
+  clientId?: string | null;
   note?: unknown;
 }
 
@@ -418,7 +419,22 @@ export async function addYield(farmId: number, input: YieldInput): Promise<void>
       .where(and(eq(farmAnimalsTable.id, animalId), eq(farmAnimalsTable.farmId, farmId), eq(farmAnimalsTable.species, 'poultry')));
     if (!hen) throw new FarmDataError(400, 'Diese Henne gibt es auf der Farm nicht.');
   }
-  await db.insert(farmYieldsTable).values({ farmId, product: input.product, date, amount: input.amount, herdId, animalId, note: text(input.note, 500, 'Die Notiz') });
+  const clientId = input.clientId ?? null;
+  if (clientId !== null && !/^[A-Za-z0-9-]{8,64}$/.test(clientId)) throw new FarmDataError(400, 'Ungültige Kennung.');
+  // The same tap sent twice (offline queue, docs/stall.md) is stored once.
+  await db
+    .insert(farmYieldsTable)
+    .values({ farmId, product: input.product, date, amount: input.amount, herdId, animalId, clientId, note: text(input.note, 500, 'Die Notiz') })
+    .onConflictDoNothing({ target: [farmYieldsTable.farmId, farmYieldsTable.clientId], where: sql`${farmYieldsTable.clientId} IS NOT NULL` });
+}
+
+/** Eggs entered today ("Am Stall"). */
+export async function eggsToday(farmId: number, today = berlinDay()): Promise<{ date: string; eggs: number }> {
+  const [row] = await db
+    .select({ n: sql<number>`coalesce(sum(${farmYieldsTable.amount}), 0)::float` })
+    .from(farmYieldsTable)
+    .where(and(eq(farmYieldsTable.farmId, farmId), eq(farmYieldsTable.product, 'eggs'), eq(farmYieldsTable.date, today)));
+  return { date: today, eggs: row!.n };
 }
 
 export async function removeYield(farmId: number, id: number): Promise<void> {

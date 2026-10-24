@@ -1,5 +1,6 @@
 import { Router, type IRouter } from 'express';
 import {
+  CompleteFarmTaskBody,
   CompleteFarmTaskResponse,
   CreateFarmTaskBody,
   CreateFarmTaskResponse,
@@ -64,7 +65,9 @@ router.post(
   handle(async (req, res) => {
     const taskId = idParam(req, 'taskId');
     if (taskId === null) return notFound(res);
-    res.json(CompleteFarmTaskResponse.parse(await completeFarmTask(req.farm!.farmId, taskId)));
+    const body = CompleteFarmTaskBody.safeParse(req.body ?? {});
+    if (!body.success) return badRequest(res);
+    res.json(CompleteFarmTaskResponse.parse(await completeFarmTask(req.farm!.farmId, taskId, body.data.doneAt ?? undefined)));
   }),
 );
 

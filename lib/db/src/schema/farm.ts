@@ -14,7 +14,9 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 import { taskIntervalUnitEnum } from "./tasks";
 
 // "Meine Farm" – the animal module of Little Farming (docs/meine-farm-app.md).
@@ -401,8 +403,14 @@ export const farmYieldsTable = pgTable(
     amount: doublePrecision("amount").notNull(),
     note: text("note"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Set by "Am Stall" (docs/stall.md): an entry sent twice from the offline
+    // queue is stored once.
+    clientId: text("client_id"),
   },
-  (table) => [index("farm_yields_farm_date_idx").on(table.farmId, table.date)],
+  (table) => [
+    index("farm_yields_farm_date_idx").on(table.farmId, table.date),
+    uniqueIndex("farm_yields_farm_client_unique").on(table.farmId, table.clientId).where(sql`${table.clientId} IS NOT NULL`),
+  ],
 );
 
 // The farm's own prices for the value of its yields (€ per unit), overriding

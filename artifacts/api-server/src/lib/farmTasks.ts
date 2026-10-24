@@ -8,7 +8,7 @@
  */
 
 import { db, farmAnimalsTable, farmTasksTable, herdsTable, type FarmTaskAction } from '@workspace/db';
-import { and, asc, eq } from 'drizzle-orm';
+import { and, asc, eq, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { berlinTodayKey, nextDueDayKey } from './pushScheduler';
@@ -149,10 +149,23 @@ export async function deleteFarmTask(farmId: number, taskId: number): Promise<vo
 }
 
 /** Done now: the next due day moves one interval ahead of today. */
-export async function completeFarmTask(farmId: number, taskId: number) {
+const LATE_TAP_MS = 7 * 24 * 60 * 60 * 1000;
+
+/**
+ * Done now – or at `doneAt`, when "Am Stall" sends a tap later from its
+ * offline queue (docs/stall.md). A later tap never moves an earlier
+ * completion back.
+ */
+export async function completeFarmTask(farmId: number, taskId: number, doneAt?: Date, now = new Date()) {
+  let at = now;
+  if (doneAt !== undefined) {
+    if (Number.isNaN(doneAt.getTime()) || doneAt.getTime() < now.getTime() - LATE_TAP_MS) throw new FarmDataError(400, 'Das liegt zu weit zurück.');
+    // A clock a little ahead counts as now.
+    at = doneAt.getTime() > now.getTime() ? now : doneAt;
+  }
   const updated = await db
     .update(farmTasksTable)
-    .set({ lastCompletedAt: new Date() })
+    .set({ lastCompletedAt: sql`GREATEST(coalesce(${farmTasksTable.lastCompletedAt}, ${at}), ${at})` })
     .where(and(eq(farmTasksTable.id, taskId), eq(farmTasksTable.farmId, farmId)))
     .returning({ id: farmTasksTable.id });
   if (updated.length === 0) throw notFound();

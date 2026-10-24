@@ -133,6 +133,21 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
     expect((await api("GET", `/farms/${farmId}/laying`)).status).toBe(404);
   });
 
+  it("stores a tap from Am Stall once and counts today's eggs", async () => {
+    const tap = { product: "eggs", date: "2026-10-19", amount: 3, clientId: "tap-1234-abcd" };
+    expect((await api("POST", `/farms/${farmId}/yields`, tap)).status).toBe(204);
+    expect((await api("POST", `/farms/${farmId}/yields`, tap)).status).toBe(204);
+    await api("POST", `/farms/${farmId}/yields`, { ...tap, clientId: "tap-5678-abcd", amount: 2 });
+    await api("POST", `/farms/${farmId}/yields`, { ...tap, clientId: null, date: "2026-10-18" });
+    // Another farm may use the same id.
+    as = "bert";
+    expect((await api("POST", `/farms/${otherFarm}/yields`, tap)).status).toBe(204);
+    as = "gina";
+    expect((await api("GET", `/farms/${farmId}/yields/today`)).data).toEqual({ date: "2026-10-19", eggs: 5 });
+    as = "anna";
+    expect((await api("POST", `/farms/${farmId}/yields`, { ...tap, clientId: "kurz" })).status).toBe(400);
+  });
+
   it("checks the input and deletes", async () => {
     const bad = async (body: object) => (await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 5, ...body })).status;
     expect(await bad({ product: "honey" })).toBe(400);

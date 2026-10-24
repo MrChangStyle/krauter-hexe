@@ -83,6 +83,16 @@ export default defineConfig({
             purpose: 'maskable',
           },
         ],
+        // Long-press on the app icon: straight to the stall (docs/stall.md).
+        shortcuts: [
+          {
+            name: 'Am Stall',
+            short_name: 'Am Stall',
+            description: 'Eier und Stall-Aufgaben mit einem Tipp',
+            url: `${basePath.replace(/\/$/, '')}/farm/stall`,
+            icons: [{ src: 'icon-192.png', sizes: '192x192', type: 'image/png' }],
+          },
+        ],
       },
       workbox: {
         // Adds the push + notificationclick handlers to the generated worker

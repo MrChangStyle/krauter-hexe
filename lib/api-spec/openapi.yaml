@@ -2131,6 +2131,24 @@ paths:
           description: Saved.
         "400":
           description: Invalid input.
+  /farms/{farmId}/yields/today:
+    get:
+      tags: [farm]
+      operationId: getEggsToday
+      summary: Eggs entered today (Am Stall)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Today's eggs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EggsToday"
   /farms/{farmId}/yields/{yieldId}:
     delete:
       tags: [farm]
@@ -3870,6 +3888,12 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteFarmTaskInput"
       responses:
         "200":
           description: The task with its next due date.
@@ -6383,6 +6407,10 @@ components:
         animalId:
           type: [integer, 'null']
           description: Optional – the hen that laid them (poultry of this farm).
+        clientId:
+          type: [string, 'null']
+          pattern: '^[A-Za-z0-9-]{8,64}$'
+          description: Set by "Am Stall" – the same id twice is stored once (offline queue).
         note:
           type: [string, 'null']
           maxLength: 500
@@ -9353,6 +9381,21 @@ components:
         isDue:
           type: boolean
           description: Due today or overdue.
+    CompleteFarmTaskInput:
+      type: object
+      properties:
+        doneAt:
+          type: [string, 'null']
+          format: date-time
+          description: When it was done, for taps sent later from the offline queue. At most 7 days back; default now.
+    EggsToday:
+      type: object
+      required: [date, eggs]
+      properties:
+        date:
+          type: string
+        eggs:
+          type: number
     FarmTaskInput:
       type: object
       required: [actionType, intervalValue, intervalUnit, reminderTime]

@@ -196,6 +196,17 @@ describe.skipIf(!enabled)("Meine Farm – health, weights, tasks, export (real d
     expect(done.data.isDue).toBe(false);
     expect(done.data.lastCompletedAt).not.toBeNull();
 
+    // Am Stall (docs/stall.md): a tap sent later from the offline queue keeps its time …
+    const path = `/farms/${farm.anna}/tasks/${created.data.id}/complete`;
+    await q("UPDATE farm_tasks SET last_completed_at = NULL");
+    const earlier = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+    expect(new Date((await api("POST", path, { doneAt: earlier })).data.lastCompletedAt).toISOString()).toBe(earlier);
+    // … never moves a later completion back, and has a limit.
+    const older = new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString();
+    expect(new Date((await api("POST", path, { doneAt: older })).data.lastCompletedAt).toISOString()).toBe(earlier);
+    expect((await api("POST", path, { doneAt: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000).toISOString() })).status).toBe(400);
+    expect((await api("POST", path, { doneAt: "gestern" })).status).toBe(400);
+
     expect((await api("POST", `/farms/${farm.anna}/tasks`, task({ herdId: herd.data.id, animalId: lotte }))).status).toBe(400);
     expect((await api("POST", `/farms/${farm.anna}/tasks`, task({ reminderTime: "25:00" }))).status).toBe(400);
     expect((await api("POST", `/farms/${farm.anna}/tasks`, task({ actionType: "Gießen" }))).status).toBe(400);

@@ -51,6 +51,7 @@ import type {
   ChangeFarmRoleInput,
   CleanupOrphanedDataInput,
   ClientErrorInput,
+  CompleteFarmTaskInput,
   CornerSuggestion,
   CreateCareGuideInput,
   CreateReportInput,
@@ -64,6 +65,7 @@ import type {
   DeleteFarmInput,
   DeletePlantInput,
   DemoStatus,
+  EggsToday,
   ErrorGroup,
   ExpenseInput,
   FarmAnimal,
@@ -7028,6 +7030,83 @@ export const useAddYield = <TError = ErrorType<void>,
       return useMutation(getAddYieldMutationOptions(options));
     }
 
+export const getGetEggsTodayUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/yields/today`
+}
+
+/**
+ * @summary Eggs entered today (Am Stall)
+ */
+export const getEggsToday = async (farmId: number, options?: RequestInit): Promise<EggsToday> => {
+
+  return customFetch<EggsToday>(getGetEggsTodayUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetEggsTodayQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/yields/today`
+    ] as const;
+    }
+
+
+export const getGetEggsTodayQueryOptions = <TData = Awaited<ReturnType<typeof getEggsToday>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEggsToday>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetEggsTodayQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getEggsToday>>> = ({ signal }) => getEggsToday(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getEggsToday>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetEggsTodayQueryResult = NonNullable<Awaited<ReturnType<typeof getEggsToday>>>
+export type GetEggsTodayQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Eggs entered today (Am Stall)
+ */
+
+export function useGetEggsToday<TData = Awaited<ReturnType<typeof getEggsToday>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getEggsToday>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetEggsTodayQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getDeleteYieldUrl = (farmId: number,
     yieldId: number,) => {
 
@@ -12595,14 +12674,15 @@ export const getCompleteFarmTaskUrl = (farmId: number,
  * @summary Mark a stall task as done now (caretaker or admin)
  */
 export const completeFarmTask = async (farmId: number,
-    taskId: number, options?: RequestInit): Promise<FarmTask> => {
+    taskId: number,
+    completeFarmTaskInput?: CompleteFarmTaskInput, options?: RequestInit): Promise<FarmTask> => {
 
   return customFetch<FarmTask>(getCompleteFarmTaskUrl(farmId,taskId),
   {
     ...options,
-    method: 'POST'
-
-
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(completeFarmTaskInput)
   }
 );}
 
@@ -12611,8 +12691,8 @@ export const completeFarmTask = async (farmId: number,
 
 
 export const getCompleteFarmTaskMutationOptions = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeFarmTask>>, TError,{farmId: number;taskId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
-): UseMutationOptions<Awaited<ReturnType<typeof completeFarmTask>>, TError,{farmId: number;taskId: number}, TContext> => {
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeFarmTask>>, TError,{farmId: number;taskId: number;data?: BodyType<CompleteFarmTaskInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeFarmTask>>, TError,{farmId: number;taskId: number;data?: BodyType<CompleteFarmTaskInput>}, TContext> => {
 
 const mutationKey = ['completeFarmTask'];
 const {mutation: mutationOptions, request: requestOptions} = options ?
@@ -12624,10 +12704,10 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
 
 
-      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeFarmTask>>, {farmId: number;taskId: number}> = (props) => {
-          const {farmId,taskId} = props ?? {};
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeFarmTask>>, {farmId: number;taskId: number;data?: BodyType<CompleteFarmTaskInput>}> = (props) => {
+          const {farmId,taskId,data} = props ?? {};
 
-          return  completeFarmTask(farmId,taskId,requestOptions)
+          return  completeFarmTask(farmId,taskId,data,requestOptions)
         }
 
 
@@ -12638,18 +12718,18 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
   return  { mutationFn, ...mutationOptions }}
 
     export type CompleteFarmTaskMutationResult = NonNullable<Awaited<ReturnType<typeof completeFarmTask>>>
-
+    export type CompleteFarmTaskMutationBody = BodyType<CompleteFarmTaskInput> | undefined
     export type CompleteFarmTaskMutationError = ErrorType<unknown>
 
     /**
  * @summary Mark a stall task as done now (caretaker or admin)
  */
 export const useCompleteFarmTask = <TError = ErrorType<unknown>,
-    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeFarmTask>>, TError,{farmId: number;taskId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeFarmTask>>, TError,{farmId: number;taskId: number;data?: BodyType<CompleteFarmTaskInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof completeFarmTask>>,
         TError,
-        {farmId: number;taskId: number},
+        {farmId: number;taskId: number;data?: BodyType<CompleteFarmTaskInput>},
         TContext
       > => {
       return useMutation(getCompleteFarmTaskMutationOptions(options));

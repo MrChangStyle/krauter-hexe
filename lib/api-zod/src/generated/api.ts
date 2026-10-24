@@ -3079,6 +3079,7 @@ export const AddYieldParams = zod.object({
   "farmId": zod.coerce.number()
 })
 
+export const addYieldBodyClientIdRegExp = new RegExp('^[A-Za-z0-9-]{8,64}$');
 export const addYieldBodyNoteMax = 500;
 
 
@@ -3089,10 +3090,24 @@ export const AddYieldBody = zod.object({
   "amount": zod.number(),
   "herdId": zod.number().nullish(),
   "animalId": zod.number().nullish().describe('Optional – the hen that laid them (poultry of this farm).'),
+  "clientId": zod.string().regex(addYieldBodyClientIdRegExp).nullish().describe('Set by \"Am Stall\" – the same id twice is stored once (offline queue).'),
   "note": zod.string().max(addYieldBodyNoteMax).nullish()
 })
 
 export const AddYieldResponse = zod.void()
+
+
+/**
+ * @summary Eggs entered today (Am Stall)
+ */
+export const GetEggsTodayParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetEggsTodayResponse = zod.object({
+  "date": zod.string(),
+  "eggs": zod.number()
+})
 
 
 /**
@@ -5448,6 +5463,10 @@ export const DeleteFarmTaskResponse = zod.void()
 export const CompleteFarmTaskParams = zod.object({
   "farmId": zod.coerce.number(),
   "taskId": zod.coerce.number()
+})
+
+export const CompleteFarmTaskBody = zod.object({
+  "doneAt": zod.coerce.date().nullish().describe('When it was done, for taps sent later from the offline queue. At most 7 days back; default now.')
 })
 
 export const CompleteFarmTaskResponse = zod.object({

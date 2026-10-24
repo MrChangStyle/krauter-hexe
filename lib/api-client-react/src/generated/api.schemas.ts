@@ -925,6 +925,12 @@ export interface YieldInput {
      */
   animalId?: number | null;
   /**
+     * Set by "Am Stall" – the same id twice is stored once (offline queue).
+     * @nullable
+     * @pattern ^[A-Za-z0-9-]{8,64}$
+     */
+  clientId?: string | null;
+  /**
      * @maxLength 500
      * @nullable
      */
@@ -3216,6 +3222,19 @@ export interface FarmTask {
   dueDate: string;
   /** Due today or overdue. */
   isDue: boolean;
+}
+
+export interface CompleteFarmTaskInput {
+  /**
+     * When it was done, for taps sent later from the offline queue. At most 7 days back; default now.
+     * @nullable
+     */
+  doneAt?: string | null;
+}
+
+export interface EggsToday {
+  date: string;
+  eggs: number;
 }
 
 export interface FarmTaskInput {

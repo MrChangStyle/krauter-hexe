@@ -1123,6 +1123,73 @@ export interface YieldOverview {
   feedCost: null | FeedCostEstimate;
 }
 
+export interface HarvestYear {
+  kg: number;
+  value: number;
+}
+
+export interface HarvestYearSeason {
+  season: number;
+  kg: number;
+  value: number;
+}
+
+export interface HarvestReportCrop {
+  key: string;
+  label: string;
+  kg: number;
+  kitchenKg: number;
+  fodderKg: number;
+  /** Area of the harvested plantings. */
+  m2: number;
+  /** @nullable */
+  kgPerM2: number | null;
+  value: number;
+  /** @nullable */
+  valuePerM2: number | null;
+  harvests: number;
+  beds: string[];
+  /** @nullable */
+  previousKg: number | null;
+}
+
+export interface HarvestReportBed {
+  /** @nullable */
+  bedId: number | null;
+  name: string;
+  kg: number;
+  value: number;
+  m2: number;
+  /** @nullable */
+  valuePerM2: number | null;
+  crops: string[];
+}
+
+export interface HarvestBest {
+  label: string;
+  valuePerM2: number;
+}
+
+export interface HarvestReport {
+  season: number;
+  /** Seasons with harvests (and the one asked for), newest first. */
+  seasons: number[];
+  kg: number;
+  kitchenKg: number;
+  fodderKg: number;
+  /** Shop value at the farm's prices (€). */
+  value: number;
+  previous: null | HarvestYear;
+  /** kg per harvest month, January first. */
+  months: number[];
+  /** Up to five seasons with harvests, oldest first. */
+  years: HarvestYearSeason[];
+  crops: HarvestReportCrop[];
+  beds: HarvestReportBed[];
+  /** Up to three crops with the most € per m². */
+  best: HarvestBest[];
+}
+
 export interface LayingWeek {
   start: string;
   days: number;

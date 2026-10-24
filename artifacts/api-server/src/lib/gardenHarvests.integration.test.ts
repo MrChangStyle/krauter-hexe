@@ -112,6 +112,30 @@ describe.skipIf(!enabled)("Beet-Architekt – Ernten (real database)", () => {
     expect(plan.tips[0]).toMatch(/^Gerechnet mit euren Ernten/);
   });
 
+  it("reports a season per crop and bed with the farm's prices, against the year before", async () => {
+    const tomate = await plant("tomate", 0); // 4 cells = 0.36 m²
+    await harvest(tomate, { harvestedOn: today, amountKg: 2, use: "kitchen" });
+    await harvest(tomate, { harvestedOn: today, amountKg: 1, use: "fodder" });
+    await q("INSERT INTO farm_prices (farm_id, key, eur) VALUES ($1, 'crop:tomate', 5)", [farm.anna]);
+    // Last season, entered directly.
+    await q(
+      `INSERT INTO harvest_logs (farm_id, bed_id, season, crop_key, label, cells, harvested_on, amount_kg, use) VALUES ($1, $2, $3, 'tomate', 'Tomate', 4, $4, 1.5, 'kitchen')`,
+      [farm.anna, bed, season - 1, `${season - 1}-08-01`],
+    );
+    as = "gast";
+    const { status, data } = await api("GET", `/farms/${farm.anna}/garden/seasons/${season}/harvest-report`);
+    expect(status).toBe(200);
+    expect(data).toMatchObject({ season, seasons: [season, season - 1], kg: 3, kitchenKg: 2, fodderKg: 1, value: 10.3, previous: { kg: 1.5, value: 7.5 } });
+    expect(data.crops).toEqual([
+      { key: "tomate", label: "Tomate", kg: 3, kitchenKg: 2, fodderKg: 1, m2: 0.36, kgPerM2: 8.3, value: 10.3, valuePerM2: 28.61, harvests: 2, beds: ["Beet"], previousKg: 1.5 },
+    ]);
+    expect(data.beds).toEqual([{ bedId: bed, name: "Beet", kg: 3, value: 10.3, m2: 0.36, valuePerM2: 28.61, crops: ["Tomate"] }]);
+    expect(data.years.map((y: any) => y.season)).toEqual([season - 1, season]);
+    expect((await api("GET", `/farms/${farm.anna}/garden/seasons/1999/harvest-report`)).status).toBe(404);
+    as = "bert";
+    expect((await api("GET", `/farms/${farm.anna}/garden/seasons/${season}/harvest-report`)).status).toBe(404);
+  });
+
   it("keeps harvests to caretakers of the farm", async () => {
     const tomate = await plant("tomate", 0);
     as = "gast";

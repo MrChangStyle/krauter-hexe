@@ -6853,6 +6853,61 @@ export const GetGardenPlanResponse = zod.object({
 
 
 /**
+ * @summary Ernte-Auswertung – a season per crop and bed, against the seasons before
+ */
+export const GetHarvestReportParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "season": zod.coerce.number()
+})
+
+export const GetHarvestReportResponse = zod.object({
+  "season": zod.number(),
+  "seasons": zod.array(zod.number()).describe('Seasons with harvests (and the one asked for), newest first.'),
+  "kg": zod.number(),
+  "kitchenKg": zod.number(),
+  "fodderKg": zod.number(),
+  "value": zod.number().describe('Shop value at the farm\'s prices (€).'),
+  "previous": zod.union([zod.null(),zod.object({
+  "kg": zod.number(),
+  "value": zod.number()
+})]),
+  "months": zod.array(zod.number()).describe('kg per harvest month, January first.'),
+  "years": zod.array(zod.object({
+  "season": zod.number(),
+  "kg": zod.number(),
+  "value": zod.number()
+})).describe('Up to five seasons with harvests, oldest first.'),
+  "crops": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "kg": zod.number(),
+  "kitchenKg": zod.number(),
+  "fodderKg": zod.number(),
+  "m2": zod.number().describe('Area of the harvested plantings.'),
+  "kgPerM2": zod.number().nullable(),
+  "value": zod.number(),
+  "valuePerM2": zod.number().nullable(),
+  "harvests": zod.number(),
+  "beds": zod.array(zod.string()),
+  "previousKg": zod.number().nullable()
+})),
+  "beds": zod.array(zod.object({
+  "bedId": zod.number().nullable(),
+  "name": zod.string(),
+  "kg": zod.number(),
+  "value": zod.number(),
+  "m2": zod.number(),
+  "valuePerM2": zod.number().nullable(),
+  "crops": zod.array(zod.string())
+})),
+  "best": zod.array(zod.object({
+  "label": zod.string(),
+  "valuePerM2": zod.number()
+})).describe('Up to three crops with the most € per m².')
+})
+
+
+/**
  * @summary Harvests of a season, newest first
  */
 export const ListHarvestsParams = zod.object({

@@ -232,7 +232,7 @@ export function layingRate(eggs: number, hens: number, days = 30): number | null
 
 // ── Database ──────────────────────────────────────────────────────────────────
 
-async function priceOf(farmId: number): Promise<(key: string) => number> {
+export async function priceOf(farmId: number): Promise<(key: string) => number> {
   const rows = await db.select({ key: farmPricesTable.key, eur: farmPricesTable.eur }).from(farmPricesTable).where(eq(farmPricesTable.farmId, farmId));
   const own = new Map(rows.map((r) => [r.key, r.eur]));
   return (key) => own.get(key) ?? defaultPrice(key);

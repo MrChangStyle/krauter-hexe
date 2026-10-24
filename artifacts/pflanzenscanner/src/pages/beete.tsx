@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, CalendarDays, ChevronRight, Compass, Fence, Loader2, MapPin, Plus, Sprout } from "lucide-react";
+import { ArrowLeft, BarChart3, CalendarDays, ChevronRight, Compass, Fence, Loader2, MapPin, Plus, Sprout } from "lucide-react";
 import { FrostWarnings } from "@/components/garden-overview";
 import { PremiumBadge } from "@/components/premium-badge";
 import { useEnsureOwnFarm, useListBeds, type FarmSummary } from "@workspace/api-client-react";
@@ -60,6 +60,20 @@ function BedList({ farm }: { farm: FarmSummary }) {
               <PremiumBadge />
             </span>
             <span className="block text-xs text-muted-foreground">Säen, pflanzen, ernten – Monat für Monat</span>
+          </span>
+          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+      )}
+
+      {list.length > 0 && (
+        <Link
+          href="/beete/ernte"
+          className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm transition-colors hover:bg-muted/50"
+        >
+          <BarChart3 className="h-5 w-5 text-primary" />
+          <span className="flex-1">
+            <span className="block font-medium">Ernte-Auswertung</span>
+            <span className="block text-xs text-muted-foreground">kg und € je Kultur und Beet, was sich gelohnt hat</span>
           </span>
           <ChevronRight className="h-4 w-4 text-muted-foreground" />
         </Link>

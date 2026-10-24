@@ -3,6 +3,7 @@ import {
   AddHarvestBody,
   AddHarvestResponse,
   AddPlantingBody,
+  GetHarvestReportResponse,
   ListHarvestsResponse,
   AnalyzeBedPhotoResponse,
   ApproveCropDraftResponse,
@@ -57,6 +58,7 @@ import { bedHistory, farmCalendar, farmFrostWarnings, setCheck } from '../lib/ga
 import { berlinTodayKey } from '../lib/pushScheduler';
 import { gardenPlan, getGoals, saveGoals } from '../lib/gardenAssistant';
 import { addHarvest, listHarvests, removeHarvest } from '../lib/gardenHarvests';
+import { loadHarvestReport } from '../lib/harvestReport';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Beet-Architekt: the crop catalog (same for everyone) and the beds of a
@@ -302,6 +304,16 @@ router.get(
 );
 
 // ── Ernten ───────────────────────────────────────────────────────────────────
+
+router.get(
+  '/farms/:farmId/garden/seasons/:season/harvest-report',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    const season = idParam(req, 'season');
+    if (season === null) return notFound(res);
+    res.json(GetHarvestReportResponse.parse(await loadHarvestReport(req.farm!.farmId, season)));
+  }),
+);
 
 router.get(
   '/farms/:farmId/garden/seasons/:season/harvests',

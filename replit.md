@@ -215,6 +215,7 @@ Legeleistung (`docs/legeleistung.md`): `/farm/legeleistung`, Wochenverlauf, Grup
 Am Stall (`docs/stall.md`): `/farm/stall`, „+1 Ei“ und fällige Stall-Aufgaben mit einem Tipp; Offline-Warteschlange `lib/stall-queue.ts`, `farm_yields.client_id` gegen doppelte Einträge, `doneAt` beim Abhaken; PWA-Verknüpfung „Am Stall“.
 Erinnerung aus der Gesundheitsakte (`docs/gesundheit-erinnerung.md`): Entwurmung/Impfung mit „Erinnern zum Wiederholen“ → Stall-Aufgabe „Entwurmen“/„Impfen“ für das Tier (`scheduleRepeat()` in `lib/medicalRepeat.ts`).
 Wetterabhängige Pflege (`docs/pflege-wetter.md`): Pflegeaufgaben drinnen/draußen; Winter (Nov–Feb) seltener gießen, nicht düngen (`user_settings.seasonal_care`); Regen ≥ 5 l/m² gießt draußen (`tasks.rain_skipped_on`, kein Push); „Frost in Sicht“ höchstens alle 45 Tage (`lib/careWeather.ts`, `GET /care/weather`).
+Ernte-Auswertung (`docs/ernte-auswertung.md`): `/beete/ernte`, je Kultur und Beet kg, Ladenwert, kg/m², €/m², Vorjahr, „Hat sich gelohnt“; `GET /farms/:farmId/garden/seasons/:season/harvest-report` (`lib/harvestReport.ts`).
 
 ## Hof-Dashboard
 

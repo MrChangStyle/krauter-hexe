@@ -134,6 +134,7 @@ import type {
   HandoverNoteInput,
   Harvest,
   HarvestInput,
+  HarvestReport,
   HealthStatus,
   HelpfulPlants,
   Herd,
@@ -15753,6 +15754,88 @@ export function useGetGardenPlan<TData = Awaited<ReturnType<typeof getGardenPlan
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetGardenPlanQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetHarvestReportUrl = (farmId: number,
+    season: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/seasons/${season}/harvest-report`
+}
+
+/**
+ * @summary Ernte-Auswertung – a season per crop and bed, against the seasons before
+ */
+export const getHarvestReport = async (farmId: number,
+    season: number, options?: RequestInit): Promise<HarvestReport> => {
+
+  return customFetch<HarvestReport>(getGetHarvestReportUrl(farmId,season),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetHarvestReportQueryKey = (farmId: number,
+    season: number,) => {
+    return [
+    `/api/farms/${farmId}/garden/seasons/${season}/harvest-report`
+    ] as const;
+    }
+
+
+export const getGetHarvestReportQueryOptions = <TData = Awaited<ReturnType<typeof getHarvestReport>>, TError = ErrorType<void>>(farmId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHarvestReport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetHarvestReportQueryKey(farmId,season);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getHarvestReport>>> = ({ signal }) => getHarvestReport(farmId,season, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && season !== null && season !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getHarvestReport>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetHarvestReportQueryResult = NonNullable<Awaited<ReturnType<typeof getHarvestReport>>>
+export type GetHarvestReportQueryError = ErrorType<void>
+
+
+/**
+ * @summary Ernte-Auswertung – a season per crop and bed, against the seasons before
+ */
+
+export function useGetHarvestReport<TData = Awaited<ReturnType<typeof getHarvestReport>>, TError = ErrorType<void>>(
+ farmId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getHarvestReport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetHarvestReportQueryOptions(farmId,season,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

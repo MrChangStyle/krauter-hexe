@@ -35,6 +35,7 @@ import {
 import { PeckingChicken } from "@/components/pecking-chicken";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
+import { ThemeCard } from "@/components/theme-card";
 import { PushNotificationCard } from "@/components/push-notification-card";
 import { AccountCard } from "@/components/account-card";
 import { ImageRescueCard } from "@/components/image-rescue-card";
@@ -1068,6 +1069,8 @@ export default function MehrPage() {
       <div id="push" className="scroll-mt-4">
         <PushNotificationCard />
       </div>
+
+      <ThemeCard />
 
       <div id="konto" className="scroll-mt-4">
         <AccountCard />

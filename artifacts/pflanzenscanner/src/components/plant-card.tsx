@@ -57,10 +57,10 @@ function PlantCardTextOnly({
         </p>
 
         <div className="flex gap-2 mt-0.5">
-          <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${isHumanSafe ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
+          <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${isHumanSafe ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"}`}>
             Mensch
           </span>
-          <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${isPoultrySafe ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"}`}>
+          <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${isPoultrySafe ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" : "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"}`}>
             Geflügel
           </span>
         </div>
@@ -205,11 +205,11 @@ export function PlantCard({
             </div>
 
             <div className="mt-auto flex gap-2">
-              <div className={`flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${isHumanSafe ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+              <div className={`flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${isHumanSafe ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'}`}>
                 {isHumanSafe ? <ShieldCheck className="w-3 h-3" /> : <ShieldAlert className="w-3 h-3" />}
                 Mensch
               </div>
-              <div className={`flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${isPoultrySafe ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+              <div className={`flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${isPoultrySafe ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300' : 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'}`}>
                 {isPoultrySafe ? <ShieldCheck className="w-3 h-3" /> : <ShieldAlert className="w-3 h-3" />}
                 Geflügel
               </div>

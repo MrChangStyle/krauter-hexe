@@ -30,7 +30,7 @@ export const INSECT_RELATION_LABELS: Record<string, string> = {
 function RelationBadge({ status }: { status: string }) {
   if (status === "pest") {
     return (
-      <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md bg-rose-100 text-rose-800">
+      <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
         <ShieldAlert className="w-3 h-3" />
         Schädling
       </span>
@@ -38,7 +38,7 @@ function RelationBadge({ status }: { status: string }) {
   }
   if (status === "beneficial") {
     return (
-      <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md bg-emerald-100 text-emerald-800">
+      <span className="flex items-center gap-1 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
         <Leaf className="w-3 h-3" />
         Nützling
       </span>
@@ -98,9 +98,9 @@ export function InsectCard({
           <div className="flex gap-2 mt-0.5">
             <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded-md ${
               insect.relationStatus === "beneficial"
-                ? "bg-emerald-100 text-emerald-800"
+                ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
                 : insect.relationStatus === "pest"
-                ? "bg-rose-100 text-rose-800"
+                ? "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300"
                 : "bg-muted text-muted-foreground"
             }`}>
               {INSECT_RELATION_LABELS[insect.relationStatus] ?? insect.relationStatus}

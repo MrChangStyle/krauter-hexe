@@ -34,38 +34,38 @@ const TARGET_META: Record<
 > = {
   human: {
     emoji: "🧑",
-    idleBg: "bg-amber-50   border-amber-200  hover:border-amber-400",
-    activeBg: "bg-amber-100  border-amber-500",
+    idleBg: "bg-amber-50 border-amber-200 hover:border-amber-400 dark:border-amber-800",
+    activeBg: "bg-amber-100 border-amber-500 dark:bg-amber-950/60",
     activeRing: "ring-2 ring-amber-400",
   },
   poultry: {
     emoji: "🐓",
-    idleBg: "bg-yellow-50  border-yellow-200 hover:border-yellow-400",
-    activeBg: "bg-yellow-100 border-yellow-500",
+    idleBg: "bg-yellow-50 border-yellow-200 hover:border-yellow-400 dark:border-yellow-800",
+    activeBg: "bg-yellow-100 border-yellow-500 dark:bg-yellow-950/60",
     activeRing: "ring-2 ring-yellow-400",
   },
   rabbit: {
     emoji: "🐇",
-    idleBg: "bg-purple-50  border-purple-200 hover:border-purple-400",
-    activeBg: "bg-purple-100 border-purple-500",
+    idleBg: "bg-purple-50 border-purple-200 hover:border-purple-400 dark:border-purple-800",
+    activeBg: "bg-purple-100 border-purple-500 dark:bg-purple-950/60",
     activeRing: "ring-2 ring-purple-400",
   },
   guineaPig: {
     emoji: "🐹",
-    idleBg: "bg-pink-50    border-pink-200   hover:border-pink-400",
-    activeBg: "bg-pink-100   border-pink-500",
+    idleBg: "bg-pink-50 border-pink-200 hover:border-pink-400 dark:border-pink-800",
+    activeBg: "bg-pink-100 border-pink-500 dark:bg-pink-950/60",
     activeRing: "ring-2 ring-pink-400",
   },
   cat: {
     emoji: "🐱",
-    idleBg: "bg-sky-50     border-sky-200    hover:border-sky-400",
-    activeBg: "bg-sky-100    border-sky-500",
+    idleBg: "bg-sky-50 border-sky-200 hover:border-sky-400 dark:border-sky-800",
+    activeBg: "bg-sky-100 border-sky-500 dark:bg-sky-950/60",
     activeRing: "ring-2 ring-sky-400",
   },
   horse: {
     emoji: "🐴",
-    idleBg: "bg-orange-50  border-orange-200 hover:border-orange-400",
-    activeBg: "bg-orange-100 border-orange-500",
+    idleBg: "bg-orange-50 border-orange-200 hover:border-orange-400 dark:border-orange-800",
+    activeBg: "bg-orange-100 border-orange-500 dark:bg-orange-950/60",
     activeRing: "ring-2 ring-orange-400",
   },
 };
@@ -448,7 +448,7 @@ export default function KraeuterHexePage() {
 
       {/* ── Mid-session removed-filter notice ─────────────────────── */}
       {removedSymptoms.length > 0 && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-orange-300 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-orange-300 bg-orange-50 px-4 py-3 text-sm text-orange-800 dark:border-orange-800 dark:bg-orange-950/40 dark:text-orange-200">
           <span className="mt-0.5 shrink-0 text-base leading-none">ℹ️</span>
           <span>
             {removedSymptoms.length === 1
@@ -468,7 +468,7 @@ export default function KraeuterHexePage() {
 
       {/* ── Unmatched URL symptoms notice ──────────────────────────── */}
       {notFoundSymptoms.length > 0 && (
-        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           <span className="mt-0.5 shrink-0 text-base leading-none">⚠️</span>
           <span>
             {notFoundSymptoms.length === 1

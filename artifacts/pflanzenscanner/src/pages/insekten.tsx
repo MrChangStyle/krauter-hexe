@@ -244,19 +244,19 @@ function ArtenTab({ insects }: { insects: Insect[] }) {
               {inCat.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-auto">
                   {pests > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-rose-200/60 text-rose-800 rounded px-1.5 py-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-rose-200/60 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 rounded px-1.5 py-0.5">
                       <ShieldAlert className="w-2.5 h-2.5" />
                       {pests}
                     </span>
                   )}
                   {beneficial > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-emerald-200/60 text-emerald-800 rounded px-1.5 py-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-emerald-200/60 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 rounded px-1.5 py-0.5">
                       <Leaf className="w-2.5 h-2.5" />
                       {beneficial}
                     </span>
                   )}
                   {inCat.filter((i) => i.relationStatus === "neutral").length > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-gray-200/60 text-gray-700 rounded px-1.5 py-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-gray-200/60 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded px-1.5 py-0.5">
                       <Minus className="w-2.5 h-2.5" />
                       {inCat.filter((i) => i.relationStatus === "neutral").length}
                     </span>

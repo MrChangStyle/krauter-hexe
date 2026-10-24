@@ -279,19 +279,19 @@ function ArtenTab({ insects }: { insects: Insect[] }) {
               {inCat.length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-auto">
                   {pests > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-rose-200/60 text-rose-800 rounded px-1.5 py-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-rose-200/60 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 rounded px-1.5 py-0.5">
                       <ShieldAlert className="w-2.5 h-2.5" />
                       {pests}
                     </span>
                   )}
                   {beneficial > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-emerald-200/60 text-emerald-800 rounded px-1.5 py-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-emerald-200/60 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 rounded px-1.5 py-0.5">
                       <Leaf className="w-2.5 h-2.5" />
                       {beneficial}
                     </span>
                   )}
                   {inCat.filter((i) => i.relationStatus === "neutral").length > 0 && (
-                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-gray-200/60 text-gray-700 rounded px-1.5 py-0.5">
+                    <span className="inline-flex items-center gap-0.5 text-[10px] font-bold bg-gray-200/60 text-gray-700 dark:bg-gray-800 dark:text-gray-300 rounded px-1.5 py-0.5">
                       <Minus className="w-2.5 h-2.5" />
                       {inCat.filter((i) => i.relationStatus === "neutral").length}
                     </span>
@@ -531,7 +531,7 @@ function ScanTab() {
       )}
 
       {!isLoading && !preview && queuedInfo && waitingId && (
-        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex gap-3">
+        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex gap-3 dark:bg-amber-950/40 dark:border-amber-800">
           <Bug className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium">Foto gespeichert</p>

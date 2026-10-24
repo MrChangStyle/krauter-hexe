@@ -14,4 +14,5 @@ export const FarmProduct = {
   milk: 'milk',
   meat: 'meat',
   wool: 'wool',
+  honey: 'honey',
 } as const;

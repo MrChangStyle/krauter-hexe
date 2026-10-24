@@ -1,12 +1,14 @@
 /**
  * Suche (docs/suche.md): one box for everything – the shared plant and insect
  * archive, and on the active farm its animals, herds, beds, seeds, medicines,
+ * bee colonies,
  * own feeds and contacts. Farm results only for members, and only from the
  * modules granted to them (Modul-Freigaben). The app adds its own pages.
  */
 
 import {
   db,
+  beeColoniesTable,
   farmAnimalsTable,
   farmContactsTable,
   farmFeedsTable,
@@ -33,7 +35,7 @@ export interface SearchItem {
 }
 
 export interface SearchGroup {
-  kind: 'plants' | 'insects' | 'animals' | 'herds' | 'beds' | 'seeds' | 'medicines' | 'feeds' | 'contacts';
+  kind: 'plants' | 'insects' | 'animals' | 'herds' | 'beds' | 'seeds' | 'medicines' | 'feeds' | 'bees' | 'contacts';
   label: string;
   items: SearchItem[];
 }
@@ -133,6 +135,16 @@ export async function search(userId: string, rawQuery: string, farmId: number | 
         .orderBy(asc(farmFeedsTable.name))
         .limit(PER_GROUP);
       push('feeds', 'Eigene Futtermittel', feeds.map((f) => ({ title: f.name, subtitle: 'Futterplaner', href: '/farm/futter' })));
+    }
+
+    if (may('bees')) {
+      const colonies = await db
+        .select({ id: beeColoniesTable.id, name: beeColoniesTable.name, apiary: beeColoniesTable.apiary })
+        .from(beeColoniesTable)
+        .where(and(eq(beeColoniesTable.farmId, farmId), eq(beeColoniesTable.status, 'active'), or(ilike(beeColoniesTable.name, like), ilike(beeColoniesTable.apiary, like))))
+        .orderBy(asc(beeColoniesTable.name))
+        .limit(PER_GROUP);
+      push('bees', 'Bienenvölker', colonies.map((c) => ({ title: c.name, subtitle: c.apiary ?? 'Bienenvolk', href: `/farm/bienen/${c.id}` })));
     }
 
     // Contacts are emergency numbers: open to every member.

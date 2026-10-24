@@ -11,6 +11,7 @@
 import { db, farmAnimalsTable, farmMembershipsTable, farmsTable, farmYieldsTable, growAccessTable, growsTable } from '@workspace/db';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
+import { addFeeding, addHoney, addInspection, addTreatment, createColony } from './bees';
 import { createBreeding } from './breeding';
 import { FarmDataError } from './farmAnimals';
 import { createCamera } from './farmCameras';
@@ -103,6 +104,16 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   // Wildtier-Radar: two cameras without events.
   await createCamera(farmId, { name: 'Hühnerstall (Demo)', relayUrl: null, cooldownSeconds: 300 });
   await createCamera(farmId, { name: 'Weide (Demo)', relayUrl: null, cooldownSeconds: 600 });
+
+  // Bienen: two colonies with a hive card.
+  const linde = (await createColony(farmId, { name: 'Linde (Demo)', apiary: 'Obstwiese', hiveType: 'Zander', queenYear: year - 1, queenMarked: true, queenOrigin: 'Eigene Nachzucht' }, today)).colony.id;
+  const raps = (await createColony(farmId, { name: 'Raps (Demo)', apiary: 'Obstwiese', hiveType: 'Zander', queenYear: year - 3 }, today)).colony.id;
+  await addInspection(farmId, linde, { date: ago(12), beeFrames: 16, broodFrames: 7, queenSeen: true, eggsSeen: true, queenCells: 0, temper: 1, mitesPerDay: 2 });
+  await addInspection(farmId, linde, { date: ago(3), beeFrames: 17, broodFrames: 6, queenSeen: false, eggsSeen: true, queenCells: 0, temper: 2, foodKg: 8 });
+  await addInspection(farmId, raps, { date: ago(5), beeFrames: 11, broodFrames: 4, eggsSeen: true, temper: 3, mitesPerDay: 6 });
+  await addFeeding(farmId, linde, { date: ago(20), kind: 'sirup', amountKg: 5 });
+  await addTreatment(farmId, raps, { date: ago(40), method: 'drohnenbrut', notes: 'Demo' });
+  await addHoney(farmId, linde, { date: ago(60), amountKg: 14, note: 'Frühtracht' });
 
   // Beet-Architekt and Saatgut.
   const raised = await createBed(farmId, { name: 'Hochbeet (Demo)', type: 'raised', lengthCm: 200, widthCm: 100 });

@@ -30,4 +30,5 @@ export const ModuleId = {
   handover: 'handover',
   export: 'export',
   members: 'members',
+  bees: 'bees',
 } as const;

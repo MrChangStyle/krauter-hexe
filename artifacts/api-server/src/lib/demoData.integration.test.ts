@@ -23,7 +23,7 @@ const testUrl = process.env["TEST_DATABASE_URL"];
 const enabled =
   !!testUrl && testUrl === (process.env["NEON_DATABASE_URL"] ?? process.env["DATABASE_URL"]);
 
-const MODULE_TABLES = ["herds", "farm_tasks", "feed_stocks", "breeding_records", "medicines", "farm_yields", "cameras", "garden_beds", "bed_plantings", "seeds", "farm_contacts"];
+const MODULE_TABLES = ["herds", "farm_tasks", "feed_stocks", "breeding_records", "medicines", "farm_yields", "cameras", "garden_beds", "bed_plantings", "seeds", "farm_contacts", "bee_colonies", "bee_inspections"];
 
 describe.skipIf(!enabled)("Demo-Daten (real database)", () => {
   let server: Server;

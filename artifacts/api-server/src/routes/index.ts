@@ -38,6 +38,7 @@ import moveRouter from "./move";
 import feedbackRouter from "./feedback";
 import searchRouter from "./search";
 import dataExportRouter from "./data-export";
+import beesRouter from "./bees";
 
 const router: IRouter = Router();
 
@@ -73,6 +74,7 @@ router.use(moveRouter);
 router.use(feedbackRouter);
 router.use(searchRouter);
 router.use(dataExportRouter);
+router.use(beesRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);

@@ -2987,7 +2987,7 @@ export const GetYieldOverviewParams = zod.object({
 export const GetYieldOverviewResponse = zod.object({
   "entries": zod.array(zod.object({
   "id": zod.number(),
-  "product": zod.enum(['eggs', 'milk', 'meat', 'wool']),
+  "product": zod.enum(['eggs', 'milk', 'meat', 'wool', 'honey']),
   "date": zod.string(),
   "amount": zod.number(),
   "unit": zod.string(),
@@ -3014,7 +3014,7 @@ export const GetYieldOverviewResponse = zod.object({
   "animals": zod.object({
   "value": zod.number(),
   "lines": zod.array(zod.object({
-  "product": zod.enum(['eggs', 'milk', 'meat', 'wool']),
+  "product": zod.enum(['eggs', 'milk', 'meat', 'wool', 'honey']),
   "unit": zod.string(),
   "amount": zod.number(),
   "price": zod.number(),
@@ -3116,6 +3116,812 @@ export const GetLayingHistoryResponse = zod.object({
 
 
 /**
+ * @summary Bienen – the farm's colonies with hints (docs/bienen.md)
+ */
+export const GetBeeOverviewParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetBeeOverviewResponse = zod.object({
+  "colonies": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "active": zod.number(),
+  "honeyKgThisYear": zod.number(),
+  "apiaries": zod.array(zod.string()),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Add a colony (caretaker)
+ */
+export const CreateBeeColonyParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createBeeColonyBodyNameMax = 60;
+
+export const createBeeColonyBodyApiaryMax = 80;
+
+export const createBeeColonyBodyHiveTypeMax = 40;
+
+export const createBeeColonyBodyQueenOriginMax = 80;
+
+export const createBeeColonyBodyNotesMax = 1000;
+
+
+
+export const CreateBeeColonyBody = zod.object({
+  "name": zod.string().min(1).max(createBeeColonyBodyNameMax),
+  "apiary": zod.string().max(createBeeColonyBodyApiaryMax).nullish(),
+  "hiveType": zod.string().max(createBeeColonyBodyHiveTypeMax).nullish(),
+  "queenYear": zod.number().nullish(),
+  "queenMarked": zod.boolean().optional(),
+  "queenOrigin": zod.string().max(createBeeColonyBodyQueenOriginMax).nullish(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']).optional(),
+  "startedOn": zod.string().nullish(),
+  "endedOn": zod.string().nullish(),
+  "notes": zod.string().max(createBeeColonyBodyNotesMax).nullish()
+})
+
+export const CreateBeeColonyResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary A colony's hive card
+ */
+export const GetBeeColonyParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const GetBeeColonyResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Change a colony (caretaker)
+ */
+export const UpdateBeeColonyParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const updateBeeColonyBodyNameMax = 60;
+
+export const updateBeeColonyBodyApiaryMax = 80;
+
+export const updateBeeColonyBodyHiveTypeMax = 40;
+
+export const updateBeeColonyBodyQueenOriginMax = 80;
+
+export const updateBeeColonyBodyNotesMax = 1000;
+
+
+
+export const UpdateBeeColonyBody = zod.object({
+  "name": zod.string().min(1).max(updateBeeColonyBodyNameMax),
+  "apiary": zod.string().max(updateBeeColonyBodyApiaryMax).nullish(),
+  "hiveType": zod.string().max(updateBeeColonyBodyHiveTypeMax).nullish(),
+  "queenYear": zod.number().nullish(),
+  "queenMarked": zod.boolean().optional(),
+  "queenOrigin": zod.string().max(updateBeeColonyBodyQueenOriginMax).nullish(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']).optional(),
+  "startedOn": zod.string().nullish(),
+  "endedOn": zod.string().nullish(),
+  "notes": zod.string().max(updateBeeColonyBodyNotesMax).nullish()
+})
+
+export const UpdateBeeColonyResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Delete a colony with its hive card (admin); its honey stays in Ertrag
+ */
+export const DeleteBeeColonyParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const DeleteBeeColonyResponse = zod.void()
+
+
+/**
+ * @summary Enter an inspection (caretaker)
+ */
+export const AddBeeInspectionParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const addBeeInspectionBodyNotesMax = 1000;
+
+
+
+export const AddBeeInspectionBody = zod.object({
+  "date": zod.string(),
+  "beeFrames": zod.number().nullish(),
+  "broodFrames": zod.number().nullish(),
+  "queenSeen": zod.boolean().optional(),
+  "eggsSeen": zod.boolean().optional(),
+  "queenCells": zod.number().nullish(),
+  "temper": zod.number().nullish(),
+  "foodKg": zod.number().nullish(),
+  "mitesPerDay": zod.number().nullish(),
+  "notes": zod.string().max(addBeeInspectionBodyNotesMax).nullish()
+})
+
+export const AddBeeInspectionResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Enter a feeding (caretaker)
+ */
+export const AddBeeFeedingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const addBeeFeedingBodyNotesMax = 500;
+
+
+
+export const AddBeeFeedingBody = zod.object({
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().max(addBeeFeedingBodyNotesMax).nullish()
+})
+
+export const AddBeeFeedingResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Enter a Varroa treatment (caretaker); a medicine from the stock is taken off it
+ */
+export const AddBeeTreatmentParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const addBeeTreatmentBodyProductMax = 100;
+
+export const addBeeTreatmentBodyNotesMax = 500;
+
+
+
+export const AddBeeTreatmentBody = zod.object({
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullish(),
+  "product": zod.string().max(addBeeTreatmentBodyProductMax).nullish(),
+  "dose": zod.number().nullish(),
+  "notes": zod.string().max(addBeeTreatmentBodyNotesMax).nullish()
+})
+
+export const AddBeeTreatmentResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Enter a honey harvest (caretaker) – goes to Ertrag & Bilanz
+ */
+export const AddBeeHoneyParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const addBeeHoneyBodyNoteMax = 200;
+
+
+
+export const AddBeeHoneyBody = zod.object({
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().max(addBeeHoneyBodyNoteMax).nullish()
+})
+
+export const AddBeeHoneyResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Delete an entry of the hive card (caretaker); a treatment gives its dose back
+ */
+export const DeleteBeeEntryParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number(),
+  "kind": zod.enum(['inspections', 'feedings', 'treatments', 'honey']),
+  "entryId": zod.coerce.number()
+})
+
+export const DeleteBeeEntryResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
  * @summary Enter eggs, milk, meat or wool (caretaker)
  */
 export const AddYieldParams = zod.object({
@@ -3128,7 +3934,7 @@ export const addYieldBodyNoteMax = 500;
 
 
 export const AddYieldBody = zod.object({
-  "product": zod.enum(['eggs', 'milk', 'meat', 'wool']),
+  "product": zod.enum(['eggs', 'milk', 'meat', 'wool', 'honey']),
   "date": zod.string().describe('YYYY-MM-DD, not in the future'),
   "amount": zod.number(),
   "herdId": zod.number().nullish(),
@@ -4739,7 +5545,7 @@ export const ListMyFarmsResponseItem = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 export const ListMyFarmsResponse = zod.array(ListMyFarmsResponseItem)
 
@@ -4760,7 +5566,7 @@ export const CreateFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 
@@ -4772,7 +5578,7 @@ export const EnsureOwnFarmResponseItem = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 export const EnsureOwnFarmResponse = zod.array(EnsureOwnFarmResponseItem)
 
@@ -4791,7 +5597,7 @@ export const ListFarmMembersResponseItem = zod.object({
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const ListFarmMembersResponse = zod.array(ListFarmMembersResponseItem)
 
@@ -4820,7 +5626,7 @@ export const AddFarmMemberResponseItem = zod.object({
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const AddFarmMemberResponse = zod.array(AddFarmMemberResponseItem)
 
@@ -4838,7 +5644,7 @@ export const setFarmMemberModulesBodyModulesMax = 40;
 
 
 export const SetFarmMemberModulesBody = zod.object({
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).max(setFarmMemberModulesBodyModulesMax).nullable().describe('null = all farm modules')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).max(setFarmMemberModulesBodyModulesMax).nullable().describe('null = all farm modules')
 })
 
 export const SetFarmMemberModulesResponseItem = zod.object({
@@ -4848,7 +5654,7 @@ export const SetFarmMemberModulesResponseItem = zod.object({
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const SetFarmMemberModulesResponse = zod.array(SetFarmMemberModulesResponseItem)
 
@@ -4873,7 +5679,7 @@ export const ChangeFarmMemberRoleResponseItem = zod.object({
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const ChangeFarmMemberRoleResponse = zod.array(ChangeFarmMemberRoleResponseItem)
 
@@ -7014,7 +7820,7 @@ export const RenameFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 
@@ -7044,7 +7850,7 @@ export const GetFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 
@@ -7186,9 +7992,9 @@ export const getSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 export const GetSettingsResponse = zod.object({
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
-  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])),
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])),
   "onboarded": zod.boolean(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(getSettingsResponseQuietHoursOneFromRegExp),
   "to": zod.string().regex(getSettingsResponseQuietHoursOneToRegExp)
@@ -7208,9 +8014,9 @@ export const setSettingsBodyQuietHoursOneToRegExp = new RegExp('^([01][0-9]|2[0-
 
 
 export const SetSettingsBody = zod.object({
-  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])).max(setSettingsBodyHiddenModulesMax).optional(),
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])).max(setSettingsBodyHiddenModulesMax).optional(),
   "onboarded": zod.boolean().optional(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).max(setSettingsBodyPushOffMax).optional(),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).max(setSettingsBodyPushOffMax).optional(),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(setSettingsBodyQuietHoursOneFromRegExp),
   "to": zod.string().regex(setSettingsBodyQuietHoursOneToRegExp)
@@ -7224,9 +8030,9 @@ export const setSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 export const SetSettingsResponse = zod.object({
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
-  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])),
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees'])),
   "onboarded": zod.boolean(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(setSettingsResponseQuietHoursOneFromRegExp),
   "to": zod.string().regex(setSettingsResponseQuietHoursOneToRegExp)
@@ -7248,7 +8054,7 @@ export const SearchQueryParams = zod.object({
 
 export const SearchResponse = zod.object({
   "groups": zod.array(zod.object({
-  "kind": zod.enum(['plants', 'insects', 'animals', 'herds', 'beds', 'seeds', 'medicines', 'feeds', 'contacts']),
+  "kind": zod.enum(['plants', 'insects', 'animals', 'herds', 'beds', 'seeds', 'medicines', 'feeds', 'bees', 'contacts']),
   "label": zod.string(),
   "items": zod.array(zod.object({
   "title": zod.string(),

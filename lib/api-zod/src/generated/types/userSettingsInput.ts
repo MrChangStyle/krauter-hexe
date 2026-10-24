@@ -16,4 +16,5 @@ export interface UserSettingsInput {
   /** @maxItems 20 */
   pushOff?: PushTopic[];
   quietHours?: QuietHours | null;
+  seasonalCare?: boolean;
 }

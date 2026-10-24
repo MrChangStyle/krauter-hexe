@@ -1,5 +1,6 @@
 import {
   boolean,
+  date,
   integer,
   pgEnum,
   pgTable,
@@ -69,6 +70,11 @@ export const tasksTable = pgTable("tasks", {
   // task. The cron endpoint uses this to prevent sending more than once per
   // Berlin calendar day (replaces the old in-memory sentKeys Set).
   lastNotifiedAt: timestamp("last_notified_at", { withTimezone: true }),
+  // Wetterabhängige Pflege (docs/pflege-wetter.md): the plant stands outside
+  // (balcony, garden) – rain waters it, frost is a danger.
+  outdoor: boolean("outdoor").notNull().default(false),
+  // The Berlin day the rain did the watering (task counted as done, no push).
+  rainSkippedOn: date("rain_skipped_on", { mode: "string" }),
 });
 
 export const insertTaskSchema = createInsertSchema(tasksTable).omit({

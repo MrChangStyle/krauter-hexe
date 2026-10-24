@@ -1123,6 +1123,73 @@ export interface YieldOverview {
   feedCost: null | FeedCostEstimate;
 }
 
+export interface HarvestYear {
+  kg: number;
+  value: number;
+}
+
+export interface HarvestYearSeason {
+  season: number;
+  kg: number;
+  value: number;
+}
+
+export interface HarvestReportCrop {
+  key: string;
+  label: string;
+  kg: number;
+  kitchenKg: number;
+  fodderKg: number;
+  /** Area of the harvested plantings. */
+  m2: number;
+  /** @nullable */
+  kgPerM2: number | null;
+  value: number;
+  /** @nullable */
+  valuePerM2: number | null;
+  harvests: number;
+  beds: string[];
+  /** @nullable */
+  previousKg: number | null;
+}
+
+export interface HarvestReportBed {
+  /** @nullable */
+  bedId: number | null;
+  name: string;
+  kg: number;
+  value: number;
+  m2: number;
+  /** @nullable */
+  valuePerM2: number | null;
+  crops: string[];
+}
+
+export interface HarvestBest {
+  label: string;
+  valuePerM2: number;
+}
+
+export interface HarvestReport {
+  season: number;
+  /** Seasons with harvests (and the one asked for), newest first. */
+  seasons: number[];
+  kg: number;
+  kitchenKg: number;
+  fodderKg: number;
+  /** Shop value at the farm's prices (€). */
+  value: number;
+  previous: null | HarvestYear;
+  /** kg per harvest month, January first. */
+  months: number[];
+  /** Up to five seasons with harvests, oldest first. */
+  years: HarvestYearSeason[];
+  crops: HarvestReportCrop[];
+  beds: HarvestReportBed[];
+  /** Up to three crops with the most € per m². */
+  best: HarvestBest[];
+}
+
 export interface LayingWeek {
   start: string;
   days: number;
@@ -1266,6 +1333,8 @@ export interface QuietHours {
 }
 
 export interface UserSettings {
+  /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */
+  seasonalCare: boolean;
   hiddenModules: ModuleId[];
   onboarded: boolean;
   /** Push topics switched off */
@@ -1280,6 +1349,7 @@ export interface UserSettingsInput {
   /** @maxItems 20 */
   pushOff?: PushTopic[];
   quietHours?: QuietHours | null;
+  seasonalCare?: boolean;
 }
 
 export interface SearchItem {
@@ -2733,6 +2803,29 @@ export interface Task {
   /** Custom fertilizer name when fertilizerType is "Manuell". */
   fertilizerCustomName?: string | null;
   createdAt: string;
+  /** Stands outside (balcony, garden) – rain and frost count. */
+  outdoor: boolean;
+  /**
+     * Berlin day the rain did the watering.
+     * @nullable
+     */
+  rainSkippedOn: string | null;
+  /** Next due day (YYYY-MM-DD, Berlin) – with the winter rules. */
+  nextDueDate: string;
+  /**
+     * Rain or winter note for the card.
+     * @nullable
+     */
+  careNote: string | null;
+}
+
+export interface CareWeather {
+  /** False – no farm with a location, so no rain or frost check. */
+  hasLocation: boolean;
+  today: null | DayForecast;
+  /** Enough rain today to skip watering outside. */
+  rainWaters: boolean;
+  frost: null | DayForecast;
 }
 
 /**
@@ -2752,6 +2845,7 @@ export interface UpdateTaskInput {
   fertilizerType?: TaskFertilizerType | null;
   /** Custom fertilizer name when fertilizerType is "Manuell". */
   fertilizerCustomName?: string | null;
+  outdoor?: boolean;
 }
 
 export interface CreateTaskInput {
@@ -2769,6 +2863,7 @@ export interface CreateTaskInput {
   fertilizerType?: TaskFertilizerType | null;
   /** Custom fertilizer name when fertilizerType is "Manuell". */
   fertilizerCustomName?: string | null;
+  outdoor?: boolean;
 }
 
 export interface FavoriteIds {

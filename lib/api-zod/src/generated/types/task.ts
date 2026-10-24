@@ -30,4 +30,18 @@ export interface Task {
   /** Custom fertilizer name when fertilizerType is "Manuell". */
   fertilizerCustomName?: string | null;
   createdAt: string;
+  /** Stands outside (balcony, garden) – rain and frost count. */
+  outdoor: boolean;
+  /**
+     * Berlin day the rain did the watering.
+     * @nullable
+     */
+  rainSkippedOn: string | null;
+  /** Next due day (YYYY-MM-DD, Berlin) – with the winter rules. */
+  nextDueDate: string;
+  /**
+     * Rain or winter note for the card.
+     * @nullable
+     */
+  careNote: string | null;
 }

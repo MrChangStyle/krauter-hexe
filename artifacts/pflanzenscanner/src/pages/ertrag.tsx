@@ -553,7 +553,12 @@ function Overview({ farm }: { farm: FarmSummary }) {
           )}
 
           <section className="space-y-2">
-            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Garten</h2>
+            <h2 className="flex items-center justify-between text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Garten
+              <Link href="/beete/ernte" className="flex items-center gap-0.5 text-xs font-medium normal-case tracking-normal text-primary">
+                Je Beet und Sorte <ChevronRight className="h-3 w-3" />
+              </Link>
+            </h2>
             {d.summary.garden.lines.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 Noch keine Ernte {year}. Ernten tragt ihr am Beet ein –{" "}

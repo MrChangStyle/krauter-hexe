@@ -10,6 +10,8 @@ import type { PushTopic } from './pushTopic';
 import type { QuietHours } from './quietHours';
 
 export interface UserSettings {
+  /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */
+  seasonalCare: boolean;
   hiddenModules: ModuleId[];
   onboarded: boolean;
   /** Push topics switched off */

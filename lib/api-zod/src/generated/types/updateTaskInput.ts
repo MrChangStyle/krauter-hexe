@@ -26,4 +26,5 @@ export interface UpdateTaskInput {
   fertilizerType?: TaskFertilizerType | null;
   /** Custom fertilizer name when fertilizerType is "Manuell". */
   fertilizerCustomName?: string | null;
+  outdoor?: boolean;
 }

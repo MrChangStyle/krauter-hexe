@@ -753,7 +753,11 @@ export const ListTasksResponseItem = zod.object({
   "lastCompletedAt": zod.string().nullish().describe('ISO timestamp of the last time this task was marked as done.'),
   "fertilizerType": zod.enum(['Biologischer Dünger', 'Mineralischer Dünger', 'Manuell']).describe('The type of fertilizer (only relevant when actionType is \"Düngen\").').nullish().describe('Fertilizer sub-type, only set when actionType is \"Düngen\".'),
   "fertilizerCustomName": zod.string().nullish().describe('Custom fertilizer name when fertilizerType is \"Manuell\".'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "outdoor": zod.boolean().describe('Stands outside (balcony, garden) – rain and frost count.'),
+  "rainSkippedOn": zod.string().nullable().describe('Berlin day the rain did the watering.'),
+  "nextDueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin) – with the winter rules.'),
+  "careNote": zod.string().nullable().describe('Rain or winter note for the card.')
 })
 export const ListTasksResponse = zod.array(ListTasksResponseItem)
 
@@ -772,7 +776,8 @@ export const CreateTaskBody = zod.object({
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
   "reminderTime": zod.string().describe('Local time for reminder in HH:MM format (e.g. \"08:00\").'),
   "fertilizerType": zod.enum(['Biologischer Dünger', 'Mineralischer Dünger', 'Manuell']).describe('The type of fertilizer (only relevant when actionType is \"Düngen\").').nullish().describe('Fertilizer sub-type, only set when actionType is \"Düngen\".'),
-  "fertilizerCustomName": zod.string().nullish().describe('Custom fertilizer name when fertilizerType is \"Manuell\".')
+  "fertilizerCustomName": zod.string().nullish().describe('Custom fertilizer name when fertilizerType is \"Manuell\".'),
+  "outdoor": zod.boolean().optional()
 })
 
 export const createTaskResponseIntervalValueMax = 60;
@@ -791,7 +796,36 @@ export const CreateTaskResponse = zod.object({
   "lastCompletedAt": zod.string().nullish().describe('ISO timestamp of the last time this task was marked as done.'),
   "fertilizerType": zod.enum(['Biologischer Dünger', 'Mineralischer Dünger', 'Manuell']).describe('The type of fertilizer (only relevant when actionType is \"Düngen\").').nullish().describe('Fertilizer sub-type, only set when actionType is \"Düngen\".'),
   "fertilizerCustomName": zod.string().nullish().describe('Custom fertilizer name when fertilizerType is \"Manuell\".'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "outdoor": zod.boolean().describe('Stands outside (balcony, garden) – rain and frost count.'),
+  "rainSkippedOn": zod.string().nullable().describe('Berlin day the rain did the watering.'),
+  "nextDueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin) – with the winter rules.'),
+  "careNote": zod.string().nullable().describe('Rain or winter note for the card.')
+})
+
+
+/**
+ * @summary Today's weather for the care plan (rain, frost) – docs/pflege-wetter.md
+ */
+export const GetCareWeatherResponse = zod.object({
+  "hasLocation": zod.boolean().describe('False – no farm with a location, so no rain or frost check.'),
+  "today": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "minTemp": zod.number(),
+  "maxTemp": zod.number(),
+  "precipitationMm": zod.number(),
+  "maxGustKmh": zod.number(),
+  "icon": zod.enum(['sun', 'cloud', 'rain', 'snow', 'storm'])
+})]),
+  "rainWaters": zod.boolean().describe('Enough rain today to skip watering outside.'),
+  "frost": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "minTemp": zod.number(),
+  "maxTemp": zod.number(),
+  "precipitationMm": zod.number(),
+  "maxGustKmh": zod.number(),
+  "icon": zod.enum(['sun', 'cloud', 'rain', 'snow', 'storm'])
+})])
 })
 
 
@@ -818,7 +852,11 @@ export const CompleteTaskResponse = zod.object({
   "lastCompletedAt": zod.string().nullish().describe('ISO timestamp of the last time this task was marked as done.'),
   "fertilizerType": zod.enum(['Biologischer Dünger', 'Mineralischer Dünger', 'Manuell']).describe('The type of fertilizer (only relevant when actionType is \"Düngen\").').nullish().describe('Fertilizer sub-type, only set when actionType is \"Düngen\".'),
   "fertilizerCustomName": zod.string().nullish().describe('Custom fertilizer name when fertilizerType is \"Manuell\".'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "outdoor": zod.boolean().describe('Stands outside (balcony, garden) – rain and frost count.'),
+  "rainSkippedOn": zod.string().nullable().describe('Berlin day the rain did the watering.'),
+  "nextDueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin) – with the winter rules.'),
+  "careNote": zod.string().nullable().describe('Rain or winter note for the card.')
 })
 
 
@@ -839,7 +877,8 @@ export const UpdateTaskBody = zod.object({
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).optional().describe('The unit of the reminder interval.'),
   "reminderTime": zod.string().optional().describe('Local time for reminder in HH:MM format (e.g. \"08:00\").'),
   "fertilizerType": zod.enum(['Biologischer Dünger', 'Mineralischer Dünger', 'Manuell']).describe('The type of fertilizer (only relevant when actionType is \"Düngen\").').nullish().describe('Fertilizer sub-type, only relevant when actionType is \"Düngen\".'),
-  "fertilizerCustomName": zod.string().nullish().describe('Custom fertilizer name when fertilizerType is \"Manuell\".')
+  "fertilizerCustomName": zod.string().nullish().describe('Custom fertilizer name when fertilizerType is \"Manuell\".'),
+  "outdoor": zod.boolean().optional()
 }).describe('All fields optional – only provided fields are updated.')
 
 export const updateTaskResponseIntervalValueMax = 60;
@@ -858,7 +897,11 @@ export const UpdateTaskResponse = zod.object({
   "lastCompletedAt": zod.string().nullish().describe('ISO timestamp of the last time this task was marked as done.'),
   "fertilizerType": zod.enum(['Biologischer Dünger', 'Mineralischer Dünger', 'Manuell']).describe('The type of fertilizer (only relevant when actionType is \"Düngen\").').nullish().describe('Fertilizer sub-type, only set when actionType is \"Düngen\".'),
   "fertilizerCustomName": zod.string().nullish().describe('Custom fertilizer name when fertilizerType is \"Manuell\".'),
-  "createdAt": zod.string()
+  "createdAt": zod.string(),
+  "outdoor": zod.boolean().describe('Stands outside (balcony, garden) – rain and frost count.'),
+  "rainSkippedOn": zod.string().nullable().describe('Berlin day the rain did the watering.'),
+  "nextDueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin) – with the winter rules.'),
+  "careNote": zod.string().nullable().describe('Rain or winter note for the card.')
 })
 
 
@@ -6810,6 +6853,61 @@ export const GetGardenPlanResponse = zod.object({
 
 
 /**
+ * @summary Ernte-Auswertung – a season per crop and bed, against the seasons before
+ */
+export const GetHarvestReportParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "season": zod.coerce.number()
+})
+
+export const GetHarvestReportResponse = zod.object({
+  "season": zod.number(),
+  "seasons": zod.array(zod.number()).describe('Seasons with harvests (and the one asked for), newest first.'),
+  "kg": zod.number(),
+  "kitchenKg": zod.number(),
+  "fodderKg": zod.number(),
+  "value": zod.number().describe('Shop value at the farm\'s prices (€).'),
+  "previous": zod.union([zod.null(),zod.object({
+  "kg": zod.number(),
+  "value": zod.number()
+})]),
+  "months": zod.array(zod.number()).describe('kg per harvest month, January first.'),
+  "years": zod.array(zod.object({
+  "season": zod.number(),
+  "kg": zod.number(),
+  "value": zod.number()
+})).describe('Up to five seasons with harvests, oldest first.'),
+  "crops": zod.array(zod.object({
+  "key": zod.string(),
+  "label": zod.string(),
+  "kg": zod.number(),
+  "kitchenKg": zod.number(),
+  "fodderKg": zod.number(),
+  "m2": zod.number().describe('Area of the harvested plantings.'),
+  "kgPerM2": zod.number().nullable(),
+  "value": zod.number(),
+  "valuePerM2": zod.number().nullable(),
+  "harvests": zod.number(),
+  "beds": zod.array(zod.string()),
+  "previousKg": zod.number().nullable()
+})),
+  "beds": zod.array(zod.object({
+  "bedId": zod.number().nullable(),
+  "name": zod.string(),
+  "kg": zod.number(),
+  "value": zod.number(),
+  "m2": zod.number(),
+  "valuePerM2": zod.number().nullable(),
+  "crops": zod.array(zod.string())
+})),
+  "best": zod.array(zod.object({
+  "label": zod.string(),
+  "valuePerM2": zod.number()
+})).describe('Up to three crops with the most € per m².')
+})
+
+
+/**
  * @summary Harvests of a season, newest first
  */
 export const ListHarvestsParams = zod.object({
@@ -7087,6 +7185,7 @@ export const getSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 
 export const GetSettingsResponse = zod.object({
+  "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])),
   "onboarded": zod.boolean(),
   "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
@@ -7115,7 +7214,8 @@ export const SetSettingsBody = zod.object({
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(setSettingsBodyQuietHoursOneFromRegExp),
   "to": zod.string().regex(setSettingsBodyQuietHoursOneToRegExp)
-}).describe('No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes'),zod.null()]).optional()
+}).describe('No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes'),zod.null()]).optional(),
+  "seasonalCare": zod.boolean().optional()
 })
 
 export const setSettingsResponseQuietHoursOneFromRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
@@ -7123,6 +7223,7 @@ export const setSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 
 export const SetSettingsResponse = zod.object({
+  "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members'])),
   "onboarded": zod.boolean(),
   "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),

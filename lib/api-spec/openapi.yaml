@@ -570,6 +570,18 @@ paths:
           description: Invalid input
         "401":
           description: Not signed in
+  /care/weather:
+    get:
+      operationId: getCareWeather
+      tags: [tasks]
+      summary: Today's weather for the care plan (rain, frost) – docs/pflege-wetter.md
+      responses:
+        "200":
+          description: The weather, or no location.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareWeather"
   /tasks/{id}/complete:
     patch:
       operationId: completeTask
@@ -4854,6 +4866,31 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/GardenPlan"
+  /farms/{farmId}/garden/seasons/{season}/harvest-report:
+    get:
+      tags: [garden]
+      operationId: getHarvestReport
+      summary: Ernte-Auswertung – a season per crop and bed, against the seasons before
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: season
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The report.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HarvestReport"
+        "404":
+          description: Not found.
   /farms/{farmId}/garden/seasons/{season}/harvests:
     get:
       tags: [garden]
@@ -6675,6 +6712,130 @@ components:
           type: number
         perHenDay:
           type: number
+    HarvestReport:
+      type: object
+      required: [season, seasons, kg, kitchenKg, fodderKg, value, previous, months, years, crops, beds, best]
+      properties:
+        season:
+          type: integer
+        seasons:
+          type: array
+          description: Seasons with harvests (and the one asked for), newest first.
+          items:
+            type: integer
+        kg:
+          type: number
+        kitchenKg:
+          type: number
+        fodderKg:
+          type: number
+        value:
+          type: number
+          description: Shop value at the farm's prices (€).
+        previous:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/HarvestYear"
+        months:
+          type: array
+          description: kg per harvest month, January first.
+          items:
+            type: number
+        years:
+          type: array
+          description: Up to five seasons with harvests, oldest first.
+          items:
+            $ref: "#/components/schemas/HarvestYearSeason"
+        crops:
+          type: array
+          items:
+            $ref: "#/components/schemas/HarvestReportCrop"
+        beds:
+          type: array
+          items:
+            $ref: "#/components/schemas/HarvestReportBed"
+        best:
+          type: array
+          description: Up to three crops with the most € per m².
+          items:
+            $ref: "#/components/schemas/HarvestBest"
+    HarvestYear:
+      type: object
+      required: [kg, value]
+      properties:
+        kg:
+          type: number
+        value:
+          type: number
+    HarvestYearSeason:
+      type: object
+      required: [season, kg, value]
+      properties:
+        season:
+          type: integer
+        kg:
+          type: number
+        value:
+          type: number
+    HarvestReportCrop:
+      type: object
+      required: [key, label, kg, kitchenKg, fodderKg, m2, kgPerM2, value, valuePerM2, harvests, beds, previousKg]
+      properties:
+        key:
+          type: string
+        label:
+          type: string
+        kg:
+          type: number
+        kitchenKg:
+          type: number
+        fodderKg:
+          type: number
+        m2:
+          type: number
+          description: Area of the harvested plantings.
+        kgPerM2:
+          type: [number, 'null']
+        value:
+          type: number
+        valuePerM2:
+          type: [number, 'null']
+        harvests:
+          type: integer
+        beds:
+          type: array
+          items:
+            type: string
+        previousKg:
+          type: [number, 'null']
+    HarvestReportBed:
+      type: object
+      required: [bedId, name, kg, value, m2, valuePerM2, crops]
+      properties:
+        bedId:
+          type: [integer, 'null']
+        name:
+          type: string
+        kg:
+          type: number
+        value:
+          type: number
+        m2:
+          type: number
+        valuePerM2:
+          type: [number, 'null']
+        crops:
+          type: array
+          items:
+            type: string
+    HarvestBest:
+      type: object
+      required: [label, valuePerM2]
+      properties:
+        label:
+          type: string
+        valuePerM2:
+          type: number
     LayingHistory:
       type: object
       required: [weeks, groups, hens, hints]
@@ -6796,8 +6957,11 @@ components:
       enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members]
     UserSettings:
       type: object
-      required: [hiddenModules, onboarded, pushOff, quietHours]
+      required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare]
       properties:
+        seasonalCare:
+          type: boolean
+          description: Winter – water less often, no fertilising (docs/pflege-wetter.md)
         hiddenModules:
           type: array
           items:
@@ -6832,6 +6996,8 @@ components:
           oneOf:
             - $ref: "#/components/schemas/QuietHours"
             - type: 'null'
+        seasonalCare:
+          type: boolean
     PushTopic:
       type: string
       description: What a push is about – each can be switched off (docs/benachrichtigungen.md)
@@ -8718,6 +8884,10 @@ components:
         - reminderTime
         - isActive
         - createdAt
+        - outdoor
+        - rainSkippedOn
+        - nextDueDate
+        - careNote
       properties:
         id:
           type: integer
@@ -8753,6 +8923,36 @@ components:
           description: Custom fertilizer name when fertilizerType is "Manuell".
         createdAt:
           type: string
+        outdoor:
+          type: boolean
+          description: Stands outside (balcony, garden) – rain and frost count.
+        rainSkippedOn:
+          type: [string, 'null']
+          description: Berlin day the rain did the watering.
+        nextDueDate:
+          type: string
+          description: Next due day (YYYY-MM-DD, Berlin) – with the winter rules.
+        careNote:
+          type: [string, 'null']
+          description: Rain or winter note for the card.
+    CareWeather:
+      type: object
+      required: [hasLocation, today, rainWaters, frost]
+      properties:
+        hasLocation:
+          type: boolean
+          description: False – no farm with a location, so no rain or frost check.
+        today:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/DayForecast"
+        rainWaters:
+          type: boolean
+          description: Enough rain today to skip watering outside.
+        frost:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/DayForecast"
     UpdateTaskInput:
       type: object
       description: All fields optional – only provided fields are updated.
@@ -8777,6 +8977,8 @@ components:
           type: string
           nullable: true
           description: Custom fertilizer name when fertilizerType is "Manuell".
+        outdoor:
+          type: boolean
     CreateTaskInput:
       type: object
       required:
@@ -8808,6 +9010,8 @@ components:
           type: string
           nullable: true
           description: Custom fertilizer name when fertilizerType is "Manuell".
+        outdoor:
+          type: boolean
     FavoriteIds:
       type: object
       required: [plantIds]

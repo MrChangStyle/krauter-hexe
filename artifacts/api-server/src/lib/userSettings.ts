@@ -18,6 +18,7 @@ export interface UserSettings {
   onboarded: boolean;
   pushOff: Topic[];
   quietHours: QuietHours | null;
+  seasonalCare: boolean;
 }
 
 /** Known ids only, each once – a module the app no longer has drops out. */
@@ -40,17 +41,19 @@ export async function getSettings(userId: string): Promise<UserSettings> {
     onboarded: !!row?.onboardedAt,
     pushOff: cleanTopics(row?.pushOff ?? []),
     quietHours: quiet(row?.quietStart, row?.quietEnd),
+    seasonalCare: row?.seasonalCare ?? true,
   };
 }
 
 export async function setSettings(
   userId: string,
-  input: { hiddenModules?: readonly string[]; onboarded?: boolean; pushOff?: readonly string[]; quietHours?: QuietHours | null },
+  input: { hiddenModules?: readonly string[]; onboarded?: boolean; pushOff?: readonly string[]; quietHours?: QuietHours | null; seasonalCare?: boolean },
 ): Promise<UserSettings> {
   const set: Partial<typeof userSettingsTable.$inferInsert> = { updatedAt: new Date() };
   if (input.hiddenModules !== undefined) set.hiddenModules = cleanModules(input.hiddenModules);
   if (input.onboarded !== undefined) set.onboardedAt = input.onboarded ? new Date() : null;
   if (input.pushOff !== undefined) set.pushOff = cleanTopics(input.pushOff);
+  if (input.seasonalCare !== undefined) set.seasonalCare = input.seasonalCare;
   if (input.quietHours !== undefined) {
     const q = input.quietHours && quiet(input.quietHours.from, input.quietHours.to);
     set.quietStart = q ? q.from : null;

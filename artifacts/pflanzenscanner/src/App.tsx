@@ -63,6 +63,7 @@ import SaatgutPage from '@/pages/saatgut';
 import ErtragPage from '@/pages/ertrag';
 import LegeleistungPage from '@/pages/legeleistung';
 import StallPage from '@/pages/stall';
+import ErnteAuswertungPage from '@/pages/ernte-auswertung';
 import GrowPage from '@/pages/grow';
 import GrowPlantPage from '@/pages/grow-plant';
 import GrowKostenPage from '@/pages/grow-kosten';
@@ -180,6 +181,7 @@ function Router() {
         <Route path="/beete/kalender" component={GartenKalenderPage} />
         <Route path="/beete/assistent" component={GartenAssistentPage} />
         <Route path="/beete/saatgut" component={SaatgutPage} />
+        <Route path="/beete/ernte" component={ErnteAuswertungPage} />
         <Route path="/beete/:farmId/:bedId" component={BeetPage} />
         {/* Legacy redirects — keep old deep links working */}
         <Route path="/insekten">{() => { window.location.replace(import.meta.env.BASE_URL + "insekten-scanner"); return null; }}</Route>

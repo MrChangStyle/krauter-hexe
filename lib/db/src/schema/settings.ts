@@ -1,4 +1,4 @@
-import { jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, jsonb, pgTable, text, timestamp } from "drizzle-orm/pg-core";
 
 // What an account set up for itself (docs/module.md): the modules it hides
 // and when it went through the first-start assistant. No row = everything
@@ -13,4 +13,8 @@ export const userSettingsTable = pgTable("user_settings", {
   pushOff: jsonb("push_off").$type<string[]>().notNull().default([]),
   quietStart: text("quiet_start"),
   quietEnd: text("quiet_end"),
+  // Wetterabhängige Pflege (docs/pflege-wetter.md): longer watering intervals
+  // and no fertilising in winter; the last "frost in sight" push.
+  seasonalCare: boolean("seasonal_care").notNull().default(true),
+  frostNoticeOn: date("frost_notice_on", { mode: "string" }),
 });

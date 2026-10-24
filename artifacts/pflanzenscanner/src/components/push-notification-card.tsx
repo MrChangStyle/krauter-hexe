@@ -3,6 +3,7 @@ import { Bell, BellOff, BellRing, Loader2 } from "lucide-react";
 import { useSendTestPush } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { PushTopicsCard } from "@/components/push-topics-card";
 import {
   disablePush,
   enablePush,
@@ -133,8 +134,8 @@ export function PushNotificationCard() {
       ) : (
         <>
           <p className="text-xs text-muted-foreground mb-3">
-            Aktiv: Du bekommst Erinnerungen für fällige Aufgaben und
-            Pflege-Guides auf diesem Gerät.
+            Aktiv: Erinnerungen kommen auf dieses Gerät. Unten legst du fest,
+            welche – und wann Ruhe ist.
           </p>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -162,6 +163,8 @@ export function PushNotificationCard() {
           </div>
         </>
       )}
+      {/* Per account, so also shown while this device has them off. */}
+      {status !== "denied" && <PushTopicsCard />}
     </div>
   );
 }

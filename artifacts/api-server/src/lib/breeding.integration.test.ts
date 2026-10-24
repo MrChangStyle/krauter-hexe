@@ -217,6 +217,7 @@ describe.skipIf(!enabled)("Zucht (real database)", () => {
     expect(await sendBreedingDigests("08:30", "2026-10-27")).toBe(0);
     expect(sendPushToUser.mock.calls.map((c) => c[0]).sort()).toEqual(["anna", "bert"]);
     expect(sendPushToUser.mock.calls[0]![1]).toEqual({
+      topic: "breeding",
       title: "Zucht: heute zu tun",
       body: "Hase: Nestbox mit Heu und Stroh in den Stall stellen.",
       tag: `breeding-${farmId}-2026-10-27`,

@@ -6,8 +6,13 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ModuleId } from './moduleId';
+import type { PushTopic } from './pushTopic';
+import type { QuietHours } from './quietHours';
 
 export interface UserSettings {
   hiddenModules: ModuleId[];
   onboarded: boolean;
+  /** Push topics switched off */
+  pushOff: PushTopic[];
+  quietHours: QuietHours | null;
 }

@@ -61,6 +61,9 @@ const STATEMENTS = [
 	"onboarded_at" timestamp with time zone,
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
+  `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "push_off" jsonb DEFAULT '[]'::jsonb NOT NULL`,
+  `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "quiet_start" text`,
+  `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "quiet_end" text`,
   // Feedback (schema/feedback.ts).
   `CREATE TABLE IF NOT EXISTS "feedback" (
 	"id" serial PRIMARY KEY NOT NULL,

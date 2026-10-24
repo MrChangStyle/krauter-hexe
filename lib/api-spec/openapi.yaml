@@ -6643,7 +6643,7 @@ components:
       enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members]
     UserSettings:
       type: object
-      required: [hiddenModules, onboarded]
+      required: [hiddenModules, onboarded, pushOff, quietHours]
       properties:
         hiddenModules:
           type: array
@@ -6651,6 +6651,15 @@ components:
             $ref: "#/components/schemas/ModuleId"
         onboarded:
           type: boolean
+        pushOff:
+          type: array
+          description: Push topics switched off
+          items:
+            $ref: "#/components/schemas/PushTopic"
+        quietHours:
+          oneOf:
+            - $ref: "#/components/schemas/QuietHours"
+            - type: 'null'
     UserSettingsInput:
       type: object
       properties:
@@ -6661,6 +6670,30 @@ components:
             $ref: "#/components/schemas/ModuleId"
         onboarded:
           type: boolean
+        pushOff:
+          type: array
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/PushTopic"
+        quietHours:
+          oneOf:
+            - $ref: "#/components/schemas/QuietHours"
+            - type: 'null'
+    PushTopic:
+      type: string
+      description: What a push is about – each can be switched off (docs/benachrichtigungen.md)
+      enum: [plant-care, farm-tasks, feed, medicines, breeding, duties, weather, garden, grow, wildlife, admin]
+    QuietHours:
+      type: object
+      description: No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes
+      required: [from, to]
+      properties:
+        from:
+          type: string
+          pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
+        to:
+          type: string
+          pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
     FeedbackInput:
       type: object
       required: [text]

@@ -438,7 +438,7 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     expect(await sendFeedDigests("08:00", "2026-10-19")).toBe(0);
     // Admin and caretaker only – the guest gets nothing.
     expect(sendPushToUser.mock.calls).toEqual([
-      ["anna", { title: "Futter nachkaufen", body: "Legehennen-Alleinfutter reicht noch 7 Tage (bis 26.10.).", tag: `feed-${farm.anna}-2026-10-19`, url: "/farm/futter/vorrat" }],
+      ["anna", { topic: "feed", title: "Futter nachkaufen", body: "Legehennen-Alleinfutter reicht noch 7 Tage (bis 26.10.).", tag: `feed-${farm.anna}-2026-10-19`, url: "/farm/futter/vorrat" }],
     ]);
     fixedDay = "2026-10-22";
     expect(await sendFeedDigests("07:30", "2026-10-22")).toBe(0);

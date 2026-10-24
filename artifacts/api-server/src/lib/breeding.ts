@@ -560,7 +560,7 @@ export async function sendBreedingDigests(hhmm: string, day: string): Promise<nu
           .from(farmMembershipsTable)
           .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker']), grantedSql('breeding')));
         for (const { userId } of members) {
-          await sendPushToUser(userId, { ...message, tag: `breeding-${farmId}-${day}`, url: '/farm/zucht' });
+          await sendPushToUser(userId, { topic: 'breeding', ...message, tag: `breeding-${farmId}-${day}`, url: '/farm/zucht' });
         }
         sent += 1;
       } catch (err) {

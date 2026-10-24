@@ -409,7 +409,7 @@ async function pushAlarm(farmId: number, cameraName: string, check: PredatorChec
     .from(farmMembershipsTable)
     .where(and(eq(farmMembershipsTable.farmId, farmId), grantedSql('wildlife')));
   for (const { userId } of members) {
-    await sendPushToUser(userId, {
+    await sendPushToUser(userId, { topic: 'wildlife',
       title: `Wildtier-Alarm: ${check.species ?? 'Beutegreifer'}`,
       body: `Kamera „${cameraName}“ (${farm?.name ?? 'Farm'}), ${Math.round(check.confidence * 100)} % sicher`,
       tag: `camera-${farmId}`,

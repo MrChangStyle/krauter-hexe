@@ -60,11 +60,11 @@ describe.skipIf(!enabled)("Module settings (real database)", () => {
   };
 
   it("hides and shows modules and remembers the assistant", async () => {
-    expect((await api("GET", "/settings")).data).toEqual({ hiddenModules: [], onboarded: false });
-    expect((await api("PUT", "/settings", { hiddenModules: ["grow", "wildlife", "grow"] })).data).toEqual({ hiddenModules: ["grow", "wildlife"], onboarded: false });
+    expect((await api("GET", "/settings")).data).toEqual({ hiddenModules: [], onboarded: false, pushOff: [], quietHours: null });
+    expect((await api("PUT", "/settings", { hiddenModules: ["grow", "wildlife", "grow"] })).data).toEqual({ hiddenModules: ["grow", "wildlife"], onboarded: false, pushOff: [], quietHours: null });
     // Only the assistant: the modules stay.
-    expect((await api("PUT", "/settings", { onboarded: true })).data).toEqual({ hiddenModules: ["grow", "wildlife"], onboarded: true });
-    expect((await api("PUT", "/settings", { hiddenModules: [] })).data).toEqual({ hiddenModules: [], onboarded: true });
+    expect((await api("PUT", "/settings", { onboarded: true })).data).toEqual({ hiddenModules: ["grow", "wildlife"], onboarded: true, pushOff: [], quietHours: null });
+    expect((await api("PUT", "/settings", { hiddenModules: [] })).data).toEqual({ hiddenModules: [], onboarded: true, pushOff: [], quietHours: null });
     expect((await api("PUT", "/settings", { hiddenModules: ["rocket-science"] })).status).toBe(400);
     // A module the app no longer has drops out when read.
     await q(`UPDATE user_settings SET hidden_modules = '["old", "feed"]' WHERE user_id = 'anna'`);
@@ -72,7 +72,28 @@ describe.skipIf(!enabled)("Module settings (real database)", () => {
     // The assistant again (e.g. "Einrichtung erneut starten").
     expect((await api("PUT", "/settings", { onboarded: false })).data.onboarded).toBe(false);
     as = "bert";
-    expect((await api("GET", "/settings")).data).toEqual({ hiddenModules: [], onboarded: false });
+    expect((await api("GET", "/settings")).data).toEqual({ hiddenModules: [], onboarded: false, pushOff: [], quietHours: null });
+  });
+
+  it("keeps which pushes come and when it is quiet", async () => {
+    let r = await api("PUT", "/settings", { pushOff: ["feed", "weather", "feed"], quietHours: { from: "22:00", to: "06:30" } });
+    expect(r.data).toMatchObject({ pushOff: ["feed", "weather"], quietHours: { from: "22:00", to: "06:30" } });
+    expect((await api("PUT", "/settings", { quietHours: { from: "25:00", to: "06:00" } })).status).toBe(400);
+    r = await api("PUT", "/settings", { quietHours: null });
+    expect(r.data).toMatchObject({ pushOff: ["feed", "weather"], quietHours: null });
+
+    const { pushAllowed } = await import("./userSettings");
+    await api("PUT", "/settings", { quietHours: { from: "22:00", to: "06:30" } });
+    // 23:30 Berlin (CEST, UTC+2) – quiet; 08:00 – not.
+    const night = new Date("2026-07-01T21:30:00Z");
+    const morning = new Date("2026-07-01T06:00:00Z");
+    expect(await pushAllowed("anna", "farm-tasks", night)).toBe(false);
+    expect(await pushAllowed("anna", "farm-tasks", morning)).toBe(true);
+    // The predator alarm still comes at night; switched-off topics never.
+    expect(await pushAllowed("anna", "wildlife", night)).toBe(true);
+    expect(await pushAllowed("anna", "feed", morning)).toBe(false);
+    // Accounts without settings get everything.
+    expect(await pushAllowed("bert", "feed", night)).toBe(true);
   });
 
   it("goes with the account", async () => {

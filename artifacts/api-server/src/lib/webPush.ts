@@ -7,6 +7,8 @@ import {
   type PushSubscription,
 } from "@workspace/db";
 import { logger } from "./logger";
+import type { PushTopic } from "@workspace/api-zod";
+import { pushAllowed } from "./userSettings";
 
 // The VAPID key pair is generated once on first start and persisted in the
 // database, so dev and prod each get their own pair with no manual secret
@@ -51,6 +53,8 @@ export interface PushPayload {
   body: string;
   tag?: string;
   url?: string;
+  /** What it is about – the account may have switched it off or be in its quiet time. None: always (test push). */
+  topic?: PushTopic;
 }
 
 // Sends a payload to one stored subscription. Deletes the subscription when
@@ -89,13 +93,15 @@ export async function sendPushToUser(
   userId: string,
   payload: PushPayload,
 ): Promise<number> {
+  if (payload.topic && !(await pushAllowed(userId, payload.topic))) return 0;
+  const { topic: _topic, ...message } = payload;
   const subs = await db
     .select()
     .from(pushSubscriptionsTable)
     .where(eq(pushSubscriptionsTable.userId, userId));
   let sent = 0;
   for (const sub of subs) {
-    if (await sendPushTo(sub, payload)) sent++;
+    if (await sendPushTo(sub, message)) sent++;
   }
   return sent;
 }

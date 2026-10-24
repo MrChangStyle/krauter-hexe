@@ -365,7 +365,7 @@ export async function sendFeedDigests(hhmm: string, day: string): Promise<number
           .from(farmMembershipsTable)
           .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker']), grantedSql('feed')));
         for (const { userId } of members) {
-          await sendPushToUser(userId, { ...message, tag: `feed-${farmId}-${day}`, url: '/farm/futter/vorrat' });
+          await sendPushToUser(userId, { topic: 'feed', ...message, tag: `feed-${farmId}-${day}`, url: '/farm/futter/vorrat' });
         }
         sent += 1;
       } catch (err) {

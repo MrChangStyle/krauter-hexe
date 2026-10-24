@@ -150,7 +150,7 @@ async function notifyOwner(message: string, source: string, again: boolean): Pro
   const [owner] = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.isOwner, true));
   if (!owner) return;
   const { sendPushToUser } = await import('./webPush');
-  await sendPushToUser(owner.id, {
+  await sendPushToUser(owner.id, { topic: 'admin',
     title: again ? 'Fehler wieder aufgetreten' : 'Neuer Fehler in Little Farming',
     body: `${source === 'client' ? 'App' : 'Server'}: ${message.slice(0, 140)}`,
     tag: 'error-monitor',

@@ -181,7 +181,7 @@ export async function sendGrowDigests(hhmm: string, day: string): Promise<number
         const fresh = warnings.filter((w) => !(yesterday?.kinds ?? []).includes(w.kind));
         const message = growDigestMessage(steps, fresh, push === 'full' ? 'full' : 'discreet');
         if (!message) continue;
-        await sendPushToUser(userId, { ...message, tag: `grow-${day}`, url: '/grow' });
+        await sendPushToUser(userId, { topic: 'grow', ...message, tag: `grow-${day}`, url: '/grow' });
         sent += 1;
       } catch (err) {
         logger.warn({ err, userId }, 'Grow push failed');

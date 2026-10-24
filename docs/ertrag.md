@@ -22,7 +22,7 @@ Die Seite `/farm/ertrag` zeigt, was Tiere und Garten im Jahr bringen und was das
 
 ## Kennzahlen (nur im laufenden Jahr)
 
-- **Legeleistung**: Eier der letzten 30 Tage geteilt durch Hennen (Geflügel weiblich oder unbekannt, nicht archiviert) und 30 Tage.
+- **Legeleistung**: Eier der letzten 30 Tage geteilt durch Hennen (Geflügel weiblich oder unbekannt, nicht archiviert, ab 20 Wochen) und 30 Tage. Die Kachel führt zum Verlauf (`docs/legeleistung.md`).
 - **Futterkosten im Monat**: Schätzung des Futterplaners (`feedStock().costs`) aus den heutigen Rationen und den Preisen im Vorrat. Fehlen Preise, steht das dabei.
 
 ## Ausgaben und Bilanz

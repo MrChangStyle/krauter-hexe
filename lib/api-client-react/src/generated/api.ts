@@ -138,6 +138,7 @@ import type {
   HusbandryGuide,
   ImageLockInput,
   Insect,
+  LayingHistory,
   LeaderboardResult,
   Lineage,
   LineageInput,
@@ -6866,6 +6867,83 @@ export function useGetYieldOverview<TData = Awaited<ReturnType<typeof getYieldOv
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetYieldOverviewQueryOptions(farmId,year,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGetLayingHistoryUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/laying`
+}
+
+/**
+ * @summary Legeleistung als Verlauf – weeks, groups, hens and hints
+ */
+export const getLayingHistory = async (farmId: number, options?: RequestInit): Promise<LayingHistory> => {
+
+  return customFetch<LayingHistory>(getGetLayingHistoryUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetLayingHistoryQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/laying`
+    ] as const;
+    }
+
+
+export const getGetLayingHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getLayingHistory>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLayingHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetLayingHistoryQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getLayingHistory>>> = ({ signal }) => getLayingHistory(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getLayingHistory>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetLayingHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getLayingHistory>>>
+export type GetLayingHistoryQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Legeleistung als Verlauf – weeks, groups, hens and hints
+ */
+
+export function useGetLayingHistory<TData = Awaited<ReturnType<typeof getLayingHistory>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getLayingHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetLayingHistoryQueryOptions(farmId,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

@@ -26,6 +26,7 @@ import { FarmDataError, notFound, text, validDate } from './farmAnimals';
 import { feedStock } from './feedStock';
 import { addDays } from './feedSeason';
 import { cropByKey } from './gardenCatalog';
+import { LAYING_AGE_DAYS } from './layingHistory';
 import { logger } from './logger';
 import { berlinDay } from './monitoring';
 
@@ -245,6 +246,8 @@ export interface YieldEntry {
   unit: string;
   herdId: number | null;
   herdName: string | null;
+  animalId: number | null;
+  animalName: string | null;
   note: string | null;
 }
 
@@ -337,10 +340,13 @@ export async function yieldOverview(farmId: number, rawYear?: unknown, today = b
         amount: farmYieldsTable.amount,
         herdId: farmYieldsTable.herdId,
         herdName: herdsTable.name,
+        animalId: farmYieldsTable.animalId,
+        animalName: farmAnimalsTable.name,
         note: farmYieldsTable.note,
       })
       .from(farmYieldsTable)
       .leftJoin(herdsTable, and(eq(herdsTable.id, farmYieldsTable.herdId), eq(herdsTable.farmId, farmYieldsTable.farmId)))
+      .leftJoin(farmAnimalsTable, and(eq(farmAnimalsTable.id, farmYieldsTable.animalId), eq(farmAnimalsTable.farmId, farmYieldsTable.farmId)))
       .where(and(eq(farmYieldsTable.farmId, farmId), gte(farmYieldsTable.date, `${year}-01-01`), lte(farmYieldsTable.date, `${year}-12-31`)))
       .orderBy(desc(farmYieldsTable.date), desc(farmYieldsTable.id)),
   ]);
@@ -353,7 +359,7 @@ export async function yieldOverview(farmId: number, rawYear?: unknown, today = b
       db
         .select({ n: sql<number>`count(*)::int` })
         .from(farmAnimalsTable)
-        .where(and(eq(farmAnimalsTable.farmId, farmId), eq(farmAnimalsTable.species, 'poultry'), isNull(farmAnimalsTable.archivedAt), or(eq(farmAnimalsTable.sex, 'female'), eq(farmAnimalsTable.sex, 'unknown')))),
+        .where(and(eq(farmAnimalsTable.farmId, farmId), eq(farmAnimalsTable.species, 'poultry'), isNull(farmAnimalsTable.archivedAt), or(eq(farmAnimalsTable.sex, 'female'), eq(farmAnimalsTable.sex, 'unknown')), or(isNull(farmAnimalsTable.birthDate), lte(farmAnimalsTable.birthDate, addDays(today, -LAYING_AGE_DAYS))))),
       db
         .select({ n: sql<number>`coalesce(sum(${farmYieldsTable.amount}), 0)::float` })
         .from(farmYieldsTable)
@@ -390,6 +396,7 @@ export interface YieldInput {
   date: unknown;
   amount: number;
   herdId?: number | null;
+  animalId?: number | null;
   note?: unknown;
 }
 
@@ -402,7 +409,16 @@ export async function addYield(farmId: number, input: YieldInput): Promise<void>
     const [herd] = await db.select({ id: herdsTable.id }).from(herdsTable).where(and(eq(herdsTable.id, herdId), eq(herdsTable.farmId, farmId)));
     if (!herd) throw new FarmDataError(400, 'Diese Gruppe gibt es auf der Farm nicht.');
   }
-  await db.insert(farmYieldsTable).values({ farmId, product: input.product, date, amount: input.amount, herdId, note: text(input.note, 500, 'Die Notiz') });
+  // A hen only for eggs (Legeleistung je Henne, docs/legeleistung.md).
+  const animalId = input.product === 'eggs' ? (input.animalId ?? null) : null;
+  if (animalId !== null) {
+    const [hen] = await db
+      .select({ id: farmAnimalsTable.id })
+      .from(farmAnimalsTable)
+      .where(and(eq(farmAnimalsTable.id, animalId), eq(farmAnimalsTable.farmId, farmId), eq(farmAnimalsTable.species, 'poultry')));
+    if (!hen) throw new FarmDataError(400, 'Diese Henne gibt es auf der Farm nicht.');
+  }
+  await db.insert(farmYieldsTable).values({ farmId, product: input.product, date, amount: input.amount, herdId, animalId, note: text(input.note, 500, 'Die Notiz') });
 }
 
 export async function removeYield(farmId: number, id: number): Promise<void> {

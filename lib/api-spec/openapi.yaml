@@ -2091,6 +2091,24 @@ paths:
                 $ref: "#/components/schemas/YieldOverview"
         "400":
           description: Invalid year.
+  /farms/{farmId}/laying:
+    get:
+      tags: [farm]
+      operationId: getLayingHistory
+      summary: Legeleistung als Verlauf – weeks, groups, hens and hints
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The history.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LayingHistory"
   /farms/{farmId}/yields:
     post:
       tags: [farm]
@@ -6362,12 +6380,15 @@ components:
           type: number
         herdId:
           type: [integer, 'null']
+        animalId:
+          type: [integer, 'null']
+          description: Optional – the hen that laid them (poultry of this farm).
         note:
           type: [string, 'null']
           maxLength: 500
     YieldEntry:
       type: object
-      required: [id, product, date, amount, unit, herdId, herdName, note]
+      required: [id, product, date, amount, unit, herdId, herdName, animalId, animalName, note]
       properties:
         id:
           type: integer
@@ -6382,6 +6403,10 @@ components:
         herdId:
           type: [integer, 'null']
         herdName:
+          type: [string, 'null']
+        animalId:
+          type: [integer, 'null']
+        animalName:
           type: [string, 'null']
         note:
           type: [string, 'null']
@@ -6622,6 +6647,80 @@ components:
           type: number
         perHenDay:
           type: number
+    LayingHistory:
+      type: object
+      required: [weeks, groups, hens, hints]
+      properties:
+        weeks:
+          type: array
+          description: The last 26 weeks (Monday first), the current one up to today.
+          items:
+            $ref: "#/components/schemas/LayingWeek"
+        groups:
+          type: array
+          description: Poultry groups, last 30 days.
+          items:
+            $ref: "#/components/schemas/LayingGroup"
+        hens:
+          type: array
+          description: Hens with own egg entries, last 30 days.
+          items:
+            $ref: "#/components/schemas/LayingHen"
+        hints:
+          type: array
+          items:
+            $ref: "#/components/schemas/LayingHint"
+    LayingWeek:
+      type: object
+      required: [start, days, eggs, hens, perHenDay]
+      properties:
+        start:
+          type: string
+        days:
+          type: integer
+        eggs:
+          type: number
+        hens:
+          type: integer
+        perHenDay:
+          type: [number, 'null']
+    LayingGroup:
+      type: object
+      required: [herdId, name, hens, eggs, perHenDay]
+      properties:
+        herdId:
+          type: integer
+        name:
+          type: string
+        hens:
+          type: integer
+        eggs:
+          type: number
+        perHenDay:
+          type: [number, 'null']
+    LayingHen:
+      type: object
+      required: [animalId, name, eggs, lastEgg]
+      properties:
+        animalId:
+          type: integer
+        name:
+          type: string
+        eggs:
+          type: number
+        lastEgg:
+          type: [string, 'null']
+    LayingHint:
+      type: object
+      required: [kind, title, text]
+      properties:
+        kind:
+          type: string
+          enum: [moult, winter, heat, drop, quiet, old, young]
+        title:
+          type: string
+        text:
+          type: string
     FeedCostEstimate:
       type: object
       required: [perMonth, complete]

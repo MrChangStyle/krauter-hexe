@@ -27,6 +27,7 @@ const SEGMENT_MODULE: Record<string, FarmModule> = {
   duties: 'duties',
   yields: 'yields',
   'yield-overview': 'yields',
+  laying: 'yields',
   expenses: 'yields',
   sales: 'yields',
   prices: 'yields',

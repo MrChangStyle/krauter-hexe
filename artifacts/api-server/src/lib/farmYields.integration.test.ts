@@ -105,6 +105,34 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
     expect((await api("GET", Y(2027))).status).toBe(400);
   });
 
+  it("shows the laying history per week, group and hen", async () => {
+    const [lotte] = await q<{ id: number }>("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number) VALUES ($1, $2, 'Lotte', 'poultry', 'female', 'L') RETURNING id", [farmId, herdId]);
+    await q("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number) VALUES ($1, $2, 'Berta', 'poultry', 'unknown', 'B')", [farmId, herdId]);
+    // A chick does not count yet, a rooster never.
+    await q("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number, birth_date) VALUES ($1, $2, 'Küken', 'poultry', 'female', 'K', '2026-09-01')", [farmId, herdId]);
+    await q("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number) VALUES ($1, $2, 'Hahn', 'poultry', 'male', 'H')", [farmId, herdId]);
+    const [fremd] = await q<{ id: number }>("INSERT INTO farm_animals (farm_id, name, species, sex, registration_number) VALUES ($1, 'Fremd', 'poultry', 'female', 'F') RETURNING id", [otherFarm]);
+    expect((await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-13", amount: 10, herdId })).status).toBe(204);
+    expect((await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-18", amount: 1, animalId: lotte!.id })).status).toBe(204);
+    expect((await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-18", amount: 1, animalId: fremd!.id })).data.error).toBe("Diese Henne gibt es auf der Farm nicht.");
+    // Milk never names a hen.
+    await api("POST", `/farms/${farmId}/yields`, { product: "milk", date: "2026-10-18", amount: 2, animalId: lotte!.id });
+    as = "gina";
+    const entries = (await api("GET", Y())).data.entries;
+    expect(entries.map((e: any) => [e.product, e.animalName])).toEqual([["milk", null], ["eggs", "Lotte"], ["eggs", null]]);
+    expect((await api("GET", Y())).data.laying).toEqual({ hens: 2, eggs: 11, perHenDay: 0.18 });
+    const { status, data } = await api("GET", `/farms/${farmId}/laying`);
+    expect(status).toBe(200);
+    expect(data.weeks).toHaveLength(26);
+    expect(data.weeks.at(-2)).toEqual({ start: "2026-10-12", days: 7, eggs: 11, hens: 2, perHenDay: 0.79 });
+    expect(data.weeks.at(-1)).toMatchObject({ start: "2026-10-19", days: 1, eggs: 0 });
+    expect(data.groups).toEqual([{ herdId, name: "Hühner", hens: 2, eggs: 11, perHenDay: 0.18 }]);
+    expect(data.hens).toEqual([{ animalId: lotte!.id, name: "Lotte", eggs: 1, lastEgg: "2026-10-18" }]);
+    expect(data.hints.map((h: any) => h.kind)).toEqual(["moult", "young"]);
+    as = "bert";
+    expect((await api("GET", `/farms/${farmId}/laying`)).status).toBe(404);
+  });
+
   it("checks the input and deletes", async () => {
     const bad = async (body: object) => (await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 5, ...body })).status;
     expect(await bad({ product: "honey" })).toBe(400);

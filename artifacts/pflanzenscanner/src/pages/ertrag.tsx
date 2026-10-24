@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowLeft, Egg, Loader2, PiggyBank, Plus, Tag, Trash2 } from "lucide-react";
+import { ArrowLeft, ChevronRight, Egg, Loader2, PiggyBank, Plus, Tag, Trash2 } from "lucide-react";
 import {
   getGetYieldOverviewQueryKey,
   getListFarmPricesQueryKey,
@@ -14,6 +14,7 @@ import {
   useDeleteYield,
   useEnsureOwnFarm,
   useGetYieldOverview,
+  useListFarmAnimals,
   useListFarmPrices,
   useListHerds,
   useSetFarmPrice,
@@ -44,10 +45,13 @@ function EntryForm({ farm, year }: { farm: FarmSummary; year: number }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const herds = useListHerds(farm.id).data ?? [];
+  // Hens for "Legeleistung je Henne" (docs/legeleistung.md) – optional.
+  const hens = (useListFarmAnimals(farm.id).data ?? []).filter((a) => a.species === "poultry" && a.sex !== "male" && !a.archivedAt);
   const [product, setProduct] = useState<FarmProduct>("eggs");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayIso());
   const [herdId, setHerdId] = useState("");
+  const [henId, setHenId] = useState("");
   const add = useAddYield({
     mutation: {
       onSuccess() {
@@ -61,7 +65,8 @@ function EntryForm({ farm, year }: { farm: FarmSummary; year: number }) {
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    add.mutate({ farmId: farm.id, data: { product, amount: Number(amount.replace(",", ".")), date, herdId: herdId ? Number(herdId) : null } });
+    const animalId = product === "eggs" && henId ? Number(henId) : null;
+    add.mutate({ farmId: farm.id, data: { product, amount: Number(amount.replace(",", ".")), date, herdId: herdId ? Number(herdId) : null, animalId } });
   }
 
   return (
@@ -103,6 +108,29 @@ function EntryForm({ farm, year }: { farm: FarmSummary; year: number }) {
           </select>
         </div>
       </div>
+      {product === "eggs" && hens.length > 0 && (
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="y-hen">Henne (optional)</Label>
+          <select
+            id="y-hen"
+            className={selectClass}
+            value={henId}
+            onChange={(e) => {
+              setHenId(e.target.value);
+              const hen = hens.find((h) => String(h.id) === e.target.value);
+              if (hen?.herdId) setHerdId(String(hen.herdId));
+            }}
+          >
+            <option value="">Nicht zugeordnet</option>
+            {hens.map((h) => (
+              <option key={h.id} value={h.id}>
+                {h.name}
+                {h.herdName ? ` (${h.herdName})` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <Button type="submit" size="sm" disabled={add.isPending} className="gap-1.5">
         {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         Eintragen
@@ -449,13 +477,16 @@ function Overview({ farm }: { farm: FarmSummary }) {
           {(d.laying || d.feedCost) && (
             <section className="grid grid-cols-2 gap-3 text-sm">
               {d.laying && (
-                <div className="rounded-xl border border-border bg-card p-3">
+                <Link href="/farm/legeleistung" className="block rounded-xl border border-border bg-card p-3 hover:bg-muted/50">
                   <p className="text-xs text-muted-foreground">Legeleistung (30 Tage)</p>
                   <p className="text-lg font-semibold">{num(d.laying.perHenDay)} Eier</p>
                   <p className="text-xs text-muted-foreground">
                     je Henne und Tag · {d.laying.hens} Hennen
                   </p>
-                </div>
+                  <p className="mt-1 flex items-center gap-0.5 text-xs font-medium text-primary">
+                    Verlauf <ChevronRight className="h-3 w-3" />
+                  </p>
+                </Link>
               )}
               {d.feedCost && (
                 <div className="rounded-xl border border-border bg-card p-3">
@@ -600,6 +631,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
                     <span className="flex-1">
                       {deDay(e.date)} · {num(e.amount)} {e.unit} {PRODUCTS[e.product].label}
                       {e.herdName && <span className="text-muted-foreground"> · {e.herdName}</span>}
+                      {e.animalName && <span className="text-muted-foreground"> · {e.animalName}</span>}
                     </span>
                     {canWrite && (
                       <button type="button" aria-label="Eintrag löschen" className="text-muted-foreground hover:text-destructive" onClick={() => remove.mutate({ farmId: farm.id, yieldId: e.id })}>

@@ -15,6 +15,11 @@ export interface YieldInput {
   /** @nullable */
   herdId?: number | null;
   /**
+     * Optional – the hen that laid them (poultry of this farm).
+     * @nullable
+     */
+  animalId?: number | null;
+  /**
      * @maxLength 500
      * @nullable
      */

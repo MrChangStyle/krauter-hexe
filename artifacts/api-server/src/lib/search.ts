@@ -1,7 +1,7 @@
 /**
  * Suche (docs/suche.md): one box for everything – the shared plant and insect
  * archive, and on the active farm its animals, herds, beds, seeds, medicines,
- * bee colonies, stores in the pantry,
+ * bee colonies, stores in the pantry, pastures,
  * own feeds and contacts. Farm results only for members, and only from the
  * modules granted to them (Modul-Freigaben). The app adds its own pages.
  */
@@ -18,6 +18,7 @@ import {
   insectsTable,
   medicinesTable,
   pantryItemsTable,
+  pasturesTable,
   plantsTable,
   seedsTable,
   type FarmRole,
@@ -36,7 +37,7 @@ export interface SearchItem {
 }
 
 export interface SearchGroup {
-  kind: 'plants' | 'insects' | 'animals' | 'herds' | 'beds' | 'seeds' | 'medicines' | 'feeds' | 'bees' | 'pantry' | 'contacts';
+  kind: 'plants' | 'insects' | 'animals' | 'herds' | 'beds' | 'seeds' | 'medicines' | 'feeds' | 'bees' | 'pantry' | 'pastures' | 'contacts';
   label: string;
   items: SearchItem[];
 }
@@ -156,6 +157,16 @@ export async function search(userId: string, rawQuery: string, farmId: number | 
         .orderBy(asc(pantryItemsTable.name))
         .limit(PER_GROUP);
       push('pantry', 'Vorratskammer', stores.map((s) => ({ title: s.name, subtitle: `${String(s.amount).replace('.', ',')} ${s.unit}${s.location ? ` · ${s.location}` : ''}`, href: '/vorrat' })));
+    }
+
+    if (may('pasture')) {
+      const pastures = await db
+        .select({ name: pasturesTable.name, areaHa: pasturesTable.areaHa })
+        .from(pasturesTable)
+        .where(and(eq(pasturesTable.farmId, farmId), isNull(pasturesTable.archivedAt), ilike(pasturesTable.name, like)))
+        .orderBy(asc(pasturesTable.name))
+        .limit(PER_GROUP);
+      push('pastures', 'Weiden', pastures.map((p) => ({ title: p.name, subtitle: p.areaHa ? `${String(p.areaHa).replace('.', ',')} ha` : 'Weide', href: '/farm/weide' })));
     }
 
     // Contacts are emergency numbers: open to every member.

@@ -40,6 +40,7 @@ import searchRouter from "./search";
 import dataExportRouter from "./data-export";
 import beesRouter from "./bees";
 import pantryRouter from "./pantry";
+import pastureRouter from "./pasture";
 
 const router: IRouter = Router();
 
@@ -77,6 +78,7 @@ router.use(searchRouter);
 router.use(dataExportRouter);
 router.use(beesRouter);
 router.use(pantryRouter);
+router.use(pastureRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);

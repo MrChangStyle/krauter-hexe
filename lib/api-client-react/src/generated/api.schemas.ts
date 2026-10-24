@@ -1124,6 +1124,144 @@ export interface YieldOverview {
   feedCost: null | FeedCostEstimate;
 }
 
+export type PastureKind = typeof PastureKind[keyof typeof PastureKind];
+
+
+export const PastureKind = {
+  pasture: 'pasture',
+  mowing: 'mowing',
+  paddock: 'paddock',
+  meadow: 'meadow',
+} as const;
+
+export type PastureStatus = typeof PastureStatus[keyof typeof PastureStatus];
+
+
+export const PastureStatus = {
+  grazed: 'grazed',
+  resting: 'resting',
+  ready: 'ready',
+} as const;
+
+export interface Grazing {
+  id: number;
+  pastureId: number;
+  /** @nullable */
+  herdId: number | null;
+  label: string;
+  animals: number;
+  startOn: string;
+  /**
+     * Null – still grazing.
+     * @nullable
+     */
+  endOn: string | null;
+  /** @nullable */
+  notes: string | null;
+}
+
+export type PastureHintKind = typeof PastureHintKind[keyof typeof PastureHintKind];
+
+
+export const PastureHintKind = {
+  'too-long': 'too-long',
+  early: 'early',
+} as const;
+
+export interface PastureHint {
+  kind: PastureHintKind;
+  pastureId: number;
+  urgent: boolean;
+  text: string;
+}
+
+export interface Pasture {
+  id: number;
+  name: string;
+  kind: PastureKind;
+  /** @nullable */
+  areaHa: number | null;
+  restDays: number;
+  maxGrazeDays: number;
+  /** @nullable */
+  notes: string | null;
+  archived: boolean;
+  status: PastureStatus;
+  current: null | Grazing;
+  /**
+     * When the rest after the last grazing ends.
+     * @nullable
+     */
+  readyOn: string | null;
+  /** This year. */
+  grazingDays: number;
+  /** This year – days × animals. */
+  animalDays: number;
+  /** @nullable */
+  animalDaysPerHa: number | null;
+  /** The last ten entries of the diary. */
+  grazings: Grazing[];
+  hints: PastureHint[];
+}
+
+export interface PastureHerd {
+  id: number;
+  name: string;
+  species: FarmSpecies;
+  animals: number;
+}
+
+export interface PastureOverview {
+  pastures: Pasture[];
+  herds: PastureHerd[];
+  year: number;
+}
+
+export interface PastureInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+  kind?: PastureKind;
+  /** @nullable */
+  areaHa?: number | null;
+  restDays?: number;
+  maxGrazeDays?: number;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  notes?: string | null;
+  archived?: boolean;
+}
+
+export interface GrazingInput {
+  /** @nullable */
+  herdId?: number | null;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  label?: string | null;
+  animals: number;
+  startOn: string;
+  /**
+     * Umtreiben – the grazing the herd leaves; it ends the day before.
+     * @nullable
+     */
+  fromGrazingId?: number | null;
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface GrazingEndInput {
+  endOn: string;
+}
+
 export type PantryKind = typeof PantryKind[keyof typeof PantryKind];
 
 
@@ -1696,6 +1834,7 @@ export const ModuleId = {
   members: 'members',
   bees: 'bees',
   pantry: 'pantry',
+  pasture: 'pasture',
 } as const;
 
 /**
@@ -1717,6 +1856,7 @@ export const PushTopic = {
   wildlife: 'wildlife',
   bees: 'bees',
   pantry: 'pantry',
+  pasture: 'pasture',
   admin: 'admin',
 } as const;
 
@@ -1771,6 +1911,7 @@ export const SearchGroupKind = {
   feeds: 'feeds',
   bees: 'bees',
   pantry: 'pantry',
+  pastures: 'pastures',
   contacts: 'contacts',
 } as const;
 

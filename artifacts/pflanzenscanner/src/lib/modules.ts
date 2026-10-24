@@ -38,6 +38,7 @@ export const MODULES: readonly ModuleDef[] = [
   { id: "medicines", area: "tiere", label: "Arzneimittel", hint: "Vorrat, Charge, Wartezeit", tier: "base" },
   { id: "duties", area: "tiere", label: "Pflichten & Tierseuchen", hint: "Anmeldung, Kasse, Stallpflicht", tier: "base" },
   { id: "yields", area: "tiere", label: "Ertrag & Bilanz", hint: "Eier, Milch, Ernte, Kosten", tier: "base" },
+  { id: "pasture", area: "tiere", label: "Weide", hint: "Flächen, Weidetagebuch, Ruhezeit", tier: "base" },
   { id: "bees", area: "tiere", label: "Bienen", hint: "Stockkarte, Varroa, Honig", tier: "base" },
   { id: "wildlife", area: "tiere", label: "Wildtier-Radar", hint: "Kameras & Raubtier-Alarm", tier: "base" },
   { id: "handover", area: "tiere", label: "Übergabe", hint: "Vertretung für ein paar Tage", tier: "base" },
@@ -82,7 +83,7 @@ export function toggleModule(hidden: readonly ModuleId[], id: ModuleId): ModuleI
  * Modul-Freigaben (docs/team.md): the farm modules an admin can grant per
  * member – the same list as FARM_MODULES on the server.
  */
-export const FARM_MODULE_IDS: readonly ModuleId[] = ["farm-tasks", "feed", "breeding", "medicines", "duties", "yields", "wildlife", "handover", "export", "members", "garden", "bees", "pantry"];
+export const FARM_MODULE_IDS: readonly ModuleId[] = ["farm-tasks", "feed", "breeding", "medicines", "duties", "yields", "wildlife", "handover", "export", "members", "garden", "bees", "pantry", "pasture"];
 
 /** Whether the viewer may use `id` on this farm (admins and members without a list: everything). */
 export function farmModuleGranted(farm: { role: string; modules?: readonly ModuleId[] | null } | null | undefined, id: ModuleId): boolean {

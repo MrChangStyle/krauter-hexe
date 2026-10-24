@@ -4234,6 +4234,475 @@ export const UndoPantryUseResponse = zod.object({
 
 
 /**
+ * @summary Weide – pastures, grazing diary and hints (docs/weide.md)
+ */
+export const GetPasturesParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetPasturesResponse = zod.object({
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Add a pasture (caretaker)
+ */
+export const CreatePastureParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const createPastureBodyNameMax = 60;
+
+export const createPastureBodyNotesMax = 500;
+
+
+
+export const CreatePastureBody = zod.object({
+  "name": zod.string().min(1).max(createPastureBodyNameMax),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']).optional(),
+  "areaHa": zod.number().nullish(),
+  "restDays": zod.number().optional(),
+  "maxGrazeDays": zod.number().optional(),
+  "notes": zod.string().max(createPastureBodyNotesMax).nullish(),
+  "archived": zod.boolean().optional()
+})
+
+export const CreatePastureResponse = zod.object({
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Change a pasture (caretaker)
+ */
+export const UpdatePastureParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "pastureId": zod.coerce.number()
+})
+
+export const updatePastureBodyNameMax = 60;
+
+export const updatePastureBodyNotesMax = 500;
+
+
+
+export const UpdatePastureBody = zod.object({
+  "name": zod.string().min(1).max(updatePastureBodyNameMax),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']).optional(),
+  "areaHa": zod.number().nullish(),
+  "restDays": zod.number().optional(),
+  "maxGrazeDays": zod.number().optional(),
+  "notes": zod.string().max(updatePastureBodyNotesMax).nullish(),
+  "archived": zod.boolean().optional()
+})
+
+export const UpdatePastureResponse = zod.object({
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Delete a pasture with its diary (admin)
+ */
+export const DeletePastureParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "pastureId": zod.coerce.number()
+})
+
+export const DeletePastureResponse = zod.object({
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Auftreiben – or umtreiben from another pasture (caretaker)
+ */
+export const StartGrazingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "pastureId": zod.coerce.number()
+})
+
+export const startGrazingBodyLabelMax = 60;
+
+export const startGrazingBodyNotesMax = 300;
+
+
+
+export const StartGrazingBody = zod.object({
+  "herdId": zod.number().nullish(),
+  "label": zod.string().max(startGrazingBodyLabelMax).nullish(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "fromGrazingId": zod.number().nullish().describe('Umtreiben – the grazing the herd leaves; it ends the day before.'),
+  "notes": zod.string().max(startGrazingBodyNotesMax).nullish()
+})
+
+export const StartGrazingResponse = zod.object({
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Abtreiben (caretaker)
+ */
+export const EndGrazingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "grazingId": zod.coerce.number()
+})
+
+export const EndGrazingBody = zod.object({
+  "endOn": zod.string()
+})
+
+export const EndGrazingResponse = zod.object({
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Delete a diary entry (caretaker)
+ */
+export const DeleteGrazingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "grazingId": zod.coerce.number()
+})
+
+export const DeleteGrazingResponse = zod.object({
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
  * @summary Enter eggs, milk, meat or wool (caretaker)
  */
 export const AddYieldParams = zod.object({
@@ -5857,7 +6326,7 @@ export const ListMyFarmsResponseItem = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 export const ListMyFarmsResponse = zod.array(ListMyFarmsResponseItem)
 
@@ -5878,7 +6347,7 @@ export const CreateFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 
@@ -5890,7 +6359,7 @@ export const EnsureOwnFarmResponseItem = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 export const EnsureOwnFarmResponse = zod.array(EnsureOwnFarmResponseItem)
 
@@ -5909,7 +6378,7 @@ export const ListFarmMembersResponseItem = zod.object({
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const ListFarmMembersResponse = zod.array(ListFarmMembersResponseItem)
 
@@ -5938,7 +6407,7 @@ export const AddFarmMemberResponseItem = zod.object({
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const AddFarmMemberResponse = zod.array(AddFarmMemberResponseItem)
 
@@ -5956,7 +6425,7 @@ export const setFarmMemberModulesBodyModulesMax = 40;
 
 
 export const SetFarmMemberModulesBody = zod.object({
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).max(setFarmMemberModulesBodyModulesMax).nullable().describe('null = all farm modules')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).max(setFarmMemberModulesBodyModulesMax).nullable().describe('null = all farm modules')
 })
 
 export const SetFarmMemberModulesResponseItem = zod.object({
@@ -5966,7 +6435,7 @@ export const SetFarmMemberModulesResponseItem = zod.object({
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const SetFarmMemberModulesResponse = zod.array(SetFarmMemberModulesResponseItem)
 
@@ -5991,7 +6460,7 @@ export const ChangeFarmMemberRoleResponseItem = zod.object({
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules this member may use; null = all (always null for admins)')
 })
 export const ChangeFarmMemberRoleResponse = zod.array(ChangeFarmMemberRoleResponseItem)
 
@@ -8132,7 +8601,7 @@ export const RenameFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 
@@ -8162,7 +8631,7 @@ export const GetFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
 })
 
 
@@ -8304,9 +8773,9 @@ export const getSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 export const GetSettingsResponse = zod.object({
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
-  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])),
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])),
   "onboarded": zod.boolean(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(getSettingsResponseQuietHoursOneFromRegExp),
   "to": zod.string().regex(getSettingsResponseQuietHoursOneToRegExp)
@@ -8326,9 +8795,9 @@ export const setSettingsBodyQuietHoursOneToRegExp = new RegExp('^([01][0-9]|2[0-
 
 
 export const SetSettingsBody = zod.object({
-  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])).max(setSettingsBodyHiddenModulesMax).optional(),
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).max(setSettingsBodyHiddenModulesMax).optional(),
   "onboarded": zod.boolean().optional(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).max(setSettingsBodyPushOffMax).optional(),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).max(setSettingsBodyPushOffMax).optional(),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(setSettingsBodyQuietHoursOneFromRegExp),
   "to": zod.string().regex(setSettingsBodyQuietHoursOneToRegExp)
@@ -8342,9 +8811,9 @@ export const setSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 export const SetSettingsResponse = zod.object({
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
-  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry'])),
+  "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])),
   "onboarded": zod.boolean(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(setSettingsResponseQuietHoursOneFromRegExp),
   "to": zod.string().regex(setSettingsResponseQuietHoursOneToRegExp)
@@ -8366,7 +8835,7 @@ export const SearchQueryParams = zod.object({
 
 export const SearchResponse = zod.object({
   "groups": zod.array(zod.object({
-  "kind": zod.enum(['plants', 'insects', 'animals', 'herds', 'beds', 'seeds', 'medicines', 'feeds', 'bees', 'pantry', 'contacts']),
+  "kind": zod.enum(['plants', 'insects', 'animals', 'herds', 'beds', 'seeds', 'medicines', 'feeds', 'bees', 'pantry', 'pastures', 'contacts']),
   "label": zod.string(),
   "items": zod.array(zod.object({
   "title": zod.string(),

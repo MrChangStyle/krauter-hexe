@@ -32,6 +32,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Ertrag & Bilanz", hint: "Eier, Milch, Kosten", href: "/farm/ertrag", module: "yields", words: "eier milch ernte kosten verkauf" },
   { title: "Am Stall", hint: "Eier und Aufgaben mit einem Tipp", href: "/farm/stall", module: "farm-tasks", words: "schnell erfassen eier gefüttert getränkt wasser offline" },
   { title: "Vorratskammer", hint: "Eingekochtes, Eingefrorenes, Haltbarkeit", href: "/vorrat", module: "pantry", words: "vorrat keller eingekocht einmachen eingefroren gefriertruhe marmelade gläser haltbarkeit" },
+  { title: "Weide", hint: "Flächen, Umtreiben, Ruhezeit", href: "/farm/weide", module: "pasture", words: "weide weiden koppel umtreiben auftreiben weidetagebuch fläche" },
   { title: "Bienen", hint: "Stockkarte, Varroa, Honig", href: "/farm/bienen", module: "bees", words: "imker imkerei volk völker beute varroa honig schwarm königin" },
   { title: "Legeleistung", hint: "Eier je Henne, Verlauf", href: "/farm/legeleistung", module: "yields", words: "eier hennen hühner legen mauser" },
   { title: "Wildtier-Radar", hint: "Kameras und Alarm", href: "/farm/kameras", module: "wildlife", words: "fuchs marder kamera alarm" },

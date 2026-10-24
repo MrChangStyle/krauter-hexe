@@ -32,4 +32,5 @@ export const ModuleId = {
   members: 'members',
   bees: 'bees',
   pantry: 'pantry',
+  pasture: 'pasture',
 } as const;

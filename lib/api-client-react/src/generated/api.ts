@@ -124,6 +124,8 @@ import type {
   GeoReverseInput,
   GeoReverseResult,
   GerminationTestInput,
+  GrazingEndInput,
+  GrazingInput,
   GrowAccess,
   GrowAgeInput,
   GrowCheck,
@@ -166,6 +168,8 @@ import type {
   PantryItemInput,
   PantryOverview,
   PantryTakeInput,
+  PastureInput,
+  PastureOverview,
   PhotoInput,
   Plant,
   PlantHealthInput,
@@ -8242,6 +8246,523 @@ export const useUndoPantryUse = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUndoPantryUseMutationOptions(options));
+    }
+
+export const getGetPasturesUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/pastures`
+}
+
+/**
+ * @summary Weide – pastures, grazing diary and hints (docs/weide.md)
+ */
+export const getPastures = async (farmId: number, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getGetPasturesUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPasturesQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/pastures`
+    ] as const;
+    }
+
+
+export const getGetPasturesQueryOptions = <TData = Awaited<ReturnType<typeof getPastures>>, TError = ErrorType<void>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPastures>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPasturesQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPastures>>> = ({ signal }) => getPastures(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPastures>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPasturesQueryResult = NonNullable<Awaited<ReturnType<typeof getPastures>>>
+export type GetPasturesQueryError = ErrorType<void>
+
+
+/**
+ * @summary Weide – pastures, grazing diary and hints (docs/weide.md)
+ */
+
+export function useGetPastures<TData = Awaited<ReturnType<typeof getPastures>>, TError = ErrorType<void>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPastures>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPasturesQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreatePastureUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/pastures`
+}
+
+/**
+ * @summary Add a pasture (caretaker)
+ */
+export const createPasture = async (farmId: number,
+    pastureInput: PastureInput, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getCreatePastureUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(pastureInput)
+  }
+);}
+
+
+
+
+
+export const getCreatePastureMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPasture>>, TError,{farmId: number;data: BodyType<PastureInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createPasture>>, TError,{farmId: number;data: BodyType<PastureInput>}, TContext> => {
+
+const mutationKey = ['createPasture'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createPasture>>, {farmId: number;data: BodyType<PastureInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  createPasture(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreatePastureMutationResult = NonNullable<Awaited<ReturnType<typeof createPasture>>>
+    export type CreatePastureMutationBody = BodyType<PastureInput>
+    export type CreatePastureMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a pasture (caretaker)
+ */
+export const useCreatePasture = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createPasture>>, TError,{farmId: number;data: BodyType<PastureInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createPasture>>,
+        TError,
+        {farmId: number;data: BodyType<PastureInput>},
+        TContext
+      > => {
+      return useMutation(getCreatePastureMutationOptions(options));
+    }
+
+export const getUpdatePastureUrl = (farmId: number,
+    pastureId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/pastures/${pastureId}`
+}
+
+/**
+ * @summary Change a pasture (caretaker)
+ */
+export const updatePasture = async (farmId: number,
+    pastureId: number,
+    pastureInput: PastureInput, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getUpdatePastureUrl(farmId,pastureId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(pastureInput)
+  }
+);}
+
+
+
+
+
+export const getUpdatePastureMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePasture>>, TError,{farmId: number;pastureId: number;data: BodyType<PastureInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updatePasture>>, TError,{farmId: number;pastureId: number;data: BodyType<PastureInput>}, TContext> => {
+
+const mutationKey = ['updatePasture'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updatePasture>>, {farmId: number;pastureId: number;data: BodyType<PastureInput>}> = (props) => {
+          const {farmId,pastureId,data} = props ?? {};
+
+          return  updatePasture(farmId,pastureId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdatePastureMutationResult = NonNullable<Awaited<ReturnType<typeof updatePasture>>>
+    export type UpdatePastureMutationBody = BodyType<PastureInput>
+    export type UpdatePastureMutationError = ErrorType<void>
+
+    /**
+ * @summary Change a pasture (caretaker)
+ */
+export const useUpdatePasture = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updatePasture>>, TError,{farmId: number;pastureId: number;data: BodyType<PastureInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updatePasture>>,
+        TError,
+        {farmId: number;pastureId: number;data: BodyType<PastureInput>},
+        TContext
+      > => {
+      return useMutation(getUpdatePastureMutationOptions(options));
+    }
+
+export const getDeletePastureUrl = (farmId: number,
+    pastureId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/pastures/${pastureId}`
+}
+
+/**
+ * @summary Delete a pasture with its diary (admin)
+ */
+export const deletePasture = async (farmId: number,
+    pastureId: number, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getDeletePastureUrl(farmId,pastureId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeletePastureMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePasture>>, TError,{farmId: number;pastureId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deletePasture>>, TError,{farmId: number;pastureId: number}, TContext> => {
+
+const mutationKey = ['deletePasture'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePasture>>, {farmId: number;pastureId: number}> = (props) => {
+          const {farmId,pastureId} = props ?? {};
+
+          return  deletePasture(farmId,pastureId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeletePastureMutationResult = NonNullable<Awaited<ReturnType<typeof deletePasture>>>
+
+    export type DeletePastureMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a pasture with its diary (admin)
+ */
+export const useDeletePasture = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePasture>>, TError,{farmId: number;pastureId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deletePasture>>,
+        TError,
+        {farmId: number;pastureId: number},
+        TContext
+      > => {
+      return useMutation(getDeletePastureMutationOptions(options));
+    }
+
+export const getStartGrazingUrl = (farmId: number,
+    pastureId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/pastures/${pastureId}/grazings`
+}
+
+/**
+ * @summary Auftreiben – or umtreiben from another pasture (caretaker)
+ */
+export const startGrazing = async (farmId: number,
+    pastureId: number,
+    grazingInput: GrazingInput, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getStartGrazingUrl(farmId,pastureId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(grazingInput)
+  }
+);}
+
+
+
+
+
+export const getStartGrazingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startGrazing>>, TError,{farmId: number;pastureId: number;data: BodyType<GrazingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof startGrazing>>, TError,{farmId: number;pastureId: number;data: BodyType<GrazingInput>}, TContext> => {
+
+const mutationKey = ['startGrazing'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof startGrazing>>, {farmId: number;pastureId: number;data: BodyType<GrazingInput>}> = (props) => {
+          const {farmId,pastureId,data} = props ?? {};
+
+          return  startGrazing(farmId,pastureId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type StartGrazingMutationResult = NonNullable<Awaited<ReturnType<typeof startGrazing>>>
+    export type StartGrazingMutationBody = BodyType<GrazingInput>
+    export type StartGrazingMutationError = ErrorType<void>
+
+    /**
+ * @summary Auftreiben – or umtreiben from another pasture (caretaker)
+ */
+export const useStartGrazing = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof startGrazing>>, TError,{farmId: number;pastureId: number;data: BodyType<GrazingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof startGrazing>>,
+        TError,
+        {farmId: number;pastureId: number;data: BodyType<GrazingInput>},
+        TContext
+      > => {
+      return useMutation(getStartGrazingMutationOptions(options));
+    }
+
+export const getEndGrazingUrl = (farmId: number,
+    grazingId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/grazings/${grazingId}/end`
+}
+
+/**
+ * @summary Abtreiben (caretaker)
+ */
+export const endGrazing = async (farmId: number,
+    grazingId: number,
+    grazingEndInput: GrazingEndInput, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getEndGrazingUrl(farmId,grazingId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(grazingEndInput)
+  }
+);}
+
+
+
+
+
+export const getEndGrazingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof endGrazing>>, TError,{farmId: number;grazingId: number;data: BodyType<GrazingEndInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof endGrazing>>, TError,{farmId: number;grazingId: number;data: BodyType<GrazingEndInput>}, TContext> => {
+
+const mutationKey = ['endGrazing'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof endGrazing>>, {farmId: number;grazingId: number;data: BodyType<GrazingEndInput>}> = (props) => {
+          const {farmId,grazingId,data} = props ?? {};
+
+          return  endGrazing(farmId,grazingId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type EndGrazingMutationResult = NonNullable<Awaited<ReturnType<typeof endGrazing>>>
+    export type EndGrazingMutationBody = BodyType<GrazingEndInput>
+    export type EndGrazingMutationError = ErrorType<void>
+
+    /**
+ * @summary Abtreiben (caretaker)
+ */
+export const useEndGrazing = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof endGrazing>>, TError,{farmId: number;grazingId: number;data: BodyType<GrazingEndInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof endGrazing>>,
+        TError,
+        {farmId: number;grazingId: number;data: BodyType<GrazingEndInput>},
+        TContext
+      > => {
+      return useMutation(getEndGrazingMutationOptions(options));
+    }
+
+export const getDeleteGrazingUrl = (farmId: number,
+    grazingId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/grazings/${grazingId}`
+}
+
+/**
+ * @summary Delete a diary entry (caretaker)
+ */
+export const deleteGrazing = async (farmId: number,
+    grazingId: number, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getDeleteGrazingUrl(farmId,grazingId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteGrazingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrazing>>, TError,{farmId: number;grazingId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteGrazing>>, TError,{farmId: number;grazingId: number}, TContext> => {
+
+const mutationKey = ['deleteGrazing'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGrazing>>, {farmId: number;grazingId: number}> = (props) => {
+          const {farmId,grazingId} = props ?? {};
+
+          return  deleteGrazing(farmId,grazingId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteGrazingMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGrazing>>>
+
+    export type DeleteGrazingMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a diary entry (caretaker)
+ */
+export const useDeleteGrazing = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGrazing>>, TError,{farmId: number;grazingId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteGrazing>>,
+        TError,
+        {farmId: number;grazingId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteGrazingMutationOptions(options));
     }
 
 export const getAddYieldUrl = (farmId: number,) => {

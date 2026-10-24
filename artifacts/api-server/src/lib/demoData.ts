@@ -8,12 +8,13 @@
  * shows exactly what a user would get.
  */
 
-import { db, farmAnimalsTable, farmMembershipsTable, farmsTable, farmYieldsTable, growAccessTable, growsTable } from '@workspace/db';
+import { db, farmAnimalsTable, farmMembershipsTable, farmsTable, farmYieldsTable, growAccessTable, growsTable, pastureGrazingsTable, pasturesTable } from '@workspace/db';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { addFeeding, addHoney, addInspection, addTreatment, createColony } from './bees';
 import { createBreeding } from './breeding';
 import { createItem as createPantryItem, takeOut } from './pantry';
+import { createPasture, startGrazing } from './pasture';
 import { FarmDataError } from './farmAnimals';
 import { createCamera } from './farmCameras';
 import { createContact } from './farmContacts';
@@ -121,6 +122,16 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await takeOut(farmId, beans, 1, ago(10));
   await createPantryItem(farmId, { name: 'Kirschen (Demo)', kind: 'frozen', amount: 3, unit: 'Beutel', location: 'Gefriertruhe', madeOn: ago(260), bestBefore: addDays(today, 12) });
   await createPantryItem(farmId, { name: 'Blütenhonig (Demo)', kind: 'honey', amount: 8, unit: 'Glas', location: 'Keller', madeOn: ago(60), bestBefore: addDays(today, 670) });
+
+  // Weide: the goats moved from one pasture to the other.
+  await createPasture(farmId, { name: 'Obstwiese (Demo)', areaHa: 0.6, restDays: 35, maxGrazeDays: 10 });
+  await createPasture(farmId, { name: 'Hangweide (Demo)', areaHa: 0.9, restDays: 35, maxGrazeDays: 10 });
+  const pastures = await db.select({ id: pasturesTable.id, name: pasturesTable.name }).from(pasturesTable).where(eq(pasturesTable.farmId, farmId));
+  const obst = pastures.find((p) => p.name.startsWith('Obstwiese'));
+  const hang = pastures.find((p) => p.name.startsWith('Hangweide'));
+  await startGrazing(farmId, obst!.id, { herdId: goats.herdId, animals: 2, startOn: ago(16) });
+  const [onObst] = await db.select({ id: pastureGrazingsTable.id }).from(pastureGrazingsTable).where(eq(pastureGrazingsTable.pastureId, obst!.id));
+  await startGrazing(farmId, hang!.id, { herdId: goats.herdId, animals: 2, startOn: ago(6), fromGrazingId: onObst!.id });
 
   // Beet-Architekt and Saatgut.
   const raised = await createBed(farmId, { name: 'Hochbeet (Demo)', type: 'raised', lengthCm: 200, widthCm: 100 });

@@ -18,6 +18,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { taskIntervalUnitEnum } from "./tasks";
+import { beeColoniesTable } from "./bees";
 
 // "Meine Farm" – the animal module of Little Farming (docs/meine-farm-app.md).
 //
@@ -386,7 +387,7 @@ export const breedingRecordsTable = pgTable(
 
 // Ertrag & Bilanz (lib/farmYields.ts): what the animals gave – eggs, milk,
 // meat, wool – one row per entry. The garden's harvests are in harvest_logs.
-export const FARM_PRODUCTS = ["eggs", "milk", "meat", "wool"] as const;
+export const FARM_PRODUCTS = ["eggs", "milk", "meat", "wool", "honey"] as const;
 export type FarmProduct = (typeof FARM_PRODUCTS)[number];
 
 export const farmYieldsTable = pgTable(
@@ -406,6 +407,8 @@ export const farmYieldsTable = pgTable(
     // Set by "Am Stall" (docs/stall.md): an entry sent twice from the offline
     // queue is stored once.
     clientId: text("client_id"),
+    // Honey: the colony it came from (docs/bienen.md).
+    colonyId: integer("colony_id").references((): AnyPgColumn => beeColoniesTable.id, { onDelete: "set null" }),
   },
   (table) => [
     index("farm_yields_farm_date_idx").on(table.farmId, table.date),

@@ -4,6 +4,7 @@ import { FARM_SCHEMA_STATEMENTS } from "./farmSchemaStatements";
 import { GARDEN_SCHEMA_STATEMENTS } from "./gardenSchemaStatements";
 import { FEED_SCHEMA_STATEMENTS } from "./feedSchemaStatements";
 import { GROW_SCHEMA_STATEMENTS } from "./growSchemaStatements";
+import { BEE_SCHEMA_STATEMENTS } from "./beeSchemaStatements";
 
 /**
  * Small, additive schema changes applied at server start.
@@ -54,6 +55,8 @@ const STATEMENTS = [
   ...FEED_SCHEMA_STATEMENTS,
   // Grow (generated, see growSchemaStatements.ts).
   ...GROW_SCHEMA_STATEMENTS,
+  // Bienen (generated, see beeSchemaStatements.ts).
+  ...BEE_SCHEMA_STATEMENTS,
   // Module and first-start assistant (schema/settings.ts).
   `CREATE TABLE IF NOT EXISTS "user_settings" (
 	"user_id" text PRIMARY KEY NOT NULL,

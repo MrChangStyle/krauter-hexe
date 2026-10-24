@@ -5,6 +5,7 @@ export const PRODUCTS: Record<FarmProduct, { label: string; unit: string; step: 
   milk: { label: "Milch", unit: "l", step: "0.1" },
   meat: { label: "Fleisch", unit: "kg", step: "0.1" },
   wool: { label: "Wolle", unit: "kg", step: "0.1" },
+  honey: { label: "Honig", unit: "kg", step: "0.1" },
 };
 
 export const EXPENSE_LABELS: Record<ExpenseCategory, string> = {

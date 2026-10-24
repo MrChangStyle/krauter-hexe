@@ -9,6 +9,7 @@ export const PUSH_TOPICS: { topic: PushTopic; label: string; hint: string; modul
   { topic: "medicines", label: "Arzneimittel", hint: "Ablaufdaten", module: "medicines" },
   { topic: "breeding", label: "Zucht", hint: "Geburt, Schlupf, Schritte", module: "breeding" },
   { topic: "duties", label: "Pflichten", hint: "Meldungen und Fristen", module: "duties" },
+  { topic: "bees", label: "Bienen", hint: "Schwarmkontrolle, Varroa, Einfüttern", module: "bees" },
   { topic: "wildlife", label: "Raubtier-Alarm", hint: "Kommt auch in der Ruhezeit", module: "wildlife" },
   { topic: "weather", label: "Wetterwarnungen", hint: "Frost, Hitze, Sturm, Starkregen" },
   { topic: "grow", label: "Grow", hint: "Schritte und Wetter fürs Zelt", module: "grow" },

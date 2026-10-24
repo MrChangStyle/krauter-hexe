@@ -86,6 +86,14 @@ describe.skipIf(!enabled)("Suche (real database)", () => {
     expect(kinds(await find("tom", farmId))).toEqual(["plants", "insects"]);
   });
 
+  it("finds active bee colonies with the Bienen grant", async () => {
+    await q(`INSERT INTO bee_colonies (farm_id, name, apiary, status) VALUES ($1, 'Lindenvolk', 'Obstwiese', 'active'), ($1, 'Lindenalt', null, 'lost')`, [farmId]);
+    const bees = (await find("linden", farmId)).data.groups.find((g) => g.kind === "bees");
+    expect(bees?.items).toEqual([{ title: "Lindenvolk", subtitle: "Obstwiese", href: expect.stringMatching(/^\/farm\/bienen\/\d+$/) }]);
+    as = "carl";
+    expect(kinds(await find("linden", farmId))).not.toContain("bees");
+  });
+
   it("ignores too short queries, wildcards and odd farm ids", async () => {
     expect((await find("t")).data.groups).toEqual([]);
     expect((await find("%")).data.groups).toEqual([]);

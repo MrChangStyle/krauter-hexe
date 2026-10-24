@@ -31,6 +31,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Pflichten & Tierseuchen", hint: "Anmeldung, Kasse, Stallpflicht", href: "/farm/pflichten", module: "duties", words: "meldung tierseuchenkasse vetamt geflügelpest" },
   { title: "Ertrag & Bilanz", hint: "Eier, Milch, Kosten", href: "/farm/ertrag", module: "yields", words: "eier milch ernte kosten verkauf" },
   { title: "Am Stall", hint: "Eier und Aufgaben mit einem Tipp", href: "/farm/stall", module: "farm-tasks", words: "schnell erfassen eier gefüttert getränkt wasser offline" },
+  { title: "Bienen", hint: "Stockkarte, Varroa, Honig", href: "/farm/bienen", module: "bees", words: "imker imkerei volk völker beute varroa honig schwarm königin" },
   { title: "Legeleistung", hint: "Eier je Henne, Verlauf", href: "/farm/legeleistung", module: "yields", words: "eier hennen hühner legen mauser" },
   { title: "Wildtier-Radar", hint: "Kameras und Alarm", href: "/farm/kameras", module: "wildlife", words: "fuchs marder kamera alarm" },
   { title: "Übergabe", hint: "Für die Vertretung", href: "/farm/uebergabe", module: "handover", words: "urlaub vertretung" },

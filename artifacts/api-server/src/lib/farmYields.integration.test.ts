@@ -150,7 +150,7 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
 
   it("checks the input and deletes", async () => {
     const bad = async (body: object) => (await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 5, ...body })).status;
-    expect(await bad({ product: "honey" })).toBe(400);
+    expect(await bad({ product: "seife" })).toBe(400);
     expect(await bad({ amount: 0 })).toBe(400);
     expect(await bad({ date: "2099-01-01" })).toBe(400);
     const [other] = await q<{ id: number }>("INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Fremd', 'poultry') RETURNING id", [otherFarm]);
@@ -170,7 +170,7 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
     await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 10 });
     await q("INSERT INTO harvest_logs (farm_id, season, crop_key, label, cells, harvested_on, amount_kg, use) VALUES ($1, 2026, 'kuerbis', 'Kürbis', 2, '2026-09-20', 8, 'fodder')", [farmId]);
     let prices = (await api("GET", `/farms/${farmId}/prices`)).data;
-    expect(prices.map((p: any) => p.key)).toEqual(["product:eggs", "product:milk", "product:meat", "product:wool", "fodder", "crop:kuerbis"]);
+    expect(prices.map((p: any) => p.key)).toEqual(["product:eggs", "product:milk", "product:meat", "product:wool", "product:honey", "fodder", "crop:kuerbis"]);
     expect(prices[0]).toEqual({ key: "product:eggs", label: "Eier", unit: "Stück", eur: 0.4, own: false });
     prices = (await api("PUT", `/farms/${farmId}/prices`, { key: "product:eggs", eur: 0.6 })).data;
     expect(prices[0]).toMatchObject({ eur: 0.6, own: true });
@@ -229,7 +229,7 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
     expect(data.balance).toBe(38.5);
     const bad = async (body: object) => (await api("POST", `/farms/${farmId}/sales`, { date: "2026-10-01", revenueEur: 5, ...body })).data?.error;
     expect(await bad({})).toBe("Bitte gib an, was verkauft wurde.");
-    expect(await bad({ product: "product:honey" })).toBe("Dieses Produkt gibt es nicht.");
+    expect(await bad({ product: "product:seife" })).toBe("Dieses Produkt gibt es nicht.");
     expect(await bad({ product: "crop:gibtsnicht" })).toBe("Dieses Produkt gibt es nicht.");
     expect(await bad({ product: "product:eggs", revenueEur: 0 })).toBe("Der Erlös ist ungültig.");
     const id = data.sales.entries[0].id;

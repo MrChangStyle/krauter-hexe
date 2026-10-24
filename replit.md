@@ -216,6 +216,7 @@ Am Stall (`docs/stall.md`): `/farm/stall`, „+1 Ei“ und fällige Stall-Aufgab
 Erinnerung aus der Gesundheitsakte (`docs/gesundheit-erinnerung.md`): Entwurmung/Impfung mit „Erinnern zum Wiederholen“ → Stall-Aufgabe „Entwurmen“/„Impfen“ für das Tier (`scheduleRepeat()` in `lib/medicalRepeat.ts`).
 Wetterabhängige Pflege (`docs/pflege-wetter.md`): Pflegeaufgaben drinnen/draußen; Winter (Nov–Feb) seltener gießen, nicht düngen (`user_settings.seasonal_care`); Regen ≥ 5 l/m² gießt draußen (`tasks.rain_skipped_on`, kein Push); „Frost in Sicht“ höchstens alle 45 Tage (`lib/careWeather.ts`, `GET /care/weather`).
 Ernte-Auswertung (`docs/ernte-auswertung.md`): `/beete/ernte`, je Kultur und Beet kg, Ladenwert, kg/m², €/m², Vorjahr, „Hat sich gelohnt“; `GET /farms/:farmId/garden/seasons/:season/harvest-report` (`lib/harvestReport.ts`).
+Bienen (`docs/bienen.md`): Modul `bees`, `/farm/bienen` mit Stockkarte je Volk (Durchsicht, Fütterung, Varroa mit Arzneimittel-Vorrat, Honig → `farm_yields` Produkt `honey`), Hinweise und Push nach dem Bienenjahr (`lib/bees.ts`).
 
 ## Hof-Dashboard
 

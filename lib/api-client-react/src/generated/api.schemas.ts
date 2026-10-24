@@ -910,6 +910,7 @@ export const FarmProduct = {
   milk: 'milk',
   meat: 'meat',
   wool: 'wool',
+  honey: 'honey',
 } as const;
 
 export interface YieldInput {
@@ -1123,6 +1124,287 @@ export interface YieldOverview {
   feedCost: null | FeedCostEstimate;
 }
 
+export type BeeColonyStatus = typeof BeeColonyStatus[keyof typeof BeeColonyStatus];
+
+
+export const BeeColonyStatus = {
+  active: 'active',
+  dissolved: 'dissolved',
+  lost: 'lost',
+  sold: 'sold',
+} as const;
+
+export type BeeFeedKind = typeof BeeFeedKind[keyof typeof BeeFeedKind];
+
+
+export const BeeFeedKind = {
+  sirup: 'sirup',
+  zuckerwasser: 'zuckerwasser',
+  futterteig: 'futterteig',
+  honig: 'honig',
+  sonstiges: 'sonstiges',
+} as const;
+
+export type VarroaMethod = typeof VarroaMethod[keyof typeof VarroaMethod];
+
+
+export const VarroaMethod = {
+  ameisensaeure: 'ameisensaeure',
+  oxalsaeure: 'oxalsaeure',
+  milchsaeure: 'milchsaeure',
+  thymol: 'thymol',
+  drohnenbrut: 'drohnenbrut',
+  sonstiges: 'sonstiges',
+} as const;
+
+export type BeeEntryKind = typeof BeeEntryKind[keyof typeof BeeEntryKind];
+
+
+export const BeeEntryKind = {
+  inspections: 'inspections',
+  feedings: 'feedings',
+  treatments: 'treatments',
+  honey: 'honey',
+} as const;
+
+export type BeeHintKind = typeof BeeHintKind[keyof typeof BeeHintKind];
+
+
+export const BeeHintKind = {
+  'swarm-check': 'swarm-check',
+  swarm: 'swarm',
+  varroa: 'varroa',
+  'summer-treatment': 'summer-treatment',
+  'winter-treatment': 'winter-treatment',
+  feeding: 'feeding',
+  'old-queen': 'old-queen',
+} as const;
+
+export interface BeeHint {
+  kind: BeeHintKind;
+  colonyId: number;
+  urgent: boolean;
+  text: string;
+}
+
+export interface BeeMiteCount {
+  date: string;
+  mitesPerDay: number;
+}
+
+export interface BeeColony {
+  id: number;
+  name: string;
+  /** @nullable */
+  apiary: string | null;
+  /** @nullable */
+  hiveType: string | null;
+  /** @nullable */
+  queenYear: number | null;
+  queenMarked: boolean;
+  /** @nullable */
+  queenOrigin: string | null;
+  status: BeeColonyStatus;
+  /** @nullable */
+  startedOn: string | null;
+  /** @nullable */
+  endedOn: string | null;
+  /** @nullable */
+  notes: string | null;
+  /** @nullable */
+  lastInspectionOn: string | null;
+  /**
+     * Frames covered with bees at the last inspection.
+     * @nullable
+     */
+  beeFrames: number | null;
+  lastMites: null | BeeMiteCount;
+  /** @nullable */
+  lastTreatmentOn: string | null;
+  honeyKgThisYear: number;
+  feedKgThisYear: number;
+  hints: BeeHint[];
+}
+
+export interface BeeOverview {
+  colonies: BeeColony[];
+  active: number;
+  honeyKgThisYear: number;
+  apiaries: string[];
+  year: number;
+}
+
+export interface BeeInspection {
+  id: number;
+  colonyId: number;
+  date: string;
+  /** @nullable */
+  beeFrames: number | null;
+  /** @nullable */
+  broodFrames: number | null;
+  queenSeen: boolean;
+  eggsSeen: boolean;
+  /** @nullable */
+  queenCells: number | null;
+  /**
+     * Sanftmut 1 (very gentle) to 4 (aggressive).
+     * @nullable
+     */
+  temper: number | null;
+  /** @nullable */
+  foodKg: number | null;
+  /** @nullable */
+  mitesPerDay: number | null;
+  /** @nullable */
+  notes: string | null;
+}
+
+export interface BeeFeeding {
+  id: number;
+  colonyId: number;
+  date: string;
+  kind: BeeFeedKind;
+  amountKg: number;
+  /** @nullable */
+  notes: string | null;
+}
+
+export interface BeeTreatment {
+  id: number;
+  colonyId: number;
+  date: string;
+  method: VarroaMethod;
+  /** @nullable */
+  medicineId: number | null;
+  /** @nullable */
+  product: string | null;
+  /** @nullable */
+  dose: number | null;
+  /** @nullable */
+  unit: string | null;
+  /** @nullable */
+  batch: string | null;
+  /** @nullable */
+  notes: string | null;
+}
+
+export interface BeeHoney {
+  id: number;
+  /** @nullable */
+  colonyId: number | null;
+  date: string;
+  amountKg: number;
+  /** @nullable */
+  note: string | null;
+}
+
+export interface BeeColonyDetail {
+  colony: BeeColony;
+  inspections: BeeInspection[];
+  feedings: BeeFeeding[];
+  treatments: BeeTreatment[];
+  honey: BeeHoney[];
+}
+
+export interface BeeColonyInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  apiary?: string | null;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  hiveType?: string | null;
+  /** @nullable */
+  queenYear?: number | null;
+  queenMarked?: boolean;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  queenOrigin?: string | null;
+  status?: BeeColonyStatus;
+  /** @nullable */
+  startedOn?: string | null;
+  /** @nullable */
+  endedOn?: string | null;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface BeeInspectionInput {
+  date: string;
+  /** @nullable */
+  beeFrames?: number | null;
+  /** @nullable */
+  broodFrames?: number | null;
+  queenSeen?: boolean;
+  eggsSeen?: boolean;
+  /** @nullable */
+  queenCells?: number | null;
+  /** @nullable */
+  temper?: number | null;
+  /** @nullable */
+  foodKg?: number | null;
+  /** @nullable */
+  mitesPerDay?: number | null;
+  /**
+     * @maxLength 1000
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface BeeFeedingInput {
+  date: string;
+  kind: BeeFeedKind;
+  amountKg: number;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface BeeTreatmentInput {
+  date: string;
+  method: VarroaMethod;
+  /** @nullable */
+  medicineId?: number | null;
+  /**
+     * @maxLength 100
+     * @nullable
+     */
+  product?: string | null;
+  /** @nullable */
+  dose?: number | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface BeeHoneyInput {
+  date: string;
+  amountKg: number;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  note?: string | null;
+}
+
 export interface HarvestYear {
   kg: number;
   value: number;
@@ -1300,6 +1582,7 @@ export const ModuleId = {
   handover: 'handover',
   export: 'export',
   members: 'members',
+  bees: 'bees',
 } as const;
 
 /**
@@ -1319,6 +1602,7 @@ export const PushTopic = {
   garden: 'garden',
   grow: 'grow',
   wildlife: 'wildlife',
+  bees: 'bees',
   admin: 'admin',
 } as const;
 
@@ -1371,6 +1655,7 @@ export const SearchGroupKind = {
   seeds: 'seeds',
   medicines: 'medicines',
   feeds: 'feeds',
+  bees: 'bees',
   contacts: 'contacts',
 } as const;
 

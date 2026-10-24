@@ -35,6 +35,7 @@ export const PRODUCT_UNITS: Record<FarmProduct, { unit: string; label: string }>
   milk: { unit: 'l', label: 'Milch' },
   meat: { unit: 'kg', label: 'Fleisch' },
   wool: { unit: 'kg', label: 'Wolle' },
+  honey: { unit: 'kg', label: 'Honig' },
 };
 
 /** Shop prices in € per unit (organic or farm-gate level, Germany) – a start the farm can change. */
@@ -43,6 +44,8 @@ export const DEFAULT_PRICES: Record<string, number> = {
   'product:milk': 1.5,
   'product:meat': 14,
   'product:wool': 2,
+  // Honey from the beekeeper, about 6–7 € per 500 g jar.
+  'product:honey': 13,
   // Garden harvest used as fodder: what bought fodder vegetables would cost.
   fodder: 0.3,
   'crop:tomate': 4,
@@ -467,7 +470,7 @@ export async function removeExpense(farmId: number, id: number): Promise<void> {
   if (deleted.length === 0) throw notFound();
 }
 
-const SALE_PRODUCT = /^(product:(eggs|milk|meat|wool)|crop:[a-z_]{1,40})$/;
+const SALE_PRODUCT = /^(product:(eggs|milk|meat|wool|honey)|crop:[a-z_]{1,40})$/;
 
 export interface SaleInput {
   date: unknown;
@@ -534,7 +537,7 @@ export async function priceList(farmId: number): Promise<PriceItem[]> {
   ];
 }
 
-const PRICE_KEY = /^(product:(eggs|milk|meat|wool)|fodder|crop:[a-z_]{1,40})$/;
+const PRICE_KEY = /^(product:(eggs|milk|meat|wool|honey)|fodder|crop:[a-z_]{1,40})$/;
 
 /** Set a price, or go back to the default with null. */
 export async function setPrice(farmId: number, key: string, eur: number | null): Promise<PriceItem[]> {

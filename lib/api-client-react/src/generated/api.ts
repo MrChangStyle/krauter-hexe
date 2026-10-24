@@ -38,6 +38,14 @@ import type {
   BedPhotoInput,
   BedPlanting,
   BedPlantingInput,
+  BeeColonyDetail,
+  BeeColonyInput,
+  BeeEntryKind,
+  BeeFeedingInput,
+  BeeHoneyInput,
+  BeeInspectionInput,
+  BeeOverview,
+  BeeTreatmentInput,
   BreedingEndInput,
   BreedingEndResult,
   BreedingInput,
@@ -7036,6 +7044,757 @@ export function useGetLayingHistory<TData = Awaited<ReturnType<typeof getLayingH
 
 
 
+
+export const getGetBeeOverviewUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees`
+}
+
+/**
+ * @summary Bienen – the farm's colonies with hints (docs/bienen.md)
+ */
+export const getBeeOverview = async (farmId: number, options?: RequestInit): Promise<BeeOverview> => {
+
+  return customFetch<BeeOverview>(getGetBeeOverviewUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBeeOverviewQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/bees`
+    ] as const;
+    }
+
+
+export const getGetBeeOverviewQueryOptions = <TData = Awaited<ReturnType<typeof getBeeOverview>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBeeOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBeeOverviewQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBeeOverview>>> = ({ signal }) => getBeeOverview(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBeeOverview>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBeeOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof getBeeOverview>>>
+export type GetBeeOverviewQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Bienen – the farm's colonies with hints (docs/bienen.md)
+ */
+
+export function useGetBeeOverview<TData = Awaited<ReturnType<typeof getBeeOverview>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBeeOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBeeOverviewQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateBeeColonyUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees`
+}
+
+/**
+ * @summary Add a colony (caretaker)
+ */
+export const createBeeColony = async (farmId: number,
+    beeColonyInput: BeeColonyInput, options?: RequestInit): Promise<BeeColonyDetail> => {
+
+  return customFetch<BeeColonyDetail>(getCreateBeeColonyUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(beeColonyInput)
+  }
+);}
+
+
+
+
+
+export const getCreateBeeColonyMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBeeColony>>, TError,{farmId: number;data: BodyType<BeeColonyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createBeeColony>>, TError,{farmId: number;data: BodyType<BeeColonyInput>}, TContext> => {
+
+const mutationKey = ['createBeeColony'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createBeeColony>>, {farmId: number;data: BodyType<BeeColonyInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  createBeeColony(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateBeeColonyMutationResult = NonNullable<Awaited<ReturnType<typeof createBeeColony>>>
+    export type CreateBeeColonyMutationBody = BodyType<BeeColonyInput>
+    export type CreateBeeColonyMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a colony (caretaker)
+ */
+export const useCreateBeeColony = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBeeColony>>, TError,{farmId: number;data: BodyType<BeeColonyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createBeeColony>>,
+        TError,
+        {farmId: number;data: BodyType<BeeColonyInput>},
+        TContext
+      > => {
+      return useMutation(getCreateBeeColonyMutationOptions(options));
+    }
+
+export const getGetBeeColonyUrl = (farmId: number,
+    colonyId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees/${colonyId}`
+}
+
+/**
+ * @summary A colony's hive card
+ */
+export const getBeeColony = async (farmId: number,
+    colonyId: number, options?: RequestInit): Promise<BeeColonyDetail> => {
+
+  return customFetch<BeeColonyDetail>(getGetBeeColonyUrl(farmId,colonyId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBeeColonyQueryKey = (farmId: number,
+    colonyId: number,) => {
+    return [
+    `/api/farms/${farmId}/bees/${colonyId}`
+    ] as const;
+    }
+
+
+export const getGetBeeColonyQueryOptions = <TData = Awaited<ReturnType<typeof getBeeColony>>, TError = ErrorType<void>>(farmId: number,
+    colonyId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBeeColony>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBeeColonyQueryKey(farmId,colonyId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBeeColony>>> = ({ signal }) => getBeeColony(farmId,colonyId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && colonyId !== null && colonyId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBeeColony>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBeeColonyQueryResult = NonNullable<Awaited<ReturnType<typeof getBeeColony>>>
+export type GetBeeColonyQueryError = ErrorType<void>
+
+
+/**
+ * @summary A colony's hive card
+ */
+
+export function useGetBeeColony<TData = Awaited<ReturnType<typeof getBeeColony>>, TError = ErrorType<void>>(
+ farmId: number,
+    colonyId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBeeColony>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBeeColonyQueryOptions(farmId,colonyId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getUpdateBeeColonyUrl = (farmId: number,
+    colonyId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees/${colonyId}`
+}
+
+/**
+ * @summary Change a colony (caretaker)
+ */
+export const updateBeeColony = async (farmId: number,
+    colonyId: number,
+    beeColonyInput: BeeColonyInput, options?: RequestInit): Promise<BeeColonyDetail> => {
+
+  return customFetch<BeeColonyDetail>(getUpdateBeeColonyUrl(farmId,colonyId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(beeColonyInput)
+  }
+);}
+
+
+
+
+
+export const getUpdateBeeColonyMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBeeColony>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeColonyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateBeeColony>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeColonyInput>}, TContext> => {
+
+const mutationKey = ['updateBeeColony'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateBeeColony>>, {farmId: number;colonyId: number;data: BodyType<BeeColonyInput>}> = (props) => {
+          const {farmId,colonyId,data} = props ?? {};
+
+          return  updateBeeColony(farmId,colonyId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateBeeColonyMutationResult = NonNullable<Awaited<ReturnType<typeof updateBeeColony>>>
+    export type UpdateBeeColonyMutationBody = BodyType<BeeColonyInput>
+    export type UpdateBeeColonyMutationError = ErrorType<void>
+
+    /**
+ * @summary Change a colony (caretaker)
+ */
+export const useUpdateBeeColony = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateBeeColony>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeColonyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateBeeColony>>,
+        TError,
+        {farmId: number;colonyId: number;data: BodyType<BeeColonyInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateBeeColonyMutationOptions(options));
+    }
+
+export const getDeleteBeeColonyUrl = (farmId: number,
+    colonyId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees/${colonyId}`
+}
+
+/**
+ * @summary Delete a colony with its hive card (admin); its honey stays in Ertrag
+ */
+export const deleteBeeColony = async (farmId: number,
+    colonyId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteBeeColonyUrl(farmId,colonyId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteBeeColonyMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeeColony>>, TError,{farmId: number;colonyId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBeeColony>>, TError,{farmId: number;colonyId: number}, TContext> => {
+
+const mutationKey = ['deleteBeeColony'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBeeColony>>, {farmId: number;colonyId: number}> = (props) => {
+          const {farmId,colonyId} = props ?? {};
+
+          return  deleteBeeColony(farmId,colonyId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBeeColonyMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBeeColony>>>
+
+    export type DeleteBeeColonyMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a colony with its hive card (admin); its honey stays in Ertrag
+ */
+export const useDeleteBeeColony = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeeColony>>, TError,{farmId: number;colonyId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBeeColony>>,
+        TError,
+        {farmId: number;colonyId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteBeeColonyMutationOptions(options));
+    }
+
+export const getAddBeeInspectionUrl = (farmId: number,
+    colonyId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees/${colonyId}/inspections`
+}
+
+/**
+ * @summary Enter an inspection (caretaker)
+ */
+export const addBeeInspection = async (farmId: number,
+    colonyId: number,
+    beeInspectionInput: BeeInspectionInput, options?: RequestInit): Promise<BeeColonyDetail> => {
+
+  return customFetch<BeeColonyDetail>(getAddBeeInspectionUrl(farmId,colonyId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(beeInspectionInput)
+  }
+);}
+
+
+
+
+
+export const getAddBeeInspectionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeeInspection>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeInspectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addBeeInspection>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeInspectionInput>}, TContext> => {
+
+const mutationKey = ['addBeeInspection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBeeInspection>>, {farmId: number;colonyId: number;data: BodyType<BeeInspectionInput>}> = (props) => {
+          const {farmId,colonyId,data} = props ?? {};
+
+          return  addBeeInspection(farmId,colonyId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddBeeInspectionMutationResult = NonNullable<Awaited<ReturnType<typeof addBeeInspection>>>
+    export type AddBeeInspectionMutationBody = BodyType<BeeInspectionInput>
+    export type AddBeeInspectionMutationError = ErrorType<void>
+
+    /**
+ * @summary Enter an inspection (caretaker)
+ */
+export const useAddBeeInspection = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeeInspection>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeInspectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addBeeInspection>>,
+        TError,
+        {farmId: number;colonyId: number;data: BodyType<BeeInspectionInput>},
+        TContext
+      > => {
+      return useMutation(getAddBeeInspectionMutationOptions(options));
+    }
+
+export const getAddBeeFeedingUrl = (farmId: number,
+    colonyId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees/${colonyId}/feedings`
+}
+
+/**
+ * @summary Enter a feeding (caretaker)
+ */
+export const addBeeFeeding = async (farmId: number,
+    colonyId: number,
+    beeFeedingInput: BeeFeedingInput, options?: RequestInit): Promise<BeeColonyDetail> => {
+
+  return customFetch<BeeColonyDetail>(getAddBeeFeedingUrl(farmId,colonyId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(beeFeedingInput)
+  }
+);}
+
+
+
+
+
+export const getAddBeeFeedingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeeFeeding>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeFeedingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addBeeFeeding>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeFeedingInput>}, TContext> => {
+
+const mutationKey = ['addBeeFeeding'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBeeFeeding>>, {farmId: number;colonyId: number;data: BodyType<BeeFeedingInput>}> = (props) => {
+          const {farmId,colonyId,data} = props ?? {};
+
+          return  addBeeFeeding(farmId,colonyId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddBeeFeedingMutationResult = NonNullable<Awaited<ReturnType<typeof addBeeFeeding>>>
+    export type AddBeeFeedingMutationBody = BodyType<BeeFeedingInput>
+    export type AddBeeFeedingMutationError = ErrorType<void>
+
+    /**
+ * @summary Enter a feeding (caretaker)
+ */
+export const useAddBeeFeeding = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeeFeeding>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeFeedingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addBeeFeeding>>,
+        TError,
+        {farmId: number;colonyId: number;data: BodyType<BeeFeedingInput>},
+        TContext
+      > => {
+      return useMutation(getAddBeeFeedingMutationOptions(options));
+    }
+
+export const getAddBeeTreatmentUrl = (farmId: number,
+    colonyId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees/${colonyId}/treatments`
+}
+
+/**
+ * @summary Enter a Varroa treatment (caretaker); a medicine from the stock is taken off it
+ */
+export const addBeeTreatment = async (farmId: number,
+    colonyId: number,
+    beeTreatmentInput: BeeTreatmentInput, options?: RequestInit): Promise<BeeColonyDetail> => {
+
+  return customFetch<BeeColonyDetail>(getAddBeeTreatmentUrl(farmId,colonyId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(beeTreatmentInput)
+  }
+);}
+
+
+
+
+
+export const getAddBeeTreatmentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeeTreatment>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeTreatmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addBeeTreatment>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeTreatmentInput>}, TContext> => {
+
+const mutationKey = ['addBeeTreatment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBeeTreatment>>, {farmId: number;colonyId: number;data: BodyType<BeeTreatmentInput>}> = (props) => {
+          const {farmId,colonyId,data} = props ?? {};
+
+          return  addBeeTreatment(farmId,colonyId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddBeeTreatmentMutationResult = NonNullable<Awaited<ReturnType<typeof addBeeTreatment>>>
+    export type AddBeeTreatmentMutationBody = BodyType<BeeTreatmentInput>
+    export type AddBeeTreatmentMutationError = ErrorType<void>
+
+    /**
+ * @summary Enter a Varroa treatment (caretaker); a medicine from the stock is taken off it
+ */
+export const useAddBeeTreatment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeeTreatment>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeTreatmentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addBeeTreatment>>,
+        TError,
+        {farmId: number;colonyId: number;data: BodyType<BeeTreatmentInput>},
+        TContext
+      > => {
+      return useMutation(getAddBeeTreatmentMutationOptions(options));
+    }
+
+export const getAddBeeHoneyUrl = (farmId: number,
+    colonyId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees/${colonyId}/honey`
+}
+
+/**
+ * @summary Enter a honey harvest (caretaker) – goes to Ertrag & Bilanz
+ */
+export const addBeeHoney = async (farmId: number,
+    colonyId: number,
+    beeHoneyInput: BeeHoneyInput, options?: RequestInit): Promise<BeeColonyDetail> => {
+
+  return customFetch<BeeColonyDetail>(getAddBeeHoneyUrl(farmId,colonyId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(beeHoneyInput)
+  }
+);}
+
+
+
+
+
+export const getAddBeeHoneyMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeeHoney>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeHoneyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addBeeHoney>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeHoneyInput>}, TContext> => {
+
+const mutationKey = ['addBeeHoney'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addBeeHoney>>, {farmId: number;colonyId: number;data: BodyType<BeeHoneyInput>}> = (props) => {
+          const {farmId,colonyId,data} = props ?? {};
+
+          return  addBeeHoney(farmId,colonyId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddBeeHoneyMutationResult = NonNullable<Awaited<ReturnType<typeof addBeeHoney>>>
+    export type AddBeeHoneyMutationBody = BodyType<BeeHoneyInput>
+    export type AddBeeHoneyMutationError = ErrorType<void>
+
+    /**
+ * @summary Enter a honey harvest (caretaker) – goes to Ertrag & Bilanz
+ */
+export const useAddBeeHoney = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addBeeHoney>>, TError,{farmId: number;colonyId: number;data: BodyType<BeeHoneyInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addBeeHoney>>,
+        TError,
+        {farmId: number;colonyId: number;data: BodyType<BeeHoneyInput>},
+        TContext
+      > => {
+      return useMutation(getAddBeeHoneyMutationOptions(options));
+    }
+
+export const getDeleteBeeEntryUrl = (farmId: number,
+    colonyId: number,
+    kind: BeeEntryKind,
+    entryId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/bees/${colonyId}/${kind}/${entryId}`
+}
+
+/**
+ * @summary Delete an entry of the hive card (caretaker); a treatment gives its dose back
+ */
+export const deleteBeeEntry = async (farmId: number,
+    colonyId: number,
+    kind: BeeEntryKind,
+    entryId: number, options?: RequestInit): Promise<BeeColonyDetail> => {
+
+  return customFetch<BeeColonyDetail>(getDeleteBeeEntryUrl(farmId,colonyId,kind,entryId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteBeeEntryMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeeEntry>>, TError,{farmId: number;colonyId: number;kind: BeeEntryKind;entryId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteBeeEntry>>, TError,{farmId: number;colonyId: number;kind: BeeEntryKind;entryId: number}, TContext> => {
+
+const mutationKey = ['deleteBeeEntry'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteBeeEntry>>, {farmId: number;colonyId: number;kind: BeeEntryKind;entryId: number}> = (props) => {
+          const {farmId,colonyId,kind,entryId} = props ?? {};
+
+          return  deleteBeeEntry(farmId,colonyId,kind,entryId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteBeeEntryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteBeeEntry>>>
+
+    export type DeleteBeeEntryMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete an entry of the hive card (caretaker); a treatment gives its dose back
+ */
+export const useDeleteBeeEntry = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBeeEntry>>, TError,{farmId: number;colonyId: number;kind: BeeEntryKind;entryId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteBeeEntry>>,
+        TError,
+        {farmId: number;colonyId: number;kind: BeeEntryKind;entryId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteBeeEntryMutationOptions(options));
+    }
 
 export const getAddYieldUrl = (farmId: number,) => {
 

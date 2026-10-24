@@ -2121,6 +2121,299 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/LayingHistory"
+  /farms/{farmId}/bees:
+    get:
+      tags: [farm]
+      operationId: getBeeOverview
+      summary: Bienen – the farm's colonies with hints (docs/bienen.md)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The colonies.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeOverview"
+    post:
+      tags: [farm]
+      operationId: createBeeColony
+      summary: Add a colony (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeeColonyInput"
+      responses:
+        "201":
+          description: The colony with its hive card.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/bees/{colonyId}:
+    get:
+      tags: [farm]
+      operationId: getBeeColony
+      summary: A colony's hive card
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The colony with its hive card.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    put:
+      tags: [farm]
+      operationId: updateBeeColony
+      summary: Change a colony (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeeColonyInput"
+      responses:
+        "200":
+          description: The colony with its hive card.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    delete:
+      tags: [farm]
+      operationId: deleteBeeColony
+      summary: Delete a colony with its hive card (admin); its honey stays in Ertrag
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: Not found.
+  /farms/{farmId}/bees/{colonyId}/inspections:
+    post:
+      tags: [farm]
+      operationId: addBeeInspection
+      summary: Enter an inspection (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeeInspectionInput"
+      responses:
+        "201":
+          description: The colony with its hive card.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/bees/{colonyId}/feedings:
+    post:
+      tags: [farm]
+      operationId: addBeeFeeding
+      summary: Enter a feeding (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeeFeedingInput"
+      responses:
+        "201":
+          description: The colony with its hive card.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/bees/{colonyId}/treatments:
+    post:
+      tags: [farm]
+      operationId: addBeeTreatment
+      summary: Enter a Varroa treatment (caretaker); a medicine from the stock is taken off it
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeeTreatmentInput"
+      responses:
+        "201":
+          description: The colony with its hive card.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/bees/{colonyId}/honey:
+    post:
+      tags: [farm]
+      operationId: addBeeHoney
+      summary: Enter a honey harvest (caretaker) – goes to Ertrag & Bilanz
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeeHoneyInput"
+      responses:
+        "201":
+          description: The colony with its hive card.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/bees/{colonyId}/{kind}/{entryId}:
+    delete:
+      tags: [farm]
+      operationId: deleteBeeEntry
+      summary: Delete an entry of the hive card (caretaker); a treatment gives its dose back
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: kind
+          in: path
+          required: true
+          schema:
+            $ref: "#/components/schemas/BeeEntryKind"
+        - name: entryId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The colony with its hive card.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
   /farms/{farmId}/yields:
     post:
       tags: [farm]
@@ -6427,7 +6720,7 @@ components:
                 $ref: "#/components/schemas/SeedPlanItem"
     FarmProduct:
       type: string
-      enum: [eggs, milk, meat, wool]
+      enum: [eggs, milk, meat, wool, honey]
     YieldInput:
       type: object
       required: [product, date, amount]
@@ -6712,6 +7005,304 @@ components:
           type: number
         perHenDay:
           type: number
+    BeeColonyStatus:
+      type: string
+      enum: [active, dissolved, lost, sold]
+    BeeFeedKind:
+      type: string
+      enum: [sirup, zuckerwasser, futterteig, honig, sonstiges]
+    VarroaMethod:
+      type: string
+      enum: [ameisensaeure, oxalsaeure, milchsaeure, thymol, drohnenbrut, sonstiges]
+    BeeEntryKind:
+      type: string
+      enum: [inspections, feedings, treatments, honey]
+    BeeHint:
+      type: object
+      required: [kind, colonyId, urgent, text]
+      properties:
+        kind:
+          type: string
+          enum: [swarm-check, swarm, varroa, summer-treatment, winter-treatment, feeding, old-queen]
+        colonyId:
+          type: integer
+        urgent:
+          type: boolean
+        text:
+          type: string
+    BeeMiteCount:
+      type: object
+      required: [date, mitesPerDay]
+      properties:
+        date:
+          type: string
+        mitesPerDay:
+          type: number
+    BeeColony:
+      type: object
+      required: [id, name, apiary, hiveType, queenYear, queenMarked, queenOrigin, status, startedOn, endedOn, notes, lastInspectionOn, beeFrames, lastMites, lastTreatmentOn, honeyKgThisYear, feedKgThisYear, hints]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        apiary:
+          type: [string, 'null']
+        hiveType:
+          type: [string, 'null']
+        queenYear:
+          type: [integer, 'null']
+        queenMarked:
+          type: boolean
+        queenOrigin:
+          type: [string, 'null']
+        status:
+          $ref: "#/components/schemas/BeeColonyStatus"
+        startedOn:
+          type: [string, 'null']
+        endedOn:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        lastInspectionOn:
+          type: [string, 'null']
+        beeFrames:
+          type: [integer, 'null']
+          description: Frames covered with bees at the last inspection.
+        lastMites:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/BeeMiteCount"
+        lastTreatmentOn:
+          type: [string, 'null']
+        honeyKgThisYear:
+          type: number
+        feedKgThisYear:
+          type: number
+        hints:
+          type: array
+          items:
+            $ref: "#/components/schemas/BeeHint"
+    BeeOverview:
+      type: object
+      required: [colonies, active, honeyKgThisYear, apiaries, year]
+      properties:
+        colonies:
+          type: array
+          items:
+            $ref: "#/components/schemas/BeeColony"
+        active:
+          type: integer
+        honeyKgThisYear:
+          type: number
+        apiaries:
+          type: array
+          items:
+            type: string
+        year:
+          type: integer
+    BeeInspection:
+      type: object
+      required: [id, colonyId, date, beeFrames, broodFrames, queenSeen, eggsSeen, queenCells, temper, foodKg, mitesPerDay, notes]
+      properties:
+        id:
+          type: integer
+        colonyId:
+          type: integer
+        date:
+          type: string
+        beeFrames:
+          type: [integer, 'null']
+        broodFrames:
+          type: [integer, 'null']
+        queenSeen:
+          type: boolean
+        eggsSeen:
+          type: boolean
+        queenCells:
+          type: [integer, 'null']
+        temper:
+          type: [integer, 'null']
+          description: Sanftmut 1 (very gentle) to 4 (aggressive).
+        foodKg:
+          type: [number, 'null']
+        mitesPerDay:
+          type: [number, 'null']
+        notes:
+          type: [string, 'null']
+    BeeFeeding:
+      type: object
+      required: [id, colonyId, date, kind, amountKg, notes]
+      properties:
+        id:
+          type: integer
+        colonyId:
+          type: integer
+        date:
+          type: string
+        kind:
+          $ref: "#/components/schemas/BeeFeedKind"
+        amountKg:
+          type: number
+        notes:
+          type: [string, 'null']
+    BeeTreatment:
+      type: object
+      required: [id, colonyId, date, method, medicineId, product, dose, unit, batch, notes]
+      properties:
+        id:
+          type: integer
+        colonyId:
+          type: integer
+        date:
+          type: string
+        method:
+          $ref: "#/components/schemas/VarroaMethod"
+        medicineId:
+          type: [integer, 'null']
+        product:
+          type: [string, 'null']
+        dose:
+          type: [number, 'null']
+        unit:
+          type: [string, 'null']
+        batch:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+    BeeHoney:
+      type: object
+      required: [id, colonyId, date, amountKg, note]
+      properties:
+        id:
+          type: integer
+        colonyId:
+          type: [integer, 'null']
+        date:
+          type: string
+        amountKg:
+          type: number
+        note:
+          type: [string, 'null']
+    BeeColonyDetail:
+      type: object
+      required: [colony, inspections, feedings, treatments, honey]
+      properties:
+        colony:
+          $ref: "#/components/schemas/BeeColony"
+        inspections:
+          type: array
+          items:
+            $ref: "#/components/schemas/BeeInspection"
+        feedings:
+          type: array
+          items:
+            $ref: "#/components/schemas/BeeFeeding"
+        treatments:
+          type: array
+          items:
+            $ref: "#/components/schemas/BeeTreatment"
+        honey:
+          type: array
+          items:
+            $ref: "#/components/schemas/BeeHoney"
+    BeeColonyInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        apiary:
+          type: [string, 'null']
+          maxLength: 80
+        hiveType:
+          type: [string, 'null']
+          maxLength: 40
+        queenYear:
+          type: [integer, 'null']
+        queenMarked:
+          type: boolean
+        queenOrigin:
+          type: [string, 'null']
+          maxLength: 80
+        status:
+          $ref: "#/components/schemas/BeeColonyStatus"
+        startedOn:
+          type: [string, 'null']
+        endedOn:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 1000
+    BeeInspectionInput:
+      type: object
+      required: [date]
+      properties:
+        date:
+          type: string
+        beeFrames:
+          type: [integer, 'null']
+        broodFrames:
+          type: [integer, 'null']
+        queenSeen:
+          type: boolean
+        eggsSeen:
+          type: boolean
+        queenCells:
+          type: [integer, 'null']
+        temper:
+          type: [integer, 'null']
+        foodKg:
+          type: [number, 'null']
+        mitesPerDay:
+          type: [number, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 1000
+    BeeFeedingInput:
+      type: object
+      required: [date, kind, amountKg]
+      properties:
+        date:
+          type: string
+        kind:
+          $ref: "#/components/schemas/BeeFeedKind"
+        amountKg:
+          type: number
+        notes:
+          type: [string, 'null']
+          maxLength: 500
+    BeeTreatmentInput:
+      type: object
+      required: [date, method]
+      properties:
+        date:
+          type: string
+        method:
+          $ref: "#/components/schemas/VarroaMethod"
+        medicineId:
+          type: [integer, 'null']
+        product:
+          type: [string, 'null']
+          maxLength: 100
+        dose:
+          type: [number, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 500
+    BeeHoneyInput:
+      type: object
+      required: [date, amountKg]
+      properties:
+        date:
+          type: string
+        amountKg:
+          type: number
+        note:
+          type: [string, 'null']
+          maxLength: 200
     HarvestReport:
       type: object
       required: [season, seasons, kg, kitchenKg, fodderKg, value, previous, months, years, crops, beds, best]
@@ -6954,7 +7545,7 @@ components:
           type: [number, 'null']
     ModuleId:
       type: string
-      enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members]
+      enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members, bees]
     UserSettings:
       type: object
       required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare]
@@ -7001,7 +7592,7 @@ components:
     PushTopic:
       type: string
       description: What a push is about – each can be switched off (docs/benachrichtigungen.md)
-      enum: [plant-care, farm-tasks, feed, medicines, breeding, duties, weather, garden, grow, wildlife, admin]
+      enum: [plant-care, farm-tasks, feed, medicines, breeding, duties, weather, garden, grow, wildlife, bees, admin]
     QuietHours:
       type: object
       description: No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes
@@ -7029,7 +7620,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [plants, insects, animals, herds, beds, seeds, medicines, feeds, contacts]
+          enum: [plants, insects, animals, herds, beds, seeds, medicines, feeds, bees, contacts]
         label:
           type: string
         items:

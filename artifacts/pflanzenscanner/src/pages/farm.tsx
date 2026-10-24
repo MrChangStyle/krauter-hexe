@@ -7,7 +7,7 @@ import {
   Radar,
   Trash2,
   Users,
-  Wheat, Pill, Handshake, Baby, PiggyBank, FileText, Warehouse } from "lucide-react";
+  Wheat, Pill, Handshake, Baby, PiggyBank, FileText, Warehouse, Hexagon } from "lucide-react";
 import {
   useCreateFarm,
   useDeleteFarm,
@@ -296,6 +296,7 @@ export default function FarmPage() {
         {show("breeding") && <HubTile href="/farm/zucht" icon={Baby} label="Zucht" hint="Trächtigkeit, Brut, Jungtiere" tone="bg-pink-100 text-pink-800 dark:bg-pink-950/50 dark:text-pink-300" />}
         {show("medicines") && <HubTile href="/farm/arzneimittel" icon={Pill} label="Arzneimittel" hint="Vorrat, Charge, Wartezeit" tone="bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" />}
         {show("duties") && <FarmDutiesTile farm={farm} />}
+        {show("bees") && <HubTile href="/farm/bienen" icon={Hexagon} label="Bienen" hint="Stockkarte, Varroa, Honig" tone="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" />}
         {show("yields") && <HubTile href="/farm/ertrag" icon={PiggyBank} label="Ertrag & Bilanz" hint="Eier, Milch, Ernte, Kosten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />}
         {show("wildlife") && <HubTile href="/farm/kameras" icon={Radar} label="Wildtier-Radar" hint="Kameras & Raubtier-Alarm" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />}
         {show("handover") && <HubTile href="/farm/uebergabe" icon={Handshake} label="Übergabe" hint="Vertretung für ein paar Tage" tone="bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300" />}

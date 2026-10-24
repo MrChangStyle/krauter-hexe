@@ -217,6 +217,7 @@ Erinnerung aus der Gesundheitsakte (`docs/gesundheit-erinnerung.md`): Entwurmung
 Wetterabhängige Pflege (`docs/pflege-wetter.md`): Pflegeaufgaben drinnen/draußen; Winter (Nov–Feb) seltener gießen, nicht düngen (`user_settings.seasonal_care`); Regen ≥ 5 l/m² gießt draußen (`tasks.rain_skipped_on`, kein Push); „Frost in Sicht“ höchstens alle 45 Tage (`lib/careWeather.ts`, `GET /care/weather`).
 Ernte-Auswertung (`docs/ernte-auswertung.md`): `/beete/ernte`, je Kultur und Beet kg, Ladenwert, kg/m², €/m², Vorjahr, „Hat sich gelohnt“; `GET /farms/:farmId/garden/seasons/:season/harvest-report` (`lib/harvestReport.ts`).
 Bienen (`docs/bienen.md`): Modul `bees`, `/farm/bienen` mit Stockkarte je Volk (Durchsicht, Fütterung, Varroa mit Arzneimittel-Vorrat, Honig → `farm_yields` Produkt `honey`), Hinweise und Push nach dem Bienenjahr (`lib/bees.ts`).
+Vorratskammer (`docs/vorratskammer.md`): Modul `pantry`, `/vorrat` – Vorräte mit Art, Menge, Lagerort und MHD (Vorschlag je Art), aus der Ernte anlegen, „1 Glas genommen“ mit Rückgängig, Montags-Push für bald Ablaufendes (`lib/pantry.ts`).
 
 ## Hof-Dashboard
 

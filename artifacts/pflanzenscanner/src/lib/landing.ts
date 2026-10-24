@@ -20,6 +20,7 @@ export const LANDING_TEXT: Partial<Record<ModuleId, string>> = {
   medicines: "Arzneimittel mit Charge und Ablaufdatum, Wartezeiten für Milch, Eier und Fleisch automatisch berechnet.",
   duties: "Tierhaltung anmelden, Tierseuchenkasse, Stallpflicht bei Geflügelpest: was wann zu tun ist.",
   yields: "Eier, Milch und Ernte erfassen, Ausgaben und Verkäufe dazu – und sehen, was der Hof abwirft.",
+  pantry: "Was eingekocht, eingefroren oder getrocknet ist – mit Menge, Lagerort und Haltbarkeit, direkt aus der Ernte angelegt. Ein Tipp, wenn ein Glas aus dem Keller geholt wird.",
   bees: "Digitale Stockkarte für jedes Volk: Durchsicht, Fütterung, Varroa-Behandlung mit Bestandsbuch und Honigernte – mit Erinnerung an Schwarmkontrolle und Einfüttern.",
   wildlife: "Kameras am Stall melden Fuchs, Marder und Greifvogel per Push, auf Wunsch mit Licht oder Sirene.",
   handover: "Urlaub? Die Vertretung bekommt für ein paar Tage Zugang und sieht genau, was heute zu tun ist.",

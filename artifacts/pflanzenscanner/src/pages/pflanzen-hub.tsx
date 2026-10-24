@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Fence,
   Leaf,
+  Package,
   Sparkles,
   Sprout,
   Stethoscope,
@@ -91,6 +92,14 @@ const AREAS: { module: ModuleId; href: string; icon: typeof Sprout; label: strin
         },
       ]
     : []),
+  {
+    module: "pantry",
+    href: "/vorrat",
+    icon: Package,
+    label: "Vorratskammer",
+    hint: "Eingekocht, eingefroren, Honig",
+    tone: "bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300",
+  },
 ];
 
 function TodayCard() {

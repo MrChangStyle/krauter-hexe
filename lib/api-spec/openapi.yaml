@@ -2414,6 +2414,179 @@ paths:
           description: Invalid input.
         "404":
           description: Not found.
+  /farms/{farmId}/pantry:
+    get:
+      tags: [farm]
+      operationId: getPantry
+      summary: Vorratskammer – stores, what runs out, recent harvests (docs/vorratskammer.md)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    post:
+      tags: [farm]
+      operationId: createPantryItem
+      summary: Put something by (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PantryItemInput"
+      responses:
+        "201":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pantry/{itemId}:
+    put:
+      tags: [farm]
+      operationId: updatePantryItem
+      summary: Change a store (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PantryItemInput"
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    delete:
+      tags: [farm]
+      operationId: deletePantryItem
+      summary: Delete a store (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pantry/{itemId}/take:
+    post:
+      tags: [farm]
+      operationId: takeFromPantry
+      summary: Take something out (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PantryTakeInput"
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pantry/{itemId}/uses/{useId}:
+    delete:
+      tags: [farm]
+      operationId: undoPantryUse
+      summary: Undo taking out (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: useId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
   /farms/{farmId}/yields:
     post:
       tags: [farm]
@@ -7005,6 +7178,133 @@ components:
           type: number
         perHenDay:
           type: number
+    PantryKind:
+      type: string
+      enum: [canned, frozen, dried, pickled, fermented, juice, jam, honey, eggs, other]
+    PantryStatus:
+      type: string
+      enum: [ok, soon, expired, empty]
+    PantryUse:
+      type: object
+      required: [id, itemId, date, amount]
+      properties:
+        id:
+          type: integer
+        itemId:
+          type: integer
+        date:
+          type: string
+        amount:
+          type: number
+    PantryItem:
+      type: object
+      required: [id, name, kind, cropKey, harvestId, amount, initialAmount, unit, location, madeOn, bestBefore, notes, status, uses]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/PantryKind"
+        cropKey:
+          type: [string, 'null']
+        harvestId:
+          type: [integer, 'null']
+        amount:
+          type: number
+          description: What is left.
+        initialAmount:
+          type: number
+        unit:
+          type: string
+        location:
+          type: [string, 'null']
+        madeOn:
+          type: string
+        bestBefore:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        status:
+          $ref: "#/components/schemas/PantryStatus"
+        uses:
+          type: array
+          description: The last five times something was taken out.
+          items:
+            $ref: "#/components/schemas/PantryUse"
+    PantryHarvest:
+      type: object
+      required: [id, label, cropKey, harvestedOn, amountKg]
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        cropKey:
+          type: [string, 'null']
+        harvestedOn:
+          type: string
+        amountKg:
+          type: number
+    PantryOverview:
+      type: object
+      required: [items, stocked, soon, expired, locations, harvests]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PantryItem"
+        stocked:
+          type: integer
+        soon:
+          type: integer
+        expired:
+          type: integer
+        locations:
+          type: array
+          items:
+            type: string
+        harvests:
+          type: array
+          description: Harvests of the last 120 days, to make a store from.
+          items:
+            $ref: "#/components/schemas/PantryHarvest"
+    PantryItemInput:
+      type: object
+      required: [name, kind, amount, unit, madeOn]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        kind:
+          $ref: "#/components/schemas/PantryKind"
+        amount:
+          type: number
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 20
+        location:
+          type: [string, 'null']
+          maxLength: 60
+        madeOn:
+          type: string
+        bestBefore:
+          type: [string, 'null']
+        harvestId:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 500
+    PantryTakeInput:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: number
+        date:
+          type: [string, 'null']
     BeeColonyStatus:
       type: string
       enum: [active, dissolved, lost, sold]
@@ -7545,7 +7845,7 @@ components:
           type: [number, 'null']
     ModuleId:
       type: string
-      enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members, bees]
+      enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members, bees, pantry]
     UserSettings:
       type: object
       required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare]
@@ -7592,7 +7892,7 @@ components:
     PushTopic:
       type: string
       description: What a push is about – each can be switched off (docs/benachrichtigungen.md)
-      enum: [plant-care, farm-tasks, feed, medicines, breeding, duties, weather, garden, grow, wildlife, bees, admin]
+      enum: [plant-care, farm-tasks, feed, medicines, breeding, duties, weather, garden, grow, wildlife, bees, pantry, admin]
     QuietHours:
       type: object
       description: No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes
@@ -7620,7 +7920,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [plants, insects, animals, herds, beds, seeds, medicines, feeds, bees, contacts]
+          enum: [plants, insects, animals, herds, beds, seeds, medicines, feeds, bees, pantry, contacts]
         label:
           type: string
         items:

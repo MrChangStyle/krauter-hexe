@@ -13,6 +13,7 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { addFeeding, addHoney, addInspection, addTreatment, createColony } from './bees';
 import { createBreeding } from './breeding';
+import { createItem as createPantryItem, takeOut } from './pantry';
 import { FarmDataError } from './farmAnimals';
 import { createCamera } from './farmCameras';
 import { createContact } from './farmContacts';
@@ -114,6 +115,12 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await addFeeding(farmId, linde, { date: ago(20), kind: 'sirup', amountKg: 5 });
   await addTreatment(farmId, raps, { date: ago(40), method: 'drohnenbrut', notes: 'Demo' });
   await addHoney(farmId, linde, { date: ago(60), amountKg: 14, note: 'Frühtracht' });
+
+  // Vorratskammer: preserved, frozen, honey – one to use up soon.
+  const beans = await createPantryItem(farmId, { name: 'Bohnen sauer (Demo)', kind: 'pickled', amount: 6, unit: 'Glas', location: 'Keller', madeOn: ago(70), bestBefore: addDays(today, 300) });
+  await takeOut(farmId, beans, 1, ago(10));
+  await createPantryItem(farmId, { name: 'Kirschen (Demo)', kind: 'frozen', amount: 3, unit: 'Beutel', location: 'Gefriertruhe', madeOn: ago(260), bestBefore: addDays(today, 12) });
+  await createPantryItem(farmId, { name: 'Blütenhonig (Demo)', kind: 'honey', amount: 8, unit: 'Glas', location: 'Keller', madeOn: ago(60), bestBefore: addDays(today, 670) });
 
   // Beet-Architekt and Saatgut.
   const raised = await createBed(farmId, { name: 'Hochbeet (Demo)', type: 'raised', lengthCm: 200, widthCm: 100 });

@@ -19,5 +19,6 @@ export const SearchGroupKind = {
   medicines: 'medicines',
   feeds: 'feeds',
   bees: 'bees',
+  pantry: 'pantry',
   contacts: 'contacts',
 } as const;

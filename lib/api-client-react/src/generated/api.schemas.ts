@@ -1124,6 +1124,118 @@ export interface YieldOverview {
   feedCost: null | FeedCostEstimate;
 }
 
+export type PantryKind = typeof PantryKind[keyof typeof PantryKind];
+
+
+export const PantryKind = {
+  canned: 'canned',
+  frozen: 'frozen',
+  dried: 'dried',
+  pickled: 'pickled',
+  fermented: 'fermented',
+  juice: 'juice',
+  jam: 'jam',
+  honey: 'honey',
+  eggs: 'eggs',
+  other: 'other',
+} as const;
+
+export type PantryStatus = typeof PantryStatus[keyof typeof PantryStatus];
+
+
+export const PantryStatus = {
+  ok: 'ok',
+  soon: 'soon',
+  expired: 'expired',
+  empty: 'empty',
+} as const;
+
+export interface PantryUse {
+  id: number;
+  itemId: number;
+  date: string;
+  amount: number;
+}
+
+export interface PantryItem {
+  id: number;
+  name: string;
+  kind: PantryKind;
+  /** @nullable */
+  cropKey: string | null;
+  /** @nullable */
+  harvestId: number | null;
+  /** What is left. */
+  amount: number;
+  initialAmount: number;
+  unit: string;
+  /** @nullable */
+  location: string | null;
+  madeOn: string;
+  /** @nullable */
+  bestBefore: string | null;
+  /** @nullable */
+  notes: string | null;
+  status: PantryStatus;
+  /** The last five times something was taken out. */
+  uses: PantryUse[];
+}
+
+export interface PantryHarvest {
+  id: number;
+  label: string;
+  /** @nullable */
+  cropKey: string | null;
+  harvestedOn: string;
+  amountKg: number;
+}
+
+export interface PantryOverview {
+  items: PantryItem[];
+  stocked: number;
+  soon: number;
+  expired: number;
+  locations: string[];
+  /** Harvests of the last 120 days, to make a store from. */
+  harvests: PantryHarvest[];
+}
+
+export interface PantryItemInput {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  name: string;
+  kind: PantryKind;
+  amount: number;
+  /**
+     * @minLength 1
+     * @maxLength 20
+     */
+  unit: string;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  location?: string | null;
+  madeOn: string;
+  /** @nullable */
+  bestBefore?: string | null;
+  /** @nullable */
+  harvestId?: number | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface PantryTakeInput {
+  amount: number;
+  /** @nullable */
+  date?: string | null;
+}
+
 export type BeeColonyStatus = typeof BeeColonyStatus[keyof typeof BeeColonyStatus];
 
 
@@ -1583,6 +1695,7 @@ export const ModuleId = {
   export: 'export',
   members: 'members',
   bees: 'bees',
+  pantry: 'pantry',
 } as const;
 
 /**
@@ -1603,6 +1716,7 @@ export const PushTopic = {
   grow: 'grow',
   wildlife: 'wildlife',
   bees: 'bees',
+  pantry: 'pantry',
   admin: 'admin',
 } as const;
 
@@ -1656,6 +1770,7 @@ export const SearchGroupKind = {
   medicines: 'medicines',
   feeds: 'feeds',
   bees: 'bees',
+  pantry: 'pantry',
   contacts: 'contacts',
 } as const;
 

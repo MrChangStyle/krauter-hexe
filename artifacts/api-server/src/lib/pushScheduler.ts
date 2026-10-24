@@ -21,6 +21,7 @@ import { sendDutyDigests } from "./farmDuties";
 import { sendBreedingDigests } from "./breeding";
 import { sendGrowDigests } from "./growWeather";
 import { sendBeeDigests } from "./bees";
+import { sendPantryDigests } from "./pantry";
 import { removeExpiredMemberships } from "./farmMembers";
 import { sendPushToUser } from "./webPush";
 import { careDue, careForecast, rainWaters, seasonalCareOn, sendFrostNotices } from "./careWeather";
@@ -326,6 +327,9 @@ export async function triggerDueNotifications(): Promise<number> {
 
   // ── Bienen: swarm checks, treatments, feeding – on the day they come due ──
   triggered += await sendBeeDigests(hhmm, dateKey);
+
+  // ── Vorratskammer: on Mondays, what to use up within 14 days ─────────────
+  triggered += await sendPantryDigests(hhmm, dateKey);
 
   // ── Pflegeplan: frost in sight for plants outside, once a day per process ─
   if (hhmm >= WEATHER_DIGEST_TIME && frostCheckedOn !== dateKey) {

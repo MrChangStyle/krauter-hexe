@@ -1,7 +1,7 @@
 /**
  * Suche (docs/suche.md): one box for everything – the shared plant and insect
  * archive, and on the active farm its animals, herds, beds, seeds, medicines,
- * bee colonies,
+ * bee colonies, stores in the pantry,
  * own feeds and contacts. Farm results only for members, and only from the
  * modules granted to them (Modul-Freigaben). The app adds its own pages.
  */
@@ -17,6 +17,7 @@ import {
   herdsTable,
   insectsTable,
   medicinesTable,
+  pantryItemsTable,
   plantsTable,
   seedsTable,
   type FarmRole,
@@ -35,7 +36,7 @@ export interface SearchItem {
 }
 
 export interface SearchGroup {
-  kind: 'plants' | 'insects' | 'animals' | 'herds' | 'beds' | 'seeds' | 'medicines' | 'feeds' | 'bees' | 'contacts';
+  kind: 'plants' | 'insects' | 'animals' | 'herds' | 'beds' | 'seeds' | 'medicines' | 'feeds' | 'bees' | 'pantry' | 'contacts';
   label: string;
   items: SearchItem[];
 }
@@ -145,6 +146,16 @@ export async function search(userId: string, rawQuery: string, farmId: number | 
         .orderBy(asc(beeColoniesTable.name))
         .limit(PER_GROUP);
       push('bees', 'Bienenvölker', colonies.map((c) => ({ title: c.name, subtitle: c.apiary ?? 'Bienenvolk', href: `/farm/bienen/${c.id}` })));
+    }
+
+    if (may('pantry')) {
+      const stores = await db
+        .select({ name: pantryItemsTable.name, amount: pantryItemsTable.amount, unit: pantryItemsTable.unit, location: pantryItemsTable.location })
+        .from(pantryItemsTable)
+        .where(and(eq(pantryItemsTable.farmId, farmId), sql`${pantryItemsTable.amount} > 0`, or(ilike(pantryItemsTable.name, like), ilike(pantryItemsTable.location, like))))
+        .orderBy(asc(pantryItemsTable.name))
+        .limit(PER_GROUP);
+      push('pantry', 'Vorratskammer', stores.map((s) => ({ title: s.name, subtitle: `${String(s.amount).replace('.', ',')} ${s.unit}${s.location ? ` · ${s.location}` : ''}`, href: '/vorrat' })));
     }
 
     // Contacts are emergency numbers: open to every member.

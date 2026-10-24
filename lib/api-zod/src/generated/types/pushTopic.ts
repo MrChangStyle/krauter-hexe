@@ -24,5 +24,6 @@ export const PushTopic = {
   grow: 'grow',
   wildlife: 'wildlife',
   bees: 'bees',
+  pantry: 'pantry',
   admin: 'admin',
 } as const;

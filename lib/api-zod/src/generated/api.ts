@@ -7062,6 +7062,31 @@ export const SetSettingsResponse = zod.object({
 
 
 /**
+ * @summary Search the plant and insect archive and the given farm (members only, granted modules only)
+ */
+export const searchQueryQMax = 100;
+
+
+
+export const SearchQueryParams = zod.object({
+  "q": zod.coerce.string().max(searchQueryQMax),
+  "farmId": zod.coerce.number().optional()
+})
+
+export const SearchResponse = zod.object({
+  "groups": zod.array(zod.object({
+  "kind": zod.enum(['plants', 'insects', 'animals', 'herds', 'beds', 'seeds', 'medicines', 'feeds', 'contacts']),
+  "label": zod.string(),
+  "items": zod.array(zod.object({
+  "title": zod.string(),
+  "subtitle": zod.string().nullable(),
+  "href": zod.string()
+}))
+}))
+})
+
+
+/**
  * @summary Send the owner an improvement idea (typed or dictated)
  */
 export const sendFeedbackBodyTextMax = 2000;

@@ -14,6 +14,8 @@ tags:
     description: Grow – home growing within the KCanG (adults only)
   - name: settings
     description: Module the account uses and the first-start assistant
+  - name: search
+    description: Suche – archive and the active farm in one box
   - name: feedback
     description: Feedback – improvement ideas testers send the owner
   - name: demo
@@ -5147,6 +5149,30 @@ paths:
                 $ref: "#/components/schemas/UserSettings"
         "400":
           description: Invalid input.
+  /search:
+    get:
+      tags: [search]
+      operationId: search
+      summary: Search the plant and insect archive and the given farm (members only, granted modules only)
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+        - name: farmId
+          in: query
+          required: false
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Results, grouped.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResult"
   /feedback:
     post:
       tags: [feedback]
@@ -6694,6 +6720,37 @@ components:
         to:
           type: string
           pattern: '^([01][0-9]|2[0-3]):[0-5][0-9]$'
+    SearchItem:
+      type: object
+      required: [title, subtitle, href]
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: [string, 'null']
+        href:
+          type: string
+    SearchGroup:
+      type: object
+      required: [kind, label, items]
+      properties:
+        kind:
+          type: string
+          enum: [plants, insects, animals, herds, beds, seeds, medicines, feeds, contacts]
+        label:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchItem"
+    SearchResult:
+      type: object
+      required: [groups]
+      properties:
+        groups:
+          type: array
+          items:
+            $ref: "#/components/schemas/SearchGroup"
     FeedbackInput:
       type: object
       required: [text]

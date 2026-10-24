@@ -1212,6 +1212,38 @@ export interface UserSettingsInput {
   quietHours?: QuietHours | null;
 }
 
+export interface SearchItem {
+  title: string;
+  /** @nullable */
+  subtitle: string | null;
+  href: string;
+}
+
+export type SearchGroupKind = typeof SearchGroupKind[keyof typeof SearchGroupKind];
+
+
+export const SearchGroupKind = {
+  plants: 'plants',
+  insects: 'insects',
+  animals: 'animals',
+  herds: 'herds',
+  beds: 'beds',
+  seeds: 'seeds',
+  medicines: 'medicines',
+  feeds: 'feeds',
+  contacts: 'contacts',
+} as const;
+
+export interface SearchGroup {
+  kind: SearchGroupKind;
+  label: string;
+  items: SearchItem[];
+}
+
+export interface SearchResult {
+  groups: SearchGroup[];
+}
+
 export interface FeedbackInput {
   /**
      * @minLength 1
@@ -4146,5 +4178,13 @@ export type AuthorizationSessionHeaderParameter = string;
 
 export type ListPlantsParams = {
 category?: PlantCategory;
+};
+
+export type SearchParams = {
+/**
+ * @maxLength 100
+ */
+q: string;
+farmId?: number;
 };
 

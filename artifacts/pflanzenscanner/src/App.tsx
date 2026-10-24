@@ -70,6 +70,7 @@ import FarmAufgabenPage from '@/pages/farm-aufgaben';
 import FarmExportPage from '@/pages/farm-export';
 import TeamPage from '@/pages/team';
 import TierNeuPage from '@/pages/tier-neu';
+import SuchePage from '@/pages/suche';
 import GrowWissenPage from '@/pages/grow-wissen';
 import GrowRechtPage from '@/pages/grow-recht';
 import { StatusBanner } from '@/components/status-banner';
@@ -161,6 +162,7 @@ function Router() {
         <Route path="/farm/export" component={FarmExportPage} />
         <Route path="/farm/mitglieder"><Redirect to="/team" replace /></Route>
         <Route path="/team" component={TeamPage} />
+        <Route path="/suche" component={SuchePage} />
         <Route path="/farm/tier/neu" component={TierNeuPage} />
         <Route path="/farm/zucht" component={ZuchtPage} />
         <Route path="/farm/ertrag" component={ErtragPage} />

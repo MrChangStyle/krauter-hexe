@@ -213,6 +213,7 @@ Suche (`docs/suche.md`): magnifier in the header → `/suche`; app pages matched
 Datenexport (`docs/datenexport.md`): „Meine Daten herunterladen“ im Konto → `GET /api/auth/user/export` (`lib/dataExport.ts`): Profil, `PERSONAL_TABLES`, Mitgliedschaften und alle Daten der Farmen, die man als Admin leitet; ohne Geheimnisse und eingebettete Fotos.
 Legeleistung (`docs/legeleistung.md`): `/farm/legeleistung`, Wochenverlauf, Gruppen, Hennen und Hinweise (Mauser, Winter, Hitze, Rückgang, Alter) aus `GET /farms/:farmId/laying` (`lib/layingHistory.ts`); Eier können beim Eintragen einer Henne zugeordnet werden.
 Am Stall (`docs/stall.md`): `/farm/stall`, „+1 Ei“ und fällige Stall-Aufgaben mit einem Tipp; Offline-Warteschlange `lib/stall-queue.ts`, `farm_yields.client_id` gegen doppelte Einträge, `doneAt` beim Abhaken; PWA-Verknüpfung „Am Stall“.
+Erinnerung aus der Gesundheitsakte (`docs/gesundheit-erinnerung.md`): Entwurmung/Impfung mit „Erinnern zum Wiederholen“ → Stall-Aufgabe „Entwurmen“/„Impfen“ für das Tier (`scheduleRepeat()` in `lib/medicalRepeat.ts`).
 
 ## Hof-Dashboard
 

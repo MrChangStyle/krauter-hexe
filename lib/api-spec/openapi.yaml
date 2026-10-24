@@ -9312,6 +9312,24 @@ components:
           description: A medicine from the stock; its dose is taken off the stock
         dose:
           type: [number, 'null']
+        repeat:
+          description: New records only – a stall task (Entwurmen/Impfen) for this animal, due one interval after the record's date.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/MedicalRepeat"
+    MedicalRepeat:
+      type: object
+      required: [kind, every, unit]
+      properties:
+        kind:
+          type: string
+          enum: [deworm, vaccinate]
+        every:
+          type: integer
+          minimum: 1
+          maximum: 365
+        unit:
+          $ref: "#/components/schemas/TaskIntervalUnit"
     WeightLog:
       type: object
       required: [id, animalId, date, weightKg, createdAt]

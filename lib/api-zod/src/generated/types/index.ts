@@ -267,6 +267,8 @@ export * from './loginInput';
 export * from './managedUser';
 export * from './medicalRecord';
 export * from './medicalRecordInput';
+export * from './medicalRepeat';
+export * from './medicalRepeatKind';
 export * from './medicine';
 export * from './medicineInput';
 export * from './medicineStatus';

@@ -3120,6 +3120,24 @@ export interface MedicalRecord {
   createdAt: string;
 }
 
+export type MedicalRepeatKind = typeof MedicalRepeatKind[keyof typeof MedicalRepeatKind];
+
+
+export const MedicalRepeatKind = {
+  deworm: 'deworm',
+  vaccinate: 'vaccinate',
+} as const;
+
+export interface MedicalRepeat {
+  kind: MedicalRepeatKind;
+  /**
+     * @minimum 1
+     * @maximum 365
+     */
+  every: number;
+  unit: TaskIntervalUnit;
+}
+
 export interface MedicalRecordInput {
   /** YYYY-MM-DD, not in the future */
   date: string;
@@ -3161,6 +3179,8 @@ export interface MedicalRecordInput {
   medicineId?: number | null;
   /** @nullable */
   dose?: number | null;
+  /** New records only – a stall task (Entwurmen/Impfen) for this animal, due one interval after the record's date. */
+  repeat?: null | MedicalRepeat;
 }
 
 export interface WeightLog {

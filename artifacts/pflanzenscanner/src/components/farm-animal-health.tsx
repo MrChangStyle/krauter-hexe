@@ -5,6 +5,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import {
   getGetFarmExportQueryKey,
   getListMedicalRecordsQueryKey,
+  getListFarmTasksQueryKey,
   getListMedicinesQueryKey,
   getListWeightLogsQueryKey,
   useCreateMedicalRecord,
@@ -17,6 +18,7 @@ import {
   useUpdateMedicalRecord,
   type MedicalRecord,
   type MedicalRecordInput,
+  type TaskIntervalUnit,
   type WeightLog,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +28,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { todayIso } from "@/lib/farm-labels";
+import { REPEAT_DEFAULTS, REPEAT_LABELS, guessRepeatKind, repeatDue, type RepeatKind } from "@/lib/medical-repeat";
 import { medicineWithdrawal } from "@/lib/medicine-labels";
 import {
   WEIGHT_LOSS_WINDOW_DAYS,
@@ -267,8 +270,21 @@ function RecordDialog({
   const [error, setError] = useState<string | null>(null);
   const set = <K extends keyof MedicalRecordInput>(key: K, value: MedicalRecordInput[K]) =>
     setForm((f) => ({ ...f, [key]: value }));
+  const { toast } = useToast();
+  // Erinnerung (new records only): "auto" follows what was typed.
+  const [repeatChoice, setRepeatChoice] = useState<RepeatKind | "none" | "auto">("auto");
+  const [repeatEvery, setRepeatEvery] = useState("");
+  const [repeatUnit, setRepeatUnit] = useState<TaskIntervalUnit | null>(null);
+  const repeatKind = record ? null : repeatChoice === "auto" ? guessRepeatKind(form.diagnosis, form.treatment, form.medication) : repeatChoice === "none" ? null : repeatChoice;
+  const every = repeatKind ? (repeatEvery === "" ? REPEAT_DEFAULTS[repeatKind].every : Number(repeatEvery)) : 0;
+  const unit = repeatKind ? (repeatUnit ?? REPEAT_DEFAULTS[repeatKind].unit) : "Monate";
+  const due = repeatKind && Number.isInteger(every) && every >= 1 && every <= 365 && form.date ? repeatDue(form.date, every, unit) : null;
   const done = () => {
     void queryClient.invalidateQueries({ queryKey: getListMedicalRecordsQueryKey(farmId, animalId) });
+    if (repeatKind) {
+      void queryClient.invalidateQueries({ queryKey: getListFarmTasksQueryKey(farmId) });
+      if (due) toast({ title: `Erinnerung am ${deDate(due)}`, description: `Stall-Aufgabe „${REPEAT_LABELS[repeatKind].task}“, um 8 Uhr.` });
+    }
     void queryClient.invalidateQueries({ queryKey: getGetFarmExportQueryKey(farmId) });
     void queryClient.invalidateQueries({ queryKey: getListMedicinesQueryKey(farmId) });
     onOpenChange(false);
@@ -293,8 +309,12 @@ function RecordDialog({
       setError(`Bitte die Menge in ${chosen?.unit ?? "der Einheit des Mittels"} angeben.`);
       return;
     }
-    const data = { ...form, dose };
-    if (record) update.mutate({ farmId, recordId: record.id, data });
+    if (repeatKind && !due) {
+      setError("Bitte einen Abstand zwischen 1 und 365 angeben.");
+      return;
+    }
+    const data = { ...form, dose, repeat: repeatKind ? { kind: repeatKind, every, unit } : null };
+    if (record) update.mutate({ farmId, recordId: record.id, data: { ...form, dose } });
     else create.mutate({ farmId, animalId, data });
   }
 
@@ -383,6 +403,51 @@ function RecordDialog({
             <Label htmlFor="med-notes">Notizen</Label>
             <Textarea id="med-notes" rows={2} maxLength={2000} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
           </div>
+          {!record && (
+            <div className="space-y-2 rounded-lg border border-border p-3" data-testid="med-repeat">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="med-repeat">Erinnern zum Wiederholen</Label>
+                <select
+                  id="med-repeat"
+                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                  value={repeatKind ?? "none"}
+                  onChange={(e) => setRepeatChoice(e.target.value as RepeatKind | "none")}
+                >
+                  <option value="none">Keine Erinnerung</option>
+                  <option value="deworm">Entwurmung wiederholen</option>
+                  <option value="vaccinate">Impfung auffrischen</option>
+                </select>
+              </div>
+              {repeatKind && (
+                <>
+                  <div className="grid grid-cols-[5rem_1fr] gap-3">
+                    <Input
+                      aria-label="Abstand"
+                      type="number"
+                      min={1}
+                      max={365}
+                      value={repeatEvery === "" ? String(REPEAT_DEFAULTS[repeatKind].every) : repeatEvery}
+                      onChange={(e) => setRepeatEvery(e.target.value)}
+                    />
+                    <select
+                      aria-label="Einheit"
+                      className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+                      value={unit}
+                      onChange={(e) => setRepeatUnit(e.target.value as TaskIntervalUnit)}
+                    >
+                      <option value="Tage">Tage</option>
+                      <option value="Wochen">Wochen</option>
+                      <option value="Monate">Monate</option>
+                    </select>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    {due ? `Erinnerung am ${deDate(due)} als Stall-Aufgabe „${REPEAT_LABELS[repeatKind].task}“. ` : ""}
+                    Den richtigen Abstand legt ihr mit dem Tierarzt fest – bei Würmern am besten nach Kotprobe.
+                  </p>
+                </>
+              )}
+            </div>
+          )}
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           <DialogFooter className="gap-2">
             {record && (

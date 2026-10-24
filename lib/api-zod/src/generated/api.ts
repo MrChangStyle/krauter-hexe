@@ -5178,6 +5178,8 @@ export const createMedicalRecordBodyVetMax = 100;
 
 export const createMedicalRecordBodyNotesMax = 2000;
 
+export const createMedicalRecordBodyRepeatTwoEveryMax = 365;
+
 
 
 export const CreateMedicalRecordBody = zod.object({
@@ -5189,7 +5191,12 @@ export const CreateMedicalRecordBody = zod.object({
   "vet": zod.string().max(createMedicalRecordBodyVetMax).nullish(),
   "notes": zod.string().max(createMedicalRecordBodyNotesMax).nullish(),
   "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
-  "dose": zod.number().nullish()
+  "dose": zod.number().nullish(),
+  "repeat": zod.union([zod.null(),zod.object({
+  "kind": zod.enum(['deworm', 'vaccinate']),
+  "every": zod.number().min(1).max(createMedicalRecordBodyRepeatTwoEveryMax),
+  "unit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.')
+})]).optional().describe('New records only – a stall task (Entwurmen\/Impfen) for this animal, due one interval after the record\'s date.')
 })
 
 export const CreateMedicalRecordResponse = zod.object({
@@ -5231,6 +5238,8 @@ export const updateMedicalRecordBodyVetMax = 100;
 
 export const updateMedicalRecordBodyNotesMax = 2000;
 
+export const updateMedicalRecordBodyRepeatTwoEveryMax = 365;
+
 
 
 export const UpdateMedicalRecordBody = zod.object({
@@ -5242,7 +5251,12 @@ export const UpdateMedicalRecordBody = zod.object({
   "vet": zod.string().max(updateMedicalRecordBodyVetMax).nullish(),
   "notes": zod.string().max(updateMedicalRecordBodyNotesMax).nullish(),
   "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
-  "dose": zod.number().nullish()
+  "dose": zod.number().nullish(),
+  "repeat": zod.union([zod.null(),zod.object({
+  "kind": zod.enum(['deworm', 'vaccinate']),
+  "every": zod.number().min(1).max(updateMedicalRecordBodyRepeatTwoEveryMax),
+  "unit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.')
+})]).optional().describe('New records only – a stall task (Entwurmen\/Impfen) for this animal, due one interval after the record\'s date.')
 })
 
 export const UpdateMedicalRecordResponse = zod.object({

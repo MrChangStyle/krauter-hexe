@@ -148,7 +148,6 @@ export async function deleteFarmTask(farmId: number, taskId: number): Promise<vo
   if (deleted.length === 0) throw notFound();
 }
 
-/** Done now: the next due day moves one interval ahead of today. */
 const LATE_TAP_MS = 7 * 24 * 60 * 60 * 1000;
 
 /**

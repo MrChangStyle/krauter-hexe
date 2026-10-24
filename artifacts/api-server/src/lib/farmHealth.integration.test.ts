@@ -128,6 +128,32 @@ describe.skipIf(!enabled)("Meine Farm – health, weights, tasks, export (real d
     expect((await api("GET", `/farms/${farm.anna}/animals/${lotte}/medical`)).data).toHaveLength(1);
   });
 
+  it("reminds to repeat a deworming or vaccination as the animal's stall task", async () => {
+    const path = `/farms/${farm.anna}/animals/${lotte}/medical`;
+    const tasks = async () => (await api("GET", `/farms/${farm.anna}/tasks`)).data as any[];
+    // An invalid interval stores nothing.
+    expect((await api("POST", path, record({ repeat: { kind: "deworm", every: 0, unit: "Wochen" } }))).status).toBe(400);
+    expect((await api("GET", path)).data).toEqual([]);
+
+    expect((await api("POST", path, record({ date: "2026-04-01", diagnosis: "Entwurmung", medication: "Flubenol", repeat: { kind: "deworm", every: 12, unit: "Wochen" } }))).status).toBe(201);
+    let [t] = await tasks();
+    expect(t).toMatchObject({ actionType: "Entwurmen", animalName: "Lotte", notes: "Flubenol", intervalValue: 12, intervalUnit: "Wochen", reminderTime: "08:00", dueDate: "2026-06-24" });
+
+    // The next deworming reuses the task: new interval, counted from the newer day.
+    await api("POST", path, record({ date: "2026-06-20", diagnosis: "Entwurmung", medication: null, repeat: { kind: "deworm", every: 3, unit: "Monate" } }));
+    // An older one entered afterwards does not move it back.
+    await api("POST", path, record({ date: "2026-05-01", diagnosis: "Entwurmung", repeat: { kind: "deworm", every: 1, unit: "Wochen" } }));
+    const all = await tasks();
+    expect(all).toHaveLength(1);
+    expect(all[0]).toMatchObject({ id: t.id, notes: "Flubenol", intervalValue: 3, intervalUnit: "Monate", dueDate: "2026-09-18" });
+
+    // A vaccination is a task of its own; editing a record never schedules.
+    const vacc = await api("POST", path, record({ date: "2026-06-01", diagnosis: "Impfung", medication: "Myxomatose", repeat: { kind: "vaccinate", every: 6, unit: "Monate" } }));
+    await api("PATCH", `/farms/${farm.anna}/medical/${vacc.data.id}`, record({ repeat: { kind: "vaccinate", every: 1, unit: "Tage" } }));
+    [t] = (await tasks()).filter((x) => x.actionType === "Impfen");
+    expect(t).toMatchObject({ notes: "Myxomatose", intervalValue: 6, dueDate: "2026-11-28" });
+  });
+
   it("validates health records", async () => {
     const path = `/farms/${farm.anna}/animals/${lotte}/medical`;
     expect((await api("POST", path, record({ date: "2999-01-01" }))).data.error).toMatch(/Zukunft/);

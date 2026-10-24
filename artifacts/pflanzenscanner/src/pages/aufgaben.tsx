@@ -16,6 +16,8 @@ import { plantImageUrl } from "@/lib/image";
 import { BackToPflanzen } from "@/components/back-to-pflanzen";
 import { PflegeGuidesSection } from "@/pages/mehr";
 import { GardenTodoSection } from "@/components/garden-overview";
+import { CareWeatherCard } from "@/components/care-weather-card";
+import { todayIso } from "@/lib/farm-labels";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -43,6 +45,9 @@ import {
   RefreshCcw,
   Bell,
   Pencil,
+  Home,
+  Sun,
+  CloudSun,
 } from "lucide-react";
 import { format } from "date-fns";
 import { de } from "date-fns/locale";
@@ -86,21 +91,11 @@ function fertilizerLabel(task: Task): string | null {
   return task.fertilizerType;
 }
 
-function unitToMs(unit: string): number {
-  if (unit === "Wochen") return 7 * 24 * 60 * 60 * 1000;
-  if (unit === "Monate") return 30 * 24 * 60 * 60 * 1000;
-  return 24 * 60 * 60 * 1000;
-}
-
+// The server works out the next due day, with the winter rules (docs/pflege-wetter.md).
 function isTaskDueNow(task: Task): boolean {
   const now = new Date();
   const hhmm = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-  if (hhmm !== task.reminderTime) return false;
-  const ref = task.lastCompletedAt ? new Date(task.lastCompletedAt) : new Date(task.createdAt);
-  const nextDue = new Date(ref.getTime() + task.intervalValue * unitToMs(task.intervalUnit));
-  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const dueMidnight = new Date(nextDue.getFullYear(), nextDue.getMonth(), nextDue.getDate());
-  return todayMidnight >= dueMidnight;
+  return hhmm === task.reminderTime && todayIso(now) >= task.nextDueDate;
 }
 
 // ─── Form state helper ───────────────────────────────────────────────────────
@@ -113,6 +108,7 @@ interface FormState {
   reminderTime: string;
   fertilizerType: string;
   fertilizerCustomName: string;
+  outdoor: boolean;
 }
 
 const DEFAULT_FORM: FormState = {
@@ -123,6 +119,7 @@ const DEFAULT_FORM: FormState = {
   reminderTime: "08:00",
   fertilizerType: "",
   fertilizerCustomName: "",
+  outdoor: false,
 };
 
 function formFromTask(task: Task): FormState {
@@ -134,6 +131,7 @@ function formFromTask(task: Task): FormState {
     reminderTime: task.reminderTime,
     fertilizerType: task.fertilizerType ?? "",
     fertilizerCustomName: task.fertilizerCustomName ?? "",
+    outdoor: task.outdoor,
   };
 }
 
@@ -265,6 +263,7 @@ export default function AufgabenPage() {
             intervalValue: Number(form.intervalValue),
             intervalUnit: form.intervalUnit as "Tage" | "Wochen" | "Monate",
             reminderTime: form.reminderTime,
+            outdoor: form.outdoor,
             ...fertilizerPayload,
           },
         },
@@ -279,6 +278,7 @@ export default function AufgabenPage() {
             intervalValue: Number(form.intervalValue),
             intervalUnit: form.intervalUnit as "Tage" | "Wochen" | "Monate",
             reminderTime: form.reminderTime,
+            outdoor: form.outdoor,
             ...fertilizerPayload,
           },
         },
@@ -342,6 +342,12 @@ export default function AufgabenPage() {
         </div>
       </header>
 
+      {tasks.length > 0 && (
+        <div className="px-6 pb-4">
+          <CareWeatherCard hasOutdoor={tasks.some((t) => t.isActive && t.outdoor)} />
+        </div>
+      )}
+
       {/* 30-day care guides from the Pflanzendoc belong to the care plan. */}
       <div className="px-6 pb-4">
         <PflegeGuidesSection />
@@ -395,6 +401,32 @@ export default function AufgabenPage() {
                 {ACTION_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
               </SelectContent>
             </Select>
+          </div>
+
+          {/* Where the plant stands: outside, rain and frost count (docs/pflege-wetter.md) */}
+          <div className="space-y-1">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Standort</span>
+            <div role="radiogroup" aria-label="Standort" className="grid grid-cols-2 gap-2">
+              {([
+                [false, "Drinnen", Home],
+                [true, "Draußen", Sun],
+              ] as const).map(([value, label, Icon]) => (
+                <button
+                  key={label}
+                  type="button"
+                  role="radio"
+                  aria-checked={form.outdoor === value}
+                  onClick={() => setField("outdoor", value)}
+                  className={`flex h-10 items-center justify-center gap-1.5 rounded-md border text-sm ${
+                    form.outdoor === value ? "border-primary bg-primary/10 font-medium text-primary" : "border-input text-muted-foreground"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            {form.outdoor && <p className="text-xs text-muted-foreground">Balkon oder Garten: Regnet es genug, entfällt das Gießen; vor Frost kommt eine Warnung.</p>}
           </div>
 
           {/* Interval */}
@@ -540,6 +572,12 @@ export default function AufgabenPage() {
                         <span className="font-normal opacity-80">({fertilizerLabel(task)})</span>
                       )}
                     </span>
+                    {task.outdoor && (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                        <CloudSun className="h-3 w-3" />
+                        Draußen
+                      </span>
+                    )}
                   </div>
                   <button
                     onClick={() => setLocation(`/pflanze/${task.plantId}`)}
@@ -551,6 +589,12 @@ export default function AufgabenPage() {
                     <Bell className="w-3 h-3 text-muted-foreground shrink-0" />
                     <p className="text-xs text-muted-foreground truncate">{intervalLabel(task)}</p>
                   </div>
+                  {task.careNote && <p className="mt-0.5 text-xs text-sky-700 dark:text-sky-300">{task.careNote}</p>}
+                  {task.isActive && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Nächstes Mal: {format(new Date(`${task.nextDueDate}T12:00:00`), "dd. MMM yyyy", { locale: de })}
+                    </p>
+                  )}
                   {task.lastCompletedAt && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                       Zuletzt erledigt:{" "}

@@ -52,6 +52,7 @@ export * from './cameraWithSecret';
 export * from './careGuide';
 export * from './careGuideDailyEntry';
 export * from './careGuideStatus';
+export * from './careWeather';
 export * from './categoryCount';
 export * from './changeFarmRoleInput';
 export * from './cleanupOrphanedDataInput';

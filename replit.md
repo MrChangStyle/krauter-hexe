@@ -214,6 +214,7 @@ Datenexport (`docs/datenexport.md`): „Meine Daten herunterladen“ im Konto �
 Legeleistung (`docs/legeleistung.md`): `/farm/legeleistung`, Wochenverlauf, Gruppen, Hennen und Hinweise (Mauser, Winter, Hitze, Rückgang, Alter) aus `GET /farms/:farmId/laying` (`lib/layingHistory.ts`); Eier können beim Eintragen einer Henne zugeordnet werden.
 Am Stall (`docs/stall.md`): `/farm/stall`, „+1 Ei“ und fällige Stall-Aufgaben mit einem Tipp; Offline-Warteschlange `lib/stall-queue.ts`, `farm_yields.client_id` gegen doppelte Einträge, `doneAt` beim Abhaken; PWA-Verknüpfung „Am Stall“.
 Erinnerung aus der Gesundheitsakte (`docs/gesundheit-erinnerung.md`): Entwurmung/Impfung mit „Erinnern zum Wiederholen“ → Stall-Aufgabe „Entwurmen“/„Impfen“ für das Tier (`scheduleRepeat()` in `lib/medicalRepeat.ts`).
+Wetterabhängige Pflege (`docs/pflege-wetter.md`): Pflegeaufgaben drinnen/draußen; Winter (Nov–Feb) seltener gießen, nicht düngen (`user_settings.seasonal_care`); Regen ≥ 5 l/m² gießt draußen (`tasks.rain_skipped_on`, kein Push); „Frost in Sicht“ höchstens alle 45 Tage (`lib/careWeather.ts`, `GET /care/weather`).
 
 ## Hof-Dashboard
 

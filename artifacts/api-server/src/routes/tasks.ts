@@ -7,6 +7,8 @@ import {
 import { eq, and, desc, sql, isNotNull, count } from "drizzle-orm";
 import { db, tasksTable, usersTable } from "@workspace/db";
 import { requireApproved } from "../middlewares/requireApproved";
+import { RAIN_MM, careForecast, careLocation, frostAhead, seasonalCareOn, withCare } from "../lib/careWeather";
+import { berlinDay } from "../lib/monitoring";
 import { createHash, timingSafeEqual } from "crypto";
 
 function passwordMatches(provided: string, expected: string): boolean {
@@ -28,7 +30,9 @@ router.get(
       .from(tasksTable)
       .where(eq(tasksTable.userId, req.user!.id))
       .orderBy(desc(tasksTable.createdAt));
-    res.json(tasks);
+    const today = berlinDay();
+    const seasonal = await seasonalCareOn(req.user!.id);
+    res.json(tasks.map((t) => withCare(t, today, seasonal)));
   },
 );
 
@@ -46,7 +50,9 @@ router.post(
       reminderTime,
       fertilizerType,
       fertilizerCustomName,
+      outdoor,
     } = req.body as {
+      outdoor?: boolean;
       plantId: number;
       actionType: string;
       intervalValue: number;
@@ -111,10 +117,11 @@ router.post(
         isActive: true,
         fertilizerType: resolvedFertilizerType,
         fertilizerCustomName: resolvedFertilizerCustomName,
+        outdoor: outdoor === true,
       })
       .returning();
 
-    res.status(201).json(task);
+    res.status(201).json(withCare(task!, berlinDay(), await seasonalCareOn(req.user!.id)));
   },
 );
 
@@ -132,7 +139,9 @@ router.patch(
       reminderTime,
       fertilizerType,
       fertilizerCustomName,
+      outdoor,
     } = req.body as {
+      outdoor?: boolean;
       actionType?: string;
       intervalValue?: number;
       intervalUnit?: string;
@@ -194,6 +203,7 @@ router.patch(
     if (reminderTime !== undefined) patch.reminderTime = reminderTime;
     if (resolvedFertilizerType !== undefined) patch.fertilizerType = resolvedFertilizerType;
     if (resolvedFertilizerCustomName !== undefined) patch.fertilizerCustomName = resolvedFertilizerCustomName;
+    if (typeof outdoor === "boolean") patch.outdoor = outdoor;
 
     if (Object.keys(patch).length === 0) {
       res.status(400).json({ error: "Keine Felder zum Aktualisieren angegeben." });
@@ -212,7 +222,7 @@ router.patch(
       return;
     }
 
-    res.json(task);
+    res.json(withCare(task, berlinDay(), await seasonalCareOn(req.user!.id)));
   },
 );
 
@@ -242,7 +252,27 @@ router.patch(
       .set({ leavesCount: sql`${usersTable.leavesCount} + 1` })
       .where(eq(usersTable.id, req.user!.id));
 
-    res.json(task);
+    res.json(withCare(task, berlinDay(), await seasonalCareOn(req.user!.id)));
+  },
+);
+
+// ── GET /care/weather ─────────────────────────────────────────────────────────
+// Wetterabhängige Pflege (docs/pflege-wetter.md): today's rain and frost ahead
+// at the account's farm.
+router.get(
+  "/care/weather",
+  requireApproved,
+  async (req: Request, res: Response): Promise<void> => {
+    const today = berlinDay();
+    const hasLocation = (await careLocation(req.user!.id)) !== null;
+    const days = hasLocation ? await careForecast(req.user!.id, today) : [];
+    const now = days.find((d) => d.date === today) ?? null;
+    res.set("Cache-Control", "no-store").json({
+      hasLocation,
+      today: now,
+      rainWaters: now !== null && now.precipitationMm >= RAIN_MM,
+      frost: frostAhead(days),
+    });
   },
 );
 

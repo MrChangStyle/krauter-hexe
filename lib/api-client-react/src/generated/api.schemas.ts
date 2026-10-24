@@ -1266,6 +1266,8 @@ export interface QuietHours {
 }
 
 export interface UserSettings {
+  /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */
+  seasonalCare: boolean;
   hiddenModules: ModuleId[];
   onboarded: boolean;
   /** Push topics switched off */
@@ -1280,6 +1282,7 @@ export interface UserSettingsInput {
   /** @maxItems 20 */
   pushOff?: PushTopic[];
   quietHours?: QuietHours | null;
+  seasonalCare?: boolean;
 }
 
 export interface SearchItem {
@@ -2733,6 +2736,29 @@ export interface Task {
   /** Custom fertilizer name when fertilizerType is "Manuell". */
   fertilizerCustomName?: string | null;
   createdAt: string;
+  /** Stands outside (balcony, garden) – rain and frost count. */
+  outdoor: boolean;
+  /**
+     * Berlin day the rain did the watering.
+     * @nullable
+     */
+  rainSkippedOn: string | null;
+  /** Next due day (YYYY-MM-DD, Berlin) – with the winter rules. */
+  nextDueDate: string;
+  /**
+     * Rain or winter note for the card.
+     * @nullable
+     */
+  careNote: string | null;
+}
+
+export interface CareWeather {
+  /** False – no farm with a location, so no rain or frost check. */
+  hasLocation: boolean;
+  today: null | DayForecast;
+  /** Enough rain today to skip watering outside. */
+  rainWaters: boolean;
+  frost: null | DayForecast;
 }
 
 /**
@@ -2752,6 +2778,7 @@ export interface UpdateTaskInput {
   fertilizerType?: TaskFertilizerType | null;
   /** Custom fertilizer name when fertilizerType is "Manuell". */
   fertilizerCustomName?: string | null;
+  outdoor?: boolean;
 }
 
 export interface CreateTaskInput {
@@ -2769,6 +2796,7 @@ export interface CreateTaskInput {
   fertilizerType?: TaskFertilizerType | null;
   /** Custom fertilizer name when fertilizerType is "Manuell". */
   fertilizerCustomName?: string | null;
+  outdoor?: boolean;
 }
 
 export interface FavoriteIds {

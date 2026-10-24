@@ -64,6 +64,11 @@ const STATEMENTS = [
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "push_off" jsonb DEFAULT '[]'::jsonb NOT NULL`,
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "quiet_start" text`,
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "quiet_end" text`,
+  `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "seasonal_care" boolean DEFAULT true NOT NULL`,
+  `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "frost_notice_on" date`,
+  // Wetterabhängige Pflege (schema/tasks.ts).
+  `ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "outdoor" boolean DEFAULT false NOT NULL`,
+  `ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "rain_skipped_on" date`,
   // Feedback (schema/feedback.ts).
   `CREATE TABLE IF NOT EXISTS "feedback" (
 	"id" serial PRIMARY KEY NOT NULL,

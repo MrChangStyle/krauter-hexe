@@ -47,6 +47,7 @@ import type {
   CameraInput,
   CameraWithSecret,
   CareGuide,
+  CareWeather,
   CategoryCount,
   ChangeFarmRoleInput,
   CleanupOrphanedDataInput,
@@ -1853,6 +1854,83 @@ export const useCreateTask = <TError = ErrorType<void>,
       > => {
       return useMutation(getCreateTaskMutationOptions(options));
     }
+
+export const getGetCareWeatherUrl = () => {
+
+
+
+
+  return `/api/care/weather`
+}
+
+/**
+ * @summary Today's weather for the care plan (rain, frost) – docs/pflege-wetter.md
+ */
+export const getCareWeather = async ( options?: RequestInit): Promise<CareWeather> => {
+
+  return customFetch<CareWeather>(getGetCareWeatherUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCareWeatherQueryKey = () => {
+    return [
+    `/api/care/weather`
+    ] as const;
+    }
+
+
+export const getGetCareWeatherQueryOptions = <TData = Awaited<ReturnType<typeof getCareWeather>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareWeather>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCareWeatherQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCareWeather>>> = ({ signal }) => getCareWeather({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCareWeather>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCareWeatherQueryResult = NonNullable<Awaited<ReturnType<typeof getCareWeather>>>
+export type GetCareWeatherQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Today's weather for the care plan (rain, frost) – docs/pflege-wetter.md
+ */
+
+export function useGetCareWeather<TData = Awaited<ReturnType<typeof getCareWeather>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCareWeather>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCareWeatherQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getCompleteTaskUrl = (id: number,) => {
 

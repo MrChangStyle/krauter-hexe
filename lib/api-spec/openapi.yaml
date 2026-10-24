@@ -570,6 +570,18 @@ paths:
           description: Invalid input
         "401":
           description: Not signed in
+  /care/weather:
+    get:
+      operationId: getCareWeather
+      tags: [tasks]
+      summary: Today's weather for the care plan (rain, frost) – docs/pflege-wetter.md
+      responses:
+        "200":
+          description: The weather, or no location.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CareWeather"
   /tasks/{id}/complete:
     patch:
       operationId: completeTask
@@ -6796,8 +6808,11 @@ components:
       enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members]
     UserSettings:
       type: object
-      required: [hiddenModules, onboarded, pushOff, quietHours]
+      required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare]
       properties:
+        seasonalCare:
+          type: boolean
+          description: Winter – water less often, no fertilising (docs/pflege-wetter.md)
         hiddenModules:
           type: array
           items:
@@ -6832,6 +6847,8 @@ components:
           oneOf:
             - $ref: "#/components/schemas/QuietHours"
             - type: 'null'
+        seasonalCare:
+          type: boolean
     PushTopic:
       type: string
       description: What a push is about – each can be switched off (docs/benachrichtigungen.md)
@@ -8718,6 +8735,10 @@ components:
         - reminderTime
         - isActive
         - createdAt
+        - outdoor
+        - rainSkippedOn
+        - nextDueDate
+        - careNote
       properties:
         id:
           type: integer
@@ -8753,6 +8774,36 @@ components:
           description: Custom fertilizer name when fertilizerType is "Manuell".
         createdAt:
           type: string
+        outdoor:
+          type: boolean
+          description: Stands outside (balcony, garden) – rain and frost count.
+        rainSkippedOn:
+          type: [string, 'null']
+          description: Berlin day the rain did the watering.
+        nextDueDate:
+          type: string
+          description: Next due day (YYYY-MM-DD, Berlin) – with the winter rules.
+        careNote:
+          type: [string, 'null']
+          description: Rain or winter note for the card.
+    CareWeather:
+      type: object
+      required: [hasLocation, today, rainWaters, frost]
+      properties:
+        hasLocation:
+          type: boolean
+          description: False – no farm with a location, so no rain or frost check.
+        today:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/DayForecast"
+        rainWaters:
+          type: boolean
+          description: Enough rain today to skip watering outside.
+        frost:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/DayForecast"
     UpdateTaskInput:
       type: object
       description: All fields optional – only provided fields are updated.
@@ -8777,6 +8828,8 @@ components:
           type: string
           nullable: true
           description: Custom fertilizer name when fertilizerType is "Manuell".
+        outdoor:
+          type: boolean
     CreateTaskInput:
       type: object
       required:
@@ -8808,6 +8861,8 @@ components:
           type: string
           nullable: true
           description: Custom fertilizer name when fertilizerType is "Manuell".
+        outdoor:
+          type: boolean
     FavoriteIds:
       type: object
       required: [plantIds]

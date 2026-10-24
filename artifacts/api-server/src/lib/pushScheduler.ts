@@ -15,7 +15,6 @@ import {
 import { logger } from "./logger";
 import { sendGardenDigests } from "./gardenCalendar";
 import { sendFeedDigests } from "./feedStock";
-import { sendWeatherDigests } from "./farmWeather";
 import { sendMedicineDigests } from "./medicines";
 import { grantedSql } from "./farmModules";
 import { sendDutyDigests } from "./farmDuties";
@@ -23,6 +22,8 @@ import { sendBreedingDigests } from "./breeding";
 import { sendGrowDigests } from "./growWeather";
 import { removeExpiredMemberships } from "./farmMembers";
 import { sendPushToUser } from "./webPush";
+import { careDue, careForecast, rainWaters, seasonalCareOn, sendFrostNotices } from "./careWeather";
+import { sendWeatherDigests, WEATHER_DIGEST_TIME, type DayForecast } from "./farmWeather";
 
 // All reminder times in the app are entered as German local wall-clock times
 // (HH:MM), so the scheduler evaluates "now" in Europe/Berlin regardless of
@@ -70,9 +71,9 @@ export function unitToDays(unit: Task["intervalUnit"]): number {
   return 1;
 }
 
-// Mirrors the client-side isTaskDueNow logic: due when at least one full
-// interval has elapsed (in Berlin calendar days) since the last completion
-// (or creation), evaluated at the task's reminder time.
+// Due when at least one full interval has elapsed (in Berlin calendar days)
+// since the last completion (or creation), evaluated at the task's reminder
+// time. Plant care tasks add the weather and winter rules (careWeather.ts).
 type Schedule = Pick<Task, "lastCompletedAt" | "createdAt" | "intervalValue" | "intervalUnit">;
 
 export function isTaskDue(task: Schedule, todayKey: string): boolean {
@@ -149,6 +150,8 @@ export function berlinTodayKey(): string {
   return berlinNow().dateKey;
 }
 
+let frostCheckedOn: string | null = null;
+
 export async function triggerDueNotifications(): Promise<number> {
   const { hhmm, dateKey } = berlinNow();
   let triggered = 0;
@@ -166,12 +169,34 @@ export async function triggerDueNotifications(): Promise<number> {
       and(eq(tasksTable.isActive, true), eq(tasksTable.reminderTime, hhmm)),
     );
 
+  // Wetterabhängige Pflege (careWeather.ts): per account its winter setting
+  // and today's weather, looked up once per run.
+  const seasonal = new Map<string, boolean>();
+  const weather = new Map<string, DayForecast | null>();
   for (const { task, plantName } of dueTasks) {
     // DB-side dedup: skip if a notification was already sent today (Berlin day).
     const alreadySentToday =
       task.lastNotifiedAt !== null &&
       berlinDayKey(task.lastNotifiedAt) === dateKey;
-    if (alreadySentToday || !isTaskDue(task, dateKey)) continue;
+    if (alreadySentToday) continue;
+    if (!seasonal.has(task.userId)) seasonal.set(task.userId, await seasonalCareOn(task.userId));
+    if (!careDue(task, dateKey, seasonal.get(task.userId)!)) continue;
+
+    if (task.outdoor && task.actionType === "Gießen") {
+      if (!weather.has(task.userId)) {
+        const days = await careForecast(task.userId, dateKey).catch((): DayForecast[] => []);
+        weather.set(task.userId, days.find((d) => d.date === dateKey) ?? null);
+      }
+      if (rainWaters(task, weather.get(task.userId)!)) {
+        // The rain waters today: done, no push.
+        const now = new Date();
+        await db
+          .update(tasksTable)
+          .set({ lastCompletedAt: now, lastNotifiedAt: now, rainSkippedOn: dateKey })
+          .where(eq(tasksTable.id, task.id));
+        continue;
+      }
+    }
 
     await sendPushToUser(task.userId, { topic: "plant-care",
       title: "Pflanzenaufgabe fällig",
@@ -297,6 +322,12 @@ export async function triggerDueNotifications(): Promise<number> {
 
   // ── Grow: plan steps and weather warnings (discreet by default) ───────────
   triggered += await sendGrowDigests(hhmm, dateKey);
+
+  // ── Pflegeplan: frost in sight for plants outside, once a day per process ─
+  if (hhmm >= WEATHER_DIGEST_TIME && frostCheckedOn !== dateKey) {
+    frostCheckedOn = dateKey;
+    triggered += await sendFrostNotices(dateKey, sendPushToUser);
+  }
 
   return triggered;
 }

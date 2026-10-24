@@ -210,6 +210,7 @@ Darstellung: hell, dunkel oder wie das Gerät (Mehr → Darstellung, `components
 Benachrichtigungen (`docs/benachrichtigungen.md`): every push carries a `topic` (`PushTopic`); `sendPushToUser` drops it when the account switched the topic off or is in its quiet time (`user_settings.push_off`, `quiet_start/end`; the predator alarm ignores quiet time). Settings under Mehr → Benachrichtigungen (`components/push-topics-card.tsx`).
 
 Suche (`docs/suche.md`): magnifier in the header → `/suche`; app pages matched on the client (`lib/search-pages.ts`), archive and active farm via `GET /search` (`lib/search.ts`; farm results only for members and only from granted modules).
+Datenexport (`docs/datenexport.md`): „Meine Daten herunterladen“ im Konto → `GET /api/auth/user/export` (`lib/dataExport.ts`): Profil, `PERSONAL_TABLES`, Mitgliedschaften und alle Daten der Farmen, die man als Admin leitet; ohne Geheimnisse und eingebettete Fotos.
 
 ## Hof-Dashboard
 

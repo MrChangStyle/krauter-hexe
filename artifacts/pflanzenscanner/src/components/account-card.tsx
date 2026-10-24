@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Loader2, Trash2, UserRound } from "lucide-react";
+import { Download, Loader2, Trash2, UserRound } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -15,6 +15,29 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
+
+/**
+ * Meine Daten herunterladen (docs/datenexport.md): fetches the file and hands
+ * it to the browser, so a refusal shows as a message instead of a JSON page.
+ */
+export async function downloadMyData(fetchFn: typeof fetch = fetch): Promise<void> {
+  const base = (import.meta.env?.BASE_URL ?? "/").replace(/\/$/, "");
+  const res = await fetchFn(`${base}/api/auth/user/export`, { credentials: "include", cache: "no-store" });
+  if (!res.ok) {
+    const body = (await res.json().catch(() => null)) as { error?: string } | null;
+    throw new Error(body?.error ?? "Der Download hat nicht geklappt. Bitte versuche es später noch einmal.");
+  }
+  const name =
+    /filename="([^"]+)"/.exec(res.headers.get("content-disposition") ?? "")?.[1] ?? "little-farming-daten.json";
+  const url = URL.createObjectURL(await res.blob());
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
 
 /**
  * Sends DELETE /api/auth/user. Resolves on success, rejects with an Error
@@ -50,6 +73,18 @@ export function AccountCard() {
   const { user, logout } = useAuthContext();
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      await downloadMyData();
+    } catch (err) {
+      toast({ title: "Download fehlgeschlagen", description: (err as Error).message, variant: "destructive" });
+    } finally {
+      setExporting(false);
+    }
+  }
   // Accounts that only ever signed in with Google have no password; they
   // confirm by typing their email address instead.
   const [withEmail, setWithEmail] = useState(false);
@@ -115,6 +150,16 @@ export function AccountCard() {
           Nutzungsbedingungen
         </a>
       </nav>
+
+      <div className="space-y-1">
+        <Button type="button" variant="outline" size="sm" className="gap-2" onClick={handleExport} disabled={exporting}>
+          {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+          Meine Daten herunterladen
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          Eine Datei mit allem, was Little Farming zu deinem Konto speichert – auch die Höfe, die du leitest.
+        </p>
+      </div>
 
       {!user.isOwner && (
         <AlertDialog open={open} onOpenChange={reset}>

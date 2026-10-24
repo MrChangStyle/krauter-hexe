@@ -37,6 +37,7 @@ import demoRouter from "./demo";
 import moveRouter from "./move";
 import feedbackRouter from "./feedback";
 import searchRouter from "./search";
+import dataExportRouter from "./data-export";
 
 const router: IRouter = Router();
 
@@ -71,6 +72,7 @@ router.use(demoRouter);
 router.use(moveRouter);
 router.use(feedbackRouter);
 router.use(searchRouter);
+router.use(dataExportRouter);
 router.use(farmTasksRouter);
 router.use(farmAiRouter);
 router.use(farmCamerasRouter);

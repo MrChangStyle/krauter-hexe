@@ -1,8 +1,9 @@
 import { Router, type IRouter } from 'express';
-import { AddExpenseBody, AddSaleBody, AddYieldBody, GetYieldOverviewResponse, ListFarmPricesResponse, SetFarmPriceBody, SetFarmPriceResponse } from '@workspace/api-zod';
+import { AddExpenseBody, AddSaleBody, AddYieldBody, GetEggsTodayResponse, GetLayingHistoryResponse, GetYieldOverviewResponse, ListFarmPricesResponse, SetFarmPriceBody, SetFarmPriceResponse } from '@workspace/api-zod';
 
 import { requireFarm } from '../middlewares/requireFarm';
-import { addExpense, addSale, addYield, priceList, removeExpense, removeSale, removeYield, setPrice, yieldOverview } from '../lib/farmYields';
+import { addExpense, addSale, addYield, eggsToday, priceList, removeExpense, removeSale, removeYield, setPrice, yieldOverview } from '../lib/farmYields';
+import { loadLayingHistory } from '../lib/layingHistory';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
 // Ertrag & Bilanz. Reading: every member; writing: caretaker or admin.
@@ -14,6 +15,22 @@ router.get(
   requireFarm('guest'),
   handle(async (req, res) => {
     res.json(GetYieldOverviewResponse.parse(await yieldOverview(req.farm!.farmId, req.params.year)));
+  }),
+);
+
+router.get(
+  '/farms/:farmId/laying',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(GetLayingHistoryResponse.parse(await loadLayingHistory(req.farm!.farmId)));
+  }),
+);
+
+router.get(
+  '/farms/:farmId/yields/today',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.set('Cache-Control', 'no-store').json(GetEggsTodayResponse.parse(await eggsToday(req.farm!.farmId)));
   }),
 );
 

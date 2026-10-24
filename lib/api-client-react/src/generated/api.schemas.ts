@@ -920,6 +920,17 @@ export interface YieldInput {
   /** @nullable */
   herdId?: number | null;
   /**
+     * Optional – the hen that laid them (poultry of this farm).
+     * @nullable
+     */
+  animalId?: number | null;
+  /**
+     * Set by "Am Stall" – the same id twice is stored once (offline queue).
+     * @nullable
+     * @pattern ^[A-Za-z0-9-]{8,64}$
+     */
+  clientId?: string | null;
+  /**
      * @maxLength 500
      * @nullable
      */
@@ -936,6 +947,10 @@ export interface YieldEntry {
   herdId: number | null;
   /** @nullable */
   herdName: string | null;
+  /** @nullable */
+  animalId: number | null;
+  /** @nullable */
+  animalName: string | null;
   /** @nullable */
   note: string | null;
 }
@@ -1106,6 +1121,61 @@ export interface YieldOverview {
   balance: number;
   laying: null | LayingRate;
   feedCost: null | FeedCostEstimate;
+}
+
+export interface LayingWeek {
+  start: string;
+  days: number;
+  eggs: number;
+  hens: number;
+  /** @nullable */
+  perHenDay: number | null;
+}
+
+export interface LayingGroup {
+  herdId: number;
+  name: string;
+  hens: number;
+  eggs: number;
+  /** @nullable */
+  perHenDay: number | null;
+}
+
+export interface LayingHen {
+  animalId: number;
+  name: string;
+  eggs: number;
+  /** @nullable */
+  lastEgg: string | null;
+}
+
+export type LayingHintKind = typeof LayingHintKind[keyof typeof LayingHintKind];
+
+
+export const LayingHintKind = {
+  moult: 'moult',
+  winter: 'winter',
+  heat: 'heat',
+  drop: 'drop',
+  quiet: 'quiet',
+  old: 'old',
+  young: 'young',
+} as const;
+
+export interface LayingHint {
+  kind: LayingHintKind;
+  title: string;
+  text: string;
+}
+
+export interface LayingHistory {
+  /** The last 26 weeks (Monday first), the current one up to today. */
+  weeks: LayingWeek[];
+  /** Poultry groups, last 30 days. */
+  groups: LayingGroup[];
+  /** Hens with own egg entries, last 30 days. */
+  hens: LayingHen[];
+  hints: LayingHint[];
 }
 
 export interface PriceItem {
@@ -3050,6 +3120,24 @@ export interface MedicalRecord {
   createdAt: string;
 }
 
+export type MedicalRepeatKind = typeof MedicalRepeatKind[keyof typeof MedicalRepeatKind];
+
+
+export const MedicalRepeatKind = {
+  deworm: 'deworm',
+  vaccinate: 'vaccinate',
+} as const;
+
+export interface MedicalRepeat {
+  kind: MedicalRepeatKind;
+  /**
+     * @minimum 1
+     * @maximum 365
+     */
+  every: number;
+  unit: TaskIntervalUnit;
+}
+
 export interface MedicalRecordInput {
   /** YYYY-MM-DD, not in the future */
   date: string;
@@ -3091,6 +3179,8 @@ export interface MedicalRecordInput {
   medicineId?: number | null;
   /** @nullable */
   dose?: number | null;
+  /** New records only – a stall task (Entwurmen/Impfen) for this animal, due one interval after the record's date. */
+  repeat?: null | MedicalRepeat;
 }
 
 export interface WeightLog {
@@ -3152,6 +3242,19 @@ export interface FarmTask {
   dueDate: string;
   /** Due today or overdue. */
   isDue: boolean;
+}
+
+export interface CompleteFarmTaskInput {
+  /**
+     * When it was done, for taps sent later from the offline queue. At most 7 days back; default now.
+     * @nullable
+     */
+  doneAt?: string | null;
+}
+
+export interface EggsToday {
+  date: string;
+  eggs: number;
 }
 
 export interface FarmTaskInput {

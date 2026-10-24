@@ -2091,6 +2091,24 @@ paths:
                 $ref: "#/components/schemas/YieldOverview"
         "400":
           description: Invalid year.
+  /farms/{farmId}/laying:
+    get:
+      tags: [farm]
+      operationId: getLayingHistory
+      summary: Legeleistung als Verlauf – weeks, groups, hens and hints
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The history.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LayingHistory"
   /farms/{farmId}/yields:
     post:
       tags: [farm]
@@ -2113,6 +2131,24 @@ paths:
           description: Saved.
         "400":
           description: Invalid input.
+  /farms/{farmId}/yields/today:
+    get:
+      tags: [farm]
+      operationId: getEggsToday
+      summary: Eggs entered today (Am Stall)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Today's eggs.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EggsToday"
   /farms/{farmId}/yields/{yieldId}:
     delete:
       tags: [farm]
@@ -3852,6 +3888,12 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteFarmTaskInput"
       responses:
         "200":
           description: The task with its next due date.
@@ -6362,12 +6404,19 @@ components:
           type: number
         herdId:
           type: [integer, 'null']
+        animalId:
+          type: [integer, 'null']
+          description: Optional – the hen that laid them (poultry of this farm).
+        clientId:
+          type: [string, 'null']
+          pattern: '^[A-Za-z0-9-]{8,64}$'
+          description: Set by "Am Stall" – the same id twice is stored once (offline queue).
         note:
           type: [string, 'null']
           maxLength: 500
     YieldEntry:
       type: object
-      required: [id, product, date, amount, unit, herdId, herdName, note]
+      required: [id, product, date, amount, unit, herdId, herdName, animalId, animalName, note]
       properties:
         id:
           type: integer
@@ -6382,6 +6431,10 @@ components:
         herdId:
           type: [integer, 'null']
         herdName:
+          type: [string, 'null']
+        animalId:
+          type: [integer, 'null']
+        animalName:
           type: [string, 'null']
         note:
           type: [string, 'null']
@@ -6622,6 +6675,80 @@ components:
           type: number
         perHenDay:
           type: number
+    LayingHistory:
+      type: object
+      required: [weeks, groups, hens, hints]
+      properties:
+        weeks:
+          type: array
+          description: The last 26 weeks (Monday first), the current one up to today.
+          items:
+            $ref: "#/components/schemas/LayingWeek"
+        groups:
+          type: array
+          description: Poultry groups, last 30 days.
+          items:
+            $ref: "#/components/schemas/LayingGroup"
+        hens:
+          type: array
+          description: Hens with own egg entries, last 30 days.
+          items:
+            $ref: "#/components/schemas/LayingHen"
+        hints:
+          type: array
+          items:
+            $ref: "#/components/schemas/LayingHint"
+    LayingWeek:
+      type: object
+      required: [start, days, eggs, hens, perHenDay]
+      properties:
+        start:
+          type: string
+        days:
+          type: integer
+        eggs:
+          type: number
+        hens:
+          type: integer
+        perHenDay:
+          type: [number, 'null']
+    LayingGroup:
+      type: object
+      required: [herdId, name, hens, eggs, perHenDay]
+      properties:
+        herdId:
+          type: integer
+        name:
+          type: string
+        hens:
+          type: integer
+        eggs:
+          type: number
+        perHenDay:
+          type: [number, 'null']
+    LayingHen:
+      type: object
+      required: [animalId, name, eggs, lastEgg]
+      properties:
+        animalId:
+          type: integer
+        name:
+          type: string
+        eggs:
+          type: number
+        lastEgg:
+          type: [string, 'null']
+    LayingHint:
+      type: object
+      required: [kind, title, text]
+      properties:
+        kind:
+          type: string
+          enum: [moult, winter, heat, drop, quiet, old, young]
+        title:
+          type: string
+        text:
+          type: string
     FeedCostEstimate:
       type: object
       required: [perMonth, complete]
@@ -9185,6 +9312,24 @@ components:
           description: A medicine from the stock; its dose is taken off the stock
         dose:
           type: [number, 'null']
+        repeat:
+          description: New records only – a stall task (Entwurmen/Impfen) for this animal, due one interval after the record's date.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/MedicalRepeat"
+    MedicalRepeat:
+      type: object
+      required: [kind, every, unit]
+      properties:
+        kind:
+          type: string
+          enum: [deworm, vaccinate]
+        every:
+          type: integer
+          minimum: 1
+          maximum: 365
+        unit:
+          $ref: "#/components/schemas/TaskIntervalUnit"
     WeightLog:
       type: object
       required: [id, animalId, date, weightKg, createdAt]
@@ -9254,6 +9399,21 @@ components:
         isDue:
           type: boolean
           description: Due today or overdue.
+    CompleteFarmTaskInput:
+      type: object
+      properties:
+        doneAt:
+          type: [string, 'null']
+          format: date-time
+          description: When it was done, for taps sent later from the offline queue. At most 7 days back; default now.
+    EggsToday:
+      type: object
+      required: [date, eggs]
+      properties:
+        date:
+          type: string
+        eggs:
+          type: number
     FarmTaskInput:
       type: object
       required: [actionType, intervalValue, intervalUnit, reminderTime]

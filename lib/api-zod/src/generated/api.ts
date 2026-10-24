@@ -2950,6 +2950,8 @@ export const GetYieldOverviewResponse = zod.object({
   "unit": zod.string(),
   "herdId": zod.number().nullable(),
   "herdName": zod.string().nullable(),
+  "animalId": zod.number().nullable(),
+  "animalName": zod.string().nullable(),
   "note": zod.string().nullable()
 })),
   "summary": zod.object({
@@ -3035,12 +3037,49 @@ export const GetYieldOverviewResponse = zod.object({
 
 
 /**
+ * @summary Legeleistung als Verlauf – weeks, groups, hens and hints
+ */
+export const GetLayingHistoryParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetLayingHistoryResponse = zod.object({
+  "weeks": zod.array(zod.object({
+  "start": zod.string(),
+  "days": zod.number(),
+  "eggs": zod.number(),
+  "hens": zod.number(),
+  "perHenDay": zod.number().nullable()
+})).describe('The last 26 weeks (Monday first), the current one up to today.'),
+  "groups": zod.array(zod.object({
+  "herdId": zod.number(),
+  "name": zod.string(),
+  "hens": zod.number(),
+  "eggs": zod.number(),
+  "perHenDay": zod.number().nullable()
+})).describe('Poultry groups, last 30 days.'),
+  "hens": zod.array(zod.object({
+  "animalId": zod.number(),
+  "name": zod.string(),
+  "eggs": zod.number(),
+  "lastEgg": zod.string().nullable()
+})).describe('Hens with own egg entries, last 30 days.'),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['moult', 'winter', 'heat', 'drop', 'quiet', 'old', 'young']),
+  "title": zod.string(),
+  "text": zod.string()
+}))
+})
+
+
+/**
  * @summary Enter eggs, milk, meat or wool (caretaker)
  */
 export const AddYieldParams = zod.object({
   "farmId": zod.coerce.number()
 })
 
+export const addYieldBodyClientIdRegExp = new RegExp('^[A-Za-z0-9-]{8,64}$');
 export const addYieldBodyNoteMax = 500;
 
 
@@ -3050,10 +3089,25 @@ export const AddYieldBody = zod.object({
   "date": zod.string().describe('YYYY-MM-DD, not in the future'),
   "amount": zod.number(),
   "herdId": zod.number().nullish(),
+  "animalId": zod.number().nullish().describe('Optional – the hen that laid them (poultry of this farm).'),
+  "clientId": zod.string().regex(addYieldBodyClientIdRegExp).nullish().describe('Set by \"Am Stall\" – the same id twice is stored once (offline queue).'),
   "note": zod.string().max(addYieldBodyNoteMax).nullish()
 })
 
 export const AddYieldResponse = zod.void()
+
+
+/**
+ * @summary Eggs entered today (Am Stall)
+ */
+export const GetEggsTodayParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetEggsTodayResponse = zod.object({
+  "date": zod.string(),
+  "eggs": zod.number()
+})
 
 
 /**
@@ -5124,6 +5178,8 @@ export const createMedicalRecordBodyVetMax = 100;
 
 export const createMedicalRecordBodyNotesMax = 2000;
 
+export const createMedicalRecordBodyRepeatTwoEveryMax = 365;
+
 
 
 export const CreateMedicalRecordBody = zod.object({
@@ -5135,7 +5191,12 @@ export const CreateMedicalRecordBody = zod.object({
   "vet": zod.string().max(createMedicalRecordBodyVetMax).nullish(),
   "notes": zod.string().max(createMedicalRecordBodyNotesMax).nullish(),
   "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
-  "dose": zod.number().nullish()
+  "dose": zod.number().nullish(),
+  "repeat": zod.union([zod.null(),zod.object({
+  "kind": zod.enum(['deworm', 'vaccinate']),
+  "every": zod.number().min(1).max(createMedicalRecordBodyRepeatTwoEveryMax),
+  "unit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.')
+})]).optional().describe('New records only – a stall task (Entwurmen\/Impfen) for this animal, due one interval after the record\'s date.')
 })
 
 export const CreateMedicalRecordResponse = zod.object({
@@ -5177,6 +5238,8 @@ export const updateMedicalRecordBodyVetMax = 100;
 
 export const updateMedicalRecordBodyNotesMax = 2000;
 
+export const updateMedicalRecordBodyRepeatTwoEveryMax = 365;
+
 
 
 export const UpdateMedicalRecordBody = zod.object({
@@ -5188,7 +5251,12 @@ export const UpdateMedicalRecordBody = zod.object({
   "vet": zod.string().max(updateMedicalRecordBodyVetMax).nullish(),
   "notes": zod.string().max(updateMedicalRecordBodyNotesMax).nullish(),
   "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
-  "dose": zod.number().nullish()
+  "dose": zod.number().nullish(),
+  "repeat": zod.union([zod.null(),zod.object({
+  "kind": zod.enum(['deworm', 'vaccinate']),
+  "every": zod.number().min(1).max(updateMedicalRecordBodyRepeatTwoEveryMax),
+  "unit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.')
+})]).optional().describe('New records only – a stall task (Entwurmen\/Impfen) for this animal, due one interval after the record\'s date.')
 })
 
 export const UpdateMedicalRecordResponse = zod.object({
@@ -5409,6 +5477,10 @@ export const DeleteFarmTaskResponse = zod.void()
 export const CompleteFarmTaskParams = zod.object({
   "farmId": zod.coerce.number(),
   "taskId": zod.coerce.number()
+})
+
+export const CompleteFarmTaskBody = zod.object({
+  "doneAt": zod.coerce.date().nullish().describe('When it was done, for taps sent later from the offline queue. At most 7 days back; default now.')
 })
 
 export const CompleteFarmTaskResponse = zod.object({

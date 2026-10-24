@@ -61,6 +61,8 @@ import PflichtenPage from '@/pages/pflichten';
 import ZuchtPage from '@/pages/zucht';
 import SaatgutPage from '@/pages/saatgut';
 import ErtragPage from '@/pages/ertrag';
+import LegeleistungPage from '@/pages/legeleistung';
+import StallPage from '@/pages/stall';
 import GrowPage from '@/pages/grow';
 import GrowPlantPage from '@/pages/grow-plant';
 import GrowKostenPage from '@/pages/grow-kosten';
@@ -166,6 +168,8 @@ function Router() {
         <Route path="/farm/tier/neu" component={TierNeuPage} />
         <Route path="/farm/zucht" component={ZuchtPage} />
         <Route path="/farm/ertrag" component={ErtragPage} />
+        <Route path="/farm/legeleistung" component={LegeleistungPage} />
+        <Route path="/farm/stall" component={StallPage} />
         <Route path="/grow" component={GrowPage} />
         <Route path="/grow/pflanze/:plantId" component={GrowPlantPage} />
         <Route path="/grow/kosten/:growId" component={GrowKostenPage} />

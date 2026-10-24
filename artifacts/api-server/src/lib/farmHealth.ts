@@ -11,6 +11,7 @@ import { and, asc, desc, eq } from 'drizzle-orm';
 
 import { FarmDataError, listAnimals, notFound, text, validDate } from './farmAnimals';
 import { adjustStock, usableMedicine, withdrawalFor } from './medicines';
+import { checkRepeat, scheduleRepeat, type MedicalRepeat } from './medicalRepeat';
 
 /** Throws 404 unless the animal belongs to this farm. Archived ones count. */
 async function assertAnimal(farmId: number, animalId: number): Promise<{ species: FarmSpecies }> {
@@ -67,6 +68,8 @@ export interface MedicalInput {
   /** From the Arzneimittel-Vorrat, with the amount given (its unit). */
   medicineId?: number | null;
   dose?: number | null;
+  /** New records only: remind to repeat (docs/gesundheit-erinnerung.md). */
+  repeat?: MedicalRepeat | null;
 }
 
 function medicalValues(input: MedicalInput) {
@@ -125,12 +128,14 @@ async function withMedicine(
 
 export async function createMedicalRecord(farmId: number, animalId: number, input: MedicalInput) {
   const { species } = await assertAnimal(farmId, animalId);
+  if (input.repeat) checkRepeat(input.repeat);
   const values = await withMedicine(farmId, species, input, medicalValues(input), null);
   const [record] = await db
     .insert(medicalRecordsTable)
     .values({ farmId, animalId, ...values })
     .returning({ id: medicalRecordsTable.id });
   if (values.medicineId !== null) await adjustStock(farmId, values.medicineId, -values.dose!);
+  if (input.repeat) await scheduleRepeat(farmId, animalId, input.repeat, values.date, values.medication);
   return recordById(farmId, record!.id);
 }
 

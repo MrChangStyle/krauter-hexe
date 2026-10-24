@@ -8,7 +8,7 @@
  * shows exactly what a user would get.
  */
 
-import { db, farmAnimalsTable, farmMembershipsTable, farmsTable, growAccessTable, growsTable } from '@workspace/db';
+import { db, farmAnimalsTable, farmMembershipsTable, farmsTable, farmYieldsTable, growAccessTable, growsTable } from '@workspace/db';
 import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { createBreeding } from './breeding';
@@ -89,7 +89,13 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await createMedicine(farmId, { name: 'Wurmkur Ziege (Demo)', unit: 'ml', amount: 40, expiresOn: addDays(today, 20), withdrawalMeatDays: 14, withdrawalMilkDays: 5, receivedOn: ago(60) });
   await createMedicine(farmId, { name: 'Wundspray (Demo)', unit: 'Stück', amount: 1, expiresOn: addDays(today, 400), receivedOn: ago(30) });
 
-  // Ertrag & Bilanz: eggs and milk, one expense.
+  // Ertrag & Bilanz: eight weeks of eggs (Legeleistung, laying less lately), milk, one expense.
+  const eggs = [];
+  for (let n = 2; n <= 56; n++) {
+    const amount = n > 14 ? (n % 3 === 0 ? 1 : 2) : n % 2;
+    if (amount > 0) eggs.push({ farmId, product: 'eggs', date: ago(n), amount });
+  }
+  await db.insert(farmYieldsTable).values(eggs);
   await addYield(farmId, { product: 'eggs', date: ago(1), amount: 2 });
   await addYield(farmId, { product: 'milk', date: ago(1), amount: 3 });
   await addExpense(farmId, { date: ago(5), category: 'feed', amountEur: 24.9, note: 'Demo: Legehennenfutter' });

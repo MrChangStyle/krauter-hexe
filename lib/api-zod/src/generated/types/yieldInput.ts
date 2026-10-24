@@ -15,6 +15,17 @@ export interface YieldInput {
   /** @nullable */
   herdId?: number | null;
   /**
+     * Optional – the hen that laid them (poultry of this farm).
+     * @nullable
+     */
+  animalId?: number | null;
+  /**
+     * Set by "Am Stall" – the same id twice is stored once (offline queue).
+     * @nullable
+     * @pattern ^[A-Za-z0-9-]{8,64}$
+     */
+  clientId?: string | null;
+  /**
      * @maxLength 500
      * @nullable
      */

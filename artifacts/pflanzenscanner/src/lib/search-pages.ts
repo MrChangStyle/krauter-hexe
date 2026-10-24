@@ -29,6 +29,8 @@ export const APP_PAGES: AppPage[] = [
   { title: "Arzneimittel", hint: "Vorrat und Wartezeiten", href: "/farm/arzneimittel", module: "medicines", words: "medizin wartezeit wurmkur impfung" },
   { title: "Pflichten & Tierseuchen", hint: "Anmeldung, Kasse, Stallpflicht", href: "/farm/pflichten", module: "duties", words: "meldung tierseuchenkasse vetamt geflügelpest" },
   { title: "Ertrag & Bilanz", hint: "Eier, Milch, Kosten", href: "/farm/ertrag", module: "yields", words: "eier milch ernte kosten verkauf" },
+  { title: "Am Stall", hint: "Eier und Aufgaben mit einem Tipp", href: "/farm/stall", module: "farm-tasks", words: "schnell erfassen eier gefüttert getränkt wasser offline" },
+  { title: "Legeleistung", hint: "Eier je Henne, Verlauf", href: "/farm/legeleistung", module: "yields", words: "eier hennen hühner legen mauser" },
   { title: "Wildtier-Radar", hint: "Kameras und Alarm", href: "/farm/kameras", module: "wildlife", words: "fuchs marder kamera alarm" },
   { title: "Übergabe", hint: "Für die Vertretung", href: "/farm/uebergabe", module: "handover", words: "urlaub vertretung" },
   { title: "Farm & Team", hint: "Team, Rollen, Kontakte", href: "/team", module: "members", words: "mitglieder vertretung kontakte freigaben" },

@@ -18,5 +18,9 @@ export interface YieldEntry {
   /** @nullable */
   herdName: string | null;
   /** @nullable */
+  animalId: number | null;
+  /** @nullable */
+  animalName: string | null;
+  /** @nullable */
   note: string | null;
 }

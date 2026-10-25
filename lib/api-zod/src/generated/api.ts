@@ -7424,7 +7424,29 @@ export const GetFarmExportResponse = zod.object({
   "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
   "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
   "createdAt": zod.coerce.date()
-}))
+})),
+  "beeColonies": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "createdAt": zod.string()
+})).describe('Empty without the Bienen module.'),
+  "beeTreatments": zod.array(zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "colonyName": zod.string(),
+  "apiary": zod.string().nullable(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "source": zod.string().nullable().describe('Where the medicine came from (vet or shop, from the Arzneimittel-Vorrat).'),
+  "notes": zod.string().nullable()
+})).describe('The Bestandsbuch of the varroa treatments; empty without the Bienen module.')
 })
 
 

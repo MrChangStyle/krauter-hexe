@@ -109,6 +109,8 @@ export * from './expenseEntry';
 export * from './expenseInput';
 export * from './expenseOverview';
 export * from './expenseOverviewLinesItem';
+export * from './exportBeeColony';
+export * from './exportBeeTreatment';
 export * from './farmAnimal';
 export * from './farmAnimalInput';
 export * from './farmContact';

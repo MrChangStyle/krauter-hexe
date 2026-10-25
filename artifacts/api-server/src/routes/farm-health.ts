@@ -17,6 +17,7 @@ import {
 } from '@workspace/api-zod';
 
 import { requireFarm } from '../middlewares/requireFarm';
+import { canUseModule } from '../lib/farmModuleAccess';
 import {
   createMedicalRecord,
   createWeightLog,
@@ -125,7 +126,9 @@ router.get(
   '/farms/:farmId/export',
   requireFarm('guest'),
   handle(async (req, res) => {
-    res.json(GetFarmExportResponse.parse(await farmExport(req.farm!.farmId)));
+    // The bees only for members who may see them.
+    const { role, modules } = req.farm!;
+    res.json(GetFarmExportResponse.parse(await farmExport(req.farm!.farmId, canUseModule(role, modules, 'bees'))));
   }),
 );
 

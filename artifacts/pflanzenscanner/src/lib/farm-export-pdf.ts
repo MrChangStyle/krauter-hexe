@@ -1,5 +1,10 @@
 import {
+  BEE_COLONY_COLUMNS,
+  BEE_TREATMENT_COLUMNS,
   MEDICAL_COLUMNS,
+  beeColonyRow,
+  beeTreatmentRow,
+  hasBees,
   countText,
   STOCK_COLUMNS,
   deDate,
@@ -21,6 +26,8 @@ const BRAND: RGB = [21, 128, 61]; // green-700
 // Relative column widths; scaled to the page.
 const STOCK_WIDTHS = [16, 14, 11, 14, 10, 11, 12, 11];
 const MEDICAL_WIDTHS = [9, 12, 10, 17, 18, 13, 11, 7, 9, 11];
+const BEE_COLONY_WIDTHS = [20, 24, 14, 12, 12];
+const BEE_TREATMENT_WIDTHS = [9, 12, 12, 12, 16, 8, 9, 12, 16];
 
 /**
  * Stock list and health history for the veterinary office, A4 landscape.
@@ -118,6 +125,21 @@ export async function exportFarmPdf(data: ExportData): Promise<string> {
   }
   title(`Medizin-Historie (${countText(data.records.length, "Eintrag", "Einträge")})`, 11);
   table(MEDICAL_COLUMNS, MEDICAL_WIDTHS, data.records.map(medicalRow), "Keine Einträge in diesem Zeitraum.");
+
+  if (hasBees(data)) {
+    const section = (text: string) => {
+      y += 6;
+      if (y + 20 > bottom) {
+        doc.addPage();
+        y = margin;
+      }
+      title(text, 11);
+    };
+    section(`Bienenvölker (${countText(data.beeColonies.length, "Volk", "Völker")})`);
+    table(BEE_COLONY_COLUMNS, BEE_COLONY_WIDTHS, data.beeColonies.map(beeColonyRow), "Keine Völker in diesem Zeitraum.");
+    section(`Bienen – Bestandsbuch der Behandlungen (${countText(data.beeTreatments.length, "Eintrag", "Einträge")})`);
+    table(BEE_TREATMENT_COLUMNS, BEE_TREATMENT_WIDTHS, data.beeTreatments.map(beeTreatmentRow), "Keine Behandlungen in diesem Zeitraum.");
+  }
 
   // ── Footer ──────────────────────────────────────────────────────────────────
   const created = deDate(todayIso());

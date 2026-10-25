@@ -6,8 +6,8 @@
  * filters by it, so an id from another farm is simply "not found".
  */
 
-import { db, farmAnimalsTable, farmsTable, medicalRecordsTable, medicinesTable, weightLogsTable, type FarmSpecies } from '@workspace/db';
-import { and, asc, desc, eq } from 'drizzle-orm';
+import { beeColoniesTable, beeTreatmentsTable, db, farmAnimalsTable, farmsTable, medicalRecordsTable, medicinesTable, weightLogsTable, type FarmSpecies } from '@workspace/db';
+import { and, asc, desc, eq, sql } from 'drizzle-orm';
 
 import { FarmDataError, listAnimals, notFound, text, validDate } from './farmAnimals';
 import { adjustStock, usableMedicine, withdrawalFor } from './medicines';
@@ -221,14 +221,58 @@ export async function deleteWeightLog(farmId: number, weightId: number): Promise
  * too, they may have been on the farm in the chosen period) and all health
  * records. The app picks the period and builds CSV and PDF from this.
  */
-export async function farmExport(farmId: number) {
+export async function farmExport(farmId: number, withBees = false) {
   const [farm] = await db.select({ name: farmsTable.name, holdingNumber: farmsTable.holdingNumber }).from(farmsTable).where(eq(farmsTable.id, farmId));
   if (!farm) throw notFound();
-  const [animals, medicalRecords] = await Promise.all([
+  const [animals, medicalRecords, bees] = await Promise.all([
     listAnimals(farmId),
     selectRecords()
       .where(eq(medicalRecordsTable.farmId, farmId))
       .orderBy(asc(medicalRecordsTable.date), asc(medicalRecordsTable.id)),
+    withBees ? beeExport(farmId) : { beeColonies: [], beeTreatments: [] },
   ]);
-  return { farmName: farm.name, holdingNumber: farm.holdingNumber, animals, medicalRecords };
+  return { farmName: farm.name, holdingNumber: farm.holdingNumber, animals, medicalRecords, ...bees };
+}
+
+/**
+ * Bienen for the export: the colonies and the Bestandsbuch of their varroa
+ * treatments (date, colony and stand, product, amount, batch, where it came
+ * from). Only for members who may see the Bienen module.
+ */
+async function beeExport(farmId: number) {
+  const [beeColonies, beeTreatments] = await Promise.all([
+    db
+      .select({
+        id: beeColoniesTable.id,
+        name: beeColoniesTable.name,
+        apiary: beeColoniesTable.apiary,
+        status: beeColoniesTable.status,
+        startedOn: beeColoniesTable.startedOn,
+        endedOn: beeColoniesTable.endedOn,
+        createdAt: beeColoniesTable.createdAt,
+      })
+      .from(beeColoniesTable)
+      .where(eq(beeColoniesTable.farmId, farmId))
+      .orderBy(asc(beeColoniesTable.name)),
+    db
+      .select({
+        id: beeTreatmentsTable.id,
+        date: beeTreatmentsTable.date,
+        colonyName: beeColoniesTable.name,
+        apiary: beeColoniesTable.apiary,
+        method: beeTreatmentsTable.method,
+        product: sql<string | null>`coalesce(${medicinesTable.name}, ${beeTreatmentsTable.product})`,
+        dose: beeTreatmentsTable.dose,
+        unit: beeTreatmentsTable.unit,
+        batch: sql<string | null>`coalesce(${beeTreatmentsTable.batch}, ${medicinesTable.batch})`,
+        source: medicinesTable.vet,
+        notes: beeTreatmentsTable.notes,
+      })
+      .from(beeTreatmentsTable)
+      .innerJoin(beeColoniesTable, eq(beeColoniesTable.id, beeTreatmentsTable.colonyId))
+      .leftJoin(medicinesTable, eq(medicinesTable.id, beeTreatmentsTable.medicineId))
+      .where(eq(beeTreatmentsTable.farmId, farmId))
+      .orderBy(asc(beeTreatmentsTable.date), asc(beeTreatmentsTable.id)),
+  ]);
+  return { beeColonies: beeColonies.map(({ createdAt, ...c }) => ({ ...c, createdAt: createdAt.toISOString() })), beeTreatments };
 }

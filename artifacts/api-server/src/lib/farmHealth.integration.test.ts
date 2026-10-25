@@ -179,7 +179,7 @@ describe.skipIf(!enabled)("Meine Farm – health, weights, tasks, export (real d
     expect((await api("POST", `/farms/${farm.bert}/tasks`, task({ animalId: lotte }))).status).toBe(400);
     // … and his export holds only his own animal.
     const exp = await api("GET", `/farms/${farm.bert}/export`);
-    expect(exp.data).toEqual({ farmName: "Hof Bert", holdingNumber: null, animals: [expect.objectContaining({ id: bertsAnimal })], medicalRecords: [] });
+    expect(exp.data).toEqual({ farmName: "Hof Bert", holdingNumber: null, animals: [expect.objectContaining({ id: bertsAnimal })], medicalRecords: [], beeColonies: [], beeTreatments: [] });
     // Anna's farm itself stays closed to him.
     expect((await api("GET", `/farms/${farm.anna}/tasks`)).status).toBe(404);
     expect(await q("SELECT count(*)::int AS n FROM medical_records")).toEqual([{ n: 1 }]);
@@ -266,5 +266,31 @@ describe.skipIf(!enabled)("Meine Farm – health, weights, tasks, export (real d
     expect(exp.data.farmName).toBe("Hof Anna");
     expect(exp.data.animals).toEqual([expect.objectContaining({ name: "Lotte", archivedAt: expect.any(String) })]);
     expect(exp.data.medicalRecords).toEqual([expect.objectContaining({ animalId: lotte, diagnosis: "Moderhinke" })]);
+  });
+
+  it("exports the colonies and their varroa treatments, only to members who may see the bees", async () => {
+    const [col] = await q<{ id: number }>(
+      "INSERT INTO bee_colonies (farm_id, name, apiary, started_on) VALUES ($1, 'Volk 1', 'Obstwiese', '2025-05-01') RETURNING id",
+      [farm.anna],
+    );
+    const [med] = await q<{ id: number }>(
+      "INSERT INTO medicines (farm_id, name, unit, amount, batch, vet) VALUES ($1, 'Oxalsäure 3,5 %', 'ml', 500, 'OX-11', 'Dr. Imker') RETURNING id",
+      [farm.anna],
+    );
+    await q("INSERT INTO bee_treatments (farm_id, colony_id, date, method, medicine_id, dose, unit) VALUES ($1, $2, '2025-12-20', 'oxalsaeure', $3, 30, 'ml')", [farm.anna, col!.id, med!.id]);
+    await q("INSERT INTO bee_treatments (farm_id, colony_id, date, method, product, batch) VALUES ($1, $2, '2025-08-01', 'ameisensaeure', 'Ameisensäure 60 %', 'AS-2')", [farm.anna, col!.id]);
+    const exp = (await api("GET", `/farms/${farm.anna}/export`)).data;
+    expect(exp.beeColonies).toEqual([{ id: col!.id, name: "Volk 1", apiary: "Obstwiese", status: "active", startedOn: "2025-05-01", endedOn: null, createdAt: expect.any(String) }]);
+    // Oldest first; product and batch from the Arzneimittel-Vorrat when it came from there.
+    expect(exp.beeTreatments.map((t: any) => [t.date, t.colonyName, t.apiary, t.method, t.product, t.dose, t.unit, t.batch, t.source])).toEqual([
+      ["2025-08-01", "Volk 1", "Obstwiese", "ameisensaeure", "Ameisensäure 60 %", null, null, "AS-2", null],
+      ["2025-12-20", "Volk 1", "Obstwiese", "oxalsaeure", "Oxalsäure 3,5 %", 30, "ml", "OX-11", "Dr. Imker"],
+    ]);
+    // A caretaker without the Bienen module gets the animals but no bees.
+    await q(`UPDATE farm_memberships SET modules = '["export"]' WHERE user_id = 'pfleger'`);
+    as = "pfleger";
+    const limited = (await api("GET", `/farms/${farm.anna}/export`)).data;
+    expect(limited.animals).toHaveLength(1);
+    expect([limited.beeColonies, limited.beeTreatments]).toEqual([[], []]);
   });
 });

@@ -5,6 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ExportBeeColony } from './exportBeeColony';
+import type { ExportBeeTreatment } from './exportBeeTreatment';
 import type { FarmAnimal } from './farmAnimal';
 import type { MedicalRecord } from './medicalRecord';
 
@@ -13,4 +15,8 @@ export interface FarmExport {
   holdingNumber: string | null;
   animals: FarmAnimal[];
   medicalRecords: MedicalRecord[];
+  /** Empty without the Bienen module. */
+  beeColonies: ExportBeeColony[];
+  /** The Bestandsbuch of the varroa treatments; empty without the Bienen module. */
+  beeTreatments: ExportBeeTreatment[];
 }

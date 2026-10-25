@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { countText, exportCsv, exportFileName, exportForPeriod } from "@/lib/farm-health";
+import { countText, exportCsv, exportFileName, exportForPeriod, hasBees } from "@/lib/farm-health";
 import { todayIso } from "@/lib/farm-labels";
 
 function download(content: string, name: string, type: string) {
@@ -40,7 +40,9 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
       }
       toast({
         title: "Export erstellt",
-        description: `${countText(data.animals.length, "Tier", "Tiere")}, ${countText(data.records.length, "Eintrag", "Einträge")} in der Medizin-Historie.`,
+        description:
+          `${countText(data.animals.length, "Tier", "Tiere")}, ${countText(data.records.length, "Eintrag", "Einträge")} in der Medizin-Historie` +
+          (hasBees(data) ? `, ${countText(data.beeColonies.length, "Bienenvolk", "Bienenvölker")} mit ${countText(data.beeTreatments.length, "Behandlung", "Behandlungen")}.` : "."),
       });
     } catch {
       toast({ title: "Export fehlgeschlagen", description: "Bitte versuche es noch einmal.", variant: "destructive" });
@@ -57,7 +59,7 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
           Veterinäramt-Export
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Bestandsliste und Medizin-Historie für einen Zeitraum – als PDF zum Ausdrucken oder CSV für Excel.
+          Bestandsliste und Medizin-Historie für einen Zeitraum – mit Bienen auch die Völker und das Bestandsbuch ihrer Behandlungen. Als PDF zum Ausdrucken oder CSV für Excel.
         </p>
       </div>
       <div className="grid grid-cols-2 gap-3">

@@ -1991,28 +1991,6 @@ export interface GardenEconomics {
   hints: string[];
 }
 
-export interface SiteImageSlot {
-  slot: string;
-  title: string;
-  aspect: string;
-  prompt: string;
-  /** @nullable */
-  url: string | null;
-  /** @nullable */
-  model: string | null;
-  /** @nullable */
-  createdAt: string | null;
-}
-
-export interface GenerateSiteImageInput {
-  /**
-     * Added to the slot's prompt, e.g. "im Herbst".
-     * @maxLength 300
-     * @nullable
-     */
-  extra?: string | null;
-}
-
 export interface HarvestYear {
   kg: number;
   value: number;
@@ -2297,9 +2275,54 @@ export interface FeedbackInput {
   voice?: boolean;
 }
 
+export type SiteFeedbackInputKind = typeof SiteFeedbackInputKind[keyof typeof SiteFeedbackInputKind];
+
+
+export const SiteFeedbackInputKind = {
+  idea: 'idea',
+  problem: 'problem',
+} as const;
+
+export interface SiteFeedbackInput {
+  /**
+     * @minLength 1
+     * @maxLength 2000
+     */
+  text: string;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  page?: string | null;
+  kind?: SiteFeedbackInputKind;
+  /**
+     * An e-mail address for a reply, optional.
+     * @maxLength 120
+     * @nullable
+     */
+  contact?: string | null;
+  /**
+     * Honeypot – left empty by people.
+     * @maxLength 200
+     */
+  website?: string;
+}
+
 export interface FeedbackMarkInput {
   read: boolean;
 }
+
+/**
+ * Homepage – idea or problem; null from the app.
+ * @nullable
+ */
+export type FeedbackItemKind = typeof FeedbackItemKind[keyof typeof FeedbackItemKind] | null;
+
+
+export const FeedbackItemKind = {
+  idea: 'idea',
+  problem: 'problem',
+} as const;
 
 export interface FeedbackItem {
   id: number;
@@ -2307,6 +2330,13 @@ export interface FeedbackItem {
   /** @nullable */
   page: string | null;
   voice: boolean;
+  /**
+     * Homepage – idea or problem; null from the app.
+     * @nullable
+     */
+  kind: FeedbackItemKind;
+  /** Sent from the homepage without an account. */
+  visitor: boolean;
   author: string;
   /** @nullable */
   email: string | null;
@@ -5393,6 +5423,4 @@ export type SearchParams = {
 q: string;
 farmId?: number;
 };
-
-export type ListSiteImages200 = {[key: string]: string};
 

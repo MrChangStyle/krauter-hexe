@@ -1,7 +1,10 @@
+import { Chicken } from "@/components/site/scenes";
+
 /**
  * The farm behind the homepage hero (docs/landingpage.md): sky, sun, hills,
  * a red barn, a field with rows, a tree, a fence, chickens and a beehive –
- * drawn, so it needs no photo and stays sharp on every screen. `variant`
+ * drawn, so it needs no photo and stays sharp on every screen; clouds drift,
+ * chickens peck and bees buzz (SCENE_STYLES in scenes.tsx). `variant`
  * shifts the light for the sub pages.
  */
 
@@ -10,20 +13,6 @@ const SKY = {
   evening: ["#f9c98b", "#fde9cf"],
   green: ["#cfe9d3", "#f1f8ef"],
 } as const;
-
-function Chicken({ x, y, flip = false, color = "#ffffff" }: { x: number; y: number; flip?: boolean; color?: string }) {
-  return (
-    <g transform={`translate(${x} ${y}) scale(${flip ? -1 : 1} 1)`}>
-      <ellipse cx="0" cy="0" rx="13" ry="10" fill={color} stroke="#6b4f3a" strokeWidth="1.2" />
-      <circle cx="10" cy="-9" r="6" fill={color} stroke="#6b4f3a" strokeWidth="1.2" />
-      <path d="M8 -16 q2 -4 4 0 q2 -4 3 1" fill="#e2453c" />
-      <path d="M16 -9 l5 1.5 l-5 1.5 z" fill="#f2a93b" />
-      <circle cx="11.5" cy="-10" r="1" fill="#2b2b2b" />
-      <path d="M-13 -4 q-8 -6 -6 4" fill={color} stroke="#6b4f3a" strokeWidth="1.2" />
-      <path d="M-2 10 v6 M3 10 v6" stroke="#f2a93b" strokeWidth="1.6" />
-    </g>
-  );
-}
 
 export function FarmScene({ variant = "day", className = "" }: { variant?: keyof typeof SKY; className?: string }) {
   const [top, bottom] = SKY[variant];
@@ -47,7 +36,7 @@ export function FarmScene({ variant = "day", className = "" }: { variant?: keyof
       <rect width="1200" height="520" fill={`url(#sky-${variant})`} />
       <circle cx="1010" cy="110" r="58" fill="#ffd55a" opacity="0.95" />
       <circle cx="1010" cy="110" r="84" fill="#ffd55a" opacity="0.18" />
-      <g fill="#ffffff" opacity="0.9">
+      <g fill="#ffffff" opacity="0.9" className="lf-drift">
         <ellipse cx="220" cy="90" rx="70" ry="20" />
         <ellipse cx="270" cy="78" rx="45" ry="22" />
         <ellipse cx="720" cy="60" rx="60" ry="16" />
@@ -104,8 +93,8 @@ export function FarmScene({ variant = "day", className = "" }: { variant?: keyof
         <rect x="0" y="12" width="44" height="38" fill="#f2c14e" stroke="#b8862a" strokeWidth="2" />
         <rect x="-4" y="4" width="52" height="10" fill="#e0a83a" />
         <rect x="16" y="40" width="12" height="5" fill="#6b4f3a" />
-        <circle cx="62" cy="10" r="3" fill="#2b2b2b" />
-        <circle cx="74" cy="0" r="3" fill="#2b2b2b" />
+        <circle cx="62" cy="10" r="3" fill="#2b2b2b" className="lf-buzz" />
+        <circle cx="74" cy="0" r="3" fill="#2b2b2b" className="lf-buzz" style={{ animationDelay: "1.1s" }} />
       </g>
 
       {/* Fence */}
@@ -120,8 +109,8 @@ export function FarmScene({ variant = "day", className = "" }: { variant?: keyof
       {/* Meadow in front, chickens */}
       <path d="M0 470 Q300 440 600 470 T1200 460 V520 H0 Z" fill="#3f8a39" />
       <Chicken x={220} y={490} />
-      <Chicken x={300} y={498} flip color="#c9853f" />
-      <Chicken x={380} y={488} />
+      <Chicken x={300} y={498} flip color="#c9853f" delay={0.9} />
+      <Chicken x={380} y={488} delay={1.7} />
       <g fill="#f7d34a">
         <circle cx="120" cy="500" r="5" />
         <circle cx="640" cy="492" r="5" />

@@ -1,11 +1,12 @@
 import { Router, type IRouter } from 'express';
-import { ListFeedbackResponse, MarkFeedbackBody, SendFeedbackBody } from '@workspace/api-zod';
+import { ListFeedbackResponse, MarkFeedbackBody, SendFeedbackBody, SendSiteFeedbackBody } from '@workspace/api-zod';
 
-import { deleteFeedback, listFeedback, markFeedback, sendFeedback } from '../lib/feedback';
+import { deleteFeedback, listFeedback, markFeedback, sendFeedback, sendSiteFeedback } from '../lib/feedback';
 import { requireApproved, requireOwner } from '../middlewares/requireApproved';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
 // Feedback to the owner (docs/feedback.md): everyone sends, the owner reads.
+// The homepage bubble needs no account.
 
 const router: IRouter = Router();
 
@@ -16,6 +17,17 @@ router.post(
     const body = SendFeedbackBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
     await sendFeedback(req.user!.id, body.data);
+    res.status(201).json({ ok: true });
+  }),
+);
+
+router.post(
+  '/feedback/site',
+  handle(async (req, res) => {
+    const body = SendSiteFeedbackBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    const userId = req.isAuthenticated?.() && req.user?.approved ? req.user.id : null;
+    await sendSiteFeedback(body.data, req.ip ?? 'unknown', userId);
     res.status(201).json({ ok: true });
   }),
 );

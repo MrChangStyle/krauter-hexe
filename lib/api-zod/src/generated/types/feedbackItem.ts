@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { FeedbackItemKind } from './feedbackItemKind';
 
 export interface FeedbackItem {
   id: number;
@@ -12,6 +13,13 @@ export interface FeedbackItem {
   /** @nullable */
   page: string | null;
   voice: boolean;
+  /**
+     * Homepage – idea or problem; null from the app.
+     * @nullable
+     */
+  kind: FeedbackItemKind;
+  /** Sent from the homepage without an account. */
+  visitor: boolean;
   author: string;
   /** @nullable */
   email: string | null;

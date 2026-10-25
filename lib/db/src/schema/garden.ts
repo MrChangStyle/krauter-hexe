@@ -231,6 +231,24 @@ export const harvestLogsTable = pgTable(
   (table) => [index("harvest_logs_farm_season_idx").on(table.farmId, table.season)],
 );
 
+// Garten-Wirtschaftlichkeit (docs/garten-wirtschaftlichkeit.md): the hours
+// spent in the garden, optionally for one bed – for the € per hour.
+export const gardenHoursTable = pgTable(
+  "garden_hours",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    bedId: integer("bed_id").references(() => gardenBedsTable.id, { onDelete: "set null" }),
+    date: date("date", { mode: "string" }).notNull(),
+    hours: doublePrecision("hours").notNull(),
+    note: text("note"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("garden_hours_farm_date_idx").on(table.farmId, table.date)],
+);
+
 // Saatgut (lib/seeds.ts): the farm's seed packets and saved seeds. How long
 // they germinate comes from fixed rules per crop; a germination test, once
 // done, wins over the rule.

@@ -13,10 +13,17 @@ export const EXPENSE_LABELS: Record<ExpenseCategory, string> = {
   vet: "Tierarzt & Medizin",
   bedding: "Einstreu",
   seeds: "Saatgut & Pflanzen",
+  soil: "Erde, Kompost & Dünger",
+  water: "Wasser",
   animals: "Tierkauf",
   equipment: "Geräte & Material",
   other: "Sonstiges",
 };
+
+/** Garten-Wirtschaftlichkeit: what a garden cost can be. */
+export const GARDEN_COST_CATEGORIES: ExpenseCategory[] = ["seeds", "soil", "water", "equipment", "other"];
+/** These count for the garden unless unticked (as on the server). */
+export const GARDEN_DEFAULT_CATEGORIES: ExpenseCategory[] = ["seeds", "soil", "water"];
 
 export const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
 

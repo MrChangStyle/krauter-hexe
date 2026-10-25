@@ -3196,15 +3196,16 @@ export const GetYieldOverviewResponse = zod.object({
   "expenses": zod.object({
   "total": zod.number(),
   "lines": zod.array(zod.object({
-  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'animals', 'equipment', 'other']),
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'soil', 'water', 'animals', 'equipment', 'other']),
   "eur": zod.number()
 })),
   "months": zod.array(zod.number()),
   "entries": zod.array(zod.object({
   "id": zod.number(),
   "date": zod.string(),
-  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'animals', 'equipment', 'other']),
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'soil', 'water', 'animals', 'equipment', 'other']),
   "amountEur": zod.number(),
+  "garden": zod.boolean(),
   "note": zod.string().nullable()
 }))
 }),
@@ -5563,8 +5564,9 @@ export const addExpenseBodyNoteMax = 500;
 
 export const AddExpenseBody = zod.object({
   "date": zod.string().describe('YYYY-MM-DD, not in the future'),
-  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'animals', 'equipment', 'other']),
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'soil', 'water', 'animals', 'equipment', 'other']),
   "amountEur": zod.number(),
+  "garden": zod.boolean().optional().describe('Counts for the Garten-Wirtschaftlichkeit too; left out, seeds, soil and water do.'),
   "note": zod.string().max(addExpenseBodyNoteMax).nullish()
 })
 
@@ -9347,6 +9349,135 @@ export const GetHarvestReportResponse = zod.object({
   "valuePerM2": zod.number()
 })).describe('Up to three crops with the most € per m².')
 })
+
+
+/**
+ * @summary Garten-Wirtschaftlichkeit – harvest value against garden costs and hours
+ */
+export const GetGardenEconomicsParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "season": zod.coerce.number()
+})
+
+export const GetGardenEconomicsResponse = zod.object({
+  "season": zod.number(),
+  "value": zod.number().describe('Shop value of the season\'s harvest (Ernte-Auswertung).'),
+  "kg": zod.number(),
+  "area": zod.number().describe('m² of all beds.'),
+  "costs": zod.object({
+  "total": zod.number(),
+  "lines": zod.array(zod.object({
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'soil', 'water', 'animals', 'equipment', 'other']),
+  "eur": zod.number()
+})),
+  "entries": zod.array(zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'soil', 'water', 'animals', 'equipment', 'other']),
+  "amountEur": zod.number(),
+  "bedId": zod.number().nullable(),
+  "bedName": zod.string().nullable(),
+  "note": zod.string().nullable()
+}))
+}),
+  "hours": zod.object({
+  "total": zod.number(),
+  "estimated": zod.boolean().describe('No hours logged – estimated from the bed area (guide value).'),
+  "entries": zod.array(zod.object({
+  "id": zod.number(),
+  "date": zod.string(),
+  "hours": zod.number(),
+  "bedId": zod.number().nullable(),
+  "bedName": zod.string().nullable(),
+  "note": zod.string().nullable()
+}))
+}),
+  "surplus": zod.number().describe('Value − costs.'),
+  "perHour": zod.number().nullable(),
+  "costPerKg": zod.number().nullable(),
+  "surplusPerM2": zod.number().nullable(),
+  "minimumWage": zod.number().describe('The statutory minimum wage of the season, for comparison.'),
+  "beds": zod.array(zod.object({
+  "bedId": zod.number().nullable().describe('Null – costs and hours for the whole garden.'),
+  "name": zod.string(),
+  "m2": zod.number().nullable(),
+  "value": zod.number(),
+  "costs": zod.number(),
+  "surplus": zod.number(),
+  "hours": zod.number()
+})),
+  "previous": zod.object({
+  "value": zod.number(),
+  "costs": zod.number(),
+  "surplus": zod.number()
+}).nullable(),
+  "hints": zod.array(zod.string())
+})
+
+
+/**
+ * @summary A garden cost – a farm expense marked for the garden (caretaker)
+ */
+export const AddGardenCostParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const addGardenCostBodyNoteMax = 500;
+
+
+
+export const AddGardenCostBody = zod.object({
+  "date": zod.string().describe('YYYY-MM-DD, not in the future; its year is the season.'),
+  "category": zod.enum(['feed', 'vet', 'bedding', 'seeds', 'soil', 'water', 'animals', 'equipment', 'other']),
+  "amountEur": zod.number(),
+  "bedId": zod.number().nullish(),
+  "note": zod.string().max(addGardenCostBodyNoteMax).nullish()
+})
+
+export const AddGardenCostResponse = zod.void()
+
+
+/**
+ * @summary Delete a garden cost (caretaker)
+ */
+export const DeleteGardenCostParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "costId": zod.coerce.number()
+})
+
+export const DeleteGardenCostResponse = zod.void()
+
+
+/**
+ * @summary Hours spent in the garden (caretaker)
+ */
+export const AddGardenHoursParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const addGardenHoursBodyNoteMax = 300;
+
+
+
+export const AddGardenHoursBody = zod.object({
+  "date": zod.string(),
+  "hours": zod.number().describe('0.25–24, rounded to a quarter hour.'),
+  "bedId": zod.number().nullish(),
+  "note": zod.string().max(addGardenHoursBodyNoteMax).nullish()
+})
+
+export const AddGardenHoursResponse = zod.void()
+
+
+/**
+ * @summary Delete logged hours (caretaker)
+ */
+export const DeleteGardenHoursParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "hoursId": zod.coerce.number()
+})
+
+export const DeleteGardenHoursResponse = zod.void()
 
 
 /**

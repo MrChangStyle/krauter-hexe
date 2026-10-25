@@ -12,6 +12,7 @@ export interface ExpenseEntry {
   date: string;
   category: ExpenseCategory;
   amountEur: number;
+  garden: boolean;
   /** @nullable */
   note: string | null;
 }

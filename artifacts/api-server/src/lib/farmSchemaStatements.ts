@@ -357,6 +357,8 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"date" date NOT NULL,
 	"category" text NOT NULL,
 	"amount_eur" double precision NOT NULL,
+	"garden" boolean DEFAULT false NOT NULL,
+	"bed_id" integer,
 	"note" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,

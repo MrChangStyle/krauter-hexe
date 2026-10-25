@@ -14,6 +14,8 @@ export const ExpenseCategory = {
   vet: 'vet',
   bedding: 'bedding',
   seeds: 'seeds',
+  soil: 'soil',
+  water: 'water',
   animals: 'animals',
   equipment: 'equipment',
   other: 'other',

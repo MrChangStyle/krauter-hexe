@@ -1109,6 +1109,8 @@ export const ExpenseCategory = {
   vet: 'vet',
   bedding: 'bedding',
   seeds: 'seeds',
+  soil: 'soil',
+  water: 'water',
   animals: 'animals',
   equipment: 'equipment',
   other: 'other',
@@ -1119,6 +1121,8 @@ export interface ExpenseInput {
   date: string;
   category: ExpenseCategory;
   amountEur: number;
+  /** Counts for the Garten-Wirtschaftlichkeit too; left out, seeds, soil and water do. */
+  garden?: boolean;
   /**
      * @maxLength 500
      * @nullable
@@ -1131,6 +1135,7 @@ export interface ExpenseEntry {
   date: string;
   category: ExpenseCategory;
   amountEur: number;
+  garden: boolean;
   /** @nullable */
   note: string | null;
 }
@@ -1869,6 +1874,121 @@ export interface BeeHoneyInput {
      * @nullable
      */
   note?: string | null;
+}
+
+export interface GardenCostInput {
+  /** YYYY-MM-DD, not in the future; its year is the season. */
+  date: string;
+  category: ExpenseCategory;
+  amountEur: number;
+  /** @nullable */
+  bedId?: number | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  note?: string | null;
+}
+
+export interface GardenHoursInput {
+  date: string;
+  /** 0.25–24, rounded to a quarter hour. */
+  hours: number;
+  /** @nullable */
+  bedId?: number | null;
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  note?: string | null;
+}
+
+export interface GardenCostEntry {
+  id: number;
+  date: string;
+  category: ExpenseCategory;
+  amountEur: number;
+  /** @nullable */
+  bedId: number | null;
+  /** @nullable */
+  bedName: string | null;
+  /** @nullable */
+  note: string | null;
+}
+
+export interface GardenHoursEntry {
+  id: number;
+  date: string;
+  hours: number;
+  /** @nullable */
+  bedId: number | null;
+  /** @nullable */
+  bedName: string | null;
+  /** @nullable */
+  note: string | null;
+}
+
+export interface GardenEconomicsBed {
+  /**
+     * Null – costs and hours for the whole garden.
+     * @nullable
+     */
+  bedId: number | null;
+  name: string;
+  /** @nullable */
+  m2: number | null;
+  value: number;
+  costs: number;
+  surplus: number;
+  hours: number;
+}
+
+export type GardenEconomicsCostsLinesItem = {
+  category: ExpenseCategory;
+  eur: number;
+};
+
+export type GardenEconomicsCosts = {
+  total: number;
+  lines: GardenEconomicsCostsLinesItem[];
+  entries: GardenCostEntry[];
+};
+
+export type GardenEconomicsHours = {
+  total: number;
+  /** No hours logged – estimated from the bed area (guide value). */
+  estimated: boolean;
+  entries: GardenHoursEntry[];
+};
+
+export type GardenEconomicsPrevious = {
+  value: number;
+  costs: number;
+  surplus: number;
+} | null;
+
+export interface GardenEconomics {
+  season: number;
+  /** Shop value of the season's harvest (Ernte-Auswertung). */
+  value: number;
+  kg: number;
+  /** m² of all beds. */
+  area: number;
+  costs: GardenEconomicsCosts;
+  hours: GardenEconomicsHours;
+  /** Value − costs. */
+  surplus: number;
+  /** @nullable */
+  perHour: number | null;
+  /** @nullable */
+  costPerKg: number | null;
+  /** @nullable */
+  surplusPerM2: number | null;
+  /** The statutory minimum wage of the season, for comparison. */
+  minimumWage: number;
+  beds: GardenEconomicsBed[];
+  previous: GardenEconomicsPrevious;
+  hints: string[];
 }
 
 export interface HarvestYear {

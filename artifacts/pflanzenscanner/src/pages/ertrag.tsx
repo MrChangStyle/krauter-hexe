@@ -32,7 +32,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
-import { EXPENSE_LABELS, MONTHS, PRODUCTS, changeText, euro, num } from "@/lib/yield-labels";
+import { EXPENSE_LABELS, GARDEN_DEFAULT_CATEGORIES, MONTHS, PRODUCTS, changeText, euro, num } from "@/lib/yield-labels";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -144,6 +144,7 @@ function ExpenseForm({ farm, year }: { farm: FarmSummary; year: number }) {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const [category, setCategory] = useState<ExpenseCategory>("feed");
+  const [garden, setGarden] = useState(false);
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayIso());
   const [note, setNote] = useState("");
@@ -161,7 +162,7 @@ function ExpenseForm({ farm, year }: { farm: FarmSummary; year: number }) {
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    add.mutate({ farmId: farm.id, data: { category, amountEur: Number(amount.replace(",", ".")), date, note: note.trim() || null } });
+    add.mutate({ farmId: farm.id, data: { category, amountEur: Number(amount.replace(",", ".")), date, garden, note: note.trim() || null } });
   }
 
   return (
@@ -169,7 +170,16 @@ function ExpenseForm({ farm, year }: { farm: FarmSummary; year: number }) {
       <div className="grid grid-cols-[1fr_6rem] gap-3">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="x-category">Wofür</Label>
-          <select id="x-category" className={selectClass} value={category} onChange={(e) => setCategory(e.target.value as ExpenseCategory)}>
+          <select
+            id="x-category"
+            className={selectClass}
+            value={category}
+            onChange={(e) => {
+              const next = e.target.value as ExpenseCategory;
+              setCategory(next);
+              setGarden(GARDEN_DEFAULT_CATEGORIES.includes(next));
+            }}
+          >
             {(Object.keys(EXPENSE_LABELS) as ExpenseCategory[]).map((c) => (
               <option key={c} value={c}>
                 {EXPENSE_LABELS[c]}
@@ -192,6 +202,10 @@ function ExpenseForm({ farm, year }: { farm: FarmSummary; year: number }) {
           <Input id="x-note" maxLength={500} value={note} placeholder="z. B. Legemehl" onChange={(e) => setNote(e.target.value)} />
         </div>
       </div>
+      <label className="flex items-center gap-2 text-sm">
+        <input type="checkbox" className="h-4 w-4" checked={garden} onChange={(e) => setGarden(e.target.checked)} />
+        Für den Garten (zählt in der Garten-Wirtschaftlichkeit)
+      </label>
       <Button type="submit" size="sm" disabled={add.isPending} className="gap-1.5">
         {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         Ausgabe eintragen
@@ -614,6 +628,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
                   <li key={e.id} className="flex items-center gap-2 py-1.5">
                     <span className="flex-1">
                       {deDay(e.date)} · {euro(e.amountEur)} {EXPENSE_LABELS[e.category]}
+                      {e.garden && <span className="text-muted-foreground"> · Garten</span>}
                       {e.note && <span className="text-muted-foreground"> · {e.note}</span>}
                     </span>
                     {canWrite && (

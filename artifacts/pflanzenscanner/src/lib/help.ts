@@ -94,17 +94,23 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
   garden: {
     title: "Beet-Architekt",
     href: "/beete",
-    intro: "Beete planen wie auf Karopapier: Mischkultur, Fruchtfolge, Licht und Abstände prüft die App. Dazu Gartenkalender, Frostwarnung, Saatgut-Vorrat und Ernte-Auswertung.",
+    intro: "Beete planen wie auf Karopapier: Mischkultur, Fruchtfolge, Licht und Abstände prüft die App. Dazu Gartenkalender, Frostwarnung, Saatgut-Vorrat, Ernte-Auswertung und die Wirtschaftlichkeit des Gartens.",
     steps: [
       "Ein Beet anlegen (Größe, Standort mit Postleitzahl für Frosttermine).",
       "Kulturen ins Raster setzen – die App warnt bei schlechten Nachbarn und zu wenig Platz.",
       "Optional ein Foto des Beets: Die KI schätzt Schatten, Boden und Unkraut ein.",
       "Im Gartenkalender sehen, wann gesät, gepflanzt und geerntet wird.",
       "Ernten eintragen – die Ernte-Auswertung zeigt, was sich gelohnt hat.",
+      "Gartenausgaben und Stunden eintragen – unter „Wirtschaftlichkeit“ steht, was nach Abzug der Kosten übrig bleibt und was eine Stunde gebracht hat.",
     ],
     faq: [
       { q: "Woher kennt die App meine Frosttermine?", a: "Aus Wetterdaten des Deutschen Wetterdienstes für deine Postleitzahl (auf etwa 10 km gerundet)." },
       { q: "Was ist mit dem Saatgut?", a: "Unter „Saatgut“ führst du deine Tüten. Die App sagt, wie lange sie keimen, und bucht beim Säen ab." },
+      {
+        q: "Lohnt sich mein Garten?",
+        a: "Die Ernte-Auswertung rechnet die Ernte zum Ladenwert, zieht die Gartenausgaben ab (Saatgut, Pflanzen, Erde, Dünger, Wasser, Material) und teilt durch deine Stunden. Ohne eingetragene Stunden schätzt sie etwa 1 Stunde je Woche für 10 m² Beet. Frische und Freude zählen nicht mit.",
+      },
+      { q: "Zählen Gartenausgaben unter Ertrag & Bilanz doppelt?", a: "Nein. Sie sind ganz normale Ausgaben des Hofs mit dem Zeichen „Garten“ und zählen dort einmal." },
     ],
   },
   pantry: {

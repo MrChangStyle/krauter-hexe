@@ -9,6 +9,6 @@ describe("yield labels", () => {
     expect(changeText(120, 100)).toBe("+20 % zum Vorjahr");
     expect(changeText(95, 100)).toBe("−5 % zum Vorjahr");
     expect(changeText(50, 0)).toBeNull();
-    expect(Object.keys(EXPENSE_LABELS)).toEqual(["feed", "vet", "bedding", "seeds", "animals", "equipment", "other"]);
+    expect(Object.keys(EXPENSE_LABELS)).toEqual(["feed", "vet", "bedding", "seeds", "soil", "water", "animals", "equipment", "other"]);
   });
 });

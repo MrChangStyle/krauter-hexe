@@ -5822,6 +5822,117 @@ paths:
                 $ref: "#/components/schemas/HarvestReport"
         "404":
           description: Not found.
+  /farms/{farmId}/garden/seasons/{season}/economics:
+    get:
+      tags: [garden]
+      operationId: getGardenEconomics
+      summary: Garten-Wirtschaftlichkeit – harvest value against garden costs and hours
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: season
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The economics of the season.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GardenEconomics"
+        "404":
+          description: Not found.
+  /farms/{farmId}/garden/costs:
+    post:
+      tags: [garden]
+      operationId: addGardenCost
+      summary: A garden cost – a farm expense marked for the garden (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GardenCostInput"
+      responses:
+        "204":
+          description: Added.
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/garden/costs/{costId}:
+    delete:
+      tags: [garden]
+      operationId: deleteGardenCost
+      summary: Delete a garden cost (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: costId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: Not found.
+  /farms/{farmId}/garden/hours:
+    post:
+      tags: [garden]
+      operationId: addGardenHours
+      summary: Hours spent in the garden (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GardenHoursInput"
+      responses:
+        "204":
+          description: Added.
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/garden/hours/{hoursId}:
+    delete:
+      tags: [garden]
+      operationId: deleteGardenHours
+      summary: Delete logged hours (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: hoursId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "404":
+          description: Not found.
   /farms/{farmId}/garden/seasons/{season}/harvests:
     get:
       tags: [garden]
@@ -7593,7 +7704,7 @@ components:
           type: number
     ExpenseCategory:
       type: string
-      enum: [feed, vet, bedding, seeds, animals, equipment, other]
+      enum: [feed, vet, bedding, seeds, soil, water, animals, equipment, other]
     ExpenseInput:
       type: object
       required: [date, category, amountEur]
@@ -7605,12 +7716,15 @@ components:
           $ref: "#/components/schemas/ExpenseCategory"
         amountEur:
           type: number
+        garden:
+          type: boolean
+          description: Counts for the Garten-Wirtschaftlichkeit too; left out, seeds, soil and water do.
         note:
           type: [string, 'null']
           maxLength: 500
     ExpenseEntry:
       type: object
-      required: [id, date, category, amountEur, note]
+      required: [id, date, category, amountEur, garden, note]
       properties:
         id:
           type: integer
@@ -7620,6 +7734,8 @@ components:
           $ref: "#/components/schemas/ExpenseCategory"
         amountEur:
           type: number
+        garden:
+          type: boolean
         note:
           type: [string, 'null']
     ExpenseOverview:
@@ -8480,6 +8596,167 @@ components:
         note:
           type: [string, 'null']
           maxLength: 200
+    GardenCostInput:
+      type: object
+      required: [date, category, amountEur]
+      properties:
+        date:
+          type: string
+          description: YYYY-MM-DD, not in the future; its year is the season.
+        category:
+          $ref: "#/components/schemas/ExpenseCategory"
+        amountEur:
+          type: number
+        bedId:
+          type: [integer, 'null']
+        note:
+          type: [string, 'null']
+          maxLength: 500
+    GardenHoursInput:
+      type: object
+      required: [date, hours]
+      properties:
+        date:
+          type: string
+        hours:
+          type: number
+          description: 0.25–24, rounded to a quarter hour.
+        bedId:
+          type: [integer, 'null']
+        note:
+          type: [string, 'null']
+          maxLength: 300
+    GardenCostEntry:
+      type: object
+      required: [id, date, category, amountEur, bedId, bedName, note]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        category:
+          $ref: "#/components/schemas/ExpenseCategory"
+        amountEur:
+          type: number
+        bedId:
+          type: [integer, 'null']
+        bedName:
+          type: [string, 'null']
+        note:
+          type: [string, 'null']
+    GardenHoursEntry:
+      type: object
+      required: [id, date, hours, bedId, bedName, note]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        hours:
+          type: number
+        bedId:
+          type: [integer, 'null']
+        bedName:
+          type: [string, 'null']
+        note:
+          type: [string, 'null']
+    GardenEconomicsBed:
+      type: object
+      required: [bedId, name, m2, value, costs, surplus, hours]
+      properties:
+        bedId:
+          type: [integer, 'null']
+          description: Null – costs and hours for the whole garden.
+        name:
+          type: string
+        m2:
+          type: [number, 'null']
+        value:
+          type: number
+        costs:
+          type: number
+        surplus:
+          type: number
+        hours:
+          type: number
+    GardenEconomics:
+      type: object
+      required: [season, value, kg, area, costs, hours, surplus, perHour, costPerKg, surplusPerM2, minimumWage, beds, previous, hints]
+      properties:
+        season:
+          type: integer
+        value:
+          type: number
+          description: Shop value of the season's harvest (Ernte-Auswertung).
+        kg:
+          type: number
+        area:
+          type: number
+          description: m² of all beds.
+        costs:
+          type: object
+          required: [total, lines, entries]
+          properties:
+            total:
+              type: number
+            lines:
+              type: array
+              items:
+                type: object
+                required: [category, eur]
+                properties:
+                  category:
+                    $ref: "#/components/schemas/ExpenseCategory"
+                  eur:
+                    type: number
+            entries:
+              type: array
+              items:
+                $ref: "#/components/schemas/GardenCostEntry"
+        hours:
+          type: object
+          required: [total, estimated, entries]
+          properties:
+            total:
+              type: number
+            estimated:
+              type: boolean
+              description: No hours logged – estimated from the bed area (guide value).
+            entries:
+              type: array
+              items:
+                $ref: "#/components/schemas/GardenHoursEntry"
+        surplus:
+          type: number
+          description: Value − costs.
+        perHour:
+          type: [number, 'null']
+        costPerKg:
+          type: [number, 'null']
+        surplusPerM2:
+          type: [number, 'null']
+        minimumWage:
+          type: number
+          description: The statutory minimum wage of the season, for comparison.
+        beds:
+          type: array
+          items:
+            $ref: "#/components/schemas/GardenEconomicsBed"
+        previous:
+          type: object
+          nullable: true
+          required: [value, costs, surplus]
+          properties:
+            value:
+              type: number
+            costs:
+              type: number
+            surplus:
+              type: number
+        hints:
+          type: array
+          items:
+            type: string
     HarvestReport:
       type: object
       required: [season, seasons, kg, kitchenKg, fodderKg, value, previous, months, years, crops, beds, best]

@@ -1,4 +1,5 @@
-import type { FarmAnimal, FarmExport, MedicalRecord, WeightLog } from "@workspace/api-client-react";
+import type { ExportBeeColony, ExportBeeTreatment, FarmAnimal, FarmExport, MedicalRecord, WeightLog } from "@workspace/api-client-react";
+import { COLONY_STATUS, VARROA_METHODS } from "@/lib/bee-labels";
 import { SEX_LABELS, SPECIES_LABELS } from "@/lib/farm-labels";
 
 // ── Weight warning ───────────────────────────────────────────────────────────
@@ -100,6 +101,9 @@ export interface ExportData {
   animals: FarmAnimal[];
   /** Records in the period, with the animal they belong to. */
   records: { record: MedicalRecord; animal: FarmAnimal }[];
+  /** Bee colonies kept in the period and their varroa treatments in it (Bestandsbuch). */
+  beeColonies: ExportBeeColony[];
+  beeTreatments: ExportBeeTreatment[];
 }
 
 /** Picks what belongs into the export for the period (both ends included). */
@@ -116,7 +120,12 @@ export function exportForPeriod(data: FarmExport, period: ExportPeriod): ExportD
     .filter((r) => r.date >= period.from && r.date <= period.to && byId.has(r.animalId))
     .sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
     .map((record) => ({ record, animal: byId.get(record.animalId)! }));
-  return { farmName: data.farmName, holdingNumber: data.holdingNumber, period, animals, records };
+  // A server from before the bees in the export sends none.
+  const beeColonies = (data.beeColonies ?? []).filter(
+    (c) => (c.startedOn ?? c.createdAt.slice(0, 10)) <= period.to && (!c.endedOn || c.endedOn >= period.from),
+  );
+  const beeTreatments = (data.beeTreatments ?? []).filter((t) => t.date >= period.from && t.date <= period.to);
+  return { farmName: data.farmName, holdingNumber: data.holdingNumber, period, animals, records, beeColonies, beeTreatments };
 }
 
 export const STOCK_COLUMNS = [
@@ -177,6 +186,31 @@ export function medicalRow({ record: r, animal: a }: ExportData["records"][numbe
   ];
 }
 
+export const BEE_COLONY_COLUMNS = ["Volk", "Bienenstand", "Status", "Seit", "Bis"] as const;
+
+export const BEE_TREATMENT_COLUMNS = ["Datum", "Volk", "Bienenstand", "Behandlung", "Mittel", "Menge", "Charge", "Bezug", "Notiz"] as const;
+
+export function beeColonyRow(c: ExportBeeColony): string[] {
+  return [c.name, c.apiary ?? "", COLONY_STATUS[c.status], deDate(c.startedOn), deDate(c.endedOn)];
+}
+
+export function beeTreatmentRow(t: ExportBeeTreatment): string[] {
+  return [
+    deDate(t.date),
+    t.colonyName,
+    t.apiary ?? "",
+    VARROA_METHODS[t.method],
+    t.product ?? "",
+    t.dose == null ? "" : `${t.dose.toLocaleString("de-DE")}${t.unit ? ` ${t.unit}` : ""}`,
+    t.batch ?? "",
+    t.source ?? "",
+    t.notes ?? "",
+  ];
+}
+
+/** The bee part only for farms with colonies or treatments in the period. */
+export const hasBees = (data: ExportData) => data.beeColonies.length > 0 || data.beeTreatments.length > 0;
+
 function csvCell(value: string): string {
   // A leading = + - @ would run as a formula in Excel – neutralise it.
   const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
@@ -201,6 +235,18 @@ export function exportCsv(data: ExportData): string {
     line(["Medizin-Historie"]),
     line(MEDICAL_COLUMNS),
     ...data.records.map((r) => line(medicalRow(r))),
+    ...(hasBees(data)
+      ? [
+          "",
+          line(["Bienenvölker"]),
+          line(BEE_COLONY_COLUMNS),
+          ...data.beeColonies.map((c) => line(beeColonyRow(c))),
+          "",
+          line(["Bienen – Bestandsbuch der Behandlungen"]),
+          line(BEE_TREATMENT_COLUMNS),
+          ...data.beeTreatments.map((t) => line(beeTreatmentRow(t))),
+        ]
+      : []),
   ];
   return `﻿${lines.join("\r\n")}\r\n`;
 }

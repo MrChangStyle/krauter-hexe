@@ -100,6 +100,8 @@ describe("veterinary office export", () => {
       rec({ date: "2026-05-02", diagnosis: "Husten; leicht", withdrawalPeriodDays: 7, medication: '=HYPERLINK("x")' }),
       rec({ date: "2026-08-01", diagnosis: "Später" }),
     ],
+    beeColonies: [],
+    beeTreatments: [],
   };
 
   it("keeps animals on the farm in the period and records inside it", () => {
@@ -115,6 +117,36 @@ describe("veterinary office export", () => {
     expect(withNumber.startsWith("﻿Bestandsliste Hof Sonnenblick;1.1.2026 – 30.6.2026;Registriernummer 276 09 123 456 7890\r\n")).toBe(true);
     expect(csv).toContain("DE 1;Lotte;Ziege;;weiblich;12.4.2023;;\r\n");
     expect(csv).toContain(`2.5.2026;DE 1;Lotte;"Husten; leicht";;"'=HYPERLINK(""x"")";;7;9.5.2026;\r\n`);
+  });
+
+  it("adds the colonies and the Bestandsbuch of their treatments when the farm keeps bees", () => {
+    const colony = { id: 1, name: "Volk 1", apiary: "Obstwiese", status: "active" as const, startedOn: "2025-05-01", endedOn: null, createdAt: "2025-05-01T10:00:00Z" };
+    const treatment = (date: string) => ({
+      id: 1,
+      date,
+      colonyName: "Volk 1",
+      apiary: "Obstwiese",
+      method: "oxalsaeure" as const,
+      product: "Oxalsäure 3,5 %",
+      dose: 30,
+      unit: "ml",
+      batch: "OX-11",
+      source: "Dr. Imker",
+      notes: null,
+    });
+    const bees = {
+      ...data,
+      beeColonies: [colony, { ...colony, id: 2, name: "Alt", status: "lost" as const, endedOn: "2025-10-01" }],
+      beeTreatments: [treatment("2025-12-20"), treatment("2026-03-01")],
+    };
+    const out = exportForPeriod(bees, { from: "2026-01-01", to: "2026-06-30" });
+    expect(out.beeColonies.map((c) => c.name)).toEqual(["Volk 1"]);
+    expect(out.beeTreatments.map((t) => t.date)).toEqual(["2026-03-01"]);
+    const csv = exportCsv(out);
+    expect(csv).toContain("\r\nBienenvölker\r\nVolk;Bienenstand;Status;Seit;Bis\r\nVolk 1;Obstwiese;Aktiv;1.5.2025;\r\n");
+    expect(csv).toContain("1.3.2026;Volk 1;Obstwiese;Oxalsäure;Oxalsäure 3,5 %;30 ml;OX-11;Dr. Imker;\r\n");
+    // Without bees the CSV ends with the health history.
+    expect(exportCsv(exportForPeriod(data, { from: "2026-01-01", to: "2026-06-30" }))).not.toContain("Bienen");
   });
 
   it("names the file after farm and period", () => {

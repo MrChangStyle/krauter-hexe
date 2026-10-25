@@ -4040,11 +4040,52 @@ export interface FarmTaskInput {
   isActive?: boolean;
 }
 
+export interface ExportBeeColony {
+  id: number;
+  name: string;
+  /** @nullable */
+  apiary: string | null;
+  status: BeeColonyStatus;
+  /** @nullable */
+  startedOn: string | null;
+  /** @nullable */
+  endedOn: string | null;
+  createdAt: string;
+}
+
+export interface ExportBeeTreatment {
+  id: number;
+  date: string;
+  colonyName: string;
+  /** @nullable */
+  apiary: string | null;
+  method: VarroaMethod;
+  /** @nullable */
+  product: string | null;
+  /** @nullable */
+  dose: number | null;
+  /** @nullable */
+  unit: string | null;
+  /** @nullable */
+  batch: string | null;
+  /**
+     * Where the medicine came from (vet or shop, from the Arzneimittel-Vorrat).
+     * @nullable
+     */
+  source: string | null;
+  /** @nullable */
+  notes: string | null;
+}
+
 export interface FarmExport {
   farmName: string;
   holdingNumber: string | null;
   animals: FarmAnimal[];
   medicalRecords: MedicalRecord[];
+  /** Empty without the Bienen module. */
+  beeColonies: ExportBeeColony[];
+  /** The Bestandsbuch of the varroa treatments; empty without the Bienen module. */
+  beeTreatments: ExportBeeTreatment[];
 }
 
 export interface SpeciesSuggestion {

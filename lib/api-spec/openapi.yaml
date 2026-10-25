@@ -11113,7 +11113,7 @@ components:
           type: boolean
     FarmExport:
       type: object
-      required: [farmName, holdingNumber, animals, medicalRecords]
+      required: [farmName, holdingNumber, animals, medicalRecords, beeColonies, beeTreatments]
       properties:
         farmName:
           type: string
@@ -11128,6 +11128,61 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/MedicalRecord"
+        beeColonies:
+          type: array
+          description: Empty without the Bienen module.
+          items:
+            $ref: "#/components/schemas/ExportBeeColony"
+        beeTreatments:
+          type: array
+          description: The Bestandsbuch of the varroa treatments; empty without the Bienen module.
+          items:
+            $ref: "#/components/schemas/ExportBeeTreatment"
+    ExportBeeColony:
+      type: object
+      required: [id, name, apiary, status, startedOn, endedOn, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        apiary:
+          type: [string, 'null']
+        status:
+          $ref: "#/components/schemas/BeeColonyStatus"
+        startedOn:
+          type: [string, 'null']
+        endedOn:
+          type: [string, 'null']
+        createdAt:
+          type: string
+    ExportBeeTreatment:
+      type: object
+      required: [id, date, colonyName, apiary, method, product, dose, unit, batch, source, notes]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+        colonyName:
+          type: string
+        apiary:
+          type: [string, 'null']
+        method:
+          $ref: "#/components/schemas/VarroaMethod"
+        product:
+          type: [string, 'null']
+        dose:
+          type: [number, 'null']
+        unit:
+          type: [string, 'null']
+        batch:
+          type: [string, 'null']
+        source:
+          type: [string, 'null']
+          description: Where the medicine came from (vet or shop, from the Arzneimittel-Vorrat).
+        notes:
+          type: [string, 'null']
     SpeciesSuggestion:
       type: object
       required: [isAnimal, species, breed, confidence]

@@ -59,6 +59,8 @@ Nur an dem Tag, an dem etwas fällig wird, damit nichts täglich nervt. Einmal j
 - **Suche:** aktive Völker nach Name und Stand.
 - **Demo-Hof:** zwei Völker mit Durchsichten, Fütterung, Behandlung und Honig.
 - **Tests:** `bees.test.ts` (Regeln), `bees.integration.test.ts` (Routen, Vorrat, Honig in Ertrag, Rechte, Freigabe, Push) und `search.integration.test.ts`.
-- **Später denkbar:**
-  - das Bestandsbuch der Behandlungen im Veterinäramt-Export,
-  - Spracheingabe an der Beute über die Notiz hinaus (Brutwaben, Stimmung).
+- **Veterinäramt-Export** (Tiere → Export): Wer die Bienen sehen darf, bekommt im PDF und in der CSV zusätzlich
+  - die **Bienenvölker** im Zeitraum (Volk, Bienenstand, Status, seit, bis) und
+  - das **Bestandsbuch der Behandlungen** (Datum, Volk, Bienenstand, Behandlung, Mittel, Menge, Charge, Bezug, Notiz). Mittel, Charge und Bezug kommen aus dem Arzneimittel-Vorrat, wenn die Behandlung von dort abgebucht wurde.
+  - Ohne Freigabe für das Modul „Bienen“ bleiben beide Listen leer (`GET /farms/:id/export`, `beeColonies`, `beeTreatments`). Ohne Völker und Behandlungen im Zeitraum fehlt der Bienen-Teil ganz.
+- **Später denkbar:** Spracheingabe an der Beute über die Notiz hinaus (Brutwaben, Stimmung).

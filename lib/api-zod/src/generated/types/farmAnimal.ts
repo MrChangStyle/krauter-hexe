@@ -24,7 +24,11 @@ export interface FarmAnimal {
      */
   birthDate: string | null;
   sex: AnimalSex;
-  registrationNumber: string;
+  /**
+     * Ring / ear tag; null when the animal has none (yet).
+     * @nullable
+     */
+  registrationNumber: string | null;
   /** @nullable */
   imageUrl: string | null;
   /** @nullable */

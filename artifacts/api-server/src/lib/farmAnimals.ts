@@ -177,18 +177,53 @@ export async function getAnimal(farmId: number, animalId: number) {
   return animal;
 }
 
+/** Name of one animal, and the group name to suggest. */
+export const NAMES: Record<FarmSpecies, { one: string; group: string; prefix: string }> = {
+  poultry: { one: 'Huhn', group: 'Hühner', prefix: 'H' },
+  rabbit: { one: 'Kaninchen', group: 'Kaninchen', prefix: 'K' },
+  guineaPig: { one: 'Meerschweinchen', group: 'Meerschweinchen', prefix: 'M' },
+  goat: { one: 'Ziege', group: 'Ziegen', prefix: 'Z' },
+  sheep: { one: 'Schaf', group: 'Schafe', prefix: 'S' },
+  horse: { one: 'Pferd', group: 'Pferde', prefix: 'P' },
+  cattle: { one: 'Rind', group: 'Rinder', prefix: 'R' },
+  pig: { one: 'Schwein', group: 'Schweine', prefix: 'SW' },
+  cat: { one: 'Katze', group: 'Katzen', prefix: 'KA' },
+  dog: { one: 'Hund', group: 'Hunde', prefix: 'HU' },
+  other: { one: 'Tier', group: 'Tiere', prefix: 'T' },
+};
+
 export interface AnimalInput {
-  name: unknown;
+  name?: unknown;
   species: FarmSpecies;
   breed?: unknown;
   birthDate: unknown;
   sex: AnimalSex;
-  registrationNumber: unknown;
+  registrationNumber?: unknown;
   herdId?: number | null;
   notes?: unknown;
 }
 
-async function animalValues(farmId: number, input: AnimalInput) {
+/**
+ * Without a name the animal gets one like the quick start's – "Ziege 3", the
+ * first number not used on the farm yet – so lists, push and export always
+ * have something to show.
+ */
+async function defaultName(farmId: number, species: FarmSpecies): Promise<string> {
+  const one = NAMES[species].one;
+  const used = new Set(
+    (
+      await db
+        .select({ name: farmAnimalsTable.name })
+        .from(farmAnimalsTable)
+        .where(and(eq(farmAnimalsTable.farmId, farmId), like(farmAnimalsTable.name, `${one} %`)))
+    ).map((r) => r.name),
+  );
+  let k = 1;
+  while (used.has(`${one} ${k}`)) k += 1;
+  return `${one} ${k}`;
+}
+
+async function animalValues(farmId: number, input: AnimalInput, current?: string) {
   // A herd id must belong to this very farm.
   if (input.herdId != null) {
     const [herd] = await db
@@ -198,12 +233,14 @@ async function animalValues(farmId: number, input: AnimalInput) {
     if (!herd) throw new FarmDataError(400, 'Diese Herde gibt es auf der Farm nicht.');
   }
   return {
-    name: text(input.name, 60, 'Der Name', true),
+    // Optional: a new animal gets a name like "Ziege 3", an edited one keeps its own.
+    name: text(input.name, 60, 'Der Name') ?? current ?? (await defaultName(farmId, input.species)),
     species: input.species,
     breed: text(input.breed, 60, 'Die Rasse'),
     birthDate: validBirthDate(input.birthDate),
     sex: input.sex,
-    registrationNumber: text(input.registrationNumber, 40, 'Die Ring- bzw. Ohrmarkennummer', true),
+    // Optional: empty means none (yet).
+    registrationNumber: text(input.registrationNumber, 40, 'Die Ring- bzw. Ohrmarkennummer'),
     herdId: input.herdId ?? null,
     notes: text(input.notes, 2000, 'Die Notiz'),
   };
@@ -234,7 +271,12 @@ export async function createAnimal(farmId: number, input: AnimalInput) {
 }
 
 export async function updateAnimal(farmId: number, animalId: number, input: AnimalInput) {
-  const values = await animalValues(farmId, input);
+  const [current] = await db
+    .select({ name: farmAnimalsTable.name })
+    .from(farmAnimalsTable)
+    .where(and(eq(farmAnimalsTable.id, animalId), eq(farmAnimalsTable.farmId, farmId)));
+  if (!current) throw notFound();
+  const values = await animalValues(farmId, input, current.name);
   try {
     const updated = await db
       .update(farmAnimalsTable)

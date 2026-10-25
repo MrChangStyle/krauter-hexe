@@ -21,6 +21,7 @@ import ArchivePage from '@/pages/archive';
 import CategoriesPage from '@/pages/categories';
 import KraeuterHexePage from '@/pages/kraeuter-hexe';
 import PflanzendocPage from '@/pages/pflanzendoc';
+import HilfePage from '@/pages/hilfe';
 import PflanzenHubPage from '@/pages/pflanzen-hub';
 import MeinePflanzenPage from '@/pages/meine-pflanzen';
 import SchaedlingePage from '@/pages/schaedlinge';
@@ -156,6 +157,7 @@ function Router() {
         <Route path="/mehr" component={MehrPage} />
         <Route path="/verwaltung" component={VerwaltungPage} />
         <Route path="/module" component={ModulePage} />
+        <Route path="/hilfe" component={HilfePage} />
         <Route path="/aufgaben" component={AufgabenPage} />
         <Route path="/farm" component={FarmPage} />
         <Route path="/farm/kameras" component={FarmCamerasPage} />

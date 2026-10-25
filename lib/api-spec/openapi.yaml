@@ -2237,6 +2237,141 @@ paths:
           description: Invalid input.
         "404":
           description: Not found.
+  /farms/{farmId}/bees/site-checks:
+    get:
+      tags: [farm]
+      operationId: listBeeSiteChecks
+      summary: Standort-Checks – photos of a Bienenstand looked at by the AI, newest first
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The checks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BeeSiteCheck"
+    post:
+      tags: [farm]
+      operationId: runBeeSiteCheck
+      summary: Have the AI look at a photo of a Bienenstand (caretaker; counts as a farm AI request)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeeSiteCheckInput"
+      responses:
+        "201":
+          description: All checks, the new one first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BeeSiteCheck"
+        "400":
+          description: Invalid input.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: The AI did not answer.
+  /farms/{farmId}/bees/site-checks/{checkId}:
+    delete:
+      tags: [farm]
+      operationId: deleteBeeSiteCheck
+      summary: Delete a Standort-Check with its photo (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: checkId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The remaining checks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BeeSiteCheck"
+        "404":
+          description: Not found.
+  /farms/{farmId}/bees/{colonyId}/photo:
+    put:
+      tags: [farm]
+      operationId: setBeeColonyPhoto
+      summary: Photo of where the colony stands (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BeeColonyPhotoInput"
+      responses:
+        "200":
+          description: The colony.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "400":
+          description: Invalid photo.
+        "404":
+          description: Not found.
+    delete:
+      tags: [farm]
+      operationId: removeBeeColonyPhoto
+      summary: Remove the photo of the colony's stand (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: colonyId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The colony.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BeeColonyDetail"
+        "404":
+          description: Not found.
   /farms/{farmId}/bees/{colonyId}:
     get:
       tags: [farm]
@@ -7915,7 +8050,7 @@ components:
           type: number
     BeeColony:
       type: object
-      required: [id, name, apiary, hiveType, queenYear, queenMarked, queenOrigin, status, startedOn, endedOn, notes, lastInspectionOn, beeFrames, lastMites, lastTreatmentOn, honeyKgThisYear, feedKgThisYear, hints]
+      required: [id, name, apiary, photoUrl, hiveType, queenYear, queenMarked, queenOrigin, status, startedOn, endedOn, notes, lastInspectionOn, beeFrames, lastMites, lastTreatmentOn, honeyKgThisYear, feedKgThisYear, hints]
       properties:
         id:
           type: integer
@@ -7923,6 +8058,9 @@ components:
           type: string
         apiary:
           type: [string, 'null']
+        photoUrl:
+          type: [string, 'null']
+          description: Photo of where the colony stands.
         hiveType:
           type: [string, 'null']
         queenYear:
@@ -8081,6 +8219,66 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/BeeHoney"
+    BeeColonyPhotoInput:
+      type: object
+      required: [imageData]
+      properties:
+        imageData:
+          type: string
+          description: data:image/jpeg|png|webp;base64,…
+    BeeSiteAnalysis:
+      type: object
+      required: [overall, orientation, shelter, forage, moisture, neighbours, tips]
+      properties:
+        overall:
+          type: string
+        orientation:
+          type: string
+        shelter:
+          type: string
+        forage:
+          type: string
+        moisture:
+          type: string
+        neighbours:
+          type: string
+        tips:
+          type: array
+          items:
+            type: string
+    BeeSiteCheck:
+      type: object
+      required: [id, apiary, photoUrl, heading, question, analysis, createdAt]
+      properties:
+        id:
+          type: integer
+        apiary:
+          type: [string, 'null']
+        photoUrl:
+          type: [string, 'null']
+        heading:
+          type: [integer, 'null']
+        question:
+          type: [string, 'null']
+        analysis:
+          $ref: "#/components/schemas/BeeSiteAnalysis"
+        createdAt:
+          type: string
+    BeeSiteCheckInput:
+      type: object
+      required: [imageData]
+      properties:
+        imageData:
+          type: string
+        heading:
+          type: [number, 'null']
+          description: Where the camera looked, 0–360° from the phone's compass.
+        apiary:
+          type: [string, 'null']
+          maxLength: 60
+        question:
+          type: [string, 'null']
+          maxLength: 300
     BeeColonyInput:
       type: object
       required: [name]
@@ -10890,7 +11088,8 @@ components:
         sex:
           $ref: "#/components/schemas/AnimalSex"
         registrationNumber:
-          type: string
+          type: [string, 'null']
+          description: Ring / ear tag; null when the animal has none (yet).
         imageUrl:
           type: [string, 'null']
         notes:
@@ -10903,12 +11102,12 @@ components:
           format: date-time
     FarmAnimalInput:
       type: object
-      required: [name, species, birthDate, sex, registrationNumber]
+      required: [species, birthDate, sex]
       properties:
         name:
-          type: string
-          minLength: 1
+          type: [string, 'null']
           maxLength: 60
+          description: Optional – a new animal without one is called like "Ziege 3", an edited one keeps its name.
         species:
           $ref: "#/components/schemas/FarmSpecies"
         breed:
@@ -10920,10 +11119,9 @@ components:
         sex:
           $ref: "#/components/schemas/AnimalSex"
         registrationNumber:
-          type: string
-          minLength: 1
+          type: [string, 'null']
           maxLength: 40
-          description: Ring or ear tag; unique within the farm.
+          description: Optional – empty or null means none (yet).
         herdId:
           type: [integer, 'null']
         notes:

@@ -1,4 +1,4 @@
-import { boolean, date, doublePrecision, index, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { boolean, date, doublePrecision, index, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { farmsTable, medicinesTable } from "./farm";
 
 // Bienen (docs/bienen.md): the farm's colonies with their hive card –
@@ -24,6 +24,8 @@ export const beeColoniesTable = pgTable(
     name: text("name").notNull(),
     // Bienenstand – where the hive stands, in the beekeeper's own words.
     apiary: text("apiary"),
+    // A photo of where the hive stands (Cloudinary URL).
+    photoUrl: text("photo_url"),
     hiveType: text("hive_type"),
     queenYear: integer("queen_year"),
     queenMarked: boolean("queen_marked").notNull().default(false),
@@ -109,3 +111,42 @@ export const beeTreatmentsTable = pgTable(
   },
   (table) => [index("bee_treatments_colony_idx").on(table.colonyId, table.date)],
 );
+
+/** What the AI says about a Bienenstand on a photo (lib/beeSite.ts). */
+export interface BeeSiteAnalysis {
+  /** One sentence on the whole stand. */
+  overall: string;
+  /** Flight entrance, sun in the morning, shade at noon. */
+  orientation: string;
+  /** Wind and weather: hedges, walls, open field. */
+  shelter: string;
+  /** Plants around: forage through the year, water. */
+  forage: string;
+  /** Damp ground, hollows, wetland, height of the hive stand. */
+  moisture: string;
+  /** Paths, neighbours, flight path. */
+  neighbours: string;
+  tips: string[];
+}
+
+// Standort-Check: a photo of a Bienenstand looked at by the AI – kept so the
+// beekeeper can come back to it. Not tied to a colony.
+export const beeSiteChecksTable = pgTable(
+  "bee_site_checks",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    apiary: text("apiary"),
+    // Null when the photo could not be stored; the analysis stays.
+    photoUrl: text("photo_url"),
+    // Where the camera looked (0–360°, from the phone's compass), if known.
+    heading: integer("heading"),
+    question: text("question"),
+    analysis: jsonb("analysis").$type<BeeSiteAnalysis>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("bee_site_checks_farm_idx").on(table.farmId, table.createdAt)],
+);
+

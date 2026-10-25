@@ -47,7 +47,7 @@ function AnimalTile({ animal, farmId }: { animal: FarmAnimal; farmId: number }) 
   return (
     <Link
       href={`/farm/${farmId}/tier/${animal.id}`}
-      title={`${animal.name} · ${SPECIES_LABELS[animal.species]}${animal.breed ? ` · ${animal.breed}` : ""} · ${SEX_LABELS[animal.sex]}${age ? ` · ${age}` : ""} · ${animal.registrationNumber}`}
+      title={`${animal.name} · ${SPECIES_LABELS[animal.species]}${animal.breed ? ` · ${animal.breed}` : ""} · ${SEX_LABELS[animal.sex]}${age ? ` · ${age}` : ""}${animal.registrationNumber ? ` · ${animal.registrationNumber}` : ""}`}
       className={cn("flex min-w-0 flex-col gap-1 rounded-xl border border-border bg-card p-1.5 transition-colors hover:bg-muted/50", animal.archivedAt && "opacity-60")}
     >
       {animal.imageUrl ? (
@@ -204,7 +204,7 @@ export function FarmAnimalsSection({ farm }: { farm: FarmSummary }) {
           <p className="font-medium">Noch keine Tiere</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {canWrite
-              ? "Leg dein erstes Tier an – mit Foto, Ring- oder Ohrmarkennummer und Geburtsdatum."
+              ? "Leg dein erstes Tier an – Name und Geburtsdatum genügen, Foto und Ring- oder Ohrmarkennummer kannst du später ergänzen."
               : "Auf dieser Farm sind noch keine Tiere eingetragen."}
           </p>
         </div>

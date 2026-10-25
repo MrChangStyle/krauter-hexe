@@ -14,6 +14,11 @@ export interface BeeColony {
   name: string;
   /** @nullable */
   apiary: string | null;
+  /**
+     * Photo of where the colony stands.
+     * @nullable
+     */
+  photoUrl: string | null;
   /** @nullable */
   hiveType: string | null;
   /** @nullable */

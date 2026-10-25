@@ -104,6 +104,15 @@ describe("veterinary office export", () => {
     beeTreatments: [],
   };
 
+  it("lists animals without a ring or ear tag after the others, with an empty cell", () => {
+    const out = exportForPeriod(
+      { ...data, animals: [animal({ id: 7, name: "Zora", registrationNumber: null }), animal({ id: 8, name: "Anni", registrationNumber: null }), animal()] },
+      { from: "2026-01-01", to: "2026-06-30" },
+    );
+    expect(out.animals.map((a) => a.name)).toEqual(["Lotte", "Anni", "Zora"]);
+    expect(exportCsv(out)).toContain("\r\n;Anni;Ziege;");
+  });
+
   it("keeps animals on the farm in the period and records inside it", () => {
     const out = exportForPeriod(data, { from: "2026-01-01", to: "2026-06-30" });
     expect(out.animals.map((a) => a.name)).toEqual(["Lotte"]);

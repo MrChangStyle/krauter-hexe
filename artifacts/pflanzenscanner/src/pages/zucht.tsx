@@ -144,7 +144,8 @@ function NewDialog({ farm, onClose }: { farm: FarmSummary; onClose: () => void }
               <option value="">{incubation ? "Brutapparat" : "Bitte wählen"}</option>
               {mothers.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.name} ({a.registrationNumber})
+                  {a.name}
+                  {a.registrationNumber && ` (${a.registrationNumber})`}
                 </option>
               ))}
             </select>
@@ -155,7 +156,8 @@ function NewDialog({ farm, onClose }: { farm: FarmSummary; onClose: () => void }
               <option value="">Unbekannt</option>
               {fathers.map((a) => (
                 <option key={a.id} value={a.id}>
-                  {a.name} ({a.registrationNumber})
+                  {a.name}
+                  {a.registrationNumber && ` (${a.registrationNumber})`}
                 </option>
               ))}
               <option value="other">Von einem anderen Hof</option>

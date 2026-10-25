@@ -25,6 +25,7 @@ import {
   type VarroaMethod,
 } from "@workspace/api-client-react";
 import { DictateButton } from "@/components/dictate-button";
+import { BeeColonyPhoto } from "@/components/bee-colony-photo";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -532,6 +533,8 @@ function ColonyCardPage({ farm, colonyId }: { farm: FarmSummary; colonyId: numbe
           </button>
         )}
       </div>
+
+      <BeeColonyPhoto farm={farm} colony={c} />
 
       {c.hints.length > 0 && (
         <ul className="space-y-2">

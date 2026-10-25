@@ -47,6 +47,10 @@ const EMPTY: FarmAnimalInput = {
   notes: "",
 };
 
+
+// Species that must carry an ear tag or a transponder – a hint only, the number stays optional.
+const MARKED: FarmSpecies[] = ["goat", "sheep", "cattle", "pig", "horse"];
+
 function toInput(a: FarmAnimal): FarmAnimalInput {
   return {
     name: a.name,
@@ -54,7 +58,7 @@ function toInput(a: FarmAnimal): FarmAnimalInput {
     breed: a.breed ?? "",
     birthDate: a.birthDate ?? "",
     sex: a.sex,
-    registrationNumber: a.registrationNumber,
+    registrationNumber: a.registrationNumber ?? "",
     herdId: a.herdId,
     notes: a.notes ?? "",
   };
@@ -65,11 +69,9 @@ function toInput(a: FarmAnimal): FarmAnimalInput {
 function PhotoPicker({
   value,
   onChange,
-  required,
 }: {
   value: string | null;
   onChange: (dataUrl: string) => void;
-  required?: boolean;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState(false);
@@ -102,7 +104,7 @@ function PhotoPicker({
       />
       <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={() => input.current?.click()} disabled={busy}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Camera className="h-4 w-4" />}
-        {value ? "Anderes Foto" : `Foto wählen${required ? " *" : ""}`}
+        {value ? "Anderes Foto" : "Foto wählen (optional)"}
       </Button>
     </div>
   );
@@ -113,7 +115,6 @@ function PhotoPicker({
 function AnimalForm({
   farmId,
   initial,
-  photoRequired,
   submitLabel,
   busy,
   error,
@@ -122,7 +123,6 @@ function AnimalForm({
 }: {
   farmId: number;
   initial: FarmAnimalInput;
-  photoRequired: boolean;
   submitLabel: string;
   busy: boolean;
   error: string | null;
@@ -138,14 +138,13 @@ function AnimalForm({
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    if (photoRequired && !photo) {
-      setLocalError("Bitte wähle ein Foto des Tieres.");
-      return;
-    }
     setLocalError(null);
     onSubmit(
       {
         ...form,
+        // Optional: empty means none (yet); without a name the server gives one.
+        name: form.name?.trim() || null,
+        registrationNumber: form.registrationNumber?.trim() || null,
         breed: form.breed?.trim() || null,
         notes: form.notes?.trim() || null,
       },
@@ -155,7 +154,7 @@ function AnimalForm({
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <PhotoPicker value={photo} onChange={setPhoto} required={photoRequired} />
+      <PhotoPicker value={photo} onChange={setPhoto} />
       {photo && (
         <SpeciesSuggestionBox
           farmId={farmId}
@@ -168,8 +167,14 @@ function AnimalForm({
       )}
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="animal-name">Name *</Label>
-        <Input id="animal-name" required maxLength={60} value={form.name} onChange={(e) => set("name", e.target.value)} />
+        <Label htmlFor="animal-name">Name</Label>
+        <Input
+          id="animal-name"
+          maxLength={60}
+          value={form.name ?? ""}
+          onChange={(e) => set("name", e.target.value)}
+          placeholder={initial.name ? undefined : "optional – ohne Namen z. B. „Ziege 1“"}
+        />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -214,15 +219,21 @@ function AnimalForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="animal-reg">Ring- / Ohrmarkennummer *</Label>
+        <Label htmlFor="animal-reg">Ring- / Ohrmarkennummer</Label>
         <Input
           id="animal-reg"
-          required
           maxLength={40}
           className="font-mono"
-          value={form.registrationNumber}
+          value={form.registrationNumber ?? ""}
           onChange={(e) => set("registrationNumber", e.target.value)}
         />
+        {!form.registrationNumber?.trim() && MARKED.includes(form.species) && (
+          <p className="text-xs text-muted-foreground">
+            {form.species === "horse"
+              ? "Pferde brauchen einen Transponder und einen Equidenpass – die Nummer lässt sich jederzeit nachtragen."
+              : "Diese Tierart muss gekennzeichnet sein (Viehverkehrsverordnung) – die Ohrmarkennummer lässt sich jederzeit nachtragen."}
+          </p>
+        )}
       </div>
 
       <div className="flex flex-col gap-1.5">
@@ -336,7 +347,6 @@ function NewAnimalPage({ farmId }: { farmId: number }) {
       <AnimalForm
         farmId={farmId}
         initial={EMPTY}
-        photoRequired
         submitLabel="Anlegen"
         busy={busy}
         error={error}
@@ -413,7 +423,6 @@ function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: numb
         <AnimalForm
           farmId={farmId}
           initial={toInput(a)}
-          photoRequired={false}
           submitLabel="Speichern"
           busy={busy}
           error={error}
@@ -429,7 +438,7 @@ function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: numb
     ["Rasse", a.breed ?? "–"],
     ["Geschlecht", SEX_LABELS[a.sex]],
     ["Geboren", a.birthDate ? `${new Date(`${a.birthDate}T12:00:00`).toLocaleDateString("de-DE")}${age ? ` (${age})` : ""}` : "–"],
-    ["Ring / Ohrmarke", a.registrationNumber],
+    ["Ring / Ohrmarke", a.registrationNumber ?? "–"],
     ["Herde", a.herdName ?? "–"],
   ];
 

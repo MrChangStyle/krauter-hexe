@@ -75,7 +75,7 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"breed" text,
 	"birth_date" date,
 	"sex" "animal_sex" DEFAULT 'unknown' NOT NULL,
-	"registration_number" text NOT NULL,
+	"registration_number" text,
 	"image_url" text,
 	"notes" text,
 	"archived_at" timestamp with time zone,
@@ -265,6 +265,8 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `DO $$ BEGIN
      ALTER TABLE "farm_duty_checks" ADD CONSTRAINT "farm_duty_checks_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  // The ring / ear tag became optional.
+  `ALTER TABLE "farm_animals" ALTER COLUMN "registration_number" DROP NOT NULL`,
   `CREATE TABLE IF NOT EXISTS "breeding_records" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

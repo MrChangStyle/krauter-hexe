@@ -3291,6 +3291,7 @@ export const GetBeeOverviewResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -3359,6 +3360,270 @@ export const CreateBeeColonyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Standort-Checks – photos of a Bienenstand looked at by the AI, newest first
+ */
+export const ListBeeSiteChecksParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListBeeSiteChecksResponseItem = zod.object({
+  "id": zod.number(),
+  "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable(),
+  "heading": zod.number().nullable(),
+  "question": zod.string().nullable(),
+  "analysis": zod.object({
+  "overall": zod.string(),
+  "orientation": zod.string(),
+  "shelter": zod.string(),
+  "forage": zod.string(),
+  "moisture": zod.string(),
+  "neighbours": zod.string(),
+  "tips": zod.array(zod.string())
+}),
+  "createdAt": zod.string()
+})
+export const ListBeeSiteChecksResponse = zod.array(ListBeeSiteChecksResponseItem)
+
+
+/**
+ * @summary Have the AI look at a photo of a Bienenstand (caretaker; counts as a farm AI request)
+ */
+export const RunBeeSiteCheckParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const runBeeSiteCheckBodyApiaryMax = 60;
+
+export const runBeeSiteCheckBodyQuestionMax = 300;
+
+
+
+export const RunBeeSiteCheckBody = zod.object({
+  "imageData": zod.string(),
+  "heading": zod.number().nullish().describe('Where the camera looked, 0–360° from the phone\'s compass.'),
+  "apiary": zod.string().max(runBeeSiteCheckBodyApiaryMax).nullish(),
+  "question": zod.string().max(runBeeSiteCheckBodyQuestionMax).nullish()
+})
+
+export const RunBeeSiteCheckResponseItem = zod.object({
+  "id": zod.number(),
+  "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable(),
+  "heading": zod.number().nullable(),
+  "question": zod.string().nullable(),
+  "analysis": zod.object({
+  "overall": zod.string(),
+  "orientation": zod.string(),
+  "shelter": zod.string(),
+  "forage": zod.string(),
+  "moisture": zod.string(),
+  "neighbours": zod.string(),
+  "tips": zod.array(zod.string())
+}),
+  "createdAt": zod.string()
+})
+export const RunBeeSiteCheckResponse = zod.array(RunBeeSiteCheckResponseItem)
+
+
+/**
+ * @summary Delete a Standort-Check with its photo (caretaker)
+ */
+export const DeleteBeeSiteCheckParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "checkId": zod.coerce.number()
+})
+
+export const DeleteBeeSiteCheckResponseItem = zod.object({
+  "id": zod.number(),
+  "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable(),
+  "heading": zod.number().nullable(),
+  "question": zod.string().nullable(),
+  "analysis": zod.object({
+  "overall": zod.string(),
+  "orientation": zod.string(),
+  "shelter": zod.string(),
+  "forage": zod.string(),
+  "moisture": zod.string(),
+  "neighbours": zod.string(),
+  "tips": zod.array(zod.string())
+}),
+  "createdAt": zod.string()
+})
+export const DeleteBeeSiteCheckResponse = zod.array(DeleteBeeSiteCheckResponseItem)
+
+
+/**
+ * @summary Photo of where the colony stands (caretaker)
+ */
+export const SetBeeColonyPhotoParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const SetBeeColonyPhotoBody = zod.object({
+  "imageData": zod.string().describe('data:image\/jpeg|png|webp;base64,…')
+})
+
+export const SetBeeColonyPhotoResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
+  "hiveType": zod.string().nullable(),
+  "queenYear": zod.number().nullable(),
+  "queenMarked": zod.boolean(),
+  "queenOrigin": zod.string().nullable(),
+  "status": zod.enum(['active', 'dissolved', 'lost', 'sold']),
+  "startedOn": zod.string().nullable(),
+  "endedOn": zod.string().nullable(),
+  "notes": zod.string().nullable(),
+  "lastInspectionOn": zod.string().nullable(),
+  "beeFrames": zod.number().nullable().describe('Frames covered with bees at the last inspection.'),
+  "lastMites": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "mitesPerDay": zod.number()
+})]),
+  "lastTreatmentOn": zod.string().nullable(),
+  "honeyKgThisYear": zod.number(),
+  "feedKgThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['swarm-check', 'swarm', 'varroa', 'summer-treatment', 'winter-treatment', 'feeding', 'old-queen']),
+  "colonyId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+}),
+  "inspections": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "beeFrames": zod.number().nullable(),
+  "broodFrames": zod.number().nullable(),
+  "queenSeen": zod.boolean(),
+  "eggsSeen": zod.boolean(),
+  "queenCells": zod.number().nullable(),
+  "temper": zod.number().nullable().describe('Sanftmut 1 (very gentle) to 4 (aggressive).'),
+  "foodKg": zod.number().nullable(),
+  "mitesPerDay": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "feedings": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "kind": zod.enum(['sirup', 'zuckerwasser', 'futterteig', 'honig', 'sonstiges']),
+  "amountKg": zod.number(),
+  "notes": zod.string().nullable()
+})),
+  "treatments": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number(),
+  "date": zod.string(),
+  "method": zod.enum(['ameisensaeure', 'oxalsaeure', 'milchsaeure', 'thymol', 'drohnenbrut', 'sonstiges']),
+  "medicineId": zod.number().nullable(),
+  "product": zod.string().nullable(),
+  "dose": zod.number().nullable(),
+  "unit": zod.string().nullable(),
+  "batch": zod.string().nullable(),
+  "notes": zod.string().nullable()
+})),
+  "honey": zod.array(zod.object({
+  "id": zod.number(),
+  "colonyId": zod.number().nullable(),
+  "date": zod.string(),
+  "amountKg": zod.number(),
+  "note": zod.string().nullable()
+}))
+})
+
+
+/**
+ * @summary Remove the photo of the colony's stand (caretaker)
+ */
+export const RemoveBeeColonyPhotoParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "colonyId": zod.coerce.number()
+})
+
+export const RemoveBeeColonyPhotoResponse = zod.object({
+  "colony": zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -3440,6 +3705,7 @@ export const GetBeeColonyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -3546,6 +3812,7 @@ export const UpdateBeeColonyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -3655,6 +3922,7 @@ export const AddBeeInspectionResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -3747,6 +4015,7 @@ export const AddBeeFeedingResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -3843,6 +4112,7 @@ export const AddBeeTreatmentResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -3934,6 +4204,7 @@ export const AddBeeHoneyResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -4017,6 +4288,7 @@ export const DeleteBeeEntryResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "apiary": zod.string().nullable(),
+  "photoUrl": zod.string().nullable().describe('Photo of where the colony stands.'),
   "hiveType": zod.string().nullable(),
   "queenYear": zod.number().nullable(),
   "queenMarked": zod.boolean(),
@@ -6849,7 +7121,7 @@ export const ListFarmAnimalsResponseItem = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -6876,12 +7148,12 @@ export const createFarmAnimalBodyNotesMax = 2000;
 
 
 export const CreateFarmAnimalBody = zod.object({
-  "name": zod.string().min(1).max(createFarmAnimalBodyNameMax),
+  "name": zod.string().max(createFarmAnimalBodyNameMax).nullish().describe('Optional – a new animal without one is called like \"Ziege 3\", an edited one keeps its name.'),
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "breed": zod.string().max(createFarmAnimalBodyBreedMax).nullish(),
   "birthDate": zod.string().describe('YYYY-MM-DD, not in the future'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string().min(1).max(createFarmAnimalBodyRegistrationNumberMax).describe('Ring or ear tag; unique within the farm.'),
+  "registrationNumber": zod.string().max(createFarmAnimalBodyRegistrationNumberMax).nullish().describe('Optional – empty or null means none (yet).'),
   "herdId": zod.number().nullish(),
   "notes": zod.string().max(createFarmAnimalBodyNotesMax).nullish()
 })
@@ -6895,7 +7167,7 @@ export const CreateFarmAnimalResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -6920,7 +7192,7 @@ export const GetFarmAnimalResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -6947,12 +7219,12 @@ export const updateFarmAnimalBodyNotesMax = 2000;
 
 
 export const UpdateFarmAnimalBody = zod.object({
-  "name": zod.string().min(1).max(updateFarmAnimalBodyNameMax),
+  "name": zod.string().max(updateFarmAnimalBodyNameMax).nullish().describe('Optional – a new animal without one is called like \"Ziege 3\", an edited one keeps its name.'),
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "breed": zod.string().max(updateFarmAnimalBodyBreedMax).nullish(),
   "birthDate": zod.string().describe('YYYY-MM-DD, not in the future'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string().min(1).max(updateFarmAnimalBodyRegistrationNumberMax).describe('Ring or ear tag; unique within the farm.'),
+  "registrationNumber": zod.string().max(updateFarmAnimalBodyRegistrationNumberMax).nullish().describe('Optional – empty or null means none (yet).'),
   "herdId": zod.number().nullish(),
   "notes": zod.string().max(updateFarmAnimalBodyNotesMax).nullish()
 })
@@ -6966,7 +7238,7 @@ export const UpdateFarmAnimalResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -6995,7 +7267,7 @@ export const SetFarmAnimalArchivedResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -7024,7 +7296,7 @@ export const SetFarmAnimalPhotoResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -7423,7 +7695,7 @@ export const GetFarmExportResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),

@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { HenniTip } from "@/components/henni";
 import { PremiumBadge } from "@/components/premium-badge";
 import { useToast } from "@/hooks/use-toast";
+import { useCompass } from "@/hooks/use-compass";
 import { downscaleFile } from "@/lib/image";
 import { gridSize } from "@/lib/garden-planner";
 import { apply, cellAt, headingText, invert, squareToQuad, type Point } from "@/lib/homography";
@@ -24,36 +25,6 @@ function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
 }
 
-type OrientationEvent = DeviceOrientationEvent & { webkitCompassHeading?: number };
-type PermissionApi = { requestPermission?: () => Promise<"granted" | "denied"> };
-
-/**
- * Compass heading while the camera is open: iOS reports webkitCompassHeading,
- * others an absolute alpha (counter-clockwise from north).
- */
-function useCompass() {
-  const heading = useRef<number | null>(null);
-  async function start() {
-    try {
-      const api = (globalThis as { DeviceOrientationEvent?: PermissionApi }).DeviceOrientationEvent;
-      if (api?.requestPermission) await api.requestPermission();
-    } catch {
-      /* no compass then */
-    }
-    const handler = (e: Event) => {
-      const ev = e as OrientationEvent;
-      if (typeof ev.webkitCompassHeading === "number") heading.current = ev.webkitCompassHeading;
-      else if (ev.absolute && typeof ev.alpha === "number") heading.current = (360 - ev.alpha) % 360;
-    };
-    window.addEventListener("deviceorientationabsolute", handler);
-    window.addEventListener("deviceorientation", handler);
-    return () => {
-      window.removeEventListener("deviceorientationabsolute", handler);
-      window.removeEventListener("deviceorientation", handler);
-    };
-  }
-  return { heading, start };
-}
 
 const CORNER_HINTS = [
   "Tippe die Ecke an, an der Feld 1/1 liegt – zum Beispiel links hinten.",

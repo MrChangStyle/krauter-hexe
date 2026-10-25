@@ -12,6 +12,7 @@ export const BEE_SCHEMA_STATEMENTS: readonly string[] = [
 	"farm_id" integer NOT NULL,
 	"name" text NOT NULL,
 	"apiary" text,
+	"photo_url" text,
 	"hive_type" text,
 	"queen_year" integer,
 	"queen_marked" boolean DEFAULT false NOT NULL,
@@ -94,4 +95,20 @@ export const BEE_SCHEMA_STATEMENTS: readonly string[] = [
   `DO $$ BEGIN
      ALTER TABLE "farm_yields" ADD CONSTRAINT "farm_yields_colony_id_bee_colonies_id_fk" FOREIGN KEY ("colony_id") REFERENCES "public"."bee_colonies"("id") ON DELETE set null ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  // Standortfoto je Volk and the Standort-Check (added later).
+  `ALTER TABLE "bee_colonies" ADD COLUMN IF NOT EXISTS "photo_url" text`,
+  `CREATE TABLE IF NOT EXISTS "bee_site_checks" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"apiary" text,
+	"photo_url" text,
+	"heading" integer,
+	"question" text,
+	"analysis" jsonb NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "bee_site_checks" ADD CONSTRAINT "bee_site_checks_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "bee_site_checks_farm_idx" ON "bee_site_checks" USING btree ("farm_id","created_at")`,
 ];

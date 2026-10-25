@@ -11,6 +11,8 @@
  */
 
 import {
+  beeColoniesTable,
+  beeSiteChecksTable,
   cameraEventsTable,
   db,
   farmAnimalsTable,
@@ -110,7 +112,7 @@ export async function deleteFarm(farmId: number, confirmName: unknown): Promise<
   deleteFarmPhotos(photos);
 }
 
-/** Cloudinary URLs of the animal, camera and bed photos of these farms. */
+/** Cloudinary URLs of the animal, camera, bed and bee photos of these farms. */
 export async function farmPhotoUrls(
   farmIds: number[],
   executor: Pick<typeof db, 'select'> = db,
@@ -128,7 +130,15 @@ export async function farmPhotoUrls(
     .select({ url: gardenBedsTable.photoUrl })
     .from(gardenBedsTable)
     .where(and(inArray(gardenBedsTable.farmId, farmIds), isNotNull(gardenBedsTable.photoUrl)));
-  return [...animals, ...cameraEvents, ...beds].map((r) => r.url!).filter(Boolean);
+  const colonies = await executor
+    .select({ url: beeColoniesTable.photoUrl })
+    .from(beeColoniesTable)
+    .where(and(inArray(beeColoniesTable.farmId, farmIds), isNotNull(beeColoniesTable.photoUrl)));
+  const siteChecks = await executor
+    .select({ url: beeSiteChecksTable.photoUrl })
+    .from(beeSiteChecksTable)
+    .where(and(inArray(beeSiteChecksTable.farmId, farmIds), isNotNull(beeSiteChecksTable.photoUrl)));
+  return [...animals, ...cameraEvents, ...beds, ...colonies, ...siteChecks].map((r) => r.url!).filter(Boolean);
 }
 
 /**

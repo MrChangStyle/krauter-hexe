@@ -85,9 +85,18 @@ const ICONS: Partial<Record<ModuleId, LucideIcon>> = {
   export: FileText,
 };
 
-/** Realistic pictures beside some modules (Verwaltung → Homepage-Bilder). */
+/** Drawn pictures beside some modules (components/site/scenes.tsx). */
 const MODULE_PHOTO: Partial<Record<ModuleId, { slot: string; alt: string }>> = {
-  "my-plants": { slot: "plants", alt: "Zimmerpflanzen am Fenster, eine Hand fotografiert ein Blatt" },
+  "my-plants": { slot: "plants", alt: "Zimmerpflanzen am Fenster, ein Handy scannt ein Blatt" },
+  "care-plan": { slot: "plants", alt: "Zimmerpflanzen am Fenster" },
+  "plant-doc": { slot: "herbs", alt: "Kräuter und Mörser" },
+  lexicon: { slot: "herbs", alt: "Kräuter und Mörser" },
+  grow: { slot: "plants", alt: "Pflanzen am Fenster" },
+  medicines: { slot: "goats", alt: "Ziegen an der Heuraufe" },
+  duties: { slot: "animals", alt: "Hühner am Stall" },
+  yields: { slot: "pricing", alt: "Erntekorb mit Eiern, Gemüse und Honig" },
+  handover: { slot: "team", alt: "Familie auf dem Hof" },
+  export: { slot: "pasture", alt: "Schafe auf der Weide" },
   garden: { slot: "garden", alt: "Hochbeet mit Tomaten, Salat und Möhren" },
   "herb-witch": { slot: "herbs", alt: "Frisch gepflückte Heil- und Küchenkräuter auf einem Holztisch" },
   pantry: { slot: "pantry", alt: "Regal mit eingekochtem Gemüse, Marmelade und Honig" },
@@ -96,6 +105,9 @@ const MODULE_PHOTO: Partial<Record<ModuleId, { slot: string; alt: string }>> = {
   pasture: { slot: "pasture", alt: "Schafe auf einer eingezäunten Weide" },
   bees: { slot: "bees", alt: "Bienenstöcke am Rand einer blühenden Obstwiese" },
   members: { slot: "team", alt: "Eine Familie arbeitet gemeinsam auf dem Hof" },
+  pests: { slot: "pests", alt: "Marienkäfer auf einem Blatt unter der Lupe" },
+  breeding: { slot: "chicks", alt: "Glucke mit Küken" },
+  wildlife: { slot: "wildlife", alt: "Fuchs nachts am Hühnerzaun, die Kamera meldet ihn" },
 };
 
 function Cta({ actions, finder = true }: { actions: SiteActions; finder?: boolean }) {
@@ -115,17 +127,20 @@ function Cta({ actions, finder = true }: { actions: SiteActions; finder?: boolea
   );
 }
 
+/** An app screenshot in front of a drawn scene (or the farm with an icon). */
+function ScreenOnScene({ screen, slot, alt, label, icon }: { screen: string; slot: string; alt: string; label: string; icon: LucideIcon }) {
+  return (
+    <div className="relative mx-auto flex max-w-md justify-center py-8">
+      <SitePhoto slot={slot} alt={alt} icon={icon} className="absolute inset-x-0 bottom-16 top-16" />
+      <PhoneShot screen={screen} alt={`So sieht ${label} in der App aus`} className="relative" />
+    </div>
+  );
+}
+
+/** One module: text on one side, the app on the other – alternating. */
 function ModuleBlock({ id, index }: { id: ModuleId; index: number }) {
   const site = MODULE_SITE[id]!;
   const Icon = ICONS[id] ?? Leaf;
-  const photo = MODULE_PHOTO[id];
-  const visual = photo ? (
-    <SitePhoto slot={photo.slot} alt={photo.alt} icon={Icon} className="aspect-[4/3] w-full" />
-  ) : site.screen ? (
-    <PhoneShot screen={site.screen} alt={`So sieht ${moduleLabel(id)} in der App aus`} />
-  ) : (
-    <SitePhoto slot={`module-${id}`} alt={moduleLabel(id)} icon={Icon} className="aspect-[4/3] w-full" />
-  );
   return (
     <article id={id} className="grid scroll-mt-28 items-center gap-8 py-10 md:grid-cols-2" data-testid={`site-module-${id}`}>
       <div className={`space-y-4 ${index % 2 ? "md:order-2" : ""}`}>
@@ -153,9 +168,10 @@ function ModuleBlock({ id, index }: { id: ModuleId; index: number }) {
             </li>
           )}
         </ul>
-        {photo && site.screen && <PhoneShot screen={site.screen} alt={`So sieht ${moduleLabel(id)} in der App aus`} className="max-w-[200px] md:mx-0" />}
       </div>
-      <div className={index % 2 ? "md:order-1" : ""}>{visual}</div>
+      <div className={index % 2 ? "md:order-1" : ""}>
+        <ScreenOnScene screen={site.screen} slot={MODULE_PHOTO[id]?.slot ?? `module-${id}`} alt={MODULE_PHOTO[id]?.alt ?? moduleLabel(id)} label={moduleLabel(id)} icon={Icon} />
+      </div>
     </article>
   );
 }
@@ -173,7 +189,6 @@ export function AreaPage({ area, actions }: { area: ModuleArea; actions: SiteAct
             ? "Pflanzen erkennen, pflegen und vermehren, Beete planen, ernten und einlagern. Die App erinnert dich zur richtigen Zeit – und warnt bei Frost."
             : "Für Hühner, Ziegen, Schafe, Kaninchen, Rinder, Pferde und Bienen: Aufgaben im Stall, Futter, Zucht, Arzneimittel und die Pflichten gegenüber den Ämtern."
         }
-        slot={plants ? "plants" : "animals"}
         variant={plants ? "green" : "day"}
       >
         <Cta actions={actions} />
@@ -235,7 +250,6 @@ export function StartPage({ actions }: { actions: SiteActions }) {
         eyebrow="Little Farming"
         title="Dein Hof in einer App"
         text="Pflanzen, Garten und Tiere an einem Ort: erkennen, planen, versorgen und an alles erinnert werden – vom Balkon bis zum kleinen Hof."
-        slot="hero"
       >
         <Cta actions={actions} />
         {actions.google}
@@ -325,33 +339,33 @@ export function FarmPage({ actions }: { actions: SiteActions }) {
       title: "Die Hof-Startseite",
       text: "Alles Wichtige aus allen Modulen auf einen Blick – Wetter, Aufgaben, Tiere, Vorräte.",
       points: ["Kacheln nach deinem Geschmack anordnen", "Warnungen des Deutschen Wetterdienstes", "Frost- und Hitze-Tipps für Tiere und Beete"],
-      visual: <PhoneShot screen="hof" alt="Hof-Startseite" />,
+      visual: <ScreenOnScene screen="hof" slot="animals" alt="Hühner am Stall" label="die Hof-Startseite" icon={LayoutGrid} />,
     },
     {
       icon: Users,
       title: "Team und Rollen",
       text: "Lade Familie, Mitarbeiter oder Nachbarn ein. Jede Person bekommt eine Rolle und auf Wunsch nur bestimmte Module.",
       points: ["Admin, Mitarbeiter oder Gast", "Freigaben je Modul", "Erinnerungen gehen an alle, die mit anpacken"],
-      visual: <SitePhoto slot="team" alt="Familie auf dem Hof" icon={Users} className="aspect-[4/3] w-full" />,
+      visual: <ScreenOnScene screen="team" slot="team" alt="Familie auf dem Hof" label="Farm & Team" icon={Users} />,
     },
     {
       icon: ClipboardList,
       title: "Urlaubsvertretung",
       text: "Die Vertretung bekommt für ein paar Tage Zugang und sieht genau, was heute zu tun ist – mit Übergabe-Notiz und Notfallnummern.",
       points: ["Zugang endet von selbst", "Was heute fällig ist, auf einer Seite", "Tierarzt und Kontakte immer erreichbar"],
-      visual: <PhoneShot screen="team" alt="Team und Vertretung in der App" />,
+      visual: <ScreenOnScene screen="uebergabe" slot="goats" alt="Ziegen an der Heuraufe" label="die Übergabe" icon={ClipboardList} />,
     },
     {
       icon: BookOpen,
       title: "Hilfe in jedem Modul",
       text: "Jedes Modul erklärt sich oben selbst – und unter „Hilfe & FAQ“ steht alles zum Nachlesen.",
       points: ["Kurze Einführung je Modul", "Häufige Fragen mit Antworten", "Demo-Hof zum Ausprobieren"],
-      visual: <SitePhoto slot="pricing" alt="Korb mit Eiern, Gemüse und Honig" icon={Egg} className="aspect-[4/3] w-full" />,
+      visual: <ScreenOnScene screen="hilfe" slot="pricing" alt="Erntekorb mit Eiern, Gemüse und Honig" label="Hilfe & FAQ" icon={BookOpen} />,
     },
   ];
   return (
     <>
-      <PageHero eyebrow="Gemeinsam auf dem Hof" title="Damit alle wissen, was zu tun ist" text="Ein Hof ist Teamarbeit. Little Farming bringt alle zusammen – mit klaren Rollen, Erinnerungen und einer Übergabe für die Urlaubszeit." slot="team" variant="evening">
+      <PageHero eyebrow="Gemeinsam auf dem Hof" title="Damit alle wissen, was zu tun ist" text="Ein Hof ist Teamarbeit. Little Farming bringt alle zusammen – mit klaren Rollen, Erinnerungen und einer Übergabe für die Urlaubszeit." variant="evening">
         <Cta actions={actions} />
       </PageHero>
       <div className="mx-auto max-w-6xl divide-y px-4">
@@ -441,7 +455,7 @@ export function PricingPage({ actions }: { actions: SiteActions }) {
   const [yearly, setYearly] = useState(false);
   return (
     <>
-      <PageHero eyebrow="Preise & Pakete" title="Kostenlos starten. KI, wenn du sie brauchst." text="Alles, was ohne KI läuft, bleibt kostenlos. KI kostet uns bei jeder Anfrage Geld – deshalb gibt es sie in zwei Paketen." slot="pricing" variant="evening">
+      <PageHero eyebrow="Preise & Pakete" title="Kostenlos starten. KI, wenn du sie brauchst." text="Alles, was ohne KI läuft, bleibt kostenlos. KI kostet uns bei jeder Anfrage Geld – deshalb gibt es sie in zwei Paketen." variant="evening">
         <Cta actions={actions} />
       </PageHero>
       <Section title="Die Pakete" intro={PRICES_PROVISIONAL ? "Vorläufige Preise – bezahlen lässt sich noch nicht. Bis dahin nutzt du alles wie bisher." : undefined}>
@@ -536,7 +550,7 @@ export function FinderPage({ actions }: { actions: SiteActions }) {
 
   return (
     <>
-      <PageHero eyebrow="Modul-Finder" title="Was hast du – und was brauchst du?" text="Wähle aus, was bei dir wächst und lebt. Wir schlagen dir die passenden Module und das Paket vor. Wer Hühner und einen Hobbygarten hat, braucht keine Bienen-Stockkarte." slot="hero" variant="green" />
+      <PageHero eyebrow="Modul-Finder" title="Was hast du – und was brauchst du?" text="Wähle aus, was bei dir wächst und lebt. Wir schlagen dir die passenden Module und das Paket vor. Wer Hühner und einen Hobbygarten hat, braucht keine Bienen-Stockkarte." variant="green" />
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 lg:grid-cols-[1fr_380px]">
         <div className="space-y-8">
           <fieldset className="space-y-3">

@@ -1,3 +1,5 @@
+import { existsSync, readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { MODULES } from "@/lib/modules";
 import { MODULE_SITE, PLANS, SITE_NAV, SITE_PATHS, recommend, sitePageOf, yearlySaving, type FinderInput } from "@/lib/site";
@@ -21,6 +23,14 @@ describe("Homepage – modules and packages", () => {
     const modules = MODULES.filter((m) => !m.isArea).map((m) => m.id).sort();
     expect(Object.keys(MODULE_SITE).sort()).toEqual(modules);
     for (const [id, m] of Object.entries(MODULE_SITE)) expect(m!.points.length, id).toBeGreaterThanOrEqual(2);
+  });
+
+  it("shows every module with a screenshot of the app that exists", () => {
+    const dir = join(__dirname, "../../public/site/screens");
+    for (const [id, m] of Object.entries(MODULE_SITE)) expect(existsSync(join(dir, `${m!.screen}.jpg`)), `${id}: ${m!.screen}`).toBe(true);
+    // No screenshot without a use.
+    const used = new Set([...Object.values(MODULE_SITE).map((m) => m!.screen), "hof", "hilfe"]);
+    for (const file of readdirSync(dir)) expect(used.has(file.replace(/\.jpg$/, "")), file).toBe(true);
   });
 
   it("has a free Basis and paid packages that save with a year", () => {

@@ -69,14 +69,6 @@ const STATEMENTS = [
   // it from their herd.
   `ALTER TABLE "pasture_grazings" ADD COLUMN IF NOT EXISTS "species" "farm_species"`,
   `UPDATE "pasture_grazings" g SET "species" = h."species" FROM "herds" h WHERE g."herd_id" = h."id" AND g."species" IS NULL`,
-  // Homepage pictures (schema/site.ts).
-  `CREATE TABLE IF NOT EXISTS "site_images" (
-	"slot" text PRIMARY KEY NOT NULL,
-	"url" text NOT NULL,
-	"prompt" text NOT NULL,
-	"model" text NOT NULL,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
-)`,
   // Module and first-start assistant (schema/settings.ts).
   `CREATE TABLE IF NOT EXISTS "user_settings" (
 	"user_id" text PRIMARY KEY NOT NULL,
@@ -95,13 +87,19 @@ const STATEMENTS = [
   // Feedback (schema/feedback.ts).
   `CREATE TABLE IF NOT EXISTS "feedback" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" text,
 	"text" text NOT NULL,
 	"page" text,
 	"voice" boolean DEFAULT false NOT NULL,
+	"kind" text,
+	"contact" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
 	"read_at" timestamp with time zone
 )`,
+  // Feedback from the homepage, without an account.
+  `ALTER TABLE "feedback" ALTER COLUMN "user_id" DROP NOT NULL`,
+  `ALTER TABLE "feedback" ADD COLUMN IF NOT EXISTS "kind" text`,
+  `ALTER TABLE "feedback" ADD COLUMN IF NOT EXISTS "contact" text`,
   `CREATE INDEX IF NOT EXISTS "feedback_created_idx" ON "feedback" USING btree ("created_at")`,
   // Umzug über das Konto (schema/move.ts).
   `CREATE TABLE IF NOT EXISTS "move_parcels" (

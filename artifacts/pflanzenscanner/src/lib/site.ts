@@ -128,8 +128,8 @@ export interface ModuleSite {
   points: string[];
   /** The AI part and the package it needs; none: the module has no AI. */
   ai?: { text: string; plan: Exclude<PlanId, "basis"> };
-  /** A screenshot in public/site/screens (without extension). */
-  screen?: string;
+  /** The app's screenshot in public/site/screens (without extension). */
+  screen: string;
 }
 
 /** Every module of MODULES (not the areas) – a test keeps them in step. */
@@ -137,36 +137,36 @@ export const MODULE_SITE: Partial<Record<ModuleId, ModuleSite>> = {
   "my-plants": {
     points: ["Sammlung nach Zimmer, Balkon oder Beet", "Steckbrief mit Licht, Wasser und Giftigkeit für Kinder und Tiere", "Fotos und Notizen je Pflanze"],
     ai: { text: "Art per Foto erkennen", plan: "lite" },
-    screen: "pflanzen",
+    screen: "meine-pflanzen",
   },
   "care-plan": { points: ["Gießen, Düngen, Umtopfen mit Erinnerung", "Push aufs Handy zur richtigen Zeit", "Wetter-Hinweise bei Frost und Hitze"], screen: "pflegeplan" },
-  "plant-doc": { points: ["Mögliche Ursachen für gelbe Blätter, Flecken und Welke", "Pflege-Guide zum Nachlesen"], ai: { text: "Diagnose per Foto", plan: "lite" } },
-  pests: { points: ["Schädlinge und Nützlinge erkennen", "Biologische und, wenn nötig, chemische Gegenmittel"], ai: { text: "Insekten-Scan per Foto", plan: "lite" } },
-  lexicon: { points: ["Alle gescannten Arten zum Nachschlagen", "Pilze mit deutlichen Giftigkeits-Hinweisen"] },
-  "herb-witch": { points: ["Heilkräuter nach Beschwerden", "Traditionelle Anwendung und Zubereitung", "Mit klaren Hinweisen zu Risiken"] },
+  "plant-doc": { points: ["Mögliche Ursachen für gelbe Blätter, Flecken und Welke", "Pflege-Guide zum Nachlesen"], ai: { text: "Diagnose per Foto", plan: "lite" }, screen: "pflanzendoc" },
+  pests: { points: ["Schädlinge und Nützlinge erkennen", "Biologische und, wenn nötig, chemische Gegenmittel"], ai: { text: "Insekten-Scan per Foto", plan: "lite" }, screen: "schaedlinge" },
+  lexicon: { points: ["Alle gescannten Arten zum Nachschlagen", "Pilze mit deutlichen Giftigkeits-Hinweisen"], screen: "lexikon" },
+  "herb-witch": { points: ["Heilkräuter nach Beschwerden", "Traditionelle Anwendung und Zubereitung", "Mit klaren Hinweisen zu Risiken"], screen: "kraeuter" },
   garden: {
     points: ["Beete wie auf Karopapier planen – Mischkultur und Fruchtfolge geprüft", "Aussaat- und Erntekalender nach deinen Frostterminen", "Saatgut-Vorrat mit Keimtest", "Ernte-Auswertung und Wirtschaftlichkeit"],
     ai: { text: "Beet-Foto-Analyse, Beet-Vorschlag, neue Anbaudaten", plan: "lite" },
     screen: "beet",
   },
   pantry: { points: ["Eingekochtes, Eingefrorenes, Getrocknetes und Honig", "Menge, Lagerort und Haltbarkeit", "Direkt aus der Ernte anlegen"], screen: "vorrat" },
-  grow: { points: ["Zelt, Pflanzen, Tagebuch – nur ab 18", "Strom- und Kostenrechner", "KCanG-Check"], ai: { text: "KI-Check für Gesundheit und Trichome", plan: "premium" } },
+  grow: { points: ["Zelt, Pflanzen, Tagebuch – nur ab 18", "Strom- und Kostenrechner", "KCanG-Check"], ai: { text: "KI-Check für Gesundheit und Trichome", plan: "premium" }, screen: "grow" },
   "farm-tasks": { points: ["Füttern, Ausmisten, Eier sammeln als wiederkehrende Aufgaben", "Erinnerung für alle im Team", "Abhaken mit Namen und Uhrzeit"], screen: "stall" },
   feed: {
     points: ["Rationen je Tiergruppe", "Futterbedarf über die Saison, mehr Futter bei Kälte", "Vorrat mit Nachkauf-Erinnerung"],
     ai: { text: "Futter-Etikett per Foto lesen", plan: "premium" },
     screen: "futter",
   },
-  breeding: { points: ["Trächtigkeit und Brut mit errechnetem Termin", "Brunstkalender und Absetzen", "Jungtiere direkt im Bestand anlegen"] },
-  medicines: { points: ["Arzneimittel mit Charge und Ablaufdatum", "Wartezeiten für Milch, Eier und Fleisch", "Behandlungen im Bestandsbuch"] },
+  breeding: { points: ["Trächtigkeit und Brut mit errechnetem Termin", "Brunstkalender und Absetzen", "Jungtiere direkt im Bestand anlegen"], screen: "zucht" },
+  medicines: { points: ["Arzneimittel mit Charge und Ablaufdatum", "Wartezeiten für Milch, Eier und Fleisch", "Behandlungen im Bestandsbuch"], screen: "arzneimittel" },
   duties: { points: ["Was bei Veterinäramt und Tierseuchenkasse zu tun ist", "Stichtag und Frist deines Bundeslandes", "Stallpflicht bei Geflügelpest"], screen: "pflichten" },
   yields: { points: ["Eier, Milch, Fleisch, Wolle und Ernte erfassen", "Ausgaben und Verkäufe dazu", "Legeleistung und Bilanz des Jahres"], screen: "ertrag" },
   pasture: { points: ["Weiden auf der Karte einzeichnen", "Weidetagebuch, Ruhezeit und Umtreiben", "Mähtermine mit Heuwetter und Wurm-Hinweise"], screen: "weide" },
   bees: { points: ["Stockkarte je Volk: Durchsicht, Fütterung, Honig", "Varroa-Behandlung im Bestandsbuch", "Schwarmkontrolle und Einfüttern mit Erinnerung"], ai: { text: "Standort-Check per Foto", plan: "premium" }, screen: "bienen" },
-  wildlife: { points: ["Kameras am Stall melden sich per Push", "Auf Wunsch mit Licht oder Sirene"], ai: { text: "Erkennt Fuchs, Marder und Greifvogel", plan: "premium" } },
-  handover: { points: ["Vertretung bekommt Zugang für ein paar Tage", "Sieht genau, was heute zu tun ist", "Zugang endet von selbst"] },
+  wildlife: { points: ["Kameras am Stall melden sich per Push", "Auf Wunsch mit Licht oder Sirene"], ai: { text: "Erkennt Fuchs, Marder und Greifvogel", plan: "premium" }, screen: "kameras" },
+  handover: { points: ["Vertretung bekommt Zugang für ein paar Tage", "Sieht genau, was heute zu tun ist", "Zugang endet von selbst"], screen: "uebergabe" },
   members: { points: ["Rollen: Admin, Mitarbeiter, Gast", "Freigaben je Modul", "Kontakte vom Tierarzt bis zur Stallhilfe"], screen: "team" },
-  export: { points: ["Bestandsliste und Behandlungen als PDF oder Tabelle", "Fertig für das Veterinäramt"] },
+  export: { points: ["Bestandsliste und Behandlungen als PDF oder Tabelle", "Fertig für das Veterinäramt"], screen: "export" },
 };
 
 export const moduleLabel = (id: ModuleId): string => MODULES.find((m) => m.id === id)?.label ?? id;

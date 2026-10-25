@@ -3,6 +3,8 @@ import { Link, useLocation } from "wouter";
 import { Leaf, Menu, Sparkles, X, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FarmScene } from "@/components/site/farm-scene";
+import { SCENES, SceneStyles } from "@/components/site/scenes";
+import { SiteFeedback } from "@/components/site/site-feedback";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 import { SITE_NAV, SITE_PATHS, planById, type PlanId } from "@/lib/site";
 
@@ -10,42 +12,17 @@ const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 // ── Pictures ─────────────────────────────────────────────────────────────────
 
-let cached: Record<string, string> | null = null;
-
-/** The AI pictures of the homepage (Verwaltung → Homepage-Bilder), by slot. */
-export function useSiteImages(): Record<string, string> {
-  const [images, setImages] = useState<Record<string, string>>(cached ?? {});
-  useEffect(() => {
-    if (cached) return;
-    let alive = true;
-    fetch(`${BASE}/api/site-images`, { credentials: "same-origin" })
-      .then((r) => (r.ok ? r.json() : {}))
-      .then((data: Record<string, string>) => {
-        cached = data;
-        if (alive) setImages(data);
-      })
-      .catch(() => undefined);
-    return () => {
-      alive = false;
-    };
-  }, []);
-  return images;
-}
-
 /**
- * A realistic picture for a slot, marked as made by AI – or, until there is
- * one, a drawn scene with an icon, so the page never shows a hole.
+ * The drawn picture for a topic (components/site/scenes.tsx) – or, for a
+ * topic without its own scene, the farm with the module's icon.
  */
 export function SitePhoto({ slot, alt, icon: Icon = Leaf, className = "", tone = "from-emerald-200 to-lime-100" }: { slot: string; alt: string; icon?: LucideIcon; className?: string; tone?: string }) {
-  const images = useSiteImages();
-  const [broken, setBroken] = useState(false);
-  const url = images[slot];
-  if (url && !broken) {
+  const Scene = SCENES[slot];
+  if (Scene) {
     return (
-      <figure className={`relative overflow-hidden rounded-3xl shadow-sm ${className}`}>
-        <img src={url} alt={alt} loading="lazy" className="h-full w-full object-cover" onError={() => setBroken(true)} />
-        <figcaption className="absolute bottom-2 right-2 rounded-full bg-black/45 px-2 py-0.5 text-[10px] text-white">KI-generiertes Bild</figcaption>
-      </figure>
+      <div className={`overflow-hidden rounded-3xl shadow-sm ${className}`}>
+        <Scene className="h-full w-full" />
+      </div>
     );
   }
   return (
@@ -154,6 +131,7 @@ export function SiteLayout({ actions, children }: { actions: SiteActions; childr
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground">
+      <SceneStyles />
       <header className="sticky top-0 z-30 border-b bg-background/90 backdrop-blur">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4">
           <Link href={SITE_PATHS.start} className="flex items-center gap-2 font-semibold text-primary">
@@ -200,6 +178,7 @@ export function SiteLayout({ actions, children }: { actions: SiteActions; childr
       </header>
 
       <main>{children}</main>
+      <SiteFeedback />
 
       <footer className="mt-16 border-t bg-muted/40">
         <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 sm:grid-cols-3">
@@ -225,7 +204,7 @@ export function SiteLayout({ actions, children }: { actions: SiteActions; childr
             <a href={legalHref(LEGAL_PATHS.nutzungsbedingungen)} className="block text-muted-foreground hover:text-foreground">Nutzungsbedingungen</a>
           </div>
         </div>
-        <p className="border-t px-4 py-4 text-center text-xs text-muted-foreground">Mit KI erzeugte Fotos sind als „KI-generiertes Bild“ gekennzeichnet. Screenshots zeigen den Demo-Hof der App.</p>
+        <p className="border-t px-4 py-4 text-center text-xs text-muted-foreground">Screenshots zeigen den Demo-Hof der App.</p>
       </footer>
     </div>
   );
@@ -245,17 +224,11 @@ export function Section({ id, eyebrow, title, intro, children, className = "" }:
   );
 }
 
-/** The big top of a page: the drawn farm (or its photo) behind a headline. */
-export function PageHero({ eyebrow, title, text, slot, variant = "day", children }: { eyebrow: string; title: string; text: string; slot: string; variant?: "day" | "evening" | "green"; children?: ReactNode }) {
-  const images = useSiteImages();
-  const photo = images[slot];
+/** The big top of a page: the drawn farm behind a headline. */
+export function PageHero({ eyebrow, title, text, variant = "day", children }: { eyebrow: string; title: string; text: string; variant?: "day" | "evening" | "green"; children?: ReactNode }) {
   return (
     <section className="relative isolate overflow-hidden">
-      {photo ? (
-        <img src={photo} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover" />
-      ) : (
-        <FarmScene variant={variant} className="absolute inset-0 -z-10 h-full w-full" />
-      )}
+      <FarmScene variant={variant} className="absolute inset-0 -z-10 h-full w-full" />
       <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/85 via-background/60 to-background/10 dark:from-background/90 dark:via-background/70" />
       <div className="mx-auto max-w-6xl px-4 pb-40 pt-14 sm:pb-56 sm:pt-20">
         <div className="max-w-2xl space-y-4">
@@ -265,7 +238,6 @@ export function PageHero({ eyebrow, title, text, slot, variant = "day", children
           {children}
         </div>
       </div>
-      {photo && <p className="absolute bottom-2 right-3 rounded-full bg-black/45 px-2 py-0.5 text-[10px] text-white">KI-generiertes Bild</p>}
     </section>
   );
 }

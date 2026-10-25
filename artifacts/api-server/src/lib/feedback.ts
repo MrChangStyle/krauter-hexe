@@ -1,11 +1,12 @@
 /**
  * Feedback (docs/feedback.md): testers send the owner improvement ideas from
  * the speech bubble in the app – typed or dictated. The owner reads them under
- * Verwaltung → Feedback and gets a push for each new one.
+ * Verwaltung → Feedback and gets a push for each new one. Visitors of the
+ * homepage send ideas and problems too, without an account.
  */
 
 import { db, feedbackTable, usersTable } from '@workspace/db';
-import { and, count, desc, eq, gte, isNull } from 'drizzle-orm';
+import { and, count, desc, eq, gte, isNull, lt } from 'drizzle-orm';
 
 import { FarmDataError, text } from './farmAnimals';
 import { logger } from './logger';
@@ -24,6 +25,10 @@ export interface FeedbackItem {
   text: string;
   page: string | null;
   voice: boolean;
+  /** Homepage: "idea" or "problem"; null from the app. */
+  kind: FeedbackKind | null;
+  /** Sent from the homepage without an account. */
+  visitor: boolean;
   author: string;
   email: string | null;
   createdAt: string;
@@ -35,6 +40,20 @@ function pagePath(raw: unknown): string | null {
   return typeof raw === 'string' && /^\/[^\s]{0,199}$/.test(raw) && !raw.startsWith('//') ? raw : null;
 }
 
+export const FEEDBACK_KINDS = ['idea', 'problem'] as const;
+export type FeedbackKind = (typeof FEEDBACK_KINDS)[number];
+
+/** Tell the owners – unless one of them wrote it. */
+async function notifyOwners(title: string, body: string, from: string | null): Promise<void> {
+  const owners = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.isOwner, true));
+  for (const owner of owners) {
+    if (owner.id === from) continue;
+    await sendPushToUser(owner.id, { topic: 'admin', title, body: body.length > 120 ? `${body.slice(0, 117)}…` : body, tag: 'feedback', url: '/verwaltung#feedback' }).catch((err: unknown) =>
+      logger.warn({ err }, 'feedback push failed'),
+    );
+  }
+}
+
 export async function sendFeedback(userId: string, input: FeedbackInput, now = new Date()): Promise<void> {
   const body = text(input.text, 2000, 'Deine Nachricht', true);
   if (body.length < 3) throw new FarmDataError(400, 'Schreib bitte ein paar Worte mehr.');
@@ -44,18 +63,66 @@ export async function sendFeedback(userId: string, input: FeedbackInput, now = n
     .where(and(eq(feedbackTable.userId, userId), gte(feedbackTable.createdAt, new Date(now.getTime() - 24 * 60 * 60 * 1000))));
   if ((sent?.n ?? 0) >= MAX_PER_DAY) throw new FarmDataError(429, 'Danke für so viel Feedback! Für heute ist das Limit erreicht – morgen geht es weiter.');
   await db.insert(feedbackTable).values({ userId, text: body, page: pagePath(input.page), voice: input.voice === true });
+  await notifyOwners('Neues Feedback', body, userId);
+}
 
-  // Tell the owner – unless the owner is testing it themselves.
-  const owners = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.isOwner, true));
-  for (const owner of owners) {
-    if (owner.id === userId) continue;
-    await sendPushToUser(owner.id, { topic: 'admin',
-      title: 'Neues Feedback',
-      body: body.length > 120 ? `${body.slice(0, 117)}…` : body,
-      tag: 'feedback',
-      url: '/verwaltung#feedback',
-    }).catch((err: unknown) => logger.warn({ err }, 'feedback push failed'));
-  }
+// ── From the homepage ────────────────────────────────────────────────────────
+
+export interface SiteFeedbackInput {
+  text: unknown;
+  page?: unknown;
+  kind?: unknown;
+  contact?: unknown;
+  /** Honeypot: a field people never see. Filled in means a bot. */
+  website?: unknown;
+}
+
+/** Per address: so many messages an hour. */
+export const SITE_PER_HOUR = 5;
+/** All visitors together, per day – a ceiling against floods. */
+export const SITE_PER_DAY = 200;
+/** Visitor feedback is kept this long at most (Datenschutzerklärung). */
+export const SITE_KEEP_DAYS = 365;
+
+const recent = new Map<string, number[]>();
+
+/** For tests: forget the per-address counts. */
+export function resetSiteFeedbackLimits(): void {
+  recent.clear();
+}
+
+const EMAIL = /^[^\s@]{1,64}@[^\s@]{1,100}\.[^\s@]{2,20}$/;
+
+/**
+ * Feedback from the homepage bubble: an idea or a problem, optionally with an
+ * address for a reply. Signed in, it goes with the account like in the app.
+ * Returns false when the honeypot caught a bot (nothing is stored, the bot
+ * is not told).
+ */
+export async function sendSiteFeedback(input: SiteFeedbackInput, ip: string, userId: string | null, now = new Date()): Promise<boolean> {
+  if (typeof input.website === 'string' && input.website.trim() !== '') return false;
+  const body = text(input.text, 2000, 'Deine Nachricht', true);
+  if (body.length < 3) throw new FarmDataError(400, 'Schreib bitte ein paar Worte mehr.');
+  const kind: FeedbackKind = input.kind === 'problem' ? 'problem' : 'idea';
+  const contact = text(input.contact, 120, 'Die E-Mail-Adresse');
+  if (contact && !EMAIL.test(contact)) throw new FarmDataError(400, 'Die E-Mail-Adresse sieht nicht richtig aus.');
+
+  const hourAgo = now.getTime() - 60 * 60 * 1000;
+  const mine = (recent.get(ip) ?? []).filter((t) => t > hourAgo);
+  if (mine.length >= SITE_PER_HOUR) throw new FarmDataError(429, 'Danke! Für die nächste Stunde ist das genug – schreib uns gern später wieder.');
+  const [today] = await db
+    .select({ n: count() })
+    .from(feedbackTable)
+    .where(and(isNull(feedbackTable.userId), gte(feedbackTable.createdAt, new Date(now.getTime() - 24 * 60 * 60 * 1000))));
+  if ((today?.n ?? 0) >= SITE_PER_DAY) throw new FarmDataError(429, 'Gerade kommen sehr viele Nachrichten an. Bitte versuch es später noch einmal.');
+  recent.set(ip, [...mine, now.getTime()]);
+  if (recent.size > 5000) recent.delete(recent.keys().next().value!);
+
+  await db.insert(feedbackTable).values({ userId, text: body, page: pagePath(input.page), kind, contact });
+  // Visitor feedback is not kept forever.
+  await db.delete(feedbackTable).where(and(isNull(feedbackTable.userId), lt(feedbackTable.createdAt, new Date(now.getTime() - SITE_KEEP_DAYS * 24 * 60 * 60 * 1000))));
+  await notifyOwners(kind === 'problem' ? 'Problem gemeldet (Homepage)' : 'Idee von der Homepage', body, userId);
+  return true;
 }
 
 export async function listFeedback(limit = 200): Promise<{ items: FeedbackItem[]; unread: number }> {
@@ -65,6 +132,9 @@ export async function listFeedback(limit = 200): Promise<{ items: FeedbackItem[]
       text: feedbackTable.text,
       page: feedbackTable.page,
       voice: feedbackTable.voice,
+      kind: feedbackTable.kind,
+      contact: feedbackTable.contact,
+      userId: feedbackTable.userId,
       createdAt: feedbackTable.createdAt,
       readAt: feedbackTable.readAt,
       username: usersTable.username,
@@ -82,8 +152,10 @@ export async function listFeedback(limit = 200): Promise<{ items: FeedbackItem[]
       text: r.text,
       page: r.page,
       voice: r.voice,
-      author: r.username || r.firstName || r.email?.split('@')[0] || 'Unbekannt',
-      email: r.email ?? null,
+      kind: (FEEDBACK_KINDS as readonly string[]).includes(r.kind ?? '') ? (r.kind as FeedbackKind) : null,
+      visitor: r.userId === null,
+      author: r.userId === null ? 'Besuch der Homepage' : r.username || r.firstName || r.email?.split('@')[0] || 'Unbekannt',
+      email: r.contact ?? r.email ?? null,
       createdAt: r.createdAt.toISOString(),
       readAt: r.readAt?.toISOString() ?? null,
     })),

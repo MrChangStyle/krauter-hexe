@@ -22,8 +22,6 @@ tags:
     description: Demo-Daten – example data on a Demo-Hof, removable with one button
   - name: dashboard
     description: Hof-Dashboard – the widgets an account chose
-  - name: site
-    description: Homepage pictures
   - name: premium
     description: Premium – the paid features (for now the AI of the Grow module)
   - name: feed
@@ -6296,6 +6294,24 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SearchResult"
+  /feedback/site:
+    post:
+      tags: [feedback]
+      operationId: sendSiteFeedback
+      summary: Feedback from the homepage bubble – no account needed (5 per hour and address)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteFeedbackInput"
+      responses:
+        "201":
+          description: Received.
+        "400":
+          description: Invalid input.
+        "429":
+          description: Too many messages.
   /feedback:
     post:
       tags: [feedback]
@@ -6449,83 +6465,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Premium"
-  /site-images:
-    get:
-      tags: [site]
-      operationId: listSiteImages
-      summary: Homepage pictures by slot (public)
-      responses:
-        "200":
-          description: Slot → picture URL; slots without a picture are missing.
-          content:
-            application/json:
-              schema:
-                type: object
-                additionalProperties:
-                  type: string
-  /admin/site-images:
-    get:
-      tags: [site]
-      operationId: listSiteImageSlots
-      summary: Owner – every homepage picture slot with prompt and picture
-      responses:
-        "200":
-          description: The slots.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SiteImageSlot"
-  /admin/site-images/{slot}:
-    post:
-      tags: [site]
-      operationId: generateSiteImage
-      summary: Owner – let the image AI make a slot's picture (replaces the old one)
-      parameters:
-        - name: slot
-          in: path
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: false
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/GenerateSiteImageInput"
-      responses:
-        "200":
-          description: The slots.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SiteImageSlot"
-        "404":
-          description: Unknown slot.
-        "502":
-          description: No picture from the image AI.
-    delete:
-      tags: [site]
-      operationId: deleteSiteImage
-      summary: Owner – remove a slot's picture (the drawing shows again)
-      parameters:
-        - name: slot
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: The slots.
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/SiteImageSlot"
   /admin/premium:
     get:
       tags: [premium]
@@ -8836,31 +8775,6 @@ components:
           type: array
           items:
             type: string
-    SiteImageSlot:
-      type: object
-      required: [slot, title, aspect, prompt, url, model, createdAt]
-      properties:
-        slot:
-          type: string
-        title:
-          type: string
-        aspect:
-          type: string
-        prompt:
-          type: string
-        url:
-          type: [string, 'null']
-        model:
-          type: [string, 'null']
-        createdAt:
-          type: [string, 'null']
-    GenerateSiteImageInput:
-      type: object
-      properties:
-        extra:
-          type: [string, 'null']
-          maxLength: 300
-          description: Added to the slot's prompt, e.g. "im Herbst".
     HarvestReport:
       type: object
       required: [season, seasons, kg, kitchenKg, fodderKg, value, previous, months, years, crops, beds, best]
@@ -9206,6 +9120,28 @@ components:
           maxLength: 200
         voice:
           type: boolean
+    SiteFeedbackInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 2000
+        page:
+          type: [string, 'null']
+          maxLength: 200
+        kind:
+          type: string
+          enum: [idea, problem]
+        contact:
+          type: [string, 'null']
+          maxLength: 120
+          description: An e-mail address for a reply, optional.
+        website:
+          type: string
+          maxLength: 200
+          description: Honeypot – left empty by people.
     FeedbackMarkInput:
       type: object
       required: [read]
@@ -9214,7 +9150,7 @@ components:
           type: boolean
     FeedbackItem:
       type: object
-      required: [id, text, page, voice, author, email, createdAt, readAt]
+      required: [id, text, page, voice, kind, visitor, author, email, createdAt, readAt]
       properties:
         id:
           type: integer
@@ -9224,6 +9160,13 @@ components:
           type: [string, 'null']
         voice:
           type: boolean
+        kind:
+          type: [string, 'null']
+          enum: [idea, problem, null]
+          description: Homepage – idea or problem; null from the app.
+        visitor:
+          type: boolean
+          description: Sent from the homepage without an account.
         author:
           type: string
         email:

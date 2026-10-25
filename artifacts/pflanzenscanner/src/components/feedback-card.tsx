@@ -41,6 +41,9 @@ export function FeedbackCard() {
                 {f.email && <a href={`mailto:${f.email}`} className="underline underline-offset-2">{f.email}</a>}
                 <span>{when(f.createdAt)}</span>
                 {f.page && <span className="rounded bg-muted px-1.5 font-mono">{f.page}</span>}
+                {f.kind === "problem" && <span className="rounded bg-red-100 px-1.5 font-medium text-red-800 dark:bg-red-950/50 dark:text-red-300">Problem</span>}
+                {f.kind === "idea" && <span className="rounded bg-emerald-100 px-1.5 font-medium text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">Idee</span>}
+                {f.visitor && <span className="rounded bg-sky-100 px-1.5 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300">ohne Konto</span>}
                 {f.voice && (
                   <span className="inline-flex items-center gap-0.5" title="Per Spracheingabe – kann Hörfehler enthalten">
                     <Mic className="h-3 w-3" /> gesprochen

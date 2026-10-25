@@ -38,8 +38,9 @@ describe.skipIf(!enabled)("Feedback (real database)", () => {
     const app = express();
     app.use(express.json());
     app.use((req: Request, _res: Response, next: NextFunction) => {
-      (req as unknown as { user: unknown }).user = { id: as, approved: true, isOwner: as === "owner" };
-      (req as unknown as { isAuthenticated: () => boolean }).isAuthenticated = () => true;
+      // "besuch": a visitor of the homepage, not signed in.
+      if (as !== "besuch") (req as unknown as { user: unknown }).user = { id: as, approved: true, isOwner: as === "owner" };
+      (req as unknown as { isAuthenticated: () => boolean }).isAuthenticated = () => as !== "besuch";
       next();
     });
     app.use((await import("../routes/feedback")).default);
@@ -55,6 +56,7 @@ describe.skipIf(!enabled)("Feedback (real database)", () => {
     await q(`INSERT INTO users (id, email, username, approved, is_owner) VALUES ('owner', 'o@x.de', 'chef', true, true), ('anna', 'anna@x.de', 'anna', true, false)`);
     as = "anna";
     pushes.length = 0;
+    (await import("./feedback")).resetSiteFeedbackLimits();
   });
 
   const api = async (method: string, path: string, body?: unknown) => {
@@ -66,6 +68,40 @@ describe.skipIf(!enabled)("Feedback (real database)", () => {
     const text = await res.text();
     return { status: res.status, data: text ? (JSON.parse(text) as any) : null };
   };
+
+  it("takes ideas and problems from homepage visitors, without an account", async () => {
+    as = "besuch";
+    expect((await api("POST", "/feedback/site", { text: "Die Preise sind mir nicht klar", page: "/preise", kind: "problem", contact: "gast@example.org", website: "" })).status).toBe(201);
+    expect(pushes).toEqual([{ userId: "owner", title: "Problem gemeldet (Homepage)", url: "/verwaltung#feedback" }]);
+    expect((await api("POST", "/feedback/site", { text: "Mehr Bilder bitte" })).status).toBe(201);
+    expect(pushes.at(-1)!.title).toBe("Idee von der Homepage");
+    // Checks: the address, too short, the honeypot (accepted, not stored).
+    expect((await api("POST", "/feedback/site", { text: "Hallo Team", contact: "keine-adresse" })).data.error).toMatch(/E-Mail-Adresse/);
+    expect((await api("POST", "/feedback/site", { text: "Hi" })).status).toBe(400);
+    expect((await api("POST", "/feedback/site", { text: "Billig kaufen hier", website: "https://spam.example" })).status).toBe(201);
+    // Not readable without being the owner.
+    expect((await api("GET", "/feedback")).status).toBe(401);
+
+    as = "owner";
+    const items = (await api("GET", "/feedback")).data.items;
+    expect(items).toHaveLength(2);
+    expect(items[1]).toMatchObject({ text: "Die Preise sind mir nicht klar", page: "/preise", kind: "problem", visitor: true, author: "Besuch der Homepage", email: "gast@example.org" });
+    expect(items[0]).toMatchObject({ kind: "idea", visitor: true, email: null });
+
+    // Signed in on the homepage, it goes with the account.
+    as = "anna";
+    await api("POST", "/feedback/site", { text: "Schöne Seite", kind: "idea" });
+    as = "owner";
+    expect((await api("GET", "/feedback")).data.items[0]).toMatchObject({ visitor: false, author: "anna", email: "anna@x.de", kind: "idea" });
+  });
+
+  it("limits a visitor to five messages an hour", async () => {
+    as = "besuch";
+    for (let i = 0; i < 5; i++) expect((await api("POST", "/feedback/site", { text: `Idee Nummer ${i}` })).status).toBe(201);
+    const r = await api("POST", "/feedback/site", { text: "Noch eine Idee" });
+    expect(r.status).toBe(429);
+    expect(r.data.error).toMatch(/nächste Stunde/);
+  });
 
   it("delivers ideas to the owner, who reads, marks and deletes them", async () => {
     expect((await api("POST", "/feedback", { text: "  Bitte eine Dunkel-Ansicht ", page: "/farm/futter", voice: true })).status).toBe(201);

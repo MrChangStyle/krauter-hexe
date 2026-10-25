@@ -1,6 +1,6 @@
 # Feedback an das Team
 
-Solange die App im Test ist, können alle angemeldeten Nutzer dem Betreiber Verbesserungsvorschläge schicken.
+Alle angemeldeten Nutzer können dem Betreiber Verbesserungsvorschläge schicken – in der App, und auf der Homepage auch Besucher ohne Konto.
 
 ## In der App
 
@@ -10,15 +10,27 @@ Solange die App im Test ist, können alle angemeldeten Nutzer dem Betreiber Verb
   - Wo der Browser keine Spracherkennung hat, fehlt der Knopf einfach.
 - Mitgeschickt wird die Seite, auf der man gerade ist, zum Beispiel `/farm/futter`.
 
+## Auf der Homepage
+
+- Unten rechts sitzt eine grüne Sprechblase **„Feedback“** (`components/site/site-feedback.tsx`), auf allen Seiten der Homepage.
+- Man wählt **„Idee / Vorschlag“** oder **„Problem melden“**, schreibt die Nachricht und gibt auf Wunsch eine E-Mail-Adresse für eine Antwort an. Ein Konto braucht es nicht.
+- Mitgeschickt wird die Seite (z. B. `/preise`). Wer angemeldet ist, schickt das Feedback mit seinem Konto.
+- Schutz vor Missbrauch:
+  - ein unsichtbares Feld (Honeypot) – ist es ausgefüllt, wird nichts gespeichert, der Absender erfährt das nicht,
+  - höchstens 5 Nachrichten je Stunde und Adresse,
+  - höchstens 200 am Tag von Besuchern insgesamt.
+- Feedback ohne Konto wird spätestens nach einem Jahr gelöscht (steht in der Datenschutzerklärung).
+
 ## Beim Betreiber
 
 - Unter **Verwaltung → Feedback** (`components/feedback-card.tsx`) steht alles, das Neueste oben. Zu jedem Eintrag gehören Absender mit E-Mail, Zeit, Seite und „gesprochen“ bei Diktaten. Neue Einträge sind hervorgehoben.
+- Feedback von der Homepage trägt „Idee“ oder „Problem“, ohne Konto zusätzlich „ohne Konto“ und als Absender „Besuch der Homepage“ mit der angegebenen E-Mail-Adresse.
 - Jeder Eintrag lässt sich als gelesen oder ungelesen markieren oder löschen.
 - Zu jedem neuen Feedback bekommt der Betreiber eine **Push-Nachricht**, außer er schreibt sich selbst.
 
 ## Technik
 
-- Tabelle `feedback`, gehört zum Konto (`PERSONAL_TABLES`).
-- Routen: `POST /api/feedback` für alle Freigeschalteten, höchstens 20 pro Tag und 3 bis 2000 Zeichen. `GET`, `PUT /api/feedback/:id` (gelesen) und `DELETE` nur für den Betreiber.
+- Tabelle `feedback`, gehört zum Konto (`PERSONAL_TABLES`). Ohne Konto ist `user_id` leer; dazu `kind` (idea/problem) und `contact` (E-Mail). Für bestehende Datenbanken ergänzt `schemaUpgrade.ts` die Spalten.
+- Routen: `POST /api/feedback` für alle Freigeschalteten, höchstens 20 pro Tag und 3 bis 2000 Zeichen. `POST /api/feedback/site` ohne Anmeldung (Homepage, `sendSiteFeedback`). `GET`, `PUT /api/feedback/:id` (gelesen) und `DELETE` nur für den Betreiber.
 - Als Seite wird nur ein Pfad der App gespeichert, nie eine fremde Adresse.
 - Test: `feedback.integration.test.ts`.

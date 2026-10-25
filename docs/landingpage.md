@@ -25,21 +25,36 @@ Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit
 
 ### Bilder
 
-- **Illustration:** Ohne Fotos zeigt die Seite einen gezeichneten Hof (`components/site/farm-scene.tsx`: Scheune, Feld, Bienenstock, Hühner) und je Platz eine farbige Kachel mit Symbol.
-- **Screenshots:** echte Bilder der App vom Demo-Hof in `public/site/screens/*.jpg` (390 px breit, JPEG). Neu erzeugen: Demo-Hof laden und die Seiten in Handybreite fotografieren (siehe `replit.md`).
-- **Realistische Bilder per KI:** Verwaltung → „Homepage-Bilder“.
-  - Der Betreiber erzeugt je Platz ein Bild, optional mit Zusatz („im Herbst“).
-  - Plätze: Start (Hof), Pflanzen, Beet, Kräuter, Vorrat, Tiere, Ziegen, Weide, Bienen, Gemeinsam, Preise.
-  - Der Server fragt `gemini-2.5-flash-image`, sonst `imagen-4.0-generate-001` (`lib/siteImages.ts`). Er speichert das Bild wie andere Fotos (Cloudinary) und ersetzt das alte (Tabelle `site_images`).
-  - `GET /api/site-images` liefert sie öffentlich; die Admin-Routen unter `/api/admin/site-images` sind nur für den Betreiber.
-  - Jedes KI-Bild trägt auf der Seite „KI-generiertes Bild“; die Fußzeile sagt das auch.
-  - Bildmodelle brauchen bei Google meist ein bezahltes Kontingent. Liefert keins ein Bild, sagt die Verwaltung das.
-- **Tests:** `site.test.ts` (Seiten, Module, Pakete, Finder, Übernahme) und `siteImages.integration.test.ts` (öffentliche Liste, Erzeugen mit Ersatzmodell, Ersetzen, Löschen, nur Betreiber, kein Bild → 502).
+- **Gezeichnet, im Stil der App:** Hinter jeder Seite steht der gezeichnete Hof (`components/site/farm-scene.tsx`: Scheune, Silo, Feld, Bienenstock, Hühner).
+- **Szenen je Thema** (`components/site/scenes.tsx`, `SCENES`):
+
+  | Szene | Wo |
+  |---|---|
+  | Pflanzen am Fenster mit scannendem Handy | Meine Pflanzen |
+  | Hochbeet | Beet-Architekt, Start |
+  | Kräuterbündel und Mörser | Kräuter-Hexe |
+  | Vorratsregal | Vorratskammer |
+  | Marienkäfer unter der Lupe | Schädlinge |
+  | Hühner am Stall | Stall-Aufgaben, Start |
+  | Ziegen an der Heuraufe | Futterplaner |
+  | Glucke mit Küken | Zucht |
+  | Schafe auf der Weide | Weide |
+  | Bienenstöcke auf der Blumenwiese | Bienen |
+  | Fuchs nachts am Zaun, Kamera leuchtet | Wildtier-Radar |
+  | Familie auf dem Hof | Team, Gemeinsam |
+  | Erntekorb | Hilfe-Block |
+
+  Module ohne eigene Szene zeigen einen Screenshot oder den Hof mit ihrem Symbol.
+- **Bewegung:** Wolken ziehen, Bienen summen, Hühner, Ziegen und Schafe picken, Blumen wiegen sich (`SCENE_STYLES`). Bei „Bewegung reduzieren“ im System steht alles still.
+- **Screenshots:** echte Bilder der App vom Demo-Hof in `public/site/screens/*.jpg` (390 px breit, JPEG).
+  - Neu erzeugen: Demo-Hof laden und die Seiten in Handybreite fotografieren.
+  - Die Modul-Einführungen dabei zuklappen (`lf-intro-closed-<id>`).
+- **Tests:** `site.test.ts` (Seiten, Module, Pakete, Finder, Übernahme).
 
 ## Offen
 
 - Die Preise und die Zuordnung der KI-Funktionen zu Lite/Premium (`docs/premium.md`).
-- Die Bilder einmal in der Verwaltung erzeugen. Optional echte Fotos vom eigenen Hof; dafür reicht ein Bild je Platz.
+- Weitere Szenen für die Module, die noch einen Screenshot oder ihr Symbol zeigen (Pflegeplan, Pflanzendoc, Lexikon, Grow, Arzneimittel, Pflichten, Ertrag, Übergabe, Export).
 - Kennzeichnung „Lite/Premium“ in der App an das Paket-Konzept angleichen.
 
 ## Vorschau-Schutz (Passwort vor der ganzen Seite)

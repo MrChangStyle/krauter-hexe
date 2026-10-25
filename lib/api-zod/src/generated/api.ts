@@ -9833,6 +9833,30 @@ export const SearchResponse = zod.object({
 
 
 /**
+ * @summary Feedback from the homepage bubble – no account needed (5 per hour and address)
+ */
+export const sendSiteFeedbackBodyTextMax = 2000;
+
+export const sendSiteFeedbackBodyPageMax = 200;
+
+export const sendSiteFeedbackBodyContactMax = 120;
+
+export const sendSiteFeedbackBodyWebsiteMax = 200;
+
+
+
+export const SendSiteFeedbackBody = zod.object({
+  "text": zod.string().min(1).max(sendSiteFeedbackBodyTextMax),
+  "page": zod.string().max(sendSiteFeedbackBodyPageMax).nullish(),
+  "kind": zod.enum(['idea', 'problem']).optional(),
+  "contact": zod.string().max(sendSiteFeedbackBodyContactMax).nullish().describe('An e-mail address for a reply, optional.'),
+  "website": zod.string().max(sendSiteFeedbackBodyWebsiteMax).optional().describe('Honeypot – left empty by people.')
+})
+
+export const SendSiteFeedbackResponse = zod.void()
+
+
+/**
  * @summary Send the owner an improvement idea (typed or dictated)
  */
 export const sendFeedbackBodyTextMax = 2000;
@@ -9859,6 +9883,8 @@ export const ListFeedbackResponse = zod.object({
   "text": zod.string(),
   "page": zod.string().nullable(),
   "voice": zod.boolean(),
+  "kind": zod.union([zod.literal('idea'),zod.literal('problem'),zod.literal(null)]).nullable().describe('Homepage – idea or problem; null from the app.'),
+  "visitor": zod.boolean().describe('Sent from the homepage without an account.'),
   "author": zod.string(),
   "email": zod.string().nullable(),
   "createdAt": zod.string(),
@@ -9885,6 +9911,8 @@ export const MarkFeedbackResponse = zod.object({
   "text": zod.string(),
   "page": zod.string().nullable(),
   "voice": zod.boolean(),
+  "kind": zod.union([zod.literal('idea'),zod.literal('problem'),zod.literal(null)]).nullable().describe('Homepage – idea or problem; null from the app.'),
+  "visitor": zod.boolean().describe('Sent from the homepage without an account.'),
   "author": zod.string(),
   "email": zod.string().nullable(),
   "createdAt": zod.string(),
@@ -9907,6 +9935,8 @@ export const DeleteFeedbackResponse = zod.object({
   "text": zod.string(),
   "page": zod.string().nullable(),
   "voice": zod.boolean(),
+  "kind": zod.union([zod.literal('idea'),zod.literal('problem'),zod.literal(null)]).nullable().describe('Homepage – idea or problem; null from the app.'),
+  "visitor": zod.boolean().describe('Sent from the homepage without an account.'),
   "author": zod.string(),
   "email": zod.string().nullable(),
   "createdAt": zod.string(),
@@ -9983,73 +10013,6 @@ export const GetPremiumResponse = zod.object({
   "until": zod.coerce.date().nullable(),
   "source": zod.string().nullable()
 })
-
-
-/**
- * @summary Homepage pictures by slot (public)
- */
-export const ListSiteImagesResponse = zod.record(zod.string(), zod.string())
-
-
-/**
- * @summary Owner – every homepage picture slot with prompt and picture
- */
-export const ListSiteImageSlotsResponseItem = zod.object({
-  "slot": zod.string(),
-  "title": zod.string(),
-  "aspect": zod.string(),
-  "prompt": zod.string(),
-  "url": zod.string().nullable(),
-  "model": zod.string().nullable(),
-  "createdAt": zod.string().nullable()
-})
-export const ListSiteImageSlotsResponse = zod.array(ListSiteImageSlotsResponseItem)
-
-
-/**
- * @summary Owner – let the image AI make a slot's picture (replaces the old one)
- */
-export const GenerateSiteImageParams = zod.object({
-  "slot": zod.coerce.string()
-})
-
-export const generateSiteImageBodyExtraMax = 300;
-
-
-
-export const GenerateSiteImageBody = zod.object({
-  "extra": zod.string().max(generateSiteImageBodyExtraMax).nullish().describe('Added to the slot\'s prompt, e.g. \"im Herbst\".')
-})
-
-export const GenerateSiteImageResponseItem = zod.object({
-  "slot": zod.string(),
-  "title": zod.string(),
-  "aspect": zod.string(),
-  "prompt": zod.string(),
-  "url": zod.string().nullable(),
-  "model": zod.string().nullable(),
-  "createdAt": zod.string().nullable()
-})
-export const GenerateSiteImageResponse = zod.array(GenerateSiteImageResponseItem)
-
-
-/**
- * @summary Owner – remove a slot's picture (the drawing shows again)
- */
-export const DeleteSiteImageParams = zod.object({
-  "slot": zod.coerce.string()
-})
-
-export const DeleteSiteImageResponseItem = zod.object({
-  "slot": zod.string(),
-  "title": zod.string(),
-  "aspect": zod.string(),
-  "prompt": zod.string(),
-  "url": zod.string().nullable(),
-  "model": zod.string().nullable(),
-  "createdAt": zod.string().nullable()
-})
-export const DeleteSiteImageResponse = zod.array(DeleteSiteImageResponseItem)
 
 
 /**

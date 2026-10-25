@@ -5779,6 +5779,7 @@ export const GetFarmDutiesParams = zod.object({
 })
 
 export const GetFarmDutiesResponse = zod.object({
+  "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
   "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
@@ -5822,6 +5823,7 @@ export const SetFarmDutySettingsBody = zod.object({
 })
 
 export const SetFarmDutySettingsResponse = zod.object({
+  "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
   "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),
@@ -5861,6 +5863,7 @@ export const CheckFarmDutyBody = zod.object({
 })
 
 export const CheckFarmDutyResponse = zod.object({
+  "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
   "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])),

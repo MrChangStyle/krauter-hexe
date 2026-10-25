@@ -10,8 +10,8 @@
  * admins in January until the report is ticked off.
  */
 
-import { db, farmAnimalsTable, farmDutyChecksTable, farmMembershipsTable, farmPushLogTable, farmsTable, herdsTable, type FarmSpecies } from '@workspace/db';
-import { and, eq, isNull, lt } from 'drizzle-orm';
+import { beeColoniesTable, db, farmAnimalsTable, farmDutyChecksTable, farmMembershipsTable, farmPushLogTable, farmsTable, herdsTable, type FarmSpecies } from '@workspace/db';
+import { and, eq, isNull, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { addDays } from './feedSeason';
@@ -29,6 +29,8 @@ export interface DutyDef {
   text: string;
   /** Where it comes from (law or office), shown small. */
   source: string;
+  /** For beekeepers (Bienen module) instead of animal species. */
+  bees?: true;
 }
 
 /** Species the veterinary office registers (ViehVerkV § 26) and the Tierseuchenkassen insure. */
@@ -165,6 +167,43 @@ export const DUTIES: DutyDef[] = [
     text: 'Viele Städte und Gemeinden schreiben für Katzen mit Freigang Kastration, Chip und Registrierung vor. Fragt bei eurer Gemeinde nach.',
     source: 'Katzenschutzverordnung der Gemeinde',
   },
+  // Bienen (docs/bienen.md): for farms with active colonies.
+  {
+    key: 'bee_registration',
+    kind: 'once',
+    species: [],
+    bees: true,
+    title: 'Bienenhaltung beim Veterinäramt anzeigen',
+    text: 'Wer Bienenvölker hält – auch nur eines –, zeigt das spätestens bei Beginn der Haltung dem Veterinäramt an, mit Zahl der Völker und Standort. Ein neuer Stand oder deutlich mehr Völker werden ebenfalls angezeigt.',
+    source: 'Bienenseuchen-Verordnung § 1a',
+  },
+  {
+    key: 'bee_tsk',
+    kind: 'once',
+    species: [],
+    bees: true,
+    title: 'Bienenvölker bei der Tierseuchenkasse melden',
+    text: 'In den meisten Bundesländern werden Bienenvölker der Tierseuchenkasse gemeldet; meist ist das mit einem kleinen Beitrag verbunden und sichert eine Entschädigung im Seuchenfall. Fragt bei der Kasse eures Bundeslandes nach.',
+    source: 'Tiergesundheitsgesetz, Landesrecht',
+  },
+  {
+    key: 'bee_varroa',
+    kind: 'rule',
+    species: [],
+    bees: true,
+    title: 'Varroa jedes Jahr behandeln',
+    text: 'Bienenvölker müssen jedes Jahr gegen die Varroamilbe behandelt werden – nur mit zugelassenen Mitteln. Jede Behandlung gehört ins Bestandsbuch (Mittel, Charge, Menge, Datum); die Stockkarte in der App hält das fest.',
+    source: 'Bienenseuchen-Verordnung § 15, Tierarzneimittelgesetz',
+  },
+  {
+    key: 'bee_moving',
+    kind: 'rule',
+    species: [],
+    bees: true,
+    title: 'Völker umsetzen nur mit Gesundheitszeugnis',
+    text: 'Wer Völker an einen anderen Ort bringt (Wanderung, Verkauf, Umzug in einen anderen Kreis), braucht eine amtliche Bescheinigung, dass sie frei von Amerikanischer Faulbrut sind – nicht älter als neun Monate.',
+    source: 'Bienenseuchen-Verordnung § 5',
+  },
 ];
 
 /** Stock reports are due by this day of January (day of month). */
@@ -196,6 +235,8 @@ export interface FarmDuties {
   housingOrderUntil: string | null;
   /** Species on the farm (animals and groups). */
   species: FarmSpecies[];
+  /** Active bee colonies on the farm. */
+  bees: boolean;
   duties: DutyItem[];
 }
 
@@ -265,8 +306,8 @@ async function checksOf(farmId: number): Promise<Map<string, string>> {
   return new Map(rows.map((r) => [`${r.key}:${r.period}`, r.doneOn]));
 }
 
-export function dutiesFor(species: FarmSpecies[], animals: AnimalSpan[], checks: Map<string, string>, today: string): DutyItem[] {
-  return DUTIES.filter((d) => d.species.some((s) => species.includes(s))).map((def) => {
+export function dutiesFor(species: FarmSpecies[], animals: AnimalSpan[], checks: Map<string, string>, today: string, bees = false): DutyItem[] {
+  return DUTIES.filter((d) => (d.bees ? bees : d.species.some((s) => species.includes(s)))).map((def) => {
     const base = { key: def.key, kind: def.kind, title: def.title, text: def.text, source: def.source, species: def.species.filter((s) => species.includes(s)) };
     if (def.kind === 'yearly') return { ...base, ...yearlyItem(def, animals, checks, today) };
     if (def.kind === 'once') {
@@ -283,11 +324,16 @@ export async function farmDuties(farmId: number, today = berlinDay()): Promise<F
     .from(farmsTable)
     .where(eq(farmsTable.id, farmId));
   if (!farm) throw notFound();
-  const [animals, herds, checks] = await Promise.all([
+  const [animals, herds, checks, [colonies]] = await Promise.all([
     animalSpans(farmId),
     db.select({ species: herdsTable.species }).from(herdsTable).where(eq(herdsTable.farmId, farmId)),
     checksOf(farmId),
+    db
+      .select({ n: sql<number>`count(*)::int` })
+      .from(beeColoniesTable)
+      .where(and(eq(beeColoniesTable.farmId, farmId), eq(beeColoniesTable.status, 'active'))),
   ]);
+  const bees = (colonies?.n ?? 0) > 0;
   const present = new Set<FarmSpecies>([...animals.filter((a) => a.until === null).map((a) => a.species), ...herds.map((h) => h.species)]);
   const species = [...present];
   return {
@@ -295,7 +341,8 @@ export async function farmDuties(farmId: number, today = berlinDay()): Promise<F
     // A housing order that has ended is no longer shown.
     housingOrderUntil: farm.housingOrderUntil && farm.housingOrderUntil >= today ? farm.housingOrderUntil : null,
     species,
-    duties: dutiesFor(species, animals, checks, today),
+    bees,
+    duties: dutiesFor(species, animals, checks, today, bees),
   };
 }
 

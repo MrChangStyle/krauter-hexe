@@ -21,7 +21,7 @@ describe("Pflichten – catalog", () => {
     for (const d of DUTIES) {
       expect(d.text.length, d.key).toBeGreaterThan(40);
       expect(d.source, d.key).not.toBe("");
-      expect(d.species.length, d.key).toBeGreaterThan(0);
+      expect(d.species.length > 0 || d.bees === true, d.key).toBe(true);
     }
   });
 
@@ -34,6 +34,14 @@ describe("Pflichten – catalog", () => {
     expect(keys(["goat"])).toContain("hit_report");
     // Only the farm's own species are named on a duty.
     expect(dutiesFor(["goat", "dog"], [], new Map(), "2026-10-19").find((d) => d.key === "registration")!.species).toEqual(["goat"]);
+  });
+
+  it("adds the bee duties only for farms with colonies", () => {
+    const bees = ["bee_registration", "bee_tsk", "bee_varroa", "bee_moving"];
+    expect(dutiesFor([], [], new Map(), "2026-10-19", true).map((d) => d.key)).toEqual(bees);
+    expect(dutiesFor(["goat"], [], new Map(), "2026-10-19").map((d) => d.key)).not.toContain("bee_varroa");
+    expect(dutiesFor(["goat"], [], new Map(), "2026-10-19", true).map((d) => d.key)).toEqual(expect.arrayContaining(["hit_report", ...bees]));
+    expect(dutiesFor([], [], new Map(), "2026-10-19", true).find((d) => d.key === "bee_registration")).toMatchObject({ status: "open", species: [] });
   });
 });
 

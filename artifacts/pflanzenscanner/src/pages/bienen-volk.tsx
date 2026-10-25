@@ -24,6 +24,7 @@ import {
   type FarmSummary,
   type VarroaMethod,
 } from "@workspace/api-client-react";
+import { DictateButton } from "@/components/dictate-button";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -170,9 +171,13 @@ function InspectionForm({ farm, colonyId }: { farm: FarmSummary; colonyId: numbe
           <Input id="in-mites" inputMode="decimal" value={mites} onChange={(e) => setMites(e.target.value)} placeholder="Windel" />
         </Field>
       </div>
-      <Field id="in-notes" label="Notiz">
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="in-notes">Notiz</Label>
+          <DictateButton value={notes} onChange={setNotes} max={1000} />
+        </div>
         <Input id="in-notes" maxLength={1000} value={notes} onChange={(e) => setNotes(e.target.value)} />
-      </Field>
+      </div>
       <Button type="submit" size="sm" disabled={add.isPending}>
         Durchsicht eintragen
       </Button>

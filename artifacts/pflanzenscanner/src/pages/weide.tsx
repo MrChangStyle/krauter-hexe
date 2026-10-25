@@ -17,6 +17,7 @@ import {
   type PastureKind,
   type PastureOverview,
 } from "@workspace/api-client-react";
+import { DictateButton } from "@/components/dictate-button";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -126,9 +127,13 @@ function PastureDialog({ farm, pasture, onClose }: { farm: FarmSummary; pasture:
             </Field>
           </div>
           <p className="text-xs text-muted-foreground">Üblich sind 4–6 Wochen Ruhe, damit das Gras nachwächst und Wurmlarven absterben, und kurze Weidezeiten von 1–2 Wochen.</p>
-          <Field id="pw-notes" label="Notiz">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="pw-notes">Notiz</Label>
+              <DictateButton value={form.notes} onChange={(t) => set("notes", t)} max={500} />
+            </div>
             <Input id="pw-notes" maxLength={500} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
-          </Field>
+          </div>
           {pasture && (
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={form.archived} onChange={(e) => set("archived", e.target.checked)} className="h-4 w-4" />

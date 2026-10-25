@@ -48,8 +48,8 @@ Für den Bau festgelegt:
    über 7 Tage (Geflügel, Schwein), 10 (Kaninchen, Meerschweinchen) oder 14 (Wiederkäuer, Pferd);
    der Saisonwechsel beginnt so, dass er am 1. April bzw. 1. November fertig ist. Feste Hinweise
    zur Jahreszeit (Frost, Wasser, Grünfutter, Weide und Hufrehe). „Erinnern“ legt tägliche
-   Stall-Aufgaben „Füttern“ je Fütterungszeit an. Kälte wird über die Jahreszeit berücksichtigt;
-   echte Frostwarnungen aus der Wettervorhersage kommen mit dem Wetter-Ausbau.
+   Stall-Aufgaben „Füttern“ je Fütterungszeit an. Kälte wird über die Jahreszeit berücksichtigt
+   und zusätzlich über die Vorhersage (siehe „Wetter im Futterplaner“).
 4. **Vorrat und Kosten (Premium) (UMGESETZT):** Sackgröße und Kaufdatum → wann nachkaufen;
    Wintervorrat-Rechner (Heu und Lagerfutter bis zum Frühjahr, an den Garten-Assistenten); Kosten
    pro Tier und Monat. Umgesetzt als Seite „Vorrat & Kosten“: Bestand je Futtermittel (gezählt
@@ -75,3 +75,17 @@ Für den Bau festgelegt:
 
 - Meerschweinchen, Erhaltung: Rohfaser-Richtwert 15–28 % statt 12–20 % – Heu zur freien Aufnahme
   ist richtig und soll nicht als „zu viel“ erscheinen (wie beim Kaninchen, auch Blinddarmverdauer).
+
+## Wetter im Futterplaner (`lib/feedWeather.ts`)
+
+Hat der Hof einen Standort, schaut die gerade geltende Ration in die Vorhersage der nächsten drei Tage. Fällt die tiefste Temperatur unter die untere kritische Temperatur der Art, braucht das Tier mehr Energie: etwa **1 % je Grad darunter**, höchstens 25 %. Ab 25 % hilft vor allem ein trockener, zugfreier Stall mit dicker Einstreu.
+
+| Tierart | ab (Richtwert, mit Winterfell/-gefieder und trockenem Unterstand) | mehr von |
+|---|---|---|
+| Pferd, Rind, Schaf | −10 °C | Heu (Raufutter) |
+| Ziege, Kaninchen | 0 °C | Heu |
+| Schwein | 5 °C | Kraftfutter |
+| Geflügel | 5 °C | Körner und Legefutter |
+
+Meerschweinchen gehören frostfrei untergebracht; Katzen und Hunde haben keine Rationsrechnung. Die App zeigt im Futterplaner den Tag, das Mehr je Futtermittel und Tier sowie für die ganze Gruppe (`cold` an der Ration). Ohne Standort oder ohne Antwort des Wetterdienstes fehlt der Hinweis. Die Werte sind Richtwerte und wie die übrigen vor dem Start von einer Fachperson zu prüfen.
+

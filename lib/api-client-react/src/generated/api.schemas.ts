@@ -514,7 +514,9 @@ export type WeatherWarningKind = typeof WeatherWarningKind[keyof typeof WeatherW
 export const WeatherWarningKind = {
   hardFrost: 'hardFrost',
   frost: 'frost',
+  frostSpell: 'frostSpell',
   heat: 'heat',
+  heatSpell: 'heatSpell',
   storm: 'storm',
   rain: 'rain',
   dry: 'dry',
@@ -2778,6 +2780,20 @@ export interface FeedTransition {
   items: FeedTransitionItemsItem[];
 }
 
+export type ColdBoostExtraItem = {
+  name: string;
+  grams: number;
+};
+
+export interface ColdBoost {
+  date: string;
+  minTemp: number;
+  percent: number;
+  /** Per animal and day. */
+  extra: ColdBoostExtraItem[];
+  text: string;
+}
+
 export type RationEvaluationTargetKind = typeof RationEvaluationTargetKind[keyof typeof RationEvaluationTargetKind];
 
 
@@ -2843,6 +2859,8 @@ export interface RationEvaluation {
   warnings: FeedWarning[];
   transition: null | FeedTransition;
   hints: string[];
+  /** More feed for the cold of the next three days (forecast at the farm); only on the ration in effect. */
+  cold: null | ColdBoost;
   group: RationEvaluationGroup;
   updatedAt: string;
 }

@@ -6755,7 +6755,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [hardFrost, frost, heat, storm, rain, dry]
+          enum: [hardFrost, frost, frostSpell, heat, heatSpell, storm, rain, dry]
         date:
           type: string
         text:
@@ -9368,9 +9368,32 @@ components:
                 type: string
               grams:
                 type: number
+    ColdBoost:
+      type: object
+      required: [date, minTemp, percent, extra, text]
+      properties:
+        date:
+          type: string
+        minTemp:
+          type: number
+        percent:
+          type: integer
+        extra:
+          type: array
+          description: Per animal and day.
+          items:
+            type: object
+            required: [name, grams]
+            properties:
+              name:
+                type: string
+              grams:
+                type: integer
+        text:
+          type: string
     RationEvaluation:
       type: object
-      required: [id, target, season, active, stage, items, times, waterL, need, values, checks, warnings, transition, hints, group, updatedAt]
+      required: [id, target, season, active, stage, items, times, waterL, need, values, checks, warnings, transition, hints, cold, group, updatedAt]
       properties:
         id:
           type: integer
@@ -9464,6 +9487,11 @@ components:
           type: array
           items:
             type: string
+        cold:
+          description: More feed for the cold of the next three days (forecast at the farm); only on the ration in effect.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/ColdBoost"
         group:
           type: object
           required: [feedKg, waterL]

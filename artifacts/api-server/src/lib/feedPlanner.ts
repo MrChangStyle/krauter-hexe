@@ -27,6 +27,8 @@ import { ionophoresIn } from './feedLabel';
 import { FEED_CATALOG, feedByKey, type FeedCategory, type FeedValues } from './feedCatalog';
 import { FEED_NEEDS, LIFE_STAGES, checkRation, needFor, type LifeStage, type NutrientCheck } from './feedNeeds';
 import { berlinDay } from './monitoring';
+import { farmLocation, forecast, type DayForecast } from './farmWeather';
+import { coldBoost, type ColdBoost } from './feedWeather';
 import { SEASONS, activeSeason, addDays, daysBetween, mix, newShareOn, nextSeasonStart, phases, seasonHints, transitionDays, type Phase, type Season } from './feedSeason';
 import { createFarmTask } from './farmTasks';
 import { speciesKey } from './speciesKey';
@@ -442,6 +444,8 @@ export interface RationEvaluation {
   transition: Transition | null;
   /** Fixed hints for the season (only on the ration in effect). */
   hints: string[];
+  /** More feed for the cold of the next days (forecast at the farm; only on the ration in effect). */
+  cold: ColdBoost | null;
   /** For the whole group per day: feed as fed (kg) and water (l). */
   group: { feedKg: number; waterL: number | null };
   updatedAt: string;
@@ -451,6 +455,9 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
   const own = new Map((await listFarmFeeds(farmId)).map((f) => [f.id, f]));
   const all = await db.select().from(feedRationsTable).where(eq(feedRationsTable.farmId, farmId));
   const today = berlinDay();
+  // The forecast at the farm, for the cold ahead (none without a location or when the service is down).
+  const location = rows.length ? await farmLocation(farmId) : null;
+  const days: DayForecast[] = location ? await forecast(location.latitude, location.longitude, today) : [];
   const out: RationEvaluation[] = [];
   for (const row of rows) {
     let target: Target;
@@ -510,6 +517,7 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
       warnings,
       transition,
       hints: active ? seasonHints(target.species, today, resolved.map((r) => r.category)) : [],
+      cold: active ? coldBoost(target.species, resolved, days) : null,
       group: {
         feedKg: Math.round(resolved.reduce((s, r) => s + r.grams, 0) * target.count) / 1000,
         waterL: need ? Math.round(need.waterL * target.count * 10) / 10 : null,

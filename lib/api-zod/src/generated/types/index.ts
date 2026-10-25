@@ -76,6 +76,8 @@ export * from './categoryCount';
 export * from './changeFarmRoleInput';
 export * from './cleanupOrphanedDataInput';
 export * from './clientErrorInput';
+export * from './coldBoost';
+export * from './coldBoostExtraItem';
 export * from './completeFarmTaskInput';
 export * from './cornerSuggestion';
 export * from './createCareGuideInput';

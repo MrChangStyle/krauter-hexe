@@ -1,4 +1,4 @@
-import { date, doublePrecision, index, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { date, doublePrecision, index, integer, jsonb, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
 import { farmsTable, herdsTable } from "./farm";
 
 // Weide (docs/weide.md): the farm's pastures and the grazing diary – which
@@ -6,6 +6,9 @@ import { farmsTable, herdsTable } from "./farm";
 
 export const PASTURE_KINDS = ["pasture", "mowing", "paddock", "meadow"] as const;
 export type PastureKind = (typeof PASTURE_KINDS)[number];
+
+/** A pasture's outline on the map: corners as [latitude, longitude]. */
+export type PastureBoundary = [number, number][];
 
 export const pasturesTable = pgTable(
   "pastures",
@@ -17,6 +20,8 @@ export const pasturesTable = pgTable(
     name: text("name").notNull(),
     kind: text("kind").$type<PastureKind>().notNull().default("pasture"),
     areaHa: doublePrecision("area_ha"),
+    // Drawn on the map (Weidekarte); the area is then computed from it.
+    boundary: jsonb("boundary").$type<PastureBoundary>(),
     // Days the grass needs after grazing, and how long a herd should stay.
     restDays: integer("rest_days").notNull().default(35),
     maxGrazeDays: integer("max_graze_days").notNull().default(10),

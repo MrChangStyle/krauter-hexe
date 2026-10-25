@@ -5,10 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { MapCenter } from './mapCenter';
 import type { Pasture } from './pasture';
 import type { PastureHerd } from './pastureHerd';
 
 export interface PastureOverview {
+  /** The farm's location (or a garden bed's) – where the map opens without drawn pastures. */
+  center: null | MapCenter;
   pastures: Pasture[];
   herds: PastureHerd[];
   year: number;

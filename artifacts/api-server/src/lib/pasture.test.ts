@@ -4,7 +4,7 @@ vi.hoisted(() => {
   process.env["DATABASE_URL"] ??= "postgres://unused@127.0.0.1:1/unused";
 });
 
-const { pastureHints, pastureState, pushLines, yearUse } = await import("./pasture");
+const { boundaryAreaHa, pastureHints, pastureState, pushLines, validBoundary, yearUse } = await import("./pasture");
 type G = Parameters<typeof pastureState>[1][number];
 
 const p = { id: 1, name: "Obere Weide", restDays: 30, maxGrazeDays: 10, areaHa: 2 };
@@ -50,5 +50,28 @@ describe("hints and push", () => {
     expect(pushLines([p], [g("2026-05-01", "2026-05-10")], "2026-06-10")).toEqual([]);
     expect(pushLines([p], [g("2026-06-01", null)], "2026-06-11")).toEqual(["Schafe seit 10 Tagen auf Obere Weide – umtreiben?"]);
     expect(pushLines([p], [g("2026-06-01", null)], "2026-06-12")).toEqual([]);
+  });
+});
+
+describe("Weidekarte", () => {
+  // 100 m × 100 m at 51° N.
+  const lat = 51, dLat = 100 / 111_319.49, dLng = 100 / (111_319.49 * Math.cos((51 * Math.PI) / 180));
+  const square: [number, number][] = [[lat, 10], [lat + dLat, 10], [lat + dLat, 10 + dLng], [lat, 10 + dLng]];
+
+  it("measures an outline in hectares, whichever way it was drawn", () => {
+    expect(boundaryAreaHa(square)).toBeCloseTo(1, 2);
+    expect(boundaryAreaHa([...square].reverse())).toBeCloseTo(1, 2);
+    // A triangle is half the square.
+    expect(boundaryAreaHa(square.slice(0, 3))).toBeCloseTo(0.5, 2);
+  });
+
+  it("accepts three to a hundred corners on the globe, with an area", () => {
+    expect(validBoundary(null)).toBeNull();
+    expect(validBoundary([[51.123456789, 10.1], [51.2, 10.1], [51.2, 10.2]])![0]).toEqual([51.1234568, 10.1]);
+    for (const bad of ["x", [[51, 10], [51.1, 10]], [[51, 10], [51.1, 10], [91, 10]], [[51, 10], [51.1, 10], [51.1, "10"]], [[51, 10, 1], [51.1, 10], [51.1, 10.1]], Array(101).fill([51, 10])]) {
+      expect(() => validBoundary(bad), JSON.stringify(bad).slice(0, 40)).toThrow("Der Umriss ist ungültig.");
+    }
+    expect(() => validBoundary([[51, 10], [51.1, 10], [51.2, 10]])).toThrow("Der Umriss hat keine Fläche.");
+    expect(() => validBoundary([[50, 9], [52, 9], [52, 11], [50, 11]])).toThrow("größer als 10.000 ha");
   });
 });

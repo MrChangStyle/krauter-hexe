@@ -7421,7 +7421,7 @@ components:
           type: string
     Pasture:
       type: object
-      required: [id, name, kind, areaHa, restDays, maxGrazeDays, notes, archived, status, current, readyOn, grazingDays, animalDays, animalDaysPerHa, grazings, hints]
+      required: [id, name, kind, areaHa, boundary, restDays, maxGrazeDays, notes, archived, status, current, readyOn, grazingDays, animalDays, animalDaysPerHa, grazings, hints]
       properties:
         id:
           type: integer
@@ -7431,6 +7431,10 @@ components:
           $ref: "#/components/schemas/PastureKind"
         areaHa:
           type: [number, 'null']
+        boundary:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/PastureBoundary"
         restDays:
           type: integer
         maxGrazeDays:
@@ -7477,10 +7481,34 @@ components:
           $ref: "#/components/schemas/FarmSpecies"
         animals:
           type: integer
+    PastureBoundary:
+      type: array
+      description: The outline drawn on the map – corners as [latitude, longitude], at least three.
+      minItems: 3
+      maxItems: 100
+      items:
+        type: array
+        minItems: 2
+        maxItems: 2
+        items:
+          type: number
+    MapCenter:
+      type: object
+      required: [latitude, longitude]
+      properties:
+        latitude:
+          type: number
+        longitude:
+          type: number
     PastureOverview:
       type: object
-      required: [pastures, herds, year]
+      required: [pastures, herds, year, center]
       properties:
+        center:
+          description: The farm's location (or a garden bed's) – where the map opens without drawn pastures.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/MapCenter"
         pastures:
           type: array
           items:
@@ -7503,6 +7531,12 @@ components:
           $ref: "#/components/schemas/PastureKind"
         areaHa:
           type: [number, 'null']
+          description: Ignored when the pasture has an outline – then it is computed.
+        boundary:
+          description: Null removes the outline; left out keeps it.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/PastureBoundary"
         restDays:
           type: integer
         maxGrazeDays:

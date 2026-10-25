@@ -15,12 +15,14 @@ import {
   herdsTable,
   pastureGrazingsTable,
   pasturesTable,
+  type PastureBoundary,
   type PastureKind,
 } from '@workspace/db';
 import { and, asc, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
 import { grantedSql } from './farmModules';
+import { farmLocation } from './farmWeather';
 import { addDays } from './feedSeason';
 import { logger } from './logger';
 import { berlinDay } from './monitoring';
@@ -144,8 +146,48 @@ async function pastureOf(farmId: number, pastureId: number) {
   return row;
 }
 
+// ── Weidekarte ────────────────────────────────────────────────────────────────
+
+const EARTH_RADIUS_M = 6_378_137;
+
+/**
+ * The area of an outline in hectares, on the sphere (the same formula the map
+ * uses while drawing, pflanzenscanner lib/pasture-map.ts). Exact enough for
+ * fields; the outline is taken as drawn, crossing edges are not checked.
+ */
+export function boundaryAreaHa(boundary: PastureBoundary): number {
+  const rad = Math.PI / 180;
+  let sum = 0;
+  for (let i = 0; i < boundary.length; i++) {
+    const [lat1, lng1] = boundary[i]!;
+    const [lat2, lng2] = boundary[(i + 1) % boundary.length]!;
+    sum += (lng2 - lng1) * rad * (2 + Math.sin(lat1 * rad) + Math.sin(lat2 * rad));
+  }
+  return Math.abs((sum * EARTH_RADIUS_M * EARTH_RADIUS_M) / 2) / 10_000;
+}
+
+/** Checks an outline from the app; null stays null (no outline). */
+export function validBoundary(raw: unknown): PastureBoundary | null {
+  if (raw === null) return null;
+  const invalid = () => new FarmDataError(400, 'Der Umriss ist ungültig.');
+  if (!Array.isArray(raw) || raw.length < 3 || raw.length > 100) throw invalid();
+  const points = raw.map((point): [number, number] => {
+    if (!Array.isArray(point) || point.length !== 2) throw invalid();
+    const [lat, lng] = point as unknown[];
+    if (typeof lat !== 'number' || typeof lng !== 'number' || !Number.isFinite(lat) || !Number.isFinite(lng) || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+      throw invalid();
+    }
+    // About 1 cm – plenty for a field.
+    return [Math.round(lat * 1e7) / 1e7, Math.round(lng * 1e7) / 1e7];
+  });
+  const area = boundaryAreaHa(points);
+  if (area < 0.0001) throw new FarmDataError(400, 'Der Umriss hat keine Fläche.');
+  if (area > 10_000) throw new FarmDataError(400, 'Der Umriss ist größer als 10.000 ha.');
+  return points;
+}
+
 export async function pastureOverview(farmId: number, today = berlinDay()) {
-  const [pastures, grazings, herds] = await Promise.all([
+  const [pastures, grazings, herds, location] = await Promise.all([
     db.select().from(pasturesTable).where(eq(pasturesTable.farmId, farmId)).orderBy(asc(pasturesTable.name)),
     db.select(grazingColumns).from(pastureGrazingsTable).where(eq(pastureGrazingsTable.farmId, farmId)).orderBy(desc(pastureGrazingsTable.startOn), desc(pastureGrazingsTable.id)),
     db
@@ -155,6 +197,7 @@ export async function pastureOverview(farmId: number, today = berlinDay()) {
       .where(eq(herdsTable.farmId, farmId))
       .groupBy(herdsTable.id)
       .orderBy(asc(herdsTable.name)),
+    farmLocation(farmId),
   ]);
   const year = Number(today.slice(0, 4));
   const list = pastures.map((p) => {
@@ -164,6 +207,7 @@ export async function pastureOverview(farmId: number, today = berlinDay()) {
       name: p.name,
       kind: p.kind,
       areaHa: p.areaHa,
+      boundary: p.boundary,
       restDays: p.restDays,
       maxGrazeDays: p.maxGrazeDays,
       notes: p.notes,
@@ -176,13 +220,15 @@ export async function pastureOverview(farmId: number, today = berlinDay()) {
       hints: p.archivedAt ? [] : pastureHints(p, grazings, today),
     };
   });
-  return { pastures: list, herds, year };
+  const center = location ? { latitude: location.latitude, longitude: location.longitude } : null;
+  return { pastures: list, herds, year, center };
 }
 
 export interface PastureInput {
   name: unknown;
   kind?: PastureKind;
   areaHa?: number | null;
+  boundary?: unknown;
   restDays?: number;
   maxGrazeDays?: number;
   notes?: unknown;
@@ -195,15 +241,18 @@ function days(raw: number | undefined, fallback: number, label: string): number 
   return raw;
 }
 
-function pastureValues(input: PastureInput) {
+/** `boundary` is the outline to store: the input's, or the one kept when the input leaves it out. */
+function pastureValues(input: PastureInput, boundary: PastureBoundary | null) {
   const kind = input.kind ?? 'pasture';
   if (!(PASTURE_KINDS as readonly string[]).includes(kind)) throw new FarmDataError(400, 'Diese Nutzung gibt es nicht.');
-  const areaHa = input.areaHa ?? null;
+  // With an outline the area comes from the map, not from the field.
+  const areaHa = boundary ? boundaryAreaHa(boundary) : (input.areaHa ?? null);
   if (areaHa !== null && (!Number.isFinite(areaHa) || areaHa <= 0 || areaHa > 10_000)) throw new FarmDataError(400, 'Die Fläche ist ungültig.');
   return {
     name: text(input.name, 60, 'Der Name', true),
     kind,
     areaHa: areaHa === null ? null : Math.round(areaHa * 1000) / 1000,
+    boundary,
     restDays: days(input.restDays, 35, 'Die Ruhezeit'),
     maxGrazeDays: days(input.maxGrazeDays, 10, 'Die Weidedauer'),
     notes: text(input.notes, 500, 'Die Notiz'),
@@ -212,12 +261,12 @@ function pastureValues(input: PastureInput) {
 }
 
 export async function createPasture(farmId: number, input: PastureInput): Promise<void> {
-  await db.insert(pasturesTable).values({ farmId, ...pastureValues(input) });
+  await db.insert(pasturesTable).values({ farmId, ...pastureValues(input, input.boundary === undefined ? null : validBoundary(input.boundary)) });
 }
 
 export async function updatePasture(farmId: number, pastureId: number, input: PastureInput): Promise<void> {
   const p = await pastureOf(farmId, pastureId);
-  const values = pastureValues(input);
+  const values = pastureValues(input, input.boundary === undefined ? p.boundary : validBoundary(input.boundary));
   // Keep the day it was archived.
   await db
     .update(pasturesTable)

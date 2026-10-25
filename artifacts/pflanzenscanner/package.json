@@ -47,6 +47,7 @@
     "@tanstack/react-query": "catalog:",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.3.2",
+    "@types/leaflet": "1.9.22",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
@@ -82,6 +83,7 @@
   },
   "dependencies": {
     "jspdf": "^4.2.1",
+    "leaflet": "1.9.4",
     "vite-plugin-pwa": "^1.3.0",
     "workbox-window": "^7.4.1"
   }

@@ -4240,12 +4240,25 @@ export const GetPasturesParams = zod.object({
   "farmId": zod.coerce.number()
 })
 
+export const getPasturesResponsePasturesItemBoundaryTwoItemMin = 2;
+export const getPasturesResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const getPasturesResponsePasturesItemBoundaryTwoMin = 3;
+export const getPasturesResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
 export const GetPasturesResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
   "pastures": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
   "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(getPasturesResponsePasturesItemBoundaryTwoItemMin).max(getPasturesResponsePasturesItemBoundaryTwoItemMax)).min(getPasturesResponsePasturesItemBoundaryTwoMin).max(getPasturesResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
   "restDays": zod.number(),
   "maxGrazeDays": zod.number(),
   "notes": zod.string().nullable(),
@@ -4301,6 +4314,12 @@ export const CreatePastureParams = zod.object({
 
 export const createPastureBodyNameMax = 60;
 
+export const createPastureBodyBoundaryTwoItemMin = 2;
+export const createPastureBodyBoundaryTwoItemMax = 2;
+
+export const createPastureBodyBoundaryTwoMin = 3;
+export const createPastureBodyBoundaryTwoMax = 100;
+
 export const createPastureBodyNotesMax = 500;
 
 
@@ -4308,19 +4327,33 @@ export const createPastureBodyNotesMax = 500;
 export const CreatePastureBody = zod.object({
   "name": zod.string().min(1).max(createPastureBodyNameMax),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']).optional(),
-  "areaHa": zod.number().nullish(),
+  "areaHa": zod.number().nullish().describe('Ignored when the pasture has an outline – then it is computed.'),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(createPastureBodyBoundaryTwoItemMin).max(createPastureBodyBoundaryTwoItemMax)).min(createPastureBodyBoundaryTwoMin).max(createPastureBodyBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]).optional().describe('Null removes the outline; left out keeps it.'),
   "restDays": zod.number().optional(),
   "maxGrazeDays": zod.number().optional(),
   "notes": zod.string().max(createPastureBodyNotesMax).nullish(),
   "archived": zod.boolean().optional()
 })
 
+export const createPastureResponsePasturesItemBoundaryTwoItemMin = 2;
+export const createPastureResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const createPastureResponsePasturesItemBoundaryTwoMin = 3;
+export const createPastureResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
 export const CreatePastureResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
   "pastures": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
   "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(createPastureResponsePasturesItemBoundaryTwoItemMin).max(createPastureResponsePasturesItemBoundaryTwoItemMax)).min(createPastureResponsePasturesItemBoundaryTwoMin).max(createPastureResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
   "restDays": zod.number(),
   "maxGrazeDays": zod.number(),
   "notes": zod.string().nullable(),
@@ -4377,6 +4410,12 @@ export const UpdatePastureParams = zod.object({
 
 export const updatePastureBodyNameMax = 60;
 
+export const updatePastureBodyBoundaryTwoItemMin = 2;
+export const updatePastureBodyBoundaryTwoItemMax = 2;
+
+export const updatePastureBodyBoundaryTwoMin = 3;
+export const updatePastureBodyBoundaryTwoMax = 100;
+
 export const updatePastureBodyNotesMax = 500;
 
 
@@ -4384,19 +4423,33 @@ export const updatePastureBodyNotesMax = 500;
 export const UpdatePastureBody = zod.object({
   "name": zod.string().min(1).max(updatePastureBodyNameMax),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']).optional(),
-  "areaHa": zod.number().nullish(),
+  "areaHa": zod.number().nullish().describe('Ignored when the pasture has an outline – then it is computed.'),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(updatePastureBodyBoundaryTwoItemMin).max(updatePastureBodyBoundaryTwoItemMax)).min(updatePastureBodyBoundaryTwoMin).max(updatePastureBodyBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]).optional().describe('Null removes the outline; left out keeps it.'),
   "restDays": zod.number().optional(),
   "maxGrazeDays": zod.number().optional(),
   "notes": zod.string().max(updatePastureBodyNotesMax).nullish(),
   "archived": zod.boolean().optional()
 })
 
+export const updatePastureResponsePasturesItemBoundaryTwoItemMin = 2;
+export const updatePastureResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const updatePastureResponsePasturesItemBoundaryTwoMin = 3;
+export const updatePastureResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
 export const UpdatePastureResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
   "pastures": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
   "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(updatePastureResponsePasturesItemBoundaryTwoItemMin).max(updatePastureResponsePasturesItemBoundaryTwoItemMax)).min(updatePastureResponsePasturesItemBoundaryTwoMin).max(updatePastureResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
   "restDays": zod.number(),
   "maxGrazeDays": zod.number(),
   "notes": zod.string().nullable(),
@@ -4451,12 +4504,25 @@ export const DeletePastureParams = zod.object({
   "pastureId": zod.coerce.number()
 })
 
+export const deletePastureResponsePasturesItemBoundaryTwoItemMin = 2;
+export const deletePastureResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const deletePastureResponsePasturesItemBoundaryTwoMin = 3;
+export const deletePastureResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
 export const DeletePastureResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
   "pastures": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
   "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(deletePastureResponsePasturesItemBoundaryTwoItemMin).max(deletePastureResponsePasturesItemBoundaryTwoItemMax)).min(deletePastureResponsePasturesItemBoundaryTwoMin).max(deletePastureResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
   "restDays": zod.number(),
   "maxGrazeDays": zod.number(),
   "notes": zod.string().nullable(),
@@ -4526,12 +4592,25 @@ export const StartGrazingBody = zod.object({
   "notes": zod.string().max(startGrazingBodyNotesMax).nullish()
 })
 
+export const startGrazingResponsePasturesItemBoundaryTwoItemMin = 2;
+export const startGrazingResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const startGrazingResponsePasturesItemBoundaryTwoMin = 3;
+export const startGrazingResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
 export const StartGrazingResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
   "pastures": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
   "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(startGrazingResponsePasturesItemBoundaryTwoItemMin).max(startGrazingResponsePasturesItemBoundaryTwoItemMax)).min(startGrazingResponsePasturesItemBoundaryTwoMin).max(startGrazingResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
   "restDays": zod.number(),
   "maxGrazeDays": zod.number(),
   "notes": zod.string().nullable(),
@@ -4590,12 +4669,25 @@ export const EndGrazingBody = zod.object({
   "endOn": zod.string()
 })
 
+export const endGrazingResponsePasturesItemBoundaryTwoItemMin = 2;
+export const endGrazingResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const endGrazingResponsePasturesItemBoundaryTwoMin = 3;
+export const endGrazingResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
 export const EndGrazingResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
   "pastures": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
   "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(endGrazingResponsePasturesItemBoundaryTwoItemMin).max(endGrazingResponsePasturesItemBoundaryTwoItemMax)).min(endGrazingResponsePasturesItemBoundaryTwoMin).max(endGrazingResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
   "restDays": zod.number(),
   "maxGrazeDays": zod.number(),
   "notes": zod.string().nullable(),
@@ -4650,12 +4742,25 @@ export const DeleteGrazingParams = zod.object({
   "grazingId": zod.coerce.number()
 })
 
+export const deleteGrazingResponsePasturesItemBoundaryTwoItemMin = 2;
+export const deleteGrazingResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const deleteGrazingResponsePasturesItemBoundaryTwoMin = 3;
+export const deleteGrazingResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
 export const DeleteGrazingResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
   "pastures": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
   "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
   "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(deleteGrazingResponsePasturesItemBoundaryTwoItemMin).max(deleteGrazingResponsePasturesItemBoundaryTwoItemMax)).min(deleteGrazingResponsePasturesItemBoundaryTwoMin).max(deleteGrazingResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
   "restDays": zod.number(),
   "maxGrazeDays": zod.number(),
   "notes": zod.string().nullable(),

@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { PastureBoundary } from './pastureBoundary';
 import type { PastureKind } from './pastureKind';
 
 export interface PastureInput {
@@ -14,8 +15,13 @@ export interface PastureInput {
      */
   name: string;
   kind?: PastureKind;
-  /** @nullable */
+  /**
+     * Ignored when the pasture has an outline – then it is computed.
+     * @nullable
+     */
   areaHa?: number | null;
+  /** Null removes the outline; left out keeps it. */
+  boundary?: null | PastureBoundary;
   restDays?: number;
   maxGrazeDays?: number;
   /**

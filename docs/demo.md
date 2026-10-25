@@ -18,7 +18,7 @@ Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt dan
 - **Vorratskammer**: Eingelegtes, Eingefrorenes und Honig, eines davon bald aufzubrauchen.
 - **Wildtier-Radar**: zwei Kameras, noch ohne Ereignisse.
 - **Übergabe**: eine Notiz für die Vertretung.
-- **Beet-Architekt**: ein Hochbeet mit Tomate (zwei Ernten für die Ernte-Auswertung) und ein Gemüsebeet mit Salat, im laufenden Jahr.
+- **Beet-Architekt**: ein Hochbeet mit Tomate (zwei Ernten für die Ernte-Auswertung) und ein Gemüsebeet mit Salat, im laufenden Jahr. Für die Wirtschaftlichkeit: Tomatensamen und Hochbeeterde als Gartenausgaben, 3,5 Stunden Arbeit.
 - **Saatgut**: Tomate „Ochsenherz“ und Möhre „Nantaise“.
 - **Farm & Team**: eine Tierarztpraxis und eine Stallhilfe als wichtige Kontakte.
 - **Grow**: ein „Demo-Zelt“ mit zwei Pflanzen, aber nur, wenn das Konto Grow schon freigeschaltet hat (Alter bestätigt).

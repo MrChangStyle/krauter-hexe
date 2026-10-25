@@ -72,7 +72,8 @@ Vom Inhaber am 18.10.2026 ergänzt:
    Beet mit den passenden Wünschen (Beet-Vorschlag aus Schritt 5).
 7. **Ernten (UMGESETZT):** Ernte je Pflanzung eintragen (Datum, kg, Küche oder Tierfutter);
    der Garten-Assistent rechnet mit den eigenen Erträgen der letzten Saison mit Ernten statt
-   mit den Faustwerten („Optimieren“ aus der Spezifikation). Offen: Wirtschaftlichkeits-Tracker.
+   mit den Faustwerten („Optimieren“ aus der Spezifikation). Der Wirtschaftlichkeits-Tracker steht in
+   `docs/garten-wirtschaftlichkeit.md`.
 
 Definition of Done je Schritt wie beim Farm-Modul: Typecheck, Build, alle Tests grün
 (neue inkl. Isolation gegen echtes Postgres), Browser-Test in Handybreite, replit.md

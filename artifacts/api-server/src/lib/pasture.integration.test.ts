@@ -178,6 +178,9 @@ describe.skipIf(!enabled)("Weide (real database)", () => {
     as = "gast";
     expect((await api("POST", `${W()}/${tal}/cuts`, { cutOn: "2026-06-19" })).status).toBe(403);
     expect((await api("DELETE", `/farms/${farmId}/pasture-cuts/${cutId}`)).status).toBe(403);
+    // Without the grant „Weide“ not even a caretaker may touch the cuts.
+    as = "olli";
+    expect((await api("DELETE", `/farms/${farmId}/pasture-cuts/${cutId}`)).status).toBe(403);
     as = "bert";
     expect((await api("DELETE", `/farms/${otherFarm}/pasture-cuts/${cutId}`)).status).toBe(404);
     as = "pia";

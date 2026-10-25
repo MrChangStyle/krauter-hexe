@@ -122,8 +122,11 @@ import type {
   GardenBedInput,
   GardenCalendarEntry,
   GardenCheckResult,
+  GardenCostInput,
+  GardenEconomics,
   GardenEventKind,
   GardenGoals,
+  GardenHoursInput,
   GardenPlan,
   GeoReverseInput,
   GeoReverseResult,
@@ -18319,6 +18322,378 @@ export function useGetHarvestReport<TData = Awaited<ReturnType<typeof getHarvest
 
 
 
+
+export const getGetGardenEconomicsUrl = (farmId: number,
+    season: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/seasons/${season}/economics`
+}
+
+/**
+ * @summary Garten-Wirtschaftlichkeit – harvest value against garden costs and hours
+ */
+export const getGardenEconomics = async (farmId: number,
+    season: number, options?: RequestInit): Promise<GardenEconomics> => {
+
+  return customFetch<GardenEconomics>(getGetGardenEconomicsUrl(farmId,season),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetGardenEconomicsQueryKey = (farmId: number,
+    season: number,) => {
+    return [
+    `/api/farms/${farmId}/garden/seasons/${season}/economics`
+    ] as const;
+    }
+
+
+export const getGetGardenEconomicsQueryOptions = <TData = Awaited<ReturnType<typeof getGardenEconomics>>, TError = ErrorType<void>>(farmId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenEconomics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetGardenEconomicsQueryKey(farmId,season);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getGardenEconomics>>> = ({ signal }) => getGardenEconomics(farmId,season, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined && season !== null && season !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getGardenEconomics>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetGardenEconomicsQueryResult = NonNullable<Awaited<ReturnType<typeof getGardenEconomics>>>
+export type GetGardenEconomicsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Garten-Wirtschaftlichkeit – harvest value against garden costs and hours
+ */
+
+export function useGetGardenEconomics<TData = Awaited<ReturnType<typeof getGardenEconomics>>, TError = ErrorType<void>>(
+ farmId: number,
+    season: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getGardenEconomics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetGardenEconomicsQueryOptions(farmId,season,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddGardenCostUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/costs`
+}
+
+/**
+ * @summary A garden cost – a farm expense marked for the garden (caretaker)
+ */
+export const addGardenCost = async (farmId: number,
+    gardenCostInput: GardenCostInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAddGardenCostUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(gardenCostInput)
+  }
+);}
+
+
+
+
+
+export const getAddGardenCostMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addGardenCost>>, TError,{farmId: number;data: BodyType<GardenCostInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addGardenCost>>, TError,{farmId: number;data: BodyType<GardenCostInput>}, TContext> => {
+
+const mutationKey = ['addGardenCost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addGardenCost>>, {farmId: number;data: BodyType<GardenCostInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  addGardenCost(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddGardenCostMutationResult = NonNullable<Awaited<ReturnType<typeof addGardenCost>>>
+    export type AddGardenCostMutationBody = BodyType<GardenCostInput>
+    export type AddGardenCostMutationError = ErrorType<void>
+
+    /**
+ * @summary A garden cost – a farm expense marked for the garden (caretaker)
+ */
+export const useAddGardenCost = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addGardenCost>>, TError,{farmId: number;data: BodyType<GardenCostInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addGardenCost>>,
+        TError,
+        {farmId: number;data: BodyType<GardenCostInput>},
+        TContext
+      > => {
+      return useMutation(getAddGardenCostMutationOptions(options));
+    }
+
+export const getDeleteGardenCostUrl = (farmId: number,
+    costId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/costs/${costId}`
+}
+
+/**
+ * @summary Delete a garden cost (caretaker)
+ */
+export const deleteGardenCost = async (farmId: number,
+    costId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteGardenCostUrl(farmId,costId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteGardenCostMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGardenCost>>, TError,{farmId: number;costId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteGardenCost>>, TError,{farmId: number;costId: number}, TContext> => {
+
+const mutationKey = ['deleteGardenCost'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGardenCost>>, {farmId: number;costId: number}> = (props) => {
+          const {farmId,costId} = props ?? {};
+
+          return  deleteGardenCost(farmId,costId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteGardenCostMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGardenCost>>>
+
+    export type DeleteGardenCostMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a garden cost (caretaker)
+ */
+export const useDeleteGardenCost = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGardenCost>>, TError,{farmId: number;costId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteGardenCost>>,
+        TError,
+        {farmId: number;costId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteGardenCostMutationOptions(options));
+    }
+
+export const getAddGardenHoursUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/hours`
+}
+
+/**
+ * @summary Hours spent in the garden (caretaker)
+ */
+export const addGardenHours = async (farmId: number,
+    gardenHoursInput: GardenHoursInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAddGardenHoursUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(gardenHoursInput)
+  }
+);}
+
+
+
+
+
+export const getAddGardenHoursMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addGardenHours>>, TError,{farmId: number;data: BodyType<GardenHoursInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addGardenHours>>, TError,{farmId: number;data: BodyType<GardenHoursInput>}, TContext> => {
+
+const mutationKey = ['addGardenHours'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addGardenHours>>, {farmId: number;data: BodyType<GardenHoursInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  addGardenHours(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddGardenHoursMutationResult = NonNullable<Awaited<ReturnType<typeof addGardenHours>>>
+    export type AddGardenHoursMutationBody = BodyType<GardenHoursInput>
+    export type AddGardenHoursMutationError = ErrorType<void>
+
+    /**
+ * @summary Hours spent in the garden (caretaker)
+ */
+export const useAddGardenHours = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addGardenHours>>, TError,{farmId: number;data: BodyType<GardenHoursInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addGardenHours>>,
+        TError,
+        {farmId: number;data: BodyType<GardenHoursInput>},
+        TContext
+      > => {
+      return useMutation(getAddGardenHoursMutationOptions(options));
+    }
+
+export const getDeleteGardenHoursUrl = (farmId: number,
+    hoursId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/garden/hours/${hoursId}`
+}
+
+/**
+ * @summary Delete logged hours (caretaker)
+ */
+export const deleteGardenHours = async (farmId: number,
+    hoursId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteGardenHoursUrl(farmId,hoursId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteGardenHoursMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGardenHours>>, TError,{farmId: number;hoursId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteGardenHours>>, TError,{farmId: number;hoursId: number}, TContext> => {
+
+const mutationKey = ['deleteGardenHours'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteGardenHours>>, {farmId: number;hoursId: number}> = (props) => {
+          const {farmId,hoursId} = props ?? {};
+
+          return  deleteGardenHours(farmId,hoursId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteGardenHoursMutationResult = NonNullable<Awaited<ReturnType<typeof deleteGardenHours>>>
+
+    export type DeleteGardenHoursMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete logged hours (caretaker)
+ */
+export const useDeleteGardenHours = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteGardenHours>>, TError,{farmId: number;hoursId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteGardenHours>>,
+        TError,
+        {farmId: number;hoursId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteGardenHoursMutationOptions(options));
+    }
 
 export const getListHarvestsUrl = (farmId: number,
     season: number,) => {

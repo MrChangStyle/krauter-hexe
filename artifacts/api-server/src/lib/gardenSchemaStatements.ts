@@ -214,4 +214,33 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "seed_uses" ADD CONSTRAINT "seed_uses_planting_id_bed_plantings_id_fk" FOREIGN KEY ("planting_id") REFERENCES "public"."bed_plantings"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "seed_uses_seed_idx" ON "seed_uses" USING btree ("seed_id")`,
+  // Garten-Wirtschaftlichkeit.
+  `CREATE TABLE IF NOT EXISTS "garden_hours" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"bed_id" integer,
+	"date" date NOT NULL,
+	"hours" double precision NOT NULL,
+	"note" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "garden_hours" ADD CONSTRAINT "garden_hours_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "garden_hours" ADD CONSTRAINT "garden_hours_bed_id_garden_beds_id_fk" FOREIGN KEY ("bed_id") REFERENCES "public"."garden_beds"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "garden_hours_farm_date_idx" ON "garden_hours" USING btree ("farm_id","date")`,
+  // Garden costs are farm expenses with a flag and an optional bed; the bed
+  // table only exists from here on. Seed bought before counts for the garden.
+  `DO $$ BEGIN
+     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'farm_expenses' AND column_name = 'garden') THEN
+       ALTER TABLE "farm_expenses" ADD COLUMN "garden" boolean DEFAULT false NOT NULL;
+       UPDATE "farm_expenses" SET "garden" = true WHERE "category" = 'seeds';
+     END IF;
+   END $$`,
+  `ALTER TABLE "farm_expenses" ADD COLUMN IF NOT EXISTS "bed_id" integer`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_expenses" ADD CONSTRAINT "farm_expenses_bed_id_garden_beds_id_fk" FOREIGN KEY ("bed_id") REFERENCES "public"."garden_beds"("id") ON DELETE set null ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
 ];

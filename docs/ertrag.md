@@ -27,7 +27,8 @@ Die Seite `/farm/ertrag` zeigt, was Tiere und Garten im Jahr bringen und was das
 
 ## Ausgaben und Bilanz
 
-- Ausgaben werden mit Datum, Betrag und Kategorie eingetragen (`farm_expenses`), optional mit einer Notiz. Kategorien: Futter, Tierarzt & Medizin, Einstreu, Saatgut & Pflanzen, Tierkauf, Geräte & Material, Sonstiges.
+- Ausgaben werden mit Datum, Betrag und Kategorie eingetragen (`farm_expenses`), optional mit einer Notiz. Kategorien: Futter, Tierarzt & Medizin, Einstreu, Saatgut & Pflanzen, Erde, Kompost & Dünger, Wasser, Tierkauf, Geräte & Material, Sonstiges.
+- Das Häkchen „Für den Garten“ (`garden`) zählt eine Ausgabe auch in der Garten-Wirtschaftlichkeit (`docs/garten-wirtschaftlichkeit.md`). Bei Saatgut, Erde und Wasser ist es vorbelegt. Gartenausgaben, die unter der Ernte-Auswertung eingetragen werden, stehen hier mit „· Garten“ und zählen nur einmal.
 - `summarizeExpenses()` ist rein und summiert je Kategorie in fester Reihenfolge und je Monat.
 - **Bilanz** = Wert der Erträge minus eingetragene Ausgaben.
 - Die Futterkosten-Schätzung des Futterplaners wird **nicht** abgezogen. Echte Futterkäufe trägt man als Ausgabe „Futter“ ein, sonst würden sie doppelt zählen.

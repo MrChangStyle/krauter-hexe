@@ -20,7 +20,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Beet-Architekt", hint: "Beete planen", href: "/beete", module: "garden", words: "garten hochbeet mischkultur gemüse" },
   { title: "Gartenkalender", hint: "Säen, pflanzen, ernten", href: "/beete/kalender", module: "garden", words: "aussaat ernte kalender" },
   { title: "Saatgut", hint: "Vorrat und Keimtest", href: "/beete/saatgut", module: "garden", words: "samen tüten keimen" },
-  { title: "Ernte-Auswertung", hint: "Was sich gelohnt hat", href: "/beete/ernte", module: "garden", words: "ernte kilo ertrag beet sorte vergleich" },
+  { title: "Ernte-Auswertung", hint: "Was sich gelohnt hat", href: "/beete/ernte", module: "garden", words: "ernte kilo ertrag beet sorte vergleich wirtschaftlichkeit kosten lohnt stunden" },
   { title: "Grow", hint: "Eigenanbau ab 18", href: "/grow", module: "grow", words: "zelt anbau" },
   { title: "Tiere", hint: "Bestand, Gesundheit, Gewicht", href: "/farm", module: "animals", words: "hühner ziegen schafe tierarzt bestand" },
   { title: "Stall-Aufgaben", hint: "Füttern, Ausmisten", href: "/farm/aufgaben", module: "farm-tasks", words: "füttern futter ausmisten eier stall erinnerung" },

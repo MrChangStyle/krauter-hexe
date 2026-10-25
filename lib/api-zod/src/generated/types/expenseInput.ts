@@ -12,6 +12,8 @@ export interface ExpenseInput {
   date: string;
   category: ExpenseCategory;
   amountEur: number;
+  /** Counts for the Garten-Wirtschaftlichkeit too; left out, seeds, soil and water do. */
+  garden?: boolean;
   /**
      * @maxLength 500
      * @nullable

@@ -13,6 +13,7 @@
 - **Diagramme:** kg je Erntemonat, und bis zu fünf Saisons im Vergleich.
 - **Summe:** kg mit Veränderung zum Vorjahr, Ladenwert.
 - Die Saisonwahl bietet alle Saisons mit Ernten.
+- **Wirtschaftlichkeit:** Darunter stehen Kosten, Stunden, Überschuss und Euro je Stunde der Saison (`docs/garten-wirtschaftlichkeit.md`).
 
 ## Technik
 

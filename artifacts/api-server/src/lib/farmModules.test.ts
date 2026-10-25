@@ -1,3 +1,6 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import { join } from 'node:path';
+
 import { describe, expect, it } from 'vitest';
 
 import { FARM_MODULES, canUseModule, cleanFarmModules, moduleOfRequest } from './farmModules';
@@ -14,6 +17,20 @@ describe('Modul-Freigaben', () => {
     expect(moduleOfRequest('GET', '/farms/3')).toBeNull();
     expect(moduleOfRequest('GET', '/farms/3/contacts')).toBeNull();
     expect(moduleOfRequest('DELETE', '/farms/3/members/u1')).toBeNull();
+  });
+
+  it('gives every farm route a module, or names it as one of the basics', () => {
+    // Open to every member on purpose (docs/team.md): the farm's basics.
+    const BASICS = ['ai', 'animals', 'contacts', 'herds', 'husbandry', 'location', 'medical', 'setup', 'weather', 'weights'];
+    const dir = join(__dirname, '../routes');
+    const segments = new Set<string>();
+    for (const file of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))) {
+      for (const m of readFileSync(join(dir, file), 'utf8').matchAll(/'\/farms\/:farmId\/([^/']+)/g)) segments.add(m[1]!);
+    }
+    expect(segments.size).toBeGreaterThan(20);
+    for (const segment of segments) {
+      expect(moduleOfRequest('GET', `/farms/3/${segment}`) !== null || BASICS.includes(segment), segment).toBe(true);
+    }
   });
 
   it('lets admins and members without a list use everything', () => {

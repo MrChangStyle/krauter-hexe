@@ -27,6 +27,7 @@ import { addExpense, addYield } from './farmYields';
 import { addDays } from './feedSeason';
 import { buyFeed } from './feedStock';
 import { createBed } from './gardenBeds';
+import { addGardenCost, addGardenHours } from './gardenEconomics';
 import { addHarvest } from './gardenHarvests';
 import { addPlanting } from './gardenPlanner';
 import { addPlant, createGrow } from './grow';
@@ -206,6 +207,11 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   // Ernte-Auswertung: two harvests of the tomatoes.
   await addHarvest(farmId, tomato.id, { harvestedOn: ago(30), amountKg: 2.4, use: 'kitchen' });
   await addHarvest(farmId, tomato.id, { harvestedOn: ago(12), amountKg: 3.1, use: 'kitchen', note: 'Demo' });
+  // Garten-Wirtschaftlichkeit: what the garden cost this season and the hours in it.
+  await addGardenCost(farmId, { date: ago(60), category: 'seeds', amountEur: 3.95, note: 'Demo: Tomatensamen' });
+  await addGardenCost(farmId, { date: ago(55), category: 'soil', amountEur: 17.97, bedId: raised.id, note: 'Demo: 3 Sack Hochbeeterde' });
+  await addGardenHours(farmId, { date: ago(40), hours: 2, bedId: raised.id, note: 'Demo: Pflanzen und Mulchen' });
+  await addGardenHours(farmId, { date: ago(20), hours: 1.5, note: 'Demo: Jäten und Gießen' });
   await addPlanting(farmId, bed.id, year, { cropKey: 'salat', x: 1, y: 1 });
   await createSeed(farmId, { cropKey: 'tomate', variety: 'Ochsenherz', amount: 30, unit: 'Korn', source: 'bought', harvestYear: year - 1 }, today);
   await createSeed(farmId, { cropKey: 'moehre', variety: 'Nantaise', amount: 2, unit: 'g', source: 'bought', harvestYear: year - 3 }, today);

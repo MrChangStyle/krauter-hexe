@@ -9,6 +9,7 @@
 import {
   db,
   EXPENSE_CATEGORIES,
+  GARDEN_EXPENSE_CATEGORIES,
   farmAnimalsTable,
   farmExpensesTable,
   farmSalesTable,
@@ -259,6 +260,8 @@ export interface ExpenseEntry {
   date: string;
   category: ExpenseCategory;
   amountEur: number;
+  /** Counted in the Garten-Wirtschaftlichkeit too. */
+  garden: boolean;
   note: string | null;
 }
 
@@ -318,7 +321,14 @@ export async function yieldOverview(farmId: number, rawYear?: unknown, today = b
     yearData(farmId, year),
     yearData(farmId, year - 1),
     db
-      .select({ id: farmExpensesTable.id, date: farmExpensesTable.date, category: farmExpensesTable.category, amountEur: farmExpensesTable.amountEur, note: farmExpensesTable.note })
+      .select({
+        id: farmExpensesTable.id,
+        date: farmExpensesTable.date,
+        category: farmExpensesTable.category,
+        amountEur: farmExpensesTable.amountEur,
+        garden: farmExpensesTable.garden,
+        note: farmExpensesTable.note,
+      })
       .from(farmExpensesTable)
       .where(and(eq(farmExpensesTable.farmId, farmId), gte(farmExpensesTable.date, `${year}-01-01`), lte(farmExpensesTable.date, `${year}-12-31`)))
       .orderBy(desc(farmExpensesTable.date), desc(farmExpensesTable.id)),
@@ -452,6 +462,8 @@ export interface ExpenseInput {
   date: unknown;
   category: ExpenseCategory;
   amountEur: number;
+  /** For the garden; left out, seed, soil and water count for it. */
+  garden?: boolean;
   note?: unknown;
 }
 
@@ -459,7 +471,8 @@ export async function addExpense(farmId: number, input: ExpenseInput): Promise<v
   if (!(EXPENSE_CATEGORIES as readonly string[]).includes(input.category)) throw new FarmDataError(400, 'Diese Art von Ausgabe gibt es nicht.');
   const date = validDate(input.date, 'Datum');
   if (!Number.isFinite(input.amountEur) || input.amountEur <= 0 || input.amountEur > 100_000) throw new FarmDataError(400, 'Der Betrag ist ungültig.');
-  await db.insert(farmExpensesTable).values({ farmId, date, category: input.category, amountEur: round2(input.amountEur), note: text(input.note, 500, 'Die Notiz') });
+  const garden = input.garden ?? GARDEN_EXPENSE_CATEGORIES.includes(input.category);
+  await db.insert(farmExpensesTable).values({ farmId, date, category: input.category, amountEur: round2(input.amountEur), garden, note: text(input.note, 500, 'Die Notiz') });
 }
 
 export async function removeExpense(farmId: number, id: number): Promise<void> {

@@ -3,6 +3,9 @@ import {
   AddHarvestBody,
   AddHarvestResponse,
   AddPlantingBody,
+  AddGardenCostBody,
+  AddGardenHoursBody,
+  GetGardenEconomicsResponse,
   GetHarvestReportResponse,
   ListHarvestsResponse,
   AnalyzeBedPhotoResponse,
@@ -59,6 +62,7 @@ import { berlinTodayKey } from '../lib/pushScheduler';
 import { gardenPlan, getGoals, saveGoals } from '../lib/gardenAssistant';
 import { addHarvest, listHarvests, removeHarvest } from '../lib/gardenHarvests';
 import { loadHarvestReport } from '../lib/harvestReport';
+import { addGardenCost, addGardenHours, loadGardenEconomics, removeGardenCost, removeGardenHours } from '../lib/gardenEconomics';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Beet-Architekt: the crop catalog (same for everyone) and the beds of a
@@ -312,6 +316,62 @@ router.get(
     const season = idParam(req, 'season');
     if (season === null) return notFound(res);
     res.json(GetHarvestReportResponse.parse(await loadHarvestReport(req.farm!.farmId, season)));
+  }),
+);
+
+// ── Wirtschaftlichkeit ───────────────────────────────────────────────────────
+
+router.get(
+  '/farms/:farmId/garden/seasons/:season/economics',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    const season = idParam(req, 'season');
+    if (season === null) return notFound(res);
+    res.json(GetGardenEconomicsResponse.parse(await loadGardenEconomics(req.farm!.farmId, season)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/garden/costs',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = AddGardenCostBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    await addGardenCost(req.farm!.farmId, body.data);
+    res.sendStatus(204);
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/garden/costs/:costId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const id = idParam(req, 'costId');
+    if (id === null) return notFound(res);
+    await removeGardenCost(req.farm!.farmId, id);
+    res.sendStatus(204);
+  }),
+);
+
+router.post(
+  '/farms/:farmId/garden/hours',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = AddGardenHoursBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    await addGardenHours(req.farm!.farmId, body.data);
+    res.sendStatus(204);
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/garden/hours/:hoursId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const id = idParam(req, 'hoursId');
+    if (id === null) return notFound(res);
+    await removeGardenHours(req.farm!.farmId, id);
+    res.sendStatus(204);
   }),
 );
 

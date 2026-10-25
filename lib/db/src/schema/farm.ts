@@ -19,6 +19,7 @@ import {
 import { sql } from "drizzle-orm";
 import { taskIntervalUnitEnum } from "./tasks";
 import { beeColoniesTable } from "./bees";
+import { gardenBedsTable } from "./garden";
 
 // "Meine Farm" – the animal module of Little Farming (docs/meine-farm-app.md).
 //
@@ -453,10 +454,13 @@ export const farmPricesTable = pgTable(
   (table) => [primaryKey({ columns: [table.farmId, table.key] })],
 );
 
-// Ertrag & Bilanz: what the farm spent (feed, vet, bedding, seed, animals,
-// equipment, other), so the year's value can be set against its costs.
-export const EXPENSE_CATEGORIES = ["feed", "vet", "bedding", "seeds", "animals", "equipment", "other"] as const;
+// Ertrag & Bilanz: what the farm spent (feed, vet, bedding, seed, soil and
+// fertiliser, water, animals, equipment, other), so the year's value can be
+// set against its costs.
+export const EXPENSE_CATEGORIES = ["feed", "vet", "bedding", "seeds", "soil", "water", "animals", "equipment", "other"] as const;
 export type ExpenseCategory = (typeof EXPENSE_CATEGORIES)[number];
+/** Garden-Wirtschaftlichkeit: these count for the garden unless said otherwise. */
+export const GARDEN_EXPENSE_CATEGORIES: readonly ExpenseCategory[] = ["seeds", "soil", "water"];
 
 export const farmExpensesTable = pgTable(
   "farm_expenses",
@@ -468,6 +472,9 @@ export const farmExpensesTable = pgTable(
     date: date("date", { mode: "string" }).notNull(),
     category: text("category").notNull(),
     amountEur: doublePrecision("amount_eur").notNull(),
+    // Garten-Wirtschaftlichkeit: a garden cost, optionally for one bed.
+    garden: boolean("garden").notNull().default(false),
+    bedId: integer("bed_id").references(() => gardenBedsTable.id, { onDelete: "set null" }),
     note: text("note"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },

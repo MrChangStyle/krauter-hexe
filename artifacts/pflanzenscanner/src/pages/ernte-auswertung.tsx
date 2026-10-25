@@ -3,6 +3,7 @@ import { Link } from "wouter";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { ArrowLeft, Award, BarChart3, Loader2 } from "lucide-react";
 import { useEnsureOwnFarm, useGetHarvestReport, type FarmSummary, type HarvestReport } from "@workspace/api-client-react";
+import { GardenEconomicsSection } from "@/components/garden-economics";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { MONTHS, changeText, euro, num } from "@/lib/yield-labels";
 
@@ -158,7 +159,10 @@ function Season({ farm }: { farm: FarmSummary }) {
       {report.isLoading ? (
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       ) : report.data ? (
-        <Report r={report.data} />
+        <>
+          <Report r={report.data} />
+          <GardenEconomicsSection farm={farm} season={season} />
+        </>
       ) : (
         <p className="text-sm text-muted-foreground">Die Auswertung lässt sich gerade nicht laden.</p>
       )}
@@ -188,7 +192,7 @@ export default function ErnteAuswertungPage() {
           <BarChart3 className="h-6 w-6 text-primary" />
           Ernte-Auswertung
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Was jede Kultur und jedes Beet gebracht hat – und was sich gelohnt hat.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Was jede Kultur und jedes Beet gebracht hat, was der Garten gekostet hat – und was sich gelohnt hat.</p>
       </div>
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Season farm={farm} />}
     </div>

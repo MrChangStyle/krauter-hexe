@@ -31,6 +31,8 @@ export * from "./reports";
 export * from "./farm";
 export * from "./garden";
 export * from "./bees";
+export * from "./pantry";
+export * from "./pasture";
 export * from "./monitoring";
 export * from "./feed";
 export * from "./weather";

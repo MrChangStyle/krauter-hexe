@@ -2414,6 +2414,380 @@ paths:
           description: Invalid input.
         "404":
           description: Not found.
+  /farms/{farmId}/pantry:
+    get:
+      tags: [farm]
+      operationId: getPantry
+      summary: Vorratskammer – stores, what runs out, recent harvests (docs/vorratskammer.md)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    post:
+      tags: [farm]
+      operationId: createPantryItem
+      summary: Put something by (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PantryItemInput"
+      responses:
+        "201":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pantry/{itemId}:
+    put:
+      tags: [farm]
+      operationId: updatePantryItem
+      summary: Change a store (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PantryItemInput"
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    delete:
+      tags: [farm]
+      operationId: deletePantryItem
+      summary: Delete a store (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pantry/{itemId}/take:
+    post:
+      tags: [farm]
+      operationId: takeFromPantry
+      summary: Take something out (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PantryTakeInput"
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pantry/{itemId}/uses/{useId}:
+    delete:
+      tags: [farm]
+      operationId: undoPantryUse
+      summary: Undo taking out (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: useId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pantry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PantryOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pastures:
+    get:
+      tags: [farm]
+      operationId: getPastures
+      summary: Weide – pastures, grazing diary and hints (docs/weide.md)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    post:
+      tags: [farm]
+      operationId: createPasture
+      summary: Add a pasture (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PastureInput"
+      responses:
+        "201":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pastures/{pastureId}:
+    put:
+      tags: [farm]
+      operationId: updatePasture
+      summary: Change a pasture (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: pastureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PastureInput"
+      responses:
+        "200":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+    delete:
+      tags: [farm]
+      operationId: deletePasture
+      summary: Delete a pasture with its diary (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: pastureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pastures/{pastureId}/grazings:
+    post:
+      tags: [farm]
+      operationId: startGrazing
+      summary: Auftreiben – or umtreiben from another pasture (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: pastureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrazingInput"
+      responses:
+        "201":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/grazings/{grazingId}/end:
+    put:
+      tags: [farm]
+      operationId: endGrazing
+      summary: Abtreiben (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: grazingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GrazingEndInput"
+      responses:
+        "200":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/grazings/{grazingId}:
+    delete:
+      tags: [farm]
+      operationId: deleteGrazing
+      summary: Delete a diary entry (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: grazingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
   /farms/{farmId}/yields:
     post:
       tags: [farm]
@@ -7005,6 +7379,291 @@ components:
           type: number
         perHenDay:
           type: number
+    PastureKind:
+      type: string
+      enum: [pasture, mowing, paddock, meadow]
+    PastureStatus:
+      type: string
+      enum: [grazed, resting, ready]
+    Grazing:
+      type: object
+      required: [id, pastureId, herdId, label, animals, startOn, endOn, notes]
+      properties:
+        id:
+          type: integer
+        pastureId:
+          type: integer
+        herdId:
+          type: [integer, 'null']
+        label:
+          type: string
+        animals:
+          type: integer
+        startOn:
+          type: string
+        endOn:
+          type: [string, 'null']
+          description: Null – still grazing.
+        notes:
+          type: [string, 'null']
+    PastureHint:
+      type: object
+      required: [kind, pastureId, urgent, text]
+      properties:
+        kind:
+          type: string
+          enum: [too-long, early]
+        pastureId:
+          type: integer
+        urgent:
+          type: boolean
+        text:
+          type: string
+    Pasture:
+      type: object
+      required: [id, name, kind, areaHa, restDays, maxGrazeDays, notes, archived, status, current, readyOn, grazingDays, animalDays, animalDaysPerHa, grazings, hints]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/PastureKind"
+        areaHa:
+          type: [number, 'null']
+        restDays:
+          type: integer
+        maxGrazeDays:
+          type: integer
+        notes:
+          type: [string, 'null']
+        archived:
+          type: boolean
+        status:
+          $ref: "#/components/schemas/PastureStatus"
+        current:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/Grazing"
+        readyOn:
+          type: [string, 'null']
+          description: When the rest after the last grazing ends.
+        grazingDays:
+          type: integer
+          description: This year.
+        animalDays:
+          type: integer
+          description: This year – days × animals.
+        animalDaysPerHa:
+          type: [integer, 'null']
+        grazings:
+          type: array
+          description: The last ten entries of the diary.
+          items:
+            $ref: "#/components/schemas/Grazing"
+        hints:
+          type: array
+          items:
+            $ref: "#/components/schemas/PastureHint"
+    PastureHerd:
+      type: object
+      required: [id, name, species, animals]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        animals:
+          type: integer
+    PastureOverview:
+      type: object
+      required: [pastures, herds, year]
+      properties:
+        pastures:
+          type: array
+          items:
+            $ref: "#/components/schemas/Pasture"
+        herds:
+          type: array
+          items:
+            $ref: "#/components/schemas/PastureHerd"
+        year:
+          type: integer
+    PastureInput:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 60
+        kind:
+          $ref: "#/components/schemas/PastureKind"
+        areaHa:
+          type: [number, 'null']
+        restDays:
+          type: integer
+        maxGrazeDays:
+          type: integer
+        notes:
+          type: [string, 'null']
+          maxLength: 500
+        archived:
+          type: boolean
+    GrazingInput:
+      type: object
+      required: [animals, startOn]
+      properties:
+        herdId:
+          type: [integer, 'null']
+        label:
+          type: [string, 'null']
+          maxLength: 60
+        animals:
+          type: integer
+        startOn:
+          type: string
+        fromGrazingId:
+          type: [integer, 'null']
+          description: Umtreiben – the grazing the herd leaves; it ends the day before.
+        notes:
+          type: [string, 'null']
+          maxLength: 300
+    GrazingEndInput:
+      type: object
+      required: [endOn]
+      properties:
+        endOn:
+          type: string
+    PantryKind:
+      type: string
+      enum: [canned, frozen, dried, pickled, fermented, juice, jam, honey, eggs, other]
+    PantryStatus:
+      type: string
+      enum: [ok, soon, expired, empty]
+    PantryUse:
+      type: object
+      required: [id, itemId, date, amount]
+      properties:
+        id:
+          type: integer
+        itemId:
+          type: integer
+        date:
+          type: string
+        amount:
+          type: number
+    PantryItem:
+      type: object
+      required: [id, name, kind, cropKey, harvestId, amount, initialAmount, unit, location, madeOn, bestBefore, notes, status, uses]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        kind:
+          $ref: "#/components/schemas/PantryKind"
+        cropKey:
+          type: [string, 'null']
+        harvestId:
+          type: [integer, 'null']
+        amount:
+          type: number
+          description: What is left.
+        initialAmount:
+          type: number
+        unit:
+          type: string
+        location:
+          type: [string, 'null']
+        madeOn:
+          type: string
+        bestBefore:
+          type: [string, 'null']
+        notes:
+          type: [string, 'null']
+        status:
+          $ref: "#/components/schemas/PantryStatus"
+        uses:
+          type: array
+          description: The last five times something was taken out.
+          items:
+            $ref: "#/components/schemas/PantryUse"
+    PantryHarvest:
+      type: object
+      required: [id, label, cropKey, harvestedOn, amountKg]
+      properties:
+        id:
+          type: integer
+        label:
+          type: string
+        cropKey:
+          type: [string, 'null']
+        harvestedOn:
+          type: string
+        amountKg:
+          type: number
+    PantryOverview:
+      type: object
+      required: [items, stocked, soon, expired, locations, harvests]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PantryItem"
+        stocked:
+          type: integer
+        soon:
+          type: integer
+        expired:
+          type: integer
+        locations:
+          type: array
+          items:
+            type: string
+        harvests:
+          type: array
+          description: Harvests of the last 120 days, to make a store from.
+          items:
+            $ref: "#/components/schemas/PantryHarvest"
+    PantryItemInput:
+      type: object
+      required: [name, kind, amount, unit, madeOn]
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 80
+        kind:
+          $ref: "#/components/schemas/PantryKind"
+        amount:
+          type: number
+        unit:
+          type: string
+          minLength: 1
+          maxLength: 20
+        location:
+          type: [string, 'null']
+          maxLength: 60
+        madeOn:
+          type: string
+        bestBefore:
+          type: [string, 'null']
+        harvestId:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+          maxLength: 500
+    PantryTakeInput:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: number
+        date:
+          type: [string, 'null']
     BeeColonyStatus:
       type: string
       enum: [active, dissolved, lost, sold]
@@ -7545,7 +8204,7 @@ components:
           type: [number, 'null']
     ModuleId:
       type: string
-      enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members, bees]
+      enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members, bees, pantry, pasture]
     UserSettings:
       type: object
       required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare]
@@ -7592,7 +8251,7 @@ components:
     PushTopic:
       type: string
       description: What a push is about – each can be switched off (docs/benachrichtigungen.md)
-      enum: [plant-care, farm-tasks, feed, medicines, breeding, duties, weather, garden, grow, wildlife, bees, admin]
+      enum: [plant-care, farm-tasks, feed, medicines, breeding, duties, weather, garden, grow, wildlife, bees, pantry, pasture, admin]
     QuietHours:
       type: object
       description: No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes
@@ -7620,7 +8279,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [plants, insects, animals, herds, beds, seeds, medicines, feeds, bees, contacts]
+          enum: [plants, insects, animals, herds, beds, seeds, medicines, feeds, bees, pantry, pastures, contacts]
         label:
           type: string
         items:

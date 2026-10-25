@@ -7,7 +7,7 @@
 import type { FarmRole } from '@workspace/db';
 
 /** The farm modules that can be granted (ids as in ModuleId / lib/modules.ts). */
-export const FARM_MODULES = ['farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'garden', 'bees'] as const;
+export const FARM_MODULES = ['farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'garden', 'bees', 'pantry', 'pasture'] as const;
 export type FarmModule = (typeof FARM_MODULES)[number];
 
 /**
@@ -44,6 +44,9 @@ const SEGMENT_MODULE: Record<string, FarmModule> = {
   harvests: 'garden',
   'helpful-plants': 'garden',
   bees: 'bees',
+  pantry: 'pantry',
+  pastures: 'pasture',
+  grazings: 'pasture',
 };
 
 /**

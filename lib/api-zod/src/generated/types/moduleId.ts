@@ -31,4 +31,6 @@ export const ModuleId = {
   export: 'export',
   members: 'members',
   bees: 'bees',
+  pantry: 'pantry',
+  pasture: 'pasture',
 } as const;

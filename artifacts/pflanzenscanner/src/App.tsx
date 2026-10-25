@@ -65,6 +65,8 @@ import LegeleistungPage from '@/pages/legeleistung';
 import StallPage from '@/pages/stall';
 import BienenPage from '@/pages/bienen';
 import BienenVolkPage from '@/pages/bienen-volk';
+import VorratPage from '@/pages/vorrat';
+import WeidePage from '@/pages/weide';
 import ErnteAuswertungPage from '@/pages/ernte-auswertung';
 import GrowPage from '@/pages/grow';
 import GrowPlantPage from '@/pages/grow-plant';
@@ -175,6 +177,8 @@ function Router() {
         <Route path="/farm/stall" component={StallPage} />
         <Route path="/farm/bienen" component={BienenPage} />
         <Route path="/farm/bienen/:colonyId" component={BienenVolkPage} />
+        <Route path="/vorrat" component={VorratPage} />
+        <Route path="/farm/weide" component={WeidePage} />
         <Route path="/grow" component={GrowPage} />
         <Route path="/grow/pflanze/:plantId" component={GrowPlantPage} />
         <Route path="/grow/kosten/:growId" component={GrowKostenPage} />

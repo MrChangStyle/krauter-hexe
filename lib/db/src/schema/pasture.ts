@@ -1,0 +1,51 @@
+import { date, doublePrecision, index, integer, pgTable, serial, text, timestamp } from "drizzle-orm/pg-core";
+import { farmsTable, herdsTable } from "./farm";
+
+// Weide (docs/weide.md): the farm's pastures and the grazing diary – which
+// herd grazed where, from when to when, with how many animals.
+
+export const PASTURE_KINDS = ["pasture", "mowing", "paddock", "meadow"] as const;
+export type PastureKind = (typeof PASTURE_KINDS)[number];
+
+export const pasturesTable = pgTable(
+  "pastures",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    name: text("name").notNull(),
+    kind: text("kind").$type<PastureKind>().notNull().default("pasture"),
+    areaHa: doublePrecision("area_ha"),
+    // Days the grass needs after grazing, and how long a herd should stay.
+    restDays: integer("rest_days").notNull().default(35),
+    maxGrazeDays: integer("max_graze_days").notNull().default(10),
+    notes: text("notes"),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("pastures_farm_idx").on(table.farmId)],
+);
+
+export const pastureGrazingsTable = pgTable(
+  "pasture_grazings",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    pastureId: integer("pasture_id")
+      .notNull()
+      .references(() => pasturesTable.id, { onDelete: "cascade" }),
+    herdId: integer("herd_id").references(() => herdsTable.id, { onDelete: "set null" }),
+    // The herd's name when it grazed – kept when the herd goes.
+    label: text("label").notNull(),
+    animals: integer("animals").notNull(),
+    startOn: date("start_on", { mode: "string" }).notNull(),
+    // Null: still grazing.
+    endOn: date("end_on", { mode: "string" }),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("pasture_grazings_pasture_idx").on(table.pastureId, table.startOn)],
+);

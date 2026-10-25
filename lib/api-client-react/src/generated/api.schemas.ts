@@ -1124,6 +1124,256 @@ export interface YieldOverview {
   feedCost: null | FeedCostEstimate;
 }
 
+export type PastureKind = typeof PastureKind[keyof typeof PastureKind];
+
+
+export const PastureKind = {
+  pasture: 'pasture',
+  mowing: 'mowing',
+  paddock: 'paddock',
+  meadow: 'meadow',
+} as const;
+
+export type PastureStatus = typeof PastureStatus[keyof typeof PastureStatus];
+
+
+export const PastureStatus = {
+  grazed: 'grazed',
+  resting: 'resting',
+  ready: 'ready',
+} as const;
+
+export interface Grazing {
+  id: number;
+  pastureId: number;
+  /** @nullable */
+  herdId: number | null;
+  label: string;
+  animals: number;
+  startOn: string;
+  /**
+     * Null – still grazing.
+     * @nullable
+     */
+  endOn: string | null;
+  /** @nullable */
+  notes: string | null;
+}
+
+export type PastureHintKind = typeof PastureHintKind[keyof typeof PastureHintKind];
+
+
+export const PastureHintKind = {
+  'too-long': 'too-long',
+  early: 'early',
+} as const;
+
+export interface PastureHint {
+  kind: PastureHintKind;
+  pastureId: number;
+  urgent: boolean;
+  text: string;
+}
+
+export interface Pasture {
+  id: number;
+  name: string;
+  kind: PastureKind;
+  /** @nullable */
+  areaHa: number | null;
+  restDays: number;
+  maxGrazeDays: number;
+  /** @nullable */
+  notes: string | null;
+  archived: boolean;
+  status: PastureStatus;
+  current: null | Grazing;
+  /**
+     * When the rest after the last grazing ends.
+     * @nullable
+     */
+  readyOn: string | null;
+  /** This year. */
+  grazingDays: number;
+  /** This year – days × animals. */
+  animalDays: number;
+  /** @nullable */
+  animalDaysPerHa: number | null;
+  /** The last ten entries of the diary. */
+  grazings: Grazing[];
+  hints: PastureHint[];
+}
+
+export interface PastureHerd {
+  id: number;
+  name: string;
+  species: FarmSpecies;
+  animals: number;
+}
+
+export interface PastureOverview {
+  pastures: Pasture[];
+  herds: PastureHerd[];
+  year: number;
+}
+
+export interface PastureInput {
+  /**
+     * @minLength 1
+     * @maxLength 60
+     */
+  name: string;
+  kind?: PastureKind;
+  /** @nullable */
+  areaHa?: number | null;
+  restDays?: number;
+  maxGrazeDays?: number;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  notes?: string | null;
+  archived?: boolean;
+}
+
+export interface GrazingInput {
+  /** @nullable */
+  herdId?: number | null;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  label?: string | null;
+  animals: number;
+  startOn: string;
+  /**
+     * Umtreiben – the grazing the herd leaves; it ends the day before.
+     * @nullable
+     */
+  fromGrazingId?: number | null;
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface GrazingEndInput {
+  endOn: string;
+}
+
+export type PantryKind = typeof PantryKind[keyof typeof PantryKind];
+
+
+export const PantryKind = {
+  canned: 'canned',
+  frozen: 'frozen',
+  dried: 'dried',
+  pickled: 'pickled',
+  fermented: 'fermented',
+  juice: 'juice',
+  jam: 'jam',
+  honey: 'honey',
+  eggs: 'eggs',
+  other: 'other',
+} as const;
+
+export type PantryStatus = typeof PantryStatus[keyof typeof PantryStatus];
+
+
+export const PantryStatus = {
+  ok: 'ok',
+  soon: 'soon',
+  expired: 'expired',
+  empty: 'empty',
+} as const;
+
+export interface PantryUse {
+  id: number;
+  itemId: number;
+  date: string;
+  amount: number;
+}
+
+export interface PantryItem {
+  id: number;
+  name: string;
+  kind: PantryKind;
+  /** @nullable */
+  cropKey: string | null;
+  /** @nullable */
+  harvestId: number | null;
+  /** What is left. */
+  amount: number;
+  initialAmount: number;
+  unit: string;
+  /** @nullable */
+  location: string | null;
+  madeOn: string;
+  /** @nullable */
+  bestBefore: string | null;
+  /** @nullable */
+  notes: string | null;
+  status: PantryStatus;
+  /** The last five times something was taken out. */
+  uses: PantryUse[];
+}
+
+export interface PantryHarvest {
+  id: number;
+  label: string;
+  /** @nullable */
+  cropKey: string | null;
+  harvestedOn: string;
+  amountKg: number;
+}
+
+export interface PantryOverview {
+  items: PantryItem[];
+  stocked: number;
+  soon: number;
+  expired: number;
+  locations: string[];
+  /** Harvests of the last 120 days, to make a store from. */
+  harvests: PantryHarvest[];
+}
+
+export interface PantryItemInput {
+  /**
+     * @minLength 1
+     * @maxLength 80
+     */
+  name: string;
+  kind: PantryKind;
+  amount: number;
+  /**
+     * @minLength 1
+     * @maxLength 20
+     */
+  unit: string;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  location?: string | null;
+  madeOn: string;
+  /** @nullable */
+  bestBefore?: string | null;
+  /** @nullable */
+  harvestId?: number | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  notes?: string | null;
+}
+
+export interface PantryTakeInput {
+  amount: number;
+  /** @nullable */
+  date?: string | null;
+}
+
 export type BeeColonyStatus = typeof BeeColonyStatus[keyof typeof BeeColonyStatus];
 
 
@@ -1583,6 +1833,8 @@ export const ModuleId = {
   export: 'export',
   members: 'members',
   bees: 'bees',
+  pantry: 'pantry',
+  pasture: 'pasture',
 } as const;
 
 /**
@@ -1603,6 +1855,8 @@ export const PushTopic = {
   grow: 'grow',
   wildlife: 'wildlife',
   bees: 'bees',
+  pantry: 'pantry',
+  pasture: 'pasture',
   admin: 'admin',
 } as const;
 
@@ -1656,6 +1910,8 @@ export const SearchGroupKind = {
   medicines: 'medicines',
   feeds: 'feeds',
   bees: 'bees',
+  pantry: 'pantry',
+  pastures: 'pastures',
   contacts: 'contacts',
 } as const;
 

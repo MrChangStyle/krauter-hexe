@@ -137,6 +137,7 @@ Plan in `docs/wetter.md` (`lib/farmWeather.ts`, `routes/farm-weather.ts`, card `
 - Location: the farm's own (admin sets postal code or GPS, rounded to 0.1°), else the first bed with one. Forecast: Bright Sky (DWD), three Berlin days from hourly records, cached an hour per rounded position; an unreachable service gives no days, never an error.
 - `weatherWarnings()` is pure: frost/hard frost/heat/storm/heavy rain by the species on the farm (no animals → none), plus a watering hint when beds are planted this season.
 - `sendWeatherDigests()` (push cron, 07:30) claims farm and day in `weather_digest_log` with the warning kinds and pushes only kinds that did not go out the day before; farms with nothing to warn about are claimed with `[]` so the cron does not ask again; a failed forecast is retried on the next call.
+- Official DWD warnings: `officialAlerts()`/`pickAlerts()` (Bright Sky `/alerts`, cached 10 min per rounded position; actual met/health warnings, no all-clear, not expired, worst first) → `alerts`/`alertArea` in the weather answer. `sendAlertPushes()` runs on every cron call: severe/extreme only, farms with animals or beds; `weather_alert_log` keyed by event code + first day (DWD re-issues updates under new ids) and re-pushed only when the level rises.
 
 ## Arzneimittel-Vorrat
 

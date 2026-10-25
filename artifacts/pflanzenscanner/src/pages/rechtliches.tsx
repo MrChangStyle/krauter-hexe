@@ -183,8 +183,9 @@ export function DatenschutzPage() {
             → ungefährer Ort; übermittelt wird nur die Postleitzahl)
           </li>
           <li>
-            Bright Sky mit Daten des Deutschen Wetterdienstes (Beet-Architekt:
-            Frosttermine und Frostwarnung; übermittelt wird nur ein auf etwa 10 km gerundeter Ort)
+            Bright Sky mit Daten des Deutschen Wetterdienstes (Beet-Architekt: Frosttermine und
+            Frostwarnung; Wetter und amtliche Unwetterwarnungen für den Hof; übermittelt wird nur ein auf
+            etwa 10 km gerundeter Ort)
           </li>
           <li>
             OpenStreetMap Foundation (Weidekarte: Kartenbilder, erst nach Tipp auf „Karte zeigen“; deren

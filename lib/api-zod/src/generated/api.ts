@@ -2136,7 +2136,18 @@ export const GetFarmWeatherResponse = zod.object({
   "kind": zod.enum(['hardFrost', 'frost', 'heat', 'storm', 'rain', 'dry']),
   "date": zod.string(),
   "text": zod.string()
-}))
+})),
+  "alerts": zod.array(zod.object({
+  "id": zod.string(),
+  "event": zod.string(),
+  "headline": zod.string(),
+  "description": zod.string(),
+  "instruction": zod.string().nullable(),
+  "severity": zod.enum(['minor', 'moderate', 'severe', 'extreme']),
+  "onset": zod.string(),
+  "expires": zod.string().nullable()
+}).describe('An official warning of the DWD for the farm\'s area (via Bright Sky).')).describe('Official DWD warnings in effect or coming, the worst first.'),
+  "alertArea": zod.string().nullable().describe('The DWD warning area the farm\'s position falls in.')
 })
 
 
@@ -2172,7 +2183,18 @@ export const SetFarmLocationResponse = zod.object({
   "kind": zod.enum(['hardFrost', 'frost', 'heat', 'storm', 'rain', 'dry']),
   "date": zod.string(),
   "text": zod.string()
-}))
+})),
+  "alerts": zod.array(zod.object({
+  "id": zod.string(),
+  "event": zod.string(),
+  "headline": zod.string(),
+  "description": zod.string(),
+  "instruction": zod.string().nullable(),
+  "severity": zod.enum(['minor', 'moderate', 'severe', 'extreme']),
+  "onset": zod.string(),
+  "expires": zod.string().nullable()
+}).describe('An official warning of the DWD for the farm\'s area (via Bright Sky).')).describe('Official DWD warnings in effect or coming, the worst first.'),
+  "alertArea": zod.string().nullable().describe('The DWD warning area the farm\'s position falls in.')
 })
 
 

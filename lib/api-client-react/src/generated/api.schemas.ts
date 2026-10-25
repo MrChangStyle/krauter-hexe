@@ -526,10 +526,43 @@ export interface WeatherWarning {
   text: string;
 }
 
+export type OfficialAlertSeverity = typeof OfficialAlertSeverity[keyof typeof OfficialAlertSeverity];
+
+
+export const OfficialAlertSeverity = {
+  minor: 'minor',
+  moderate: 'moderate',
+  severe: 'severe',
+  extreme: 'extreme',
+} as const;
+
+/**
+ * An official warning of the DWD for the farm's area (via Bright Sky).
+ */
+export interface OfficialAlert {
+  id: string;
+  event: string;
+  headline: string;
+  description: string;
+  /** @nullable */
+  instruction: string | null;
+  severity: OfficialAlertSeverity;
+  onset: string;
+  /** @nullable */
+  expires: string | null;
+}
+
 export interface FarmWeather {
   location: null | FarmLocation;
   days: DayForecast[];
   warnings: WeatherWarning[];
+  /** Official DWD warnings in effect or coming, the worst first. */
+  alerts: OfficialAlert[];
+  /**
+     * The DWD warning area the farm's position falls in.
+     * @nullable
+     */
+  alertArea: string | null;
 }
 
 export type MedicineStatus = typeof MedicineStatus[keyof typeof MedicineStatus];

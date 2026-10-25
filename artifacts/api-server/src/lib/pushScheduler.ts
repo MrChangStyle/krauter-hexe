@@ -26,7 +26,7 @@ import { sendPastureDigests } from "./pasture";
 import { removeExpiredMemberships } from "./farmMembers";
 import { sendPushToUser } from "./webPush";
 import { careDue, careForecast, rainWaters, seasonalCareOn, sendFrostNotices } from "./careWeather";
-import { sendWeatherDigests, WEATHER_DIGEST_TIME, type DayForecast } from "./farmWeather";
+import { sendAlertPushes, sendWeatherDigests, WEATHER_DIGEST_TIME, type DayForecast } from "./farmWeather";
 
 // All reminder times in the app are entered as German local wall-clock times
 // (HH:MM), so the scheduler evaluates "now" in Europe/Berlin regardless of
@@ -313,6 +313,8 @@ export async function triggerDueNotifications(): Promise<number> {
 
   // ── Weather warnings for the farm ─────────────────────────────────────────
   triggered += await sendWeatherDigests(hhmm, dateKey);
+  // Official DWD warnings: severe ones as soon as they appear.
+  triggered += await sendAlertPushes(dateKey);
 
   // ── Arzneimittel-Vorrat: expiry ───────────────────────────────────────────
   triggered += await sendMedicineDigests(hhmm, dateKey);

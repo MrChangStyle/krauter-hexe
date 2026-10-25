@@ -45,12 +45,12 @@ import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useModules } from "@/hooks/use-modules";
 import { WIDGET_MODULE, farmModuleGranted } from "@/lib/modules";
 import { DashboardEditor } from "@/components/dashboard-editor";
-import { LocationForm } from "@/components/farm-weather-card";
+import { ALERT_STYLES, AlertBox, LocationForm } from "@/components/farm-weather-card";
 import { effectiveLayout, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
 import { openDuties, speciesCount } from "@/lib/duty-labels";
 import { GROW_ENABLED } from "@/lib/grow-labels";
 import { deDay } from "@/lib/medicine-labels";
-import { berlinToday, dayLabel, tempText } from "@/lib/weather-labels";
+import { ALERT_LEVEL_LABELS, alertWindow, berlinToday, dayLabel, tempText } from "@/lib/weather-labels";
 import { euro } from "@/lib/yield-labels";
 import { cn } from "@/lib/utils";
 
@@ -96,6 +96,8 @@ function WeatherStrip({ farm }: { farm: FarmSummary }) {
     );
   }
   const today = berlinToday();
+  // A server from before the DWD warnings sends none.
+  const alerts = data.alerts ?? [];
   const [first, ...rest] = data.days;
   const Icon = WEATHER_ICONS[first!.icon];
   const lows = data.days.map((d) => d.minTemp);
@@ -133,6 +135,15 @@ function WeatherStrip({ farm }: { farm: FarmSummary }) {
           )}
           <ChevronDown className={cn("h-5 w-5 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
         </span>
+        {alerts.length > 0 && !open && (
+          <span className={cn("mt-2 flex items-start gap-1.5 rounded-lg border px-2 py-1.5 text-xs", ALERT_STYLES[alerts[0]!.severity])} data-testid="hof-weather-alert">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <span className="line-clamp-2">
+              <span className="font-semibold">DWD – {ALERT_LEVEL_LABELS[alerts[0]!.severity]}, {alertWindow(alerts[0]!.onset, alerts[0]!.expires, today)}:</span> {alerts[0]!.headline}
+              {alerts.length > 1 && ` (+${alerts.length - 1} weitere)`}
+            </span>
+          </span>
+        )}
         {data.warnings.length > 0 && !open && (
           <span className="mt-2 flex items-start gap-1.5 rounded-lg bg-amber-50 px-2 py-1.5 text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -172,6 +183,14 @@ function WeatherStrip({ farm }: { farm: FarmSummary }) {
               );
             })}
           </ul>
+          {alerts.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-semibold text-muted-foreground">Amtliche Warnungen des DWD{data.alertArea ? ` · ${data.alertArea}` : ""}</p>
+              {alerts.map((a) => (
+                <AlertBox key={a.id} alert={a} today={today} />
+              ))}
+            </div>
+          )}
           {data.warnings.length > 0 && (
             <ul role="alert" className="space-y-1.5 rounded-lg bg-amber-50 p-2 text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-100">
               {data.warnings.map((w) => (
@@ -183,7 +202,7 @@ function WeatherStrip({ farm }: { farm: FarmSummary }) {
             </ul>
           )}
           <p className="flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-            <span>Deutscher Wetterdienst (über Bright Sky). Warnungen kommen morgens auch als Push.</span>
+            <span>Deutscher Wetterdienst (über Bright Sky). Hinweise kommen morgens als Push, Unwetterwarnungen des DWD sofort.</span>
             {isAdmin && (
               <button type="button" className="shrink-0 underline" onClick={() => setPlacing(!placing)}>
                 Standort ändern

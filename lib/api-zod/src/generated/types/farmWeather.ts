@@ -7,10 +7,18 @@
  */
 import type { DayForecast } from './dayForecast';
 import type { FarmLocation } from './farmLocation';
+import type { OfficialAlert } from './officialAlert';
 import type { WeatherWarning } from './weatherWarning';
 
 export interface FarmWeather {
   location: null | FarmLocation;
   days: DayForecast[];
   warnings: WeatherWarning[];
+  /** Official DWD warnings in effect or coming, the worst first. */
+  alerts: OfficialAlert[];
+  /**
+     * The DWD warning area the farm's position falls in.
+     * @nullable
+     */
+  alertArea: string | null;
 }

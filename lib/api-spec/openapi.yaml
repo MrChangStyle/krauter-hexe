@@ -6689,9 +6689,31 @@ components:
           type: string
         text:
           type: string
+    OfficialAlert:
+      type: object
+      description: An official warning of the DWD for the farm's area (via Bright Sky).
+      required: [id, event, headline, description, instruction, severity, onset, expires]
+      properties:
+        id:
+          type: string
+        event:
+          type: string
+        headline:
+          type: string
+        description:
+          type: string
+        instruction:
+          type: [string, 'null']
+        severity:
+          type: string
+          enum: [minor, moderate, severe, extreme]
+        onset:
+          type: string
+        expires:
+          type: [string, 'null']
     FarmWeather:
       type: object
-      required: [location, days, warnings]
+      required: [location, days, warnings, alerts, alertArea]
       properties:
         location:
           oneOf:
@@ -6705,6 +6727,14 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/WeatherWarning"
+        alerts:
+          type: array
+          description: Official DWD warnings in effect or coming, the worst first.
+          items:
+            $ref: "#/components/schemas/OfficialAlert"
+        alertArea:
+          type: [string, 'null']
+          description: The DWD warning area the farm's position falls in.
     Medicine:
       type: object
       required: [id, name, activeIngredient, unit, amount, batch, expiresOn, withdrawalMeatDays, withdrawalMilkDays, withdrawalEggsDays, vet, receivedOn, notes, archived, status, daysLeft, uses]

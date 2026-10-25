@@ -16,7 +16,7 @@ import { ARCHIVE_TABLES, PERSONAL_TABLES } from './accountDeletion';
 
 const LEFT_OUT = /hash|secret|password|token|p256dh|^auth$|payload|relay_?url|^image_?data/i;
 // Bookkeeping of sent reminders, nothing anyone entered.
-const INTERNAL = ['farm_memberships', 'farm_push_log', 'feed_digest_log', 'garden_digest_log', 'weather_digest_log'];
+const INTERNAL = ['farm_memberships', 'farm_push_log', 'feed_digest_log', 'garden_digest_log', 'weather_alert_log', 'weather_digest_log'];
 
 type Row = Record<string, unknown>;
 

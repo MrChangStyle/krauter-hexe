@@ -30,3 +30,20 @@ export const farmPushLogTable = pgTable(
   },
   (table) => [primaryKey({ columns: [table.farmId, table.topic, table.day] })],
 );
+
+// Amtliche DWD-Warnungen: which warning a farm was pushed, keyed by event and
+// day – DWD re-issues a warning under a new id when it changes, so a push only
+// comes again when the warning gets more severe.
+export const weatherAlertLogTable = pgTable(
+  "weather_alert_log",
+  {
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    key: text("key").notNull(),
+    // 1 minor … 4 extreme.
+    level: integer("level").notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.farmId, table.key] })],
+);

@@ -3,7 +3,9 @@
  * Service (DWD open data via Bright Sky) for three days, and fixed warnings
  * for the animals on the farm (frost, hard frost, heat, storm, heavy rain)
  * plus a watering hint for the garden. One morning push per farm; a warning
- * that lasts several days is pushed once. No AI.
+ * that lasts several days is pushed once. On top, the official warnings of
+ * the DWD for the farm's area (Bright Sky /alerts); severe ones are pushed as
+ * soon as they appear. No AI.
  *
  * Only the rounded position (0.1°, about 10 km) leaves the server.
  */
@@ -16,11 +18,12 @@ import {
   farmsTable,
   gardenBedsTable,
   herdsTable,
+  weatherAlertLogTable,
   weatherDigestLogTable,
   FARM_SPECIES,
   type FarmSpecies,
 } from '@workspace/db';
-import { and, asc, eq, inArray, isNotNull, isNull, lt } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNotNull, isNull, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound } from './farmAnimals';
 import { addDays } from './feedSeason';
@@ -248,6 +251,104 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
   return out;
 }
 
+// ── Official DWD warnings ────────────────────────────────────────────────────
+
+export type AlertSeverity = 'minor' | 'moderate' | 'severe' | 'extreme';
+export const ALERT_LEVEL: Record<AlertSeverity, number> = { minor: 1, moderate: 2, severe: 3, extreme: 4 };
+const ALERT_CACHE_MS = 10 * 60 * 1000;
+
+export interface OfficialAlert {
+  id: string;
+  event: string;
+  headline: string;
+  description: string;
+  instruction: string | null;
+  severity: AlertSeverity;
+  onset: string;
+  expires: string | null;
+}
+
+export interface OfficialAlerts {
+  /** The DWD warning area (municipality) the position falls in. */
+  area: string | null;
+  alerts: OfficialAlert[];
+}
+
+interface AlertRecord {
+  alert_id: string;
+  status: string;
+  onset: string;
+  expires: string | null;
+  category: string | null;
+  response_type: string | null;
+  severity: string | null;
+  event_code: number | null;
+  event_de: string | null;
+  headline_de: string;
+  description_de: string;
+  instruction_de: string | null;
+}
+
+/**
+ * Bright Sky's answer → the warnings that count: real (not test), weather or
+ * health (heat), not an all-clear, not yet over; the worst first.
+ */
+export function pickAlerts(records: AlertRecord[], now: Date): OfficialAlert[] {
+  return records
+    .filter(
+      (a) =>
+        a.status === 'actual' &&
+        (a.category === 'met' || a.category === 'health') &&
+        a.response_type !== 'allclear' &&
+        a.severity !== null &&
+        a.severity in ALERT_LEVEL &&
+        (a.expires === null || Date.parse(a.expires) > now.getTime()),
+    )
+    .map((a) => ({
+      id: a.alert_id,
+      event: a.event_de ?? a.headline_de,
+      headline: a.headline_de,
+      description: a.description_de,
+      instruction: a.instruction_de || null,
+      severity: a.severity as AlertSeverity,
+      onset: a.onset,
+      expires: a.expires,
+      code: a.event_code,
+    }))
+    .sort((a, b) => ALERT_LEVEL[b.severity] - ALERT_LEVEL[a.severity] || a.onset.localeCompare(b.onset))
+    .map(({ code: _code, ...alert }) => alert);
+}
+
+const alertCache = new Map<string, { result: OfficialAlerts; keys: Map<string, string>; at: number }>();
+
+/** The DWD warnings for the rounded position; none when the service does not answer. */
+async function fetchAlerts(latitude: number, longitude: number, now: Date): Promise<{ result: OfficialAlerts; keys: Map<string, string> }> {
+  const key = `${roundCoord(latitude)},${roundCoord(longitude)}`;
+  const hit = alertCache.get(key);
+  if (hit && now.getTime() - hit.at < ALERT_CACHE_MS) return hit;
+  try {
+    const url = `https://api.brightsky.dev/alerts?lat=${roundCoord(latitude)}&lon=${roundCoord(longitude)}&tz=Europe/Berlin`;
+    const res = await fetch(url, { headers: { 'User-Agent': USER_AGENT }, signal: AbortSignal.timeout(TIMEOUT_MS) });
+    if (!res.ok) throw new Error(`Bright Sky alerts ${res.status}`);
+    const body = (await res.json()) as { alerts?: AlertRecord[]; location?: { name?: string } | null };
+    const records = body.alerts ?? [];
+    const alerts = pickAlerts(records, now);
+    // Event and first day: the same warning under a new id is the same warning.
+    const keys = new Map(records.map((r) => [r.alert_id, `${r.event_code ?? r.event_de ?? r.alert_id}|${r.onset.slice(0, 10)}`]));
+    const entry = { result: { area: body.location?.name ?? null, alerts }, keys, at: now.getTime() };
+    alertCache.set(key, entry);
+    if (alertCache.size > 2_000) alertCache.delete(alertCache.keys().next().value!);
+    return entry;
+  } catch (err) {
+    logger.warn({ err }, 'Weather alerts failed');
+    return { result: { area: null, alerts: [] }, keys: new Map() };
+  }
+}
+
+export async function officialAlerts(latitude: number, longitude: number, now = new Date()): Promise<OfficialAlerts> {
+  return (await fetchAlerts(latitude, longitude, now)).result;
+}
+
 // ── For the app ──────────────────────────────────────────────────────────────
 
 async function farmSpecies(farmId: number): Promise<FarmSpecies[]> {
@@ -273,15 +374,17 @@ export interface FarmWeather {
   location: FarmLocation | null;
   days: DayForecast[];
   warnings: WeatherWarning[];
+  alerts: OfficialAlert[];
+  alertArea: string | null;
 }
 
 export async function farmWeather(farmId: number): Promise<FarmWeather> {
   const location = await farmLocation(farmId);
-  if (!location) return { location: null, days: [], warnings: [] };
+  if (!location) return { location: null, days: [], warnings: [], alerts: [], alertArea: null };
   const today = berlinDay();
-  const days = await forecast(location.latitude, location.longitude, today);
+  const [days, official] = await Promise.all([forecast(location.latitude, location.longitude, today), officialAlerts(location.latitude, location.longitude)]);
   const warnings = weatherWarnings(days, await farmSpecies(farmId), await hasGarden(farmId, Number(today.slice(0, 4))));
-  return { location, days, warnings };
+  return { location, days, warnings, alerts: official.alerts, alertArea: official.area };
 }
 
 // ── Morning push ─────────────────────────────────────────────────────────────
@@ -340,6 +443,64 @@ export async function sendWeatherDigests(hhmm: string, day: string): Promise<num
     }
   } catch (err) {
     logger.error({ err }, 'Weather pushes failed');
+  }
+  return sent;
+}
+
+// ── Push for official warnings ───────────────────────────────────────────────
+
+/** From „Unwetter“ (DWD level 3) on, a warning is pushed when it appears. */
+export const ALERT_PUSH_LEVEL = ALERT_LEVEL.severe;
+
+/**
+ * On every cron call: severe and extreme DWD warnings for farms with animals
+ * or a garden, to admins and caretakers – once per warning and farm, again
+ * only when it gets worse (weather_alert_log). Quiet times apply as for every
+ * push. Never throws.
+ */
+export async function sendAlertPushes(day: string, now = new Date()): Promise<number> {
+  let sent = 0;
+  try {
+    // On the database clock, like sent_at.
+    await db.delete(weatherAlertLogTable).where(lt(weatherAlertLogTable.sentAt, sql`now() - interval '14 days'`));
+    const farms = await db.select({ id: farmsTable.id }).from(farmsTable);
+    for (const { id: farmId } of farms) {
+      try {
+        const location = await farmLocation(farmId);
+        if (!location) continue;
+        if ((await farmSpecies(farmId)).length === 0 && !(await hasGarden(farmId, Number(day.slice(0, 4))))) continue;
+        const { result, keys } = await fetchAlerts(location.latitude, location.longitude, now);
+        for (const alert of result.alerts) {
+          const level = ALERT_LEVEL[alert.severity];
+          if (level < ALERT_PUSH_LEVEL) continue;
+          // Claim it first – new, or worse than what was pushed – so parallel calls cannot send twice.
+          const claimed = await db
+            .insert(weatherAlertLogTable)
+            .values({ farmId, key: keys.get(alert.id) ?? alert.id, level })
+            .onConflictDoUpdate({
+              target: [weatherAlertLogTable.farmId, weatherAlertLogTable.key],
+              set: { level, sentAt: sql`now()` },
+              setWhere: lt(weatherAlertLogTable.level, level),
+            })
+            .returning();
+          if (claimed.length === 0) continue;
+          const members = await db
+            .select({ userId: farmMembershipsTable.userId })
+            .from(farmMembershipsTable)
+            .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
+          const title = level === ALERT_LEVEL.extreme ? 'Extreme Unwetterwarnung (DWD)' : 'Unwetterwarnung des DWD';
+          const body = [alert.headline, alert.instruction].filter(Boolean).join(' – ').slice(0, 300);
+          for (const { userId } of members) {
+            await sendPushToUser(userId, { topic: 'weather', title, body, tag: `dwd-${farmId}-${alert.id}`, url: '/' });
+          }
+          sent += 1;
+        }
+      } catch (err) {
+        logger.warn({ err, farmId }, 'Weather alert push failed');
+      }
+    }
+  } catch (err) {
+    logger.error({ err }, 'Weather alert pushes failed');
   }
   return sent;
 }

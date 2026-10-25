@@ -305,6 +305,8 @@ export * from './moduleId';
 export * from './nutrientCheck';
 export * from './nutrientCheckNutrient';
 export * from './nutrientCheckStatus';
+export * from './officialAlert';
+export * from './officialAlertSeverity';
 export * from './okResult';
 export * from './orphanedDataReport';
 export * from './orphanedDataReportCounts';

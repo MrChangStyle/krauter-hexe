@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useModules } from "@/hooks/use-modules";
 import { useAuthContext } from "@/lib/auth-context";
+import { FINDER_STORAGE_KEY, hiddenForChoice, moduleLabel, readFinderChoice } from "@/lib/site";
 
 const STEPS = ["Willkommen", "Module", "Demo-Daten", "Fertig"] as const;
 
@@ -24,6 +25,8 @@ export function Onboarding() {
   const { user } = useAuthContext();
   const { settings } = useModules();
   const [step, setStep] = useState(0);
+  // The Modul-Finder on the homepage may have left a choice on this device.
+  const [finder, setFinder] = useState(readFinderChoice);
   const done = useSetSettings({
     mutation: { onSuccess: (data) => queryClient.setQueryData(getGetSettingsQueryKey(), data) },
   });
@@ -76,6 +79,28 @@ export function Onboarding() {
                 Blende aus, was du nicht brauchst. <span className="font-medium text-foreground">Lite</span> heißt kostenlos nutzbar, Premium bringt mehr. Module ohne Kennzeichnung gehören fest zur App.
               </DialogDescription>
             </DialogHeader>
+            {finder && (
+              <div className="space-y-2 rounded-xl border border-primary/40 bg-primary/5 p-3 text-sm" data-testid="finder-choice">
+                <p>
+                  <span className="font-medium">Aus dem Modul-Finder:</span> {finder.map(moduleLabel).join(", ")}
+                </p>
+                <Button
+                  size="sm"
+                  disabled={done.isPending}
+                  onClick={() => {
+                    done.mutate({ data: { hiddenModules: hiddenForChoice(finder) } });
+                    try {
+                      localStorage.removeItem(FINDER_STORAGE_KEY);
+                    } catch {
+                      // Nothing to clean up then.
+                    }
+                    setFinder(null);
+                  }}
+                >
+                  Diese Auswahl übernehmen
+                </Button>
+              </div>
+            )}
             <div className="space-y-4">
               <ModuleSwitches />
             </div>

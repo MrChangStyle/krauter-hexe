@@ -128,6 +128,7 @@ import type {
   GardenGoals,
   GardenHoursInput,
   GardenPlan,
+  GenerateSiteImageInput,
   GeoReverseInput,
   GeoReverseResult,
   GerminationTestInput,
@@ -165,6 +166,7 @@ import type {
   Lineage,
   LineageInput,
   ListPlantsParams,
+  ListSiteImages200,
   LoginInput,
   ManagedUser,
   MedicalRecord,
@@ -212,6 +214,7 @@ import type {
   Seed,
   SeedInput,
   SeedOverview,
+  SiteImageSlot,
   SpeciesSuggestion,
   Task,
   UpdateCareGuideInput,
@@ -20775,6 +20778,303 @@ export function useGetPremium<TData = Awaited<ReturnType<typeof getPremium>>, TE
 
 
 
+
+export const getListSiteImagesUrl = () => {
+
+
+
+
+  return `/api/site-images`
+}
+
+/**
+ * @summary Homepage pictures by slot (public)
+ */
+export const listSiteImages = async ( options?: RequestInit): Promise<ListSiteImages200> => {
+
+  return customFetch<ListSiteImages200>(getListSiteImagesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSiteImagesQueryKey = () => {
+    return [
+    `/api/site-images`
+    ] as const;
+    }
+
+
+export const getListSiteImagesQueryOptions = <TData = Awaited<ReturnType<typeof listSiteImages>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSiteImages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSiteImagesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSiteImages>>> = ({ signal }) => listSiteImages({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSiteImages>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSiteImagesQueryResult = NonNullable<Awaited<ReturnType<typeof listSiteImages>>>
+export type ListSiteImagesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Homepage pictures by slot (public)
+ */
+
+export function useListSiteImages<TData = Awaited<ReturnType<typeof listSiteImages>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSiteImages>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSiteImagesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getListSiteImageSlotsUrl = () => {
+
+
+
+
+  return `/api/admin/site-images`
+}
+
+/**
+ * @summary Owner – every homepage picture slot with prompt and picture
+ */
+export const listSiteImageSlots = async ( options?: RequestInit): Promise<SiteImageSlot[]> => {
+
+  return customFetch<SiteImageSlot[]>(getListSiteImageSlotsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListSiteImageSlotsQueryKey = () => {
+    return [
+    `/api/admin/site-images`
+    ] as const;
+    }
+
+
+export const getListSiteImageSlotsQueryOptions = <TData = Awaited<ReturnType<typeof listSiteImageSlots>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSiteImageSlots>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListSiteImageSlotsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listSiteImageSlots>>> = ({ signal }) => listSiteImageSlots({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listSiteImageSlots>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListSiteImageSlotsQueryResult = NonNullable<Awaited<ReturnType<typeof listSiteImageSlots>>>
+export type ListSiteImageSlotsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Owner – every homepage picture slot with prompt and picture
+ */
+
+export function useListSiteImageSlots<TData = Awaited<ReturnType<typeof listSiteImageSlots>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listSiteImageSlots>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListSiteImageSlotsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getGenerateSiteImageUrl = (slot: string,) => {
+
+
+
+
+  return `/api/admin/site-images/${slot}`
+}
+
+/**
+ * @summary Owner – let the image AI make a slot's picture (replaces the old one)
+ */
+export const generateSiteImage = async (slot: string,
+    generateSiteImageInput?: GenerateSiteImageInput, options?: RequestInit): Promise<SiteImageSlot[]> => {
+
+  return customFetch<SiteImageSlot[]>(getGenerateSiteImageUrl(slot),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(generateSiteImageInput)
+  }
+);}
+
+
+
+
+
+export const getGenerateSiteImageMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateSiteImage>>, TError,{slot: string;data?: BodyType<GenerateSiteImageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof generateSiteImage>>, TError,{slot: string;data?: BodyType<GenerateSiteImageInput>}, TContext> => {
+
+const mutationKey = ['generateSiteImage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof generateSiteImage>>, {slot: string;data?: BodyType<GenerateSiteImageInput>}> = (props) => {
+          const {slot,data} = props ?? {};
+
+          return  generateSiteImage(slot,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type GenerateSiteImageMutationResult = NonNullable<Awaited<ReturnType<typeof generateSiteImage>>>
+    export type GenerateSiteImageMutationBody = BodyType<GenerateSiteImageInput> | undefined
+    export type GenerateSiteImageMutationError = ErrorType<void>
+
+    /**
+ * @summary Owner – let the image AI make a slot's picture (replaces the old one)
+ */
+export const useGenerateSiteImage = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof generateSiteImage>>, TError,{slot: string;data?: BodyType<GenerateSiteImageInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof generateSiteImage>>,
+        TError,
+        {slot: string;data?: BodyType<GenerateSiteImageInput>},
+        TContext
+      > => {
+      return useMutation(getGenerateSiteImageMutationOptions(options));
+    }
+
+export const getDeleteSiteImageUrl = (slot: string,) => {
+
+
+
+
+  return `/api/admin/site-images/${slot}`
+}
+
+/**
+ * @summary Owner – remove a slot's picture (the drawing shows again)
+ */
+export const deleteSiteImage = async (slot: string, options?: RequestInit): Promise<SiteImageSlot[]> => {
+
+  return customFetch<SiteImageSlot[]>(getDeleteSiteImageUrl(slot),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteSiteImageMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSiteImage>>, TError,{slot: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteSiteImage>>, TError,{slot: string}, TContext> => {
+
+const mutationKey = ['deleteSiteImage'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteSiteImage>>, {slot: string}> = (props) => {
+          const {slot} = props ?? {};
+
+          return  deleteSiteImage(slot,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteSiteImageMutationResult = NonNullable<Awaited<ReturnType<typeof deleteSiteImage>>>
+
+    export type DeleteSiteImageMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Owner – remove a slot's picture (the drawing shows again)
+ */
+export const useDeleteSiteImage = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteSiteImage>>, TError,{slot: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteSiteImage>>,
+        TError,
+        {slot: string},
+        TContext
+      > => {
+      return useMutation(getDeleteSiteImageMutationOptions(options));
+    }
 
 export const getListPremiumUrl = () => {
 

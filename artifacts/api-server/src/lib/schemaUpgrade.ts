@@ -69,6 +69,14 @@ const STATEMENTS = [
   // it from their herd.
   `ALTER TABLE "pasture_grazings" ADD COLUMN IF NOT EXISTS "species" "farm_species"`,
   `UPDATE "pasture_grazings" g SET "species" = h."species" FROM "herds" h WHERE g."herd_id" = h."id" AND g."species" IS NULL`,
+  // Homepage pictures (schema/site.ts).
+  `CREATE TABLE IF NOT EXISTS "site_images" (
+	"slot" text PRIMARY KEY NOT NULL,
+	"url" text NOT NULL,
+	"prompt" text NOT NULL,
+	"model" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
   // Module and first-start assistant (schema/settings.ts).
   `CREATE TABLE IF NOT EXISTS "user_settings" (
 	"user_id" text PRIMARY KEY NOT NULL,

@@ -1991,6 +1991,28 @@ export interface GardenEconomics {
   hints: string[];
 }
 
+export interface SiteImageSlot {
+  slot: string;
+  title: string;
+  aspect: string;
+  prompt: string;
+  /** @nullable */
+  url: string | null;
+  /** @nullable */
+  model: string | null;
+  /** @nullable */
+  createdAt: string | null;
+}
+
+export interface GenerateSiteImageInput {
+  /**
+     * Added to the slot's prompt, e.g. "im Herbst".
+     * @maxLength 300
+     * @nullable
+     */
+  extra?: string | null;
+}
+
 export interface HarvestYear {
   kg: number;
   value: number;
@@ -5371,4 +5393,6 @@ export type SearchParams = {
 q: string;
 farmId?: number;
 };
+
+export type ListSiteImages200 = {[key: string]: string};
 

@@ -15,7 +15,7 @@ import {
 import { useAuthProviders } from "@/lib/use-auth-providers";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 import { TurnstileWidget, type TurnstileHandle } from "@/components/turnstile-widget";
-import { LandingPage } from "@/components/landing-page";
+import { SiteApp } from "@/components/site/site-app";
 
 /** Google's four-colour "G", the mark their brand guidelines ask for. */
 function GoogleMark() {
@@ -418,13 +418,20 @@ function WaitingForApprovalScreen() {
   );
 }
 
+/** "?start=login|register" from the homepage's sub pages opens the form directly. */
+function startView(search: string): "landing" | "login" | "register" {
+  if (readSignInError(search)) return "login";
+  const start = new URLSearchParams(search).get("start");
+  return start === "login" || start === "register" ? start : "landing";
+}
+
 /**
- * Signed out: the landing page first (docs/landingpage.md), the login form
+ * Signed out: the homepage first (docs/landingpage.md), the login form
  * after "Anmelden" or "Registrieren". A failed Google sign-in comes back to
  * the form straight away.
  */
 function PublicStart() {
-  const [view, setView] = useState<"landing" | "login" | "register">(() => (readSignInError(window.location.search) ? "login" : "landing"));
+  const [view, setView] = useState<"landing" | "login" | "register">(() => startView(window.location.search));
   const providers = useAuthProviders();
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -450,7 +457,7 @@ function PublicStart() {
         </p>
       </div>
     ) : null;
-    return <LandingPage onLogin={() => setView("login")} onRegister={() => setView("register")} google={google} />;
+    return <SiteApp onLogin={() => setView("login")} onRegister={() => setView("register")} google={google} />;
   }
   return <LoginScreen key={view} initialMode={view} onBack={() => setView("landing")} />;
 }

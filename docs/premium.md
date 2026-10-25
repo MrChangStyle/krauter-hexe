@@ -25,6 +25,22 @@ Die übrigen KI-Funktionen der App (Pflanzen- und Insektenscan, Hof- und Garten-
 |---|---|
 | `premium` | Ein Eintrag pro Konto. `source` ist `manual` (später der Zahlungsanbieter). `plan` ist `monthly`/`yearly`, sobald bezahlt wird; bei Hand-Vergabe ist es leer. `active_until` ist das Ende (leer = ohne Ende), dazu `granted_at`. Die Tabelle steht in `PERSONAL_TABLES` und wird mit dem Konto gelöscht. |
 
+## Pakete (Konzept, vorläufig)
+
+Die Homepage (`/preise`, `docs/landingpage.md`) zeigt drei Pakete. Die Preise sind ein **Vorschlag** und stehen an einer Stelle: `PLANS` in `artifacts/pflanzenscanner/src/lib/site.ts`. In der App ändert sich dadurch noch nichts. Freigeschaltet wird weiter per Hand, das KI-Tageslimit bleibt bei 15.
+
+| Paket | Preis (Vorschlag) | KI-Anfragen am Tag | Inhalt |
+|---|---|---|---|
+| Basis | kostenlos | 3 zum Kennenlernen | alle Module ohne KI, Erinnerungen, Team |
+| Lite | 2,99 €/Monat, 29,90 €/Jahr | 15 | dazu Pflanzen-/Insekten-Scan, Pflanzendoc, Beet-KI |
+| Premium | 5,99 €/Monat, 59,90 €/Jahr | 40 | dazu Hof-KI (Tierart, Haltungs-Wiki, Futter-Etikett), Bienen-Standort-Check, Wildtier-Radar-KI, Grow-KI-Check |
+
+Welche KI-Funktion welches Paket braucht, steht je Modul in `MODULE_SITE` (`ai.plan`). Der Modul-Finder empfiehlt das Paket daraus und aus der Antwort auf „KI nutzen?“.
+
+**Noch anzugleichen, bevor bezahlt wird:**
+- Die Kennzeichnung in der App: heute steht „Lite“ an Modulen, die kostenlos gehen und mit Premium mehr können (z. B. Grow), und die Beet-KI trägt „Premium“. Nach dem Konzept gehört die Beet-KI zu Lite.
+- Die Limits je Paket im Server (`withAiQuota`).
+
 ## Geplant: Bezahlung
 
 - **Modell**: Monatsabo und Jahresabo. Die Preise stehen noch nicht fest.

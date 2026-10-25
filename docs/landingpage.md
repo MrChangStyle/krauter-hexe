@@ -1,19 +1,46 @@
-# Landingpage, Vorschau-Schutz und Domain
+# Homepage, Vorschau-Schutz und Domain
 
-## Landingpage
+## Homepage
 
-Wer nicht angemeldet ist, sieht zuerst die Landingpage (`components/landing-page.tsx`). Sie zeigt:
+Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit eigenen Seiten und Menü (`components/site/`, Daten und Regeln in `lib/site.ts`):
 
-- Kopf mit „Dein Hof in einer App“, „Kostenlos registrieren“ und „Anmelden“
-- vier Stärken der App
-- den Hof (Dashboard)
-- alle Pflanzen- und Tiere-Module mit je einem erklärenden Satz (`lib/landing.ts`; ein Test hält die Liste gleich mit `MODULES`)
-- Team und Vertretung
-- Kostenlos / Lite / Premium
-- „So legst du los“ in drei Schritten
-- Fußzeile mit den Rechtsseiten
+| Seite | Adresse | Inhalt |
+|---|---|---|
+| Start | `/` | Hof-Illustration oder Foto, vier Stärken, die drei Bereiche, Hof-Startseite mit Screenshot, Pakete, drei Schritte |
+| Pflanzen | `/funktionen/pflanzen` | Untermenü mit allen Pflanzen-Modulen; je Modul Text, Punkte, KI-Teil mit Paket, Foto oder Screenshot |
+| Tiere | `/funktionen/tiere` | dasselbe für alle Tiere-Module |
+| Gemeinsam auf dem Hof | `/funktionen/hof` | Hof-Startseite, Team und Rollen, Urlaubsvertretung, Hilfe |
+| Preise & Pakete | `/preise` | Basis, Lite, Premium monatlich/jährlich, Vergleichstabelle, Fragen |
+| Modul-Finder | `/modul-finder` | Pflanzen, Tiere, Weide, Team, Ertrag und KI auswählen → empfohlene Module mit Grund und Paket |
 
-„Anmelden“ und „Registrieren“ öffnen das bekannte Formular. Ist Google eingerichtet, steht „Mit Google anmelden“ direkt unter den beiden Knöpfen. „Zurück zur Startseite“ führt wieder zur Landingpage. Ein fehlgeschlagener Google-Login landet direkt im Formular.
+- **Menü:** oben, auf dem Handy zum Ausklappen; die Unterseiten wechseln ohne Neuladen. Jede Seite setzt Titel und Beschreibung (für Suchmaschinen).
+- **Anmelden/Registrieren:** Auf `/` öffnen die Knöpfe das Formular direkt. Von den Unterseiten führen sie zu `/?start=login` bzw. `/?start=register`. Ist Google eingerichtet, steht „Mit Google anmelden“ auf der Startseite. Wer schon angemeldet ist, sieht auf den Unterseiten „Zur App“.
+- **Unterseiten für alle:** Sie werden vor der Anmeldung gewählt (`publicPageFor` in `App.tsx`), wie Impressum und Datenschutz.
+- **Texte je Modul:** `LANDING_TEXT` (`lib/landing.ts`) und `MODULE_SITE` (`lib/site.ts`). Tests halten beide gleich mit `MODULES`, ein neues Modul fehlt dort also nicht.
+- **Modul-Finder** (`recommend`, rein, `lib/site.test.ts`):
+  - Er empfiehlt nur, was passt. Wer Hühner und einen Gemüsegarten hat, bekommt keine Bienen und keine Weide.
+  - Das Paket folgt aus „KI nutzen?“: nein → Basis, ab und zu → Lite, oft → Premium, wenn ein Modul Hof-KI hat, sonst Lite. Grow mit KI → Premium.
+  - „Mit dieser Auswahl starten“ merkt sich die Module auf dem Gerät (`lf-finder-modules`). Der Einrichtungsassistent bietet sie im Schritt „Module“ an: „Diese Auswahl übernehmen“ blendet alles andere aus, einen Bereich ohne gewähltes Modul auch (`hiddenForChoice`).
+- **Pakete und Preise:** vorläufig, siehe `docs/premium.md`.
+
+### Bilder
+
+- **Illustration:** Ohne Fotos zeigt die Seite einen gezeichneten Hof (`components/site/farm-scene.tsx`: Scheune, Feld, Bienenstock, Hühner) und je Platz eine farbige Kachel mit Symbol.
+- **Screenshots:** echte Bilder der App vom Demo-Hof in `public/site/screens/*.jpg` (390 px breit, JPEG). Neu erzeugen: Demo-Hof laden und die Seiten in Handybreite fotografieren (siehe `replit.md`).
+- **Realistische Bilder per KI:** Verwaltung → „Homepage-Bilder“.
+  - Der Betreiber erzeugt je Platz ein Bild, optional mit Zusatz („im Herbst“).
+  - Plätze: Start (Hof), Pflanzen, Beet, Kräuter, Vorrat, Tiere, Ziegen, Weide, Bienen, Gemeinsam, Preise.
+  - Der Server fragt `gemini-2.5-flash-image`, sonst `imagen-4.0-generate-001` (`lib/siteImages.ts`). Er speichert das Bild wie andere Fotos (Cloudinary) und ersetzt das alte (Tabelle `site_images`).
+  - `GET /api/site-images` liefert sie öffentlich; die Admin-Routen unter `/api/admin/site-images` sind nur für den Betreiber.
+  - Jedes KI-Bild trägt auf der Seite „KI-generiertes Bild“; die Fußzeile sagt das auch.
+  - Bildmodelle brauchen bei Google meist ein bezahltes Kontingent. Liefert keins ein Bild, sagt die Verwaltung das.
+- **Tests:** `site.test.ts` (Seiten, Module, Pakete, Finder, Übernahme) und `siteImages.integration.test.ts` (öffentliche Liste, Erzeugen mit Ersatzmodell, Ersetzen, Löschen, nur Betreiber, kein Bild → 502).
+
+## Offen
+
+- Die Preise und die Zuordnung der KI-Funktionen zu Lite/Premium (`docs/premium.md`).
+- Die Bilder einmal in der Verwaltung erzeugen. Optional echte Fotos vom eigenen Hof; dafür reicht ein Bild je Platz.
+- Kennzeichnung „Lite/Premium“ in der App an das Paket-Konzept angleichen.
 
 ## Vorschau-Schutz (Passwort vor der ganzen Seite)
 

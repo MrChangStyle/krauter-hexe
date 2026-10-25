@@ -16,6 +16,7 @@ import {
   type PantryKind,
   type PantryOverview,
 } from "@workspace/api-client-react";
+import { DictateButton } from "@/components/dictate-button";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -207,7 +208,10 @@ function ItemDialog({ farm, data, item, open, onOpenChange }: { farm: FarmSummar
           </div>
           {!form.ownBestBefore && form.bestBefore && <p className="text-xs text-muted-foreground">Vorschlag für „{PANTRY_KINDS[form.kind].label}“ – bei Bedarf ändern.</p>}
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="pa-notes">Notiz</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="pa-notes">Notiz</Label>
+              <DictateButton value={form.notes} onChange={(t) => change({ notes: t })} max={500} />
+            </div>
             <Input id="pa-notes" maxLength={500} value={form.notes} onChange={(e) => change({ notes: e.target.value })} />
           </div>
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}

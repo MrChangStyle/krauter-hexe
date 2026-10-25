@@ -60,6 +60,5 @@ Nur an dem Tag, an dem etwas fällig wird, damit nichts täglich nervt. Einmal j
 - **Demo-Hof:** zwei Völker mit Durchsichten, Fütterung, Behandlung und Honig.
 - **Tests:** `bees.test.ts` (Regeln), `bees.integration.test.ts` (Routen, Vorrat, Honig in Ertrag, Rechte, Freigabe, Push) und `search.integration.test.ts`.
 - **Später denkbar:**
-  - Bienen in „Pflichten“ (Meldung beim Veterinäramt, Tierseuchenkasse je Bundesland),
   - das Bestandsbuch der Behandlungen im Veterinäramt-Export,
-  - Spracheingabe an der Beute.
+  - Spracheingabe an der Beute über die Notiz hinaus (Brutwaben, Stimmung).

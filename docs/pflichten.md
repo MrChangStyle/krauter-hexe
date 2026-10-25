@@ -24,6 +24,12 @@ Wer Nutztiere hält, hat in Deutschland Pflichten gegenüber Veterinäramt und T
 | `rabbit_vaccination` | Empfehlung | Kaninchen | StIKo Vet |
 | `dog_registration` | einmalig | Hund | Gemeinde, Landesrecht |
 | `cat_neutering` | Empfehlung | Katze | Katzenschutzverordnung der Gemeinde |
+| `bee_registration` | einmalig | Bienen | Bienenseuchen-Verordnung § 1a |
+| `bee_tsk` | einmalig | Bienen | Tiergesundheitsgesetz, Landesrecht |
+| `bee_varroa` | Regel | Bienen | Bienenseuchen-Verordnung § 15, Tierarzneimittelgesetz |
+| `bee_moving` | Regel | Bienen | Bienenseuchen-Verordnung § 5 |
+
+Die Bienenpflichten erscheinen, solange der Hof mindestens ein aktives Bienenvolk hat (Modul „Bienen“); aufgelöste, eingegangene oder verkaufte Völker zählen nicht. Die Antwort von `GET /farms/:farmId/duties` sagt das in `bees`.
 
 Meerschweinchen haben keine Pflichten; die Seite sagt das so.
 

@@ -8951,8 +8951,11 @@ components:
             - $ref: "#/components/schemas/GrowTrichomeResult"
     FarmDuties:
       type: object
-      required: [holdingNumber, housingOrderUntil, species, duties]
+      required: [holdingNumber, housingOrderUntil, species, bees, duties]
       properties:
+        bees:
+          type: boolean
+          description: Active bee colonies – the beekeeping duties apply.
         holdingNumber:
           type: string
           nullable: true

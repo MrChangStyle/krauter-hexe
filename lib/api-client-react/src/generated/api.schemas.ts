@@ -2543,6 +2543,8 @@ export interface FarmDuty {
 }
 
 export interface FarmDuties {
+  /** Active bee colonies – the beekeeping duties apply. */
+  bees: boolean;
   holdingNumber: string | null;
   /** Last day (YYYY-MM-DD) of a running housing order for poultry; null without one. */
   housingOrderUntil: string | null;

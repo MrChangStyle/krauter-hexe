@@ -18,6 +18,7 @@ import {
 } from "@workspace/api-client-react";
 import { Link } from "wouter";
 import { HubTile } from "@/components/hub-tile";
+import { DictateButton } from "@/components/dictate-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -179,7 +180,10 @@ function TaskDialog({
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="task-notes">Notiz</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="task-notes">Notiz</Label>
+              <DictateButton value={notes} onChange={setNotes} max={200} />
+            </div>
             <Input id="task-notes" maxLength={200} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="z. B. 2 Schaufeln Legemehl" />
           </div>
           {task && (

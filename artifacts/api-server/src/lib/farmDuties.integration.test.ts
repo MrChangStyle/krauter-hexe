@@ -81,7 +81,7 @@ describe.skipIf(!enabled)("Pflichten (real database)", () => {
   const duty = (data: any, key: string) => data.duties.find((d: any) => d.key === key);
 
   it("lists the duties of the farm's species", async () => {
-    expect((await api("GET", `/farms/${farmId}/duties`)).data).toEqual({ holdingNumber: null, housingOrderUntil: null, species: [], duties: [] });
+    expect((await api("GET", `/farms/${farmId}/duties`)).data).toEqual({ holdingNumber: null, housingOrderUntil: null, species: [], bees: false, duties: [] });
     await animal("goat", "2025-06-01T10:00:00Z");
     await animal("goat", "2025-06-01T10:00:00Z", "2025-11-01T10:00:00Z");
     await q("INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Hühner', 'poultry')", [farmId]);
@@ -97,6 +97,18 @@ describe.skipIf(!enabled)("Pflichten (real database)", () => {
       period: "2026",
       stock: { day: "2026-01-01", counts: [{ species: "goat", count: 1 }], current: false },
     });
+  });
+
+  it("lists the bee duties while the farm has an active colony", async () => {
+    await q("INSERT INTO bee_colonies (farm_id, name, status) VALUES ($1, 'Alt', 'dissolved')", [farmId]);
+    expect((await api("GET", `/farms/${farmId}/duties`)).data).toMatchObject({ bees: false, duties: [] });
+    await q("INSERT INTO bee_colonies (farm_id, name) VALUES ($1, 'Volk 1')", [farmId]);
+    const { data } = await api("GET", `/farms/${farmId}/duties`);
+    expect(data.bees).toBe(true);
+    expect(data.duties.map((d: any) => d.key)).toEqual(["bee_registration", "bee_tsk", "bee_varroa", "bee_moving"]);
+    const r = await api("PUT", `/farms/${farmId}/duties/bee_registration`, { done: true });
+    expect(duty(r.data, "bee_registration")).toMatchObject({ status: "done", doneOn: "2026-10-19" });
+    expect((await api("PUT", `/farms/${farmId}/duties/bee_varroa`, { done: true })).status).toBe(404);
   });
 
   it("lets admins tick duties off and back", async () => {

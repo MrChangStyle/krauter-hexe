@@ -21,6 +21,7 @@ import {
   type TaskIntervalUnit,
   type WeightLog,
 } from "@workspace/api-client-react";
+import { DictateButton } from "@/components/dictate-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -347,7 +348,10 @@ function RecordDialog({
             <Input id="med-diagnosis" required maxLength={200} value={form.diagnosis} onChange={(e) => set("diagnosis", e.target.value)} placeholder="z. B. Entwurmung, Moderhinke" />
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="med-treatment">Behandlung</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="med-treatment">Behandlung</Label>
+              <DictateButton value={form.treatment ?? ""} onChange={(t) => set("treatment", t)} max={2000} label="Behandlung sprechen" />
+            </div>
             <Textarea id="med-treatment" rows={2} maxLength={2000} value={form.treatment ?? ""} onChange={(e) => set("treatment", e.target.value)} />
           </div>
           {offered.length > 0 && (
@@ -400,7 +404,10 @@ function RecordDialog({
             </div>
           </div>
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="med-notes">Notizen</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="med-notes">Notizen</Label>
+              <DictateButton value={form.notes ?? ""} onChange={(t) => set("notes", t)} max={2000} />
+            </div>
             <Textarea id="med-notes" rows={2} maxLength={2000} value={form.notes ?? ""} onChange={(e) => set("notes", e.target.value)} />
           </div>
           {!record && (

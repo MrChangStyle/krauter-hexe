@@ -121,7 +121,7 @@ function DutyCard({ farm, duty }: { farm: FarmSummary; duty: FarmDuty }) {
       )}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="text-xs text-muted-foreground">
-          {duty.species.map((s) => SPECIES_LABELS[s]).join(", ")} · {duty.source}
+          {duty.species.length > 0 ? duty.species.map((s) => SPECIES_LABELS[s]).join(", ") : "Bienen"} · {duty.source}
         </span>
         {canTick && (
           <Button size="sm" variant={done ? "ghost" : "outline"} className="gap-1" disabled={check.isPending} onClick={() => check.mutate({ farmId: farm.id, dutyKey: duty.key, data: { done: !done } })}>
@@ -157,13 +157,13 @@ function Duties({ farm }: { farm: FarmSummary }) {
   return (
     <div className="space-y-5">
       <HousingOrderBanner farm={farm} />
-      {data.species.length === 0 ? (
+      {data.species.length === 0 && !data.bees ? (
         <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
           Noch keine Tiere auf dem Hof. Sobald ihr Tiere oder Gruppen anlegt, steht hier, was ihr anmelden und melden müsst.
         </p>
       ) : data.duties.length === 0 ? (
         <p className="rounded-xl border border-border bg-card p-4 text-sm">
-          Für {data.species.map((s) => SPECIES_LABELS[s]).join(", ")} gibt es keine Melde- oder Registrierpflicht.
+          Für {[...data.species.map((s) => SPECIES_LABELS[s]), ...(data.bees ? ["Bienen"] : [])].join(", ")} gibt es keine Melde- oder Registrierpflicht.
         </p>
       ) : (
         <>

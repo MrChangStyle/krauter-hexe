@@ -1,5 +1,5 @@
 /**
- * Dictation for the feedback bubble: the browser's speech recognition
+ * Dictation for the feedback bubble and the note fields (DictateButton): the browser's speech recognition
  * (Chrome/Android, Safari) in German. Missing on some browsers – then the
  * microphone button is simply not shown.
  */

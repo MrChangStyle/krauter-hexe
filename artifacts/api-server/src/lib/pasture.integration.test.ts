@@ -144,6 +144,48 @@ describe.skipIf(!enabled)("Weide (real database)", () => {
     expect((await api("PUT", `${W()}/${id}`, { name: "Koppel", boundary: [[51, 10], [51.1, 10], [51.2, 10]] })).data.error).toBe("Der Umriss hat keine Fläche.");
   });
 
+  it("records cuts, plans the next one and warns of worms from the same kind of animals", async () => {
+    let d = (await api("POST", W(), { name: "Talwiese", kind: "meadow" })).data;
+    const tal = named(d, "Talwiese").id;
+    expect(named(d, "Talwiese")).toMatchObject({ nextCutOn: "2026-06-15", cutsThisYear: 0, cuts: [] });
+    expect(named(d, "Talwiese").hints).toEqual([{ kind: "mow", pastureId: tal, urgent: false, text: "Talwiese: 1. Schnitt fällig (Richtwert ab 15.06.)." }]);
+
+    as = "pia";
+    expect((await api("POST", `${W()}/${tal}/cuts`, { cutOn: "2026-06-18", bales: -1 })).status).toBe(400);
+    expect((await api("POST", `${W()}/${tal}/cuts`, { cutOn: "2026-06-18", bales: 1.5 })).status).toBe(400);
+    expect((await api("POST", `${W()}/${tal}/cuts`, { cutOn: "kein Datum" })).status).toBe(400);
+    d = (await api("POST", `${W()}/${tal}/cuts`, { cutOn: "2026-06-18", bales: 24, notes: "Heu" })).data;
+    expect(named(d, "Talwiese")).toMatchObject({ nextCutOn: "2026-08-13", cutsThisYear: 1, hints: [] });
+    const cutId = named(d, "Talwiese").cuts[0].id;
+    expect(named(d, "Talwiese").cuts[0]).toMatchObject({ cutOn: "2026-06-18", bales: 24, notes: "Heu" });
+
+    // Push on the day the next cut comes due.
+    const { sendPastureDigests } = await import("./pasture");
+    expect(await sendPastureDigests("07:30", "2026-08-13")).toBe(1);
+    expect(sendPushToUser.mock.calls[0]![1]).toMatchObject({ body: "Talwiese: Schnitt fällig" });
+
+    // Species from the herd, or given for other animals; worms from the same kind.
+    const weide = (await api("POST", W(), { name: "Hang" })).data.pastures.find((p: any) => p.name === "Hang").id;
+    d = (await api("POST", `${W()}/${weide}/grazings`, { herdId, animals: 3, startOn: "2026-05-01" })).data;
+    await api("PUT", `/farms/${farmId}/grazings/${named(d, "Hang").current.id}/end`, { endOn: "2026-05-10" });
+    d = (await api("POST", `${W()}/${weide}/grazings`, { label: "Ziegen Nachbar", species: "goat", animals: 2, startOn: "2026-06-19" })).data;
+    expect(named(d, "Hang").current).toMatchObject({ label: "Ziegen Nachbar", species: "goat" });
+    expect(named(d, "Hang").grazings[1]).toMatchObject({ label: "Schafe", species: "sheep" });
+    expect(named(d, "Hang").hints.find((h: any) => h.kind === "parasite").text).toMatch(/^Auf Hang standen Schafe schon bis 10\.05\./);
+    expect((await api("POST", `${W()}/${tal}/grazings`, { label: "X", species: "dragon", animals: 2, startOn: "2026-06-19" })).status).toBe(400);
+
+    // Guests read, only the farm's own cuts can go.
+    as = "gast";
+    expect((await api("POST", `${W()}/${tal}/cuts`, { cutOn: "2026-06-19" })).status).toBe(403);
+    expect((await api("DELETE", `/farms/${farmId}/pasture-cuts/${cutId}`)).status).toBe(403);
+    as = "bert";
+    expect((await api("DELETE", `/farms/${otherFarm}/pasture-cuts/${cutId}`)).status).toBe(404);
+    as = "pia";
+    d = (await api("DELETE", `/farms/${farmId}/pasture-cuts/${cutId}`)).data;
+    expect(named(d, "Talwiese")).toMatchObject({ cuts: [], cutsThisYear: 0 });
+    expect((await api("DELETE", `/farms/${farmId}/pasture-cuts/${cutId}`)).status).toBe(404);
+  });
+
   it("keeps the pastures to the farm, its roles and the grant", async () => {
     const id = (await api("POST", W(), { name: "Weide" })).data.pastures[0].id;
     const [foreignHerd] = await q<{ id: number }>("INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Fremd', 'sheep') RETURNING id", [otherFarm]);

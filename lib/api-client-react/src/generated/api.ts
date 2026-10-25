@@ -173,6 +173,7 @@ import type {
   PantryItemInput,
   PantryOverview,
   PantryTakeInput,
+  PastureCutInput,
   PastureInput,
   PastureOverview,
   PhotoInput,
@@ -9212,6 +9213,153 @@ export const useStartGrazing = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getStartGrazingMutationOptions(options));
+    }
+
+export const getAddPastureCutUrl = (farmId: number,
+    pastureId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/pastures/${pastureId}/cuts`
+}
+
+/**
+ * @summary Gemäht – a cut on a pasture (caretaker)
+ */
+export const addPastureCut = async (farmId: number,
+    pastureId: number,
+    pastureCutInput: PastureCutInput, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getAddPastureCutUrl(farmId,pastureId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(pastureCutInput)
+  }
+);}
+
+
+
+
+
+export const getAddPastureCutMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addPastureCut>>, TError,{farmId: number;pastureId: number;data: BodyType<PastureCutInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addPastureCut>>, TError,{farmId: number;pastureId: number;data: BodyType<PastureCutInput>}, TContext> => {
+
+const mutationKey = ['addPastureCut'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addPastureCut>>, {farmId: number;pastureId: number;data: BodyType<PastureCutInput>}> = (props) => {
+          const {farmId,pastureId,data} = props ?? {};
+
+          return  addPastureCut(farmId,pastureId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddPastureCutMutationResult = NonNullable<Awaited<ReturnType<typeof addPastureCut>>>
+    export type AddPastureCutMutationBody = BodyType<PastureCutInput>
+    export type AddPastureCutMutationError = ErrorType<void>
+
+    /**
+ * @summary Gemäht – a cut on a pasture (caretaker)
+ */
+export const useAddPastureCut = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addPastureCut>>, TError,{farmId: number;pastureId: number;data: BodyType<PastureCutInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addPastureCut>>,
+        TError,
+        {farmId: number;pastureId: number;data: BodyType<PastureCutInput>},
+        TContext
+      > => {
+      return useMutation(getAddPastureCutMutationOptions(options));
+    }
+
+export const getDeletePastureCutUrl = (farmId: number,
+    cutId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/pasture-cuts/${cutId}`
+}
+
+/**
+ * @summary Delete a cut (caretaker)
+ */
+export const deletePastureCut = async (farmId: number,
+    cutId: number, options?: RequestInit): Promise<PastureOverview> => {
+
+  return customFetch<PastureOverview>(getDeletePastureCutUrl(farmId,cutId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeletePastureCutMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePastureCut>>, TError,{farmId: number;cutId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deletePastureCut>>, TError,{farmId: number;cutId: number}, TContext> => {
+
+const mutationKey = ['deletePastureCut'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deletePastureCut>>, {farmId: number;cutId: number}> = (props) => {
+          const {farmId,cutId} = props ?? {};
+
+          return  deletePastureCut(farmId,cutId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeletePastureCutMutationResult = NonNullable<Awaited<ReturnType<typeof deletePastureCut>>>
+
+    export type DeletePastureCutMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a cut (caretaker)
+ */
+export const useDeletePastureCut = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deletePastureCut>>, TError,{farmId: number;cutId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deletePastureCut>>,
+        TError,
+        {farmId: number;cutId: number},
+        TContext
+      > => {
+      return useMutation(getDeletePastureCutMutationOptions(options));
     }
 
 export const getEndGrazingUrl = (farmId: number,

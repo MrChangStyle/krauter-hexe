@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FarmDutyKind } from './farmDutyKind';
+import type { FarmDutyLink } from './farmDutyLink';
 import type { FarmDutyStatus } from './farmDutyStatus';
 import type { FarmDutyStock } from './farmDutyStock';
 import type { FarmSpecies } from './farmSpecies';
@@ -25,4 +26,8 @@ export interface FarmDuty {
   /** YYYY-MM-DD */
   dueOn: string | null;
   stock: FarmDutyStock;
+  /** The Land's Tierseuchenkasse, once the farm has a Bundesland. */
+  link: FarmDutyLink;
+  /** What differs in the farm's Land. */
+  note: string | null;
 }

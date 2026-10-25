@@ -7,12 +7,22 @@
  * pasture.ts, re-export and replace this list.
  */
 export const PASTURE_SCHEMA_STATEMENTS: readonly string[] = [
+  `CREATE TABLE IF NOT EXISTS "pasture_cuts" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"pasture_id" integer NOT NULL,
+	"cut_on" date NOT NULL,
+	"bales" integer,
+	"notes" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
   `CREATE TABLE IF NOT EXISTS "pasture_grazings" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,
 	"pasture_id" integer NOT NULL,
 	"herd_id" integer,
 	"label" text NOT NULL,
+	"species" "farm_species",
 	"animals" integer NOT NULL,
 	"start_on" date NOT NULL,
 	"end_on" date,
@@ -33,6 +43,12 @@ export const PASTURE_SCHEMA_STATEMENTS: readonly string[] = [
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
   `DO $$ BEGIN
+     ALTER TABLE "pasture_cuts" ADD CONSTRAINT "pasture_cuts_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "pasture_cuts" ADD CONSTRAINT "pasture_cuts_pasture_id_pastures_id_fk" FOREIGN KEY ("pasture_id") REFERENCES "public"."pastures"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
      ALTER TABLE "pasture_grazings" ADD CONSTRAINT "pasture_grazings_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `DO $$ BEGIN
@@ -44,6 +60,7 @@ export const PASTURE_SCHEMA_STATEMENTS: readonly string[] = [
   `DO $$ BEGIN
      ALTER TABLE "pastures" ADD CONSTRAINT "pastures_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "pasture_cuts_pasture_idx" ON "pasture_cuts" USING btree ("pasture_id","cut_on")`,
   `CREATE INDEX IF NOT EXISTS "pasture_grazings_pasture_idx" ON "pasture_grazings" USING btree ("pasture_id","start_on")`,
   `CREATE INDEX IF NOT EXISTS "pastures_farm_idx" ON "pastures" USING btree ("farm_id")`,
 ];

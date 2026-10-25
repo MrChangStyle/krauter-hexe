@@ -8,7 +8,7 @@
 import type { FarmDutyStockCountsItem } from './farmDutyStockCountsItem';
 
 export type FarmDutyStock = {
-  /** The stock day (1 January, YYYY-MM-DD). */
+  /** The stock day (1 or 3 January depending on the Land, YYYY-MM-DD). */
   day: string;
   counts: FarmDutyStockCountsItem[];
   /** True when the stock day is still ahead and the counts are today's. */

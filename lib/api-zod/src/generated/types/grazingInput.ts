@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { FarmSpecies } from './farmSpecies';
 
 export interface GrazingInput {
   /** @nullable */
@@ -14,6 +15,8 @@ export interface GrazingInput {
      * @nullable
      */
   label?: string | null;
+  /** For other animals; a herd brings its own. */
+  species?: null | FarmSpecies;
   animals: number;
   startOn: string;
   /**

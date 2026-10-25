@@ -1252,6 +1252,8 @@ export interface Grazing {
   /** @nullable */
   herdId: number | null;
   label: string;
+  /** The animals that grazed – for the parasite hints; null when unknown. */
+  species: null | FarmSpecies;
   animals: number;
   startOn: string;
   /**
@@ -1269,6 +1271,8 @@ export type PastureHintKind = typeof PastureHintKind[keyof typeof PastureHintKin
 export const PastureHintKind = {
   'too-long': 'too-long',
   early: 'early',
+  mow: 'mow',
+  parasite: 'parasite',
 } as const;
 
 export interface PastureHint {
@@ -1286,6 +1290,16 @@ export interface PastureHint {
  * @items.maxItems 2
  */
 export type PastureBoundary = number[][];
+
+export interface PastureCut {
+  id: number;
+  pastureId: number;
+  cutOn: string;
+  /** @nullable */
+  bales: number | null;
+  /** @nullable */
+  notes: string | null;
+}
 
 export interface Pasture {
   id: number;
@@ -1314,7 +1328,29 @@ export interface Pasture {
   animalDaysPerHa: number | null;
   /** The last ten entries of the diary. */
   grazings: Grazing[];
+  /** The last ten cuts. */
+  cuts: PastureCut[];
+  /**
+     * Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.
+     * @nullable
+     */
+  nextCutOn: string | null;
+  cutsThisYear: number;
   hints: PastureHint[];
+}
+
+export interface PastureCutInput {
+  cutOn: string;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  bales?: number | null;
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  notes?: string | null;
 }
 
 export interface PastureHerd {
@@ -1369,6 +1405,8 @@ export interface GrazingInput {
      * @nullable
      */
   label?: string | null;
+  /** For other animals; a herd brings its own. */
+  species?: null | FarmSpecies;
   animals: number;
   startOn: string;
   /**
@@ -2668,6 +2706,33 @@ export interface GrowCheckInput {
   imageData: string;
 }
 
+export type StateCode = typeof StateCode[keyof typeof StateCode];
+
+
+export const StateCode = {
+  BW: 'BW',
+  BY: 'BY',
+  BE: 'BE',
+  BB: 'BB',
+  HB: 'HB',
+  HH: 'HH',
+  HE: 'HE',
+  MV: 'MV',
+  NI: 'NI',
+  NW: 'NW',
+  RP: 'RP',
+  SL: 'SL',
+  SN: 'SN',
+  ST: 'ST',
+  SH: 'SH',
+  TH: 'TH',
+} as const;
+
+export interface StateOption {
+  code: StateCode;
+  name: string;
+}
+
 export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];
 
 
@@ -2696,11 +2761,19 @@ export type FarmDutyStockCountsItem = {
 };
 
 export type FarmDutyStock = {
-  /** The stock day (1 January, YYYY-MM-DD). */
+  /** The stock day (1 or 3 January depending on the Land, YYYY-MM-DD). */
   day: string;
   counts: FarmDutyStockCountsItem[];
   /** True when the stock day is still ahead and the counts are today's. */
   current: boolean;
+} | null;
+
+/**
+ * The Land's Tierseuchenkasse, once the farm has a Bundesland.
+ */
+export type FarmDutyLink = {
+  label: string;
+  url: string | null;
 } | null;
 
 export interface FarmDuty {
@@ -2718,9 +2791,17 @@ export interface FarmDuty {
   /** YYYY-MM-DD */
   dueOn: string | null;
   stock: FarmDutyStock;
+  /** The Land's Tierseuchenkasse, once the farm has a Bundesland. */
+  link: FarmDutyLink;
+  /** What differs in the farm's Land. */
+  note: string | null;
 }
 
 export interface FarmDuties {
+  /** The farm's Bundesland – which Tierseuchenkasse, stock day and deadline apply. */
+  state: null | StateCode;
+  /** All Länder to choose from, by name. */
+  states: StateOption[];
   /** Active bee colonies – the beekeeping duties apply. */
   bees: boolean;
   holdingNumber: string | null;
@@ -2735,6 +2816,8 @@ export interface FarmDutySettingsInput {
   holdingNumber?: string | null;
   /** YYYY-MM-DD, or null to end the housing order. */
   housingOrderUntil?: string | null;
+  /** Bundesland; null removes it. */
+  state?: null | StateCode;
 }
 
 export interface FarmDutyCheckInput {

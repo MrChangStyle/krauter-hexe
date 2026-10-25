@@ -22,7 +22,7 @@ export function speciesCount(species: FarmSpecies, n: number): string {
 }
 
 /** The badge for a duty: what to do, or null for rules and tips. */
-export function dutyBadge(d: Pick<FarmDuty, "status" | "doneOn" | "dueOn" | "period">): { label: string; tone: string } | null {
+export function dutyBadge(d: Pick<FarmDuty, "status" | "doneOn" | "dueOn" | "period"> & { stock?: FarmDuty["stock"] }): { label: string; tone: string } | null {
   switch (d.status) {
     case "open":
       return { label: "Offen", tone: "bg-amber-400 text-amber-950" };
@@ -33,7 +33,7 @@ export function dutyBadge(d: Pick<FarmDuty, "status" | "doneOn" | "dueOn" | "per
     case "done":
       return { label: d.period === "once" ? `Erledigt am ${deDay(d.doneOn!)}` : `${d.period} gemeldet`, tone: "bg-emerald-600 text-white" };
     case "upcoming":
-      return { label: `Stichtag 01.01.${d.period}`, tone: "bg-muted text-muted-foreground" };
+      return { label: `Stichtag ${deDay(d.stock?.day ?? `${d.period}-01-01`)}${d.dueOn ? ` · Frist ${deDay(d.dueOn).slice(0, 6)}` : ""}`, tone: "bg-muted text-muted-foreground" };
     default:
       return null;
   }
@@ -44,8 +44,8 @@ export function openDuties(duties: FarmDuties["duties"]): number {
   return duties.filter((d) => d.status === "open" || d.status === "due" || d.status === "overdue").length;
 }
 
-/** "Stand 1. Januar 2026: 1 Ziege, 12 Geflügel" / "Heute: 3 Schafe (Stichtag 01.01.2027)" */
+/** "Stand 1. Januar 2026 laut App: 1 Ziege, 12 Geflügel" / "Heute laut App: 3 Schafe" */
 export function stockText(stock: NonNullable<FarmDuty["stock"]>): string {
   const counts = stock.counts.map((c) => speciesCount(c.species, c.count)).join(", ") || "keine Tiere";
-  return stock.current ? `Heute laut App: ${counts}` : `Stand 1. Januar ${stock.day.slice(0, 4)} laut App: ${counts}`;
+  return stock.current ? `Heute laut App: ${counts}` : `Stand ${Number(stock.day.slice(8))}. Januar ${stock.day.slice(0, 4)} laut App: ${counts}`;
 }

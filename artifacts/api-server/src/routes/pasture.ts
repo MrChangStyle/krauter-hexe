@@ -1,8 +1,8 @@
 import { Router, type IRouter } from 'express';
-import { CreatePastureBody, EndGrazingBody, GetPasturesResponse, StartGrazingBody, UpdatePastureBody } from '@workspace/api-zod';
+import { AddPastureCutBody, CreatePastureBody, EndGrazingBody, GetPasturesResponse, StartGrazingBody, UpdatePastureBody } from '@workspace/api-zod';
 
 import { requireFarm } from '../middlewares/requireFarm';
-import { createPasture, deleteGrazing, deletePasture, endGrazing, pastureOverview, startGrazing, updatePasture } from '../lib/pasture';
+import { addCut, createPasture, deleteCut, deleteGrazing, deletePasture, endGrazing, pastureOverview, startGrazing, updatePasture } from '../lib/pasture';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
 // Weide (docs/weide.md). Reading: every member with the grant; writing:
@@ -89,6 +89,30 @@ router.delete(
     const grazingId = idParam(req, 'grazingId');
     if (grazingId === null) return notFound(res);
     await deleteGrazing(req.farm!.farmId, grazingId);
+    res.json(await overview(req.farm!.farmId));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/pastures/:pastureId/cuts',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const pastureId = idParam(req, 'pastureId');
+    if (pastureId === null) return notFound(res);
+    const body = AddPastureCutBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    await addCut(req.farm!.farmId, pastureId, body.data);
+    res.status(201).json(await overview(req.farm!.farmId));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/pasture-cuts/:cutId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const cutId = idParam(req, 'cutId');
+    if (cutId === null) return notFound(res);
+    await deleteCut(req.farm!.farmId, cutId);
     res.json(await overview(req.farm!.farmId));
   }),
 );

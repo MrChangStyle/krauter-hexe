@@ -6,13 +6,16 @@
  * the Länder, so every text points to the office that knows (docs/pflichten.md).
  *
  * A farm ticks off one-off duties ("once") and the yearly reports per year;
- * the app counts the animals on 1 January from its own data and reminds the
- * admins in January until the report is ticked off.
+ * the app counts the animals on the stock day from its own data and reminds
+ * the admins in January until the report is ticked off. With the farm's
+ * Bundesland the Tierseuchenkasse, its stock day and deadline come from
+ * dutyStates.ts.
  */
 
 import { beeColoniesTable, db, farmAnimalsTable, farmDutyChecksTable, farmMembershipsTable, farmPushLogTable, farmsTable, herdsTable, type FarmSpecies } from '@workspace/db';
 import { and, eq, isNull, lt, sql } from 'drizzle-orm';
 
+import { DEFAULT_DUE_DAY, STATES, STATE_CODES, isStateCode, reportPushDays, type StateCode, type StateRules } from './dutyStates';
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { addDays } from './feedSeason';
 import { logger } from './logger';
@@ -31,6 +34,8 @@ export interface DutyDef {
   source: string;
   /** For beekeepers (Bienen module) instead of animal species. */
   bees?: true;
+  /** About the Land's Tierseuchenkasse – named and linked once the Land is known. */
+  tsk?: true;
 }
 
 /** Species the veterinary office registers (ViehVerkV § 26) and the Tierseuchenkassen insure. */
@@ -51,6 +56,7 @@ export const DUTIES: DutyDef[] = [
     key: 'tsk_member',
     kind: 'once',
     species: LIVESTOCK,
+    tsk: true,
     title: 'Bei der Tierseuchenkasse anmelden',
     text: 'Die Tierseuchenkasse eures Bundeslandes zahlt im Seuchenfall eine Entschädigung – aber nur für gemeldete Tiere, für die der Beitrag bezahlt ist. Anmelden, sobald die ersten Tiere da sind.',
     source: 'Tiergesundheitsgesetz, Landesrecht',
@@ -59,8 +65,9 @@ export const DUTIES: DutyDef[] = [
     key: 'tsk_report',
     kind: 'yearly',
     species: LIVESTOCK,
+    tsk: true,
     title: 'Bestand an die Tierseuchenkasse melden',
-    text: 'Jedes Jahr die Zahl der Tiere zum Stichtag 1. Januar melden; daraus berechnet sich der Beitrag. Die Frist steht im Meldebogen, meist Mitte Januar. Unten steht, was die App am Stichtag gezählt hat.',
+    text: 'Jedes Jahr die Zahl der Tiere zum Stichtag Anfang Januar melden; daraus berechnet sich der Beitrag. Die Frist steht im Meldebogen. Unten steht, was die App am Stichtag gezählt hat.',
     source: 'Tierseuchenkasse des Bundeslandes',
   },
   {
@@ -182,6 +189,7 @@ export const DUTIES: DutyDef[] = [
     kind: 'once',
     species: [],
     bees: true,
+    tsk: true,
     title: 'Bienenvölker bei der Tierseuchenkasse melden',
     text: 'In den meisten Bundesländern werden Bienenvölker der Tierseuchenkasse gemeldet; meist ist das mit einem kleinen Beitrag verbunden und sichert eine Entschädigung im Seuchenfall. Fragt bei der Kasse eures Bundeslandes nach.',
     source: 'Tiergesundheitsgesetz, Landesrecht',
@@ -206,10 +214,8 @@ export const DUTIES: DutyDef[] = [
   },
 ];
 
-/** Stock reports are due by this day of January (day of month). */
-export const REPORT_DUE_DAY = 15;
-/** The yearly reports are pushed on these days of January while not ticked off. */
-export const REPORT_PUSH_DAYS = [2, 12];
+/** HI-Tier: stock on 1 January, due by the 15th everywhere (ViehVerkV). */
+export const REPORT_DUE_DAY = DEFAULT_DUE_DAY;
 const PUSH_TIME = '07:30';
 
 export type DutyStatus = 'open' | 'done' | 'due' | 'overdue' | 'upcoming' | 'info';
@@ -226,13 +232,27 @@ export interface DutyItem {
   period: string | null;
   doneOn: string | null;
   dueOn: string | null;
-  /** Yearly reports: the animals the app counted on the stock day (1 January). */
+  /** Yearly reports: the animals the app counted on the stock day (1 or 3 January). */
   stock: { day: string; counts: { species: FarmSpecies; count: number }[]; current: boolean } | null;
+  /** The Land's Tierseuchenkasse, when the farm has a Bundesland. */
+  link: { label: string; url: string | null } | null;
+  /** What differs in this Land. */
+  note: string | null;
 }
+
+export interface StateOption {
+  code: StateCode;
+  name: string;
+}
+
+export const STATE_OPTIONS: StateOption[] = STATE_CODES.map((code) => ({ code, name: STATES[code].name })).sort((a, b) => a.name.localeCompare(b.name, 'de'));
 
 export interface FarmDuties {
   holdingNumber: string | null;
   housingOrderUntil: string | null;
+  /** The farm's Bundesland (code), and all to choose from. */
+  state: StateCode | null;
+  states: StateOption[];
   /** Species on the farm (animals and groups). */
   species: FarmSpecies[];
   /** Active bee colonies on the farm. */
@@ -258,33 +278,44 @@ export function countOn(animals: AnimalSpan[], species: FarmSpecies[], day: stri
   return species.filter((s) => counts.has(s)).map((s) => ({ species: s, count: counts.get(s)! }));
 }
 
+const jan = (year: string | number, day: number) => `${year}-01-${String(day).padStart(2, '0')}`;
+
+/** Stock day and deadline of a yearly report: the Land's for the Tierseuchenkasse, else 1 and 15 January. */
+export function reportDays(def: DutyDef, rules: StateRules | null): { stockDay: number; dueDay: number } {
+  if (!def.tsk || !rules) return { stockDay: 1, dueDay: REPORT_DUE_DAY };
+  return { stockDay: rules.stockDay, dueDay: rules.dueDay ?? DEFAULT_DUE_DAY };
+}
+
 /**
  * The report a yearly duty is about today: this year's when the farm had
- * such animals on 1 January, else next year's.
+ * such animals on the stock day, else next year's.
  */
 export function yearlyItem(
   def: DutyDef,
   animals: AnimalSpan[],
   checks: Map<string, string>,
   today: string,
+  rules: StateRules | null = null,
 ): Pick<DutyItem, 'status' | 'period' | 'doneOn' | 'dueOn' | 'stock'> {
   const year = Number(today.slice(0, 4));
-  const stockDay = `${year}-01-01`;
-  const counts = countOn(animals, def.species, stockDay);
+  const days = reportDays(def, rules);
+  // Before the stock day the animals on the farm now are what will count.
+  const stockDay = jan(year, days.stockDay);
+  const counts = countOn(animals, def.species, stockDay < today ? stockDay : today);
   if (counts.length > 0) {
     const period = String(year);
-    const dueOn = `${period}-01-${String(REPORT_DUE_DAY).padStart(2, '0')}`;
+    const dueOn = jan(period, days.dueDay);
     const doneOn = checks.get(`${def.key}:${period}`) ?? null;
     const status: DutyStatus = doneOn ? 'done' : today <= dueOn ? 'due' : 'overdue';
-    return { status, period, doneOn, dueOn, stock: { day: stockDay, counts, current: false } };
+    return { status, period, doneOn, dueOn, stock: { day: stockDay, counts, current: today < stockDay } };
   }
   const period = String(year + 1);
   return {
     status: 'upcoming',
     period,
     doneOn: checks.get(`${def.key}:${period}`) ?? null,
-    dueOn: `${period}-01-${String(REPORT_DUE_DAY).padStart(2, '0')}`,
-    stock: { day: `${period}-01-01`, counts: countOn(animals, def.species, today), current: true },
+    dueOn: jan(period, days.dueDay),
+    stock: { day: jan(period, days.stockDay), counts: countOn(animals, def.species, today), current: true },
   };
 }
 
@@ -306,10 +337,22 @@ async function checksOf(farmId: number): Promise<Map<string, string>> {
   return new Map(rows.map((r) => [`${r.key}:${r.period}`, r.doneOn]));
 }
 
-export function dutiesFor(species: FarmSpecies[], animals: AnimalSpan[], checks: Map<string, string>, today: string, bees = false): DutyItem[] {
-  return DUTIES.filter((d) => (d.bees ? bees : d.species.some((s) => species.includes(s)))).map((def) => {
-    const base = { key: def.key, kind: def.kind, title: def.title, text: def.text, source: def.source, species: def.species.filter((s) => species.includes(s)) };
-    if (def.kind === 'yearly') return { ...base, ...yearlyItem(def, animals, checks, today) };
+/** The Land's Kasse and what differs there; a report without a checked deadline says so. */
+function stateExtras(def: DutyDef, rules: StateRules | null): Pick<DutyItem, 'link' | 'note' | 'source'> {
+  if (!def.tsk || !rules) return { link: null, note: null, source: def.source };
+  const notes = [rules.note, def.kind === 'yearly' && rules.dueDay === null ? `Die genaue Frist steht im Meldebogen der Kasse; die App rechnet mit dem ${DEFAULT_DUE_DAY}. Januar.` : null];
+  return {
+    link: { label: rules.tsk, url: rules.url },
+    note: notes.filter(Boolean).join(' ') || null,
+    source: def.source.replace('des Bundeslandes', rules.name).replace('Landesrecht', `Landesrecht ${rules.name}`),
+  };
+}
+
+export function dutiesFor(species: FarmSpecies[], animals: AnimalSpan[], checks: Map<string, string>, today: string, bees = false, state: StateCode | null = null): DutyItem[] {
+  const rules = state ? STATES[state] : null;
+  return DUTIES.filter((d) => (d.bees ? bees : d.species.some((s) => species.includes(s)))).map((def): DutyItem => {
+    const base = { key: def.key, kind: def.kind, title: def.title, text: def.text, species: def.species.filter((s) => species.includes(s)), ...stateExtras(def, rules) };
+    if (def.kind === 'yearly') return { ...base, ...yearlyItem(def, animals, checks, today, rules) };
     if (def.kind === 'once') {
       const doneOn = checks.get(`${def.key}:once`) ?? null;
       return { ...base, status: doneOn ? 'done' : 'open', period: 'once', doneOn, dueOn: null, stock: null };
@@ -320,7 +363,7 @@ export function dutiesFor(species: FarmSpecies[], animals: AnimalSpan[], checks:
 
 export async function farmDuties(farmId: number, today = berlinDay()): Promise<FarmDuties> {
   const [farm] = await db
-    .select({ holdingNumber: farmsTable.holdingNumber, housingOrderUntil: farmsTable.housingOrderUntil })
+    .select({ holdingNumber: farmsTable.holdingNumber, housingOrderUntil: farmsTable.housingOrderUntil, state: farmsTable.state })
     .from(farmsTable)
     .where(eq(farmsTable.id, farmId));
   if (!farm) throw notFound();
@@ -336,13 +379,16 @@ export async function farmDuties(farmId: number, today = berlinDay()): Promise<F
   const bees = (colonies?.n ?? 0) > 0;
   const present = new Set<FarmSpecies>([...animals.filter((a) => a.until === null).map((a) => a.species), ...herds.map((h) => h.species)]);
   const species = [...present];
+  const state = isStateCode(farm.state) ? farm.state : null;
   return {
     holdingNumber: farm.holdingNumber,
+    state,
+    states: STATE_OPTIONS,
     // A housing order that has ended is no longer shown.
     housingOrderUntil: farm.housingOrderUntil && farm.housingOrderUntil >= today ? farm.housingOrderUntil : null,
     species,
     bees,
-    duties: dutiesFor(species, animals, checks, today, bees),
+    duties: dutiesFor(species, animals, checks, today, bees, state),
   };
 }
 
@@ -351,7 +397,7 @@ export async function checkDuty(farmId: number, key: string, done: boolean, toda
   const current = (await farmDuties(farmId, today)).duties.find((d) => d.key === key);
   if (!current || current.period === null) throw new FarmDataError(404, 'Diese Pflicht gibt es auf eurem Hof nicht.');
   if (done && current.status === 'upcoming') {
-    throw new FarmDataError(400, `Die Meldung zum 1. Januar ${current.period} lässt sich erst ab dem Stichtag abhaken.`);
+    throw new FarmDataError(400, `Die Meldung zum ${Number(current.stock!.day.slice(8))}. Januar ${current.period} lässt sich erst ab dem Stichtag abhaken.`);
   }
   if (done) {
     await db
@@ -369,11 +415,17 @@ export async function checkDuty(farmId: number, key: string, done: boolean, toda
 export interface DutySettingsInput {
   holdingNumber?: unknown;
   housingOrderUntil?: unknown;
+  /** Bundesland code; null removes it. */
+  state?: unknown;
 }
 
 export async function setDutySettings(farmId: number, input: DutySettingsInput, today = berlinDay()): Promise<FarmDuties> {
   const set: Partial<typeof farmsTable.$inferInsert> = {};
   if (input.holdingNumber !== undefined) set.holdingNumber = text(input.holdingNumber, 30, 'Die Registriernummer');
+  if (input.state !== undefined) {
+    if (input.state !== null && !isStateCode(input.state)) throw new FarmDataError(400, 'Dieses Bundesland gibt es nicht.');
+    set.state = input.state;
+  }
   if (input.housingOrderUntil !== undefined) {
     if (input.housingOrderUntil === null || input.housingOrderUntil === '') set.housingOrderUntil = null;
     else {
@@ -410,17 +462,24 @@ export function reportMessage(open: DutyItem[]): { title: string; body: string }
   const counts = new Map<FarmSpecies, number>();
   for (const d of open) for (const c of d.stock?.counts ?? []) counts.set(c.species, Math.max(counts.get(c.species) ?? 0, c.count));
   const stock = [...counts].map(([s, n]) => `${SPECIES_PLURAL[s]} ${n}`).join(', ');
-  const to = open.map((d) => (d.key === 'hit_report' ? 'HI-Tier' : 'Tierseuchenkasse')).join(' und ');
-  const due = open[0]!.dueOn!;
+  const day = Number(open[0]!.stock!.day.slice(8));
+  // One deadline for all: "bis 15.01. an Tierseuchenkasse und HI-Tier"; else each with its own.
+  const name = (d: DutyItem) => (d.key === 'hit_report' ? 'HI-Tier' : (d.link?.label ?? 'Tierseuchenkasse'));
+  const by = (d: DutyItem) => `${Number(d.dueOn!.slice(8))}.01.`;
+  const to = open.every((d) => d.dueOn === open[0]!.dueOn) ? `bis ${by(open[0]!)} an ${open.map(name).join(' und ')}` : open.map((d) => `bis ${by(d)} an ${name(d)}`).join(' und ');
   return {
     title: 'Bestandsmeldung fällig',
-    body: `Stand 1. Januar laut App: ${stock}. Bitte bis ${Number(due.slice(8))}.01. an ${to} melden und in der App abhaken.`,
+    body: `Stand ${day}. Januar laut App: ${stock}. Bitte ${to} melden und in der App abhaken.`,
   };
 }
 
-/** January: remind the admins of every farm with an open stock report (once per farm and day). */
+/**
+ * January: remind the admins of every farm with an open stock report, about
+ * two weeks and three days before its deadline (once per farm and day).
+ */
 export async function sendDutyDigests(hhmm: string, day: string): Promise<number> {
-  if (hhmm < PUSH_TIME || day.slice(5, 7) !== '01' || !REPORT_PUSH_DAYS.includes(Number(day.slice(8)))) return 0;
+  if (hhmm < PUSH_TIME || day.slice(5, 7) !== '01') return 0;
+  const dayOfMonth = Number(day.slice(8));
   let sent = 0;
   try {
     await db.delete(farmPushLogTable).where(and(eq(farmPushLogTable.topic, 'duties'), lt(farmPushLogTable.day, addDays(day, -60))));
@@ -431,7 +490,10 @@ export async function sendDutyDigests(hhmm: string, day: string): Promise<number
       .where(lt(farmAnimalsTable.createdAt, new Date(`${day.slice(0, 4)}-01-02T00:00:00+01:00`)));
     for (const { farmId } of farms) {
       try {
-        const open = (await farmDuties(farmId, day)).duties.filter((d) => d.kind === 'yearly' && (d.status === 'due' || d.status === 'overdue'));
+        // Each report on its own push days, counted back from its deadline.
+        const open = (await farmDuties(farmId, day)).duties.filter(
+          (d) => d.kind === 'yearly' && (d.status === 'due' || d.status === 'overdue') && reportPushDays(Number(d.dueOn!.slice(8))).includes(dayOfMonth),
+        );
         const message = reportMessage(open);
         if (!message) continue;
         const claimed = await db.insert(farmPushLogTable).values({ farmId, topic: 'duties', day }).onConflictDoNothing().returning();

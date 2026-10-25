@@ -1,17 +1,20 @@
 import { Suspense, lazy, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, ArrowRightLeft, Info, Loader2, LogIn, LogOut, Map as MapIcon, Pencil, Plus, Trash2, Trees, Undo2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRightLeft, Info, Loader2, LogIn, LogOut, Map as MapIcon, Pencil, Plus, Scissors, Trash2, Trees, Undo2 } from "lucide-react";
 import {
   getGetPasturesQueryKey,
+  useAddPastureCut,
   useCreatePasture,
   useDeleteGrazing,
   useDeletePasture,
+  useDeletePastureCut,
   useEndGrazing,
   useEnsureOwnFarm,
   useGetPastures,
   useStartGrazing,
   useUpdatePasture,
+  type FarmSpecies,
   type FarmSummary,
   type MapCenter,
   type Pasture,
@@ -26,7 +29,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { STATUS_COLORS, allowMap, boundaryAreaHa, mapAllowed } from "@/lib/pasture-map";
-import { todayIso } from "@/lib/farm-labels";
+import { SPECIES_LABELS, SPECIES_ORDER, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { num } from "@/lib/yield-labels";
 
@@ -272,6 +275,46 @@ function PastureDialog({ farm, data, pasture, onClose }: { farm: FarmSummary; da
 
 type Move = { kind: "on"; pasture: Pasture } | { kind: "move"; pasture: Pasture } | { kind: "off"; pasture: Pasture };
 
+/** Gemäht: the date, and optionally the bales it gave. */
+function CutDialog({ farm, pasture, onClose }: { farm: FarmSummary; pasture: Pasture; onClose: () => void }) {
+  const [error, setError] = useState<string | null>(null);
+  const add = useAddPastureCut({ mutation: useSaved(farm, onClose, setError) });
+  const [date, setDate] = useState(todayIso());
+  const [bales, setBales] = useState("");
+  const [notes, setNotes] = useState("");
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    add.mutate({ farmId: farm.id, pastureId: pasture.id, data: { cutOn: date, bales: bales ? Number(bales) : null, notes: notes || null } });
+  }
+
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <form onSubmit={submit} className="space-y-3">
+          <DialogHeader>
+            <DialogTitle>Gemäht: {pasture.name}</DialogTitle>
+          </DialogHeader>
+          <Field id="cut-date" label="Gemäht am">
+            <Input id="cut-date" type="date" required max={todayIso()} value={date} onChange={(e) => setDate(e.target.value)} />
+          </Field>
+          <Field id="cut-bales" label="Ballen (optional)">
+            <Input id="cut-bales" type="number" min={0} step={1} value={bales} onChange={(e) => setBales(e.target.value)} placeholder="z. B. 20" />
+          </Field>
+          <Field id="cut-notes" label="Notiz">
+            <Input id="cut-notes" maxLength={300} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="z. B. Heu, Silage, nachgemäht nach dem Beweiden" />
+          </Field>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          <Button type="submit" className="w-full" disabled={add.isPending}>
+            Eintragen
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 function MoveDialog({ farm, data, move, onClose }: { farm: FarmSummary; data: PastureOverview; move: Move; onClose: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const saved = useSaved(farm, onClose, setError);
@@ -281,6 +324,7 @@ function MoveDialog({ farm, data, move, onClose }: { farm: FarmSummary; data: Pa
   const [herdId, setHerdId] = useState(data.herds[0] ? String(data.herds[0].id) : "");
   const [label, setLabel] = useState("");
   const [animals, setAnimals] = useState(data.herds[0] ? String(data.herds[0].animals || "") : "");
+  const [species, setSpecies] = useState<FarmSpecies | "">("");
   const targets = data.pastures.filter((p) => !p.archived && p.id !== move.pasture.id);
   const [target, setTarget] = useState(targets.find((p) => p.status === "ready")?.id ?? targets[0]?.id ?? 0);
   const current = move.pasture.current;
@@ -292,7 +336,11 @@ function MoveDialog({ farm, data, move, onClose }: { farm: FarmSummary; data: Pa
     if (move.kind === "move") {
       return start.mutate({ farmId: farm.id, pastureId: target, data: { herdId: current!.herdId, label: current!.label, animals: current!.animals, startOn: date, fromGrazingId: current!.id } });
     }
-    start.mutate({ farmId: farm.id, pastureId: move.pasture.id, data: { herdId: herdId ? Number(herdId) : null, label: herdId ? null : label, animals: Number(animals), startOn: date } });
+    start.mutate({
+      farmId: farm.id,
+      pastureId: move.pasture.id,
+      data: { herdId: herdId ? Number(herdId) : null, label: herdId ? null : label, species: herdId ? null : species || null, animals: Number(animals), startOn: date },
+    });
   }
 
   const title = move.kind === "on" ? `Auftreiben: ${move.pasture.name}` : move.kind === "move" ? `Umtreiben: ${current!.label}` : `Abtreiben: ${move.pasture.name}`;
@@ -327,6 +375,18 @@ function MoveDialog({ farm, data, move, onClose }: { farm: FarmSummary; data: Pa
               {!herdId && (
                 <Field id="mv-label" label="Welche Tiere">
                   <Input id="mv-label" required maxLength={60} value={label} onChange={(e) => setLabel(e.target.value)} placeholder="z. B. Pferde vom Nachbarn" />
+                </Field>
+              )}
+              {!herdId && (
+                <Field id="mv-species" label="Tierart (für die Wurm-Hinweise)">
+                  <select id="mv-species" className={selectClass} value={species} onChange={(e) => setSpecies(e.target.value as FarmSpecies | "")}>
+                    <option value="">Weiß nicht / gemischt</option>
+                    {SPECIES_ORDER.map((sp) => (
+                      <option key={sp} value={sp}>
+                        {SPECIES_LABELS[sp]}
+                      </option>
+                    ))}
+                  </select>
                 </Field>
               )}
               <Field id="mv-animals" label="Anzahl Tiere">
@@ -372,9 +432,14 @@ function StatusLine({ p }: { p: Pasture }) {
   return <p className="text-sm text-primary">Bereit</p>;
 }
 
-function PastureCard({ farm, p, onMove, onEdit }: { farm: FarmSummary; p: Pasture; onMove: (m: Move) => void; onEdit: () => void }) {
+/** "ab 15.06." this year, with the year otherwise. */
+const cutDay = (d: string) => (d.slice(0, 4) === todayIso().slice(0, 4) ? deDay(d).slice(0, 6) : deDay(d));
+
+function PastureCard({ farm, p, onMove, onEdit, onCut }: { farm: FarmSummary; p: Pasture; onMove: (m: Move) => void; onEdit: () => void; onCut: () => void }) {
   const queryClient = useQueryClient();
-  const remove = useDeleteGrazing({ mutation: { onSuccess: (next) => queryClient.setQueryData(getGetPasturesQueryKey(farm.id), next) } });
+  const saved = { onSuccess: (next: PastureOverview) => queryClient.setQueryData(getGetPasturesQueryKey(farm.id), next) };
+  const remove = useDeleteGrazing({ mutation: saved });
+  const removeCut = useDeletePastureCut({ mutation: saved });
   const canWrite = farm.role !== "guest";
   return (
     <li id={`pasture-${p.id}`} className="scroll-mt-20 rounded-xl border border-border bg-card p-3" data-testid="pasture">
@@ -399,6 +464,12 @@ function PastureCard({ farm, p, onMove, onEdit }: { farm: FarmSummary; p: Pastur
           {p.animalDaysPerHa !== null ? ` · ${p.animalDaysPerHa.toLocaleString("de-DE")} Tier-Tage je ha` : ` · ${p.animalDays} Tier-Tage`}
         </p>
       )}
+      {(p.nextCutOn || p.cutsThisYear > 0) && !p.archived && (
+        <p className="text-xs text-muted-foreground" data-testid="pasture-cut">
+          {p.cutsThisYear > 0 ? `${p.cutsThisYear} ${p.cutsThisYear === 1 ? "Schnitt" : "Schnitte"} dieses Jahr` : "Noch kein Schnitt dieses Jahr"}
+          {p.nextCutOn && ` · nächster ab ${cutDay(p.nextCutOn)} (Richtwert)`}
+        </p>
+      )}
       {canWrite && !p.archived && (
         <div className="mt-2 flex flex-wrap gap-2">
           {p.current ? (
@@ -418,6 +489,10 @@ function PastureCard({ farm, p, onMove, onEdit }: { farm: FarmSummary; p: Pastur
               Auftreiben
             </Button>
           )}
+          <Button size="sm" variant="outline" className="gap-1.5" onClick={onCut}>
+            <Scissors className="h-4 w-4" />
+            Gemäht
+          </Button>
         </div>
       )}
       {p.grazings.length > 0 && (
@@ -435,6 +510,32 @@ function PastureCard({ farm, p, onMove, onEdit }: { farm: FarmSummary; p: Pastur
                     aria-label="Eintrag löschen"
                     className="text-muted-foreground hover:text-destructive"
                     onClick={() => window.confirm("Diesen Eintrag löschen?") && remove.mutate({ farmId: farm.id, grazingId: g.id })}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </li>
+            ))}
+          </ul>
+        </details>
+      )}
+      {p.cuts.length > 0 && (
+        <details className="mt-1 text-sm">
+          <summary className="cursor-pointer text-xs text-muted-foreground">Schnitte ({p.cuts.length})</summary>
+          <ul className="divide-y divide-border pt-1">
+            {p.cuts.map((c) => (
+              <li key={c.id} className="flex items-center gap-2 py-1.5 text-xs">
+                <span className="flex-1">
+                  {deDay(c.cutOn)}
+                  {c.bales !== null && ` · ${c.bales} Ballen`}
+                  {c.notes && ` · ${c.notes}`}
+                </span>
+                {canWrite && (
+                  <button
+                    type="button"
+                    aria-label="Schnitt löschen"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => window.confirm("Diesen Schnitt löschen?") && removeCut.mutate({ farmId: farm.id, cutId: c.id })}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </button>
@@ -501,6 +602,7 @@ function Pastures({ farm }: { farm: FarmSummary }) {
   const pastures = useGetPastures(farm.id);
   const [move, setMove] = useState<Move | null>(null);
   const [edit, setEdit] = useState<{ pasture: Pasture | null } | null>(null);
+  const [cut, setCut] = useState<Pasture | null>(null);
   const d = pastures.data;
   if (pastures.isLoading) return <Loader2 className="h-6 w-6 animate-spin text-primary" />;
   if (!d) return <p className="text-sm text-muted-foreground">Die Weiden lassen sich gerade nicht laden.</p>;
@@ -558,7 +660,7 @@ function Pastures({ farm }: { farm: FarmSummary }) {
         ) : (
           <ul className="space-y-2">
             {used.map((p) => (
-              <PastureCard key={p.id} farm={farm} p={p} onMove={setMove} onEdit={() => setEdit({ pasture: p })} />
+              <PastureCard key={p.id} farm={farm} p={p} onMove={setMove} onEdit={() => setEdit({ pasture: p })} onCut={() => setCut(p)} />
             ))}
           </ul>
         )}
@@ -567,13 +669,14 @@ function Pastures({ farm }: { farm: FarmSummary }) {
             <summary className="cursor-pointer text-muted-foreground">Nicht mehr genutzt ({old.length})</summary>
             <ul className="space-y-2 pt-2">
               {old.map((p) => (
-                <PastureCard key={p.id} farm={farm} p={p} onMove={setMove} onEdit={() => setEdit({ pasture: p })} />
+                <PastureCard key={p.id} farm={farm} p={p} onMove={setMove} onEdit={() => setEdit({ pasture: p })} onCut={() => setCut(p)} />
               ))}
             </ul>
           </details>
         )}
       </section>
       {move && <MoveDialog farm={farm} data={d} move={move} onClose={() => setMove(null)} />}
+      {cut && <CutDialog farm={farm} pasture={cut} onClose={() => setCut(null)} />}
       {edit && <PastureDialog farm={farm} data={d} pasture={edit.pasture} onClose={() => setEdit(null)} />}
     </div>
   );
@@ -601,7 +704,7 @@ export default function WeidePage() {
           <Trees className="h-6 w-6 text-lime-600 dark:text-lime-400" />
           Weide
         </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Welche Herde wann wo steht – und wann eine Fläche wieder bereit ist.</p>
+        <p className="mt-1 text-sm text-muted-foreground">Welche Herde wann wo steht, wann eine Fläche wieder bereit ist und wann gemäht wird.</p>
       </div>
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Pastures farm={farm} />}
     </div>

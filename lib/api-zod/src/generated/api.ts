@@ -9986,6 +9986,73 @@ export const GetPremiumResponse = zod.object({
 
 
 /**
+ * @summary Homepage pictures by slot (public)
+ */
+export const ListSiteImagesResponse = zod.record(zod.string(), zod.string())
+
+
+/**
+ * @summary Owner – every homepage picture slot with prompt and picture
+ */
+export const ListSiteImageSlotsResponseItem = zod.object({
+  "slot": zod.string(),
+  "title": zod.string(),
+  "aspect": zod.string(),
+  "prompt": zod.string(),
+  "url": zod.string().nullable(),
+  "model": zod.string().nullable(),
+  "createdAt": zod.string().nullable()
+})
+export const ListSiteImageSlotsResponse = zod.array(ListSiteImageSlotsResponseItem)
+
+
+/**
+ * @summary Owner – let the image AI make a slot's picture (replaces the old one)
+ */
+export const GenerateSiteImageParams = zod.object({
+  "slot": zod.coerce.string()
+})
+
+export const generateSiteImageBodyExtraMax = 300;
+
+
+
+export const GenerateSiteImageBody = zod.object({
+  "extra": zod.string().max(generateSiteImageBodyExtraMax).nullish().describe('Added to the slot\'s prompt, e.g. \"im Herbst\".')
+})
+
+export const GenerateSiteImageResponseItem = zod.object({
+  "slot": zod.string(),
+  "title": zod.string(),
+  "aspect": zod.string(),
+  "prompt": zod.string(),
+  "url": zod.string().nullable(),
+  "model": zod.string().nullable(),
+  "createdAt": zod.string().nullable()
+})
+export const GenerateSiteImageResponse = zod.array(GenerateSiteImageResponseItem)
+
+
+/**
+ * @summary Owner – remove a slot's picture (the drawing shows again)
+ */
+export const DeleteSiteImageParams = zod.object({
+  "slot": zod.coerce.string()
+})
+
+export const DeleteSiteImageResponseItem = zod.object({
+  "slot": zod.string(),
+  "title": zod.string(),
+  "aspect": zod.string(),
+  "prompt": zod.string(),
+  "url": zod.string().nullable(),
+  "model": zod.string().nullable(),
+  "createdAt": zod.string().nullable()
+})
+export const DeleteSiteImageResponse = zod.array(DeleteSiteImageResponseItem)
+
+
+/**
  * @summary Owner – accounts with Premium
  */
 export const ListPremiumResponseItem = zod.object({

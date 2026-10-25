@@ -39,6 +39,8 @@ import {
   ImpressumPage,
   NutzungsbedingungenPage,
 } from '@/pages/rechtliches';
+import { SiteApp } from '@/components/site/site-app';
+import { sitePageOf } from '@/lib/site';
 import UmzugPage from '@/pages/umzug';
 import { MoveGate } from '@/components/move-screen';
 import { ScanQueueProvider } from '@/lib/scan-queue-context';
@@ -215,8 +217,9 @@ function Router() {
 
 /**
  * Pages that work without an account, picked before the AuthGate: Impressum,
- * Datenschutz and Nutzungsbedingungen (the registration form links to them)
- * and /umzug, which receives this device's photos from the old address.
+ * Datenschutz and Nutzungsbedingungen (the registration form links to them),
+ * /umzug, which receives this device's photos from the old address, and the
+ * homepage's sub pages (lib/site.ts).
  * Links to them are plain page loads, so reading the path once is enough.
  */
 function publicPageFor(pathname: string) {
@@ -232,7 +235,8 @@ function publicPageFor(pathname: string) {
     case '/umzug':
       return <UmzugPage />;
     default:
-      return null;
+      // The homepage's sub pages (Pflanzen, Tiere, Preise …) – for everyone.
+      return sitePageOf(path) ? <SiteApp /> : null;
   }
 }
 

@@ -346,7 +346,13 @@ export const GENERAL_HELP: HelpTopic[] = [
   {
     id: "premium",
     title: "Premium",
-    faq: [{ q: "Was kostet etwas?", a: "Fast alles ist kostenlos. Premium betrifft nur Funktionen, deren KI Geld kostet, etwa den KI-Check im Grow." }],
+    faq: [
+      { q: "Was kostet etwas?", a: "Fast alles ist kostenlos. Premium betrifft nur Funktionen, deren KI Geld kostet, etwa den KI-Check im Grow." },
+      {
+        q: "Welche Pakete wird es geben?",
+        a: "Geplant sind Basis (alles ohne KI, kostenlos), Lite (KI für Pflanzen und Garten) und Premium (alle KI-Funktionen). Die vorläufigen Preise und einen Modul-Finder gibt es auf der Homepage unter „Preise & Pakete“. Bezahlen lässt sich noch nicht.",
+      },
+    ],
   },
 ];
 

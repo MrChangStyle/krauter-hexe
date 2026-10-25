@@ -8,15 +8,18 @@
  * shows exactly what a user would get.
  */
 
-import { db, farmAnimalsTable, farmMembershipsTable, farmsTable, farmYieldsTable, growAccessTable, growsTable, pastureGrazingsTable, pasturesTable } from '@workspace/db';
+import { beeSiteChecksTable, db, farmAnimalsTable, farmMembershipsTable, farmsTable, farmYieldsTable, growAccessTable, growsTable, pastureGrazingsTable, pasturesTable } from '@workspace/db';
 import { and, asc, eq, inArray, ne } from 'drizzle-orm';
 
 import { addFeeding, addHoney, addInspection, addTreatment, createColony } from './bees';
-import { createBreeding } from './breeding';
+import { createBreeding, endBreeding } from './breeding';
 import { addHeat } from './breedingCycle';
 import { createItem as createPantryItem, takeOut } from './pantry';
 import { createPasture, startGrazing } from './pasture';
 import { FarmDataError } from './farmAnimals';
+import { setDutySettings } from './farmDuties';
+import { setHandoverNote } from './farmHandover';
+import { createMedicalRecord, createWeightLog } from './farmHealth';
 import { createCamera } from './farmCameras';
 import { createContact } from './farmContacts';
 import { quickStart } from './farmSetup';
@@ -24,6 +27,7 @@ import { addExpense, addYield } from './farmYields';
 import { addDays } from './feedSeason';
 import { buyFeed } from './feedStock';
 import { createBed } from './gardenBeds';
+import { addHarvest } from './gardenHarvests';
 import { addPlanting } from './gardenPlanner';
 import { addPlant, createGrow } from './grow';
 import { createMedicine } from './medicines';
@@ -88,7 +92,7 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
     .returning({ id: farmAnimalsTable.id });
   await createBreeding(farmId, { species: 'goat', motherId: goat!.id, fatherName: 'Bock vom Nachbarn', startedOn: ago(130), notes: 'Demo: Deckakt beim Nachbarn' });
   await createBreeding(farmId, { species: 'poultry', startedOn: ago(12), eggCount: 8, notes: 'Demo: Glucke im Stall' });
-  // Brunstkalender: the other goat, two heats seen.
+  // Brunstkalender: the other goat, two heats seen; she had two kids six weeks ago (Absetzen).
   const [second] = await db
     .update(farmAnimalsTable)
     .set({ sex: 'female' })
@@ -96,6 +100,25 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
     .returning({ id: farmAnimalsTable.id });
   await addHeat(farmId, { animalId: second!.id, observedOn: ago(30), notes: 'Demo: meckert, Schwanzwedeln' });
   await addHeat(farmId, { animalId: second!.id, observedOn: ago(9) });
+  const kids = await createBreeding(farmId, { species: 'goat', motherId: second!.id, fatherName: 'Bock vom Nachbarn', startedOn: ago(190), notes: 'Demo: Zwillinge' });
+  await endBreeding(farmId, kids.id, { outcome: 'born', date: ago(40), alive: 2, dead: 0, createYoung: false });
+
+  // Gesundheitsakte and Gewicht: a deworming with withdrawal and a reminder to repeat, weighings.
+  await createMedicalRecord(farmId, goat!.id, {
+    date: ago(20),
+    diagnosis: 'Kotprobe: Magen-Darm-Würmer (Demo)',
+    treatment: 'Entwurmt',
+    medication: 'Wurmkur Ziege',
+    withdrawalPeriodDays: 14,
+    vet: 'Tierarztpraxis Muster',
+    repeat: { kind: 'deworm', every: 3, unit: 'Monate' },
+  });
+  for (const [days, kg] of [[60, 52], [30, 54.5], [2, 55]] as const) await createWeightLog(farmId, goat!.id, { date: ago(days), weightKg: kg });
+
+  // Pflichten: the farm's registration number (made up).
+  await setDutySettings(farmId, { holdingNumber: '276 09 000 000 0000 (Demo)' });
+  // Übergabe: what a stand-in needs to know.
+  await setHandoverNote(farmId, 'Demo: Schlüssel liegt im Futterraum links. Hühner abends um 20 Uhr einsperren, Ziegen bekommen morgens Heu und abends eine Handvoll Hafer. Tierarzt steht unter „Farm & Team“.');
 
   // Arzneimittel: one running out soon, one fine.
   await createMedicine(farmId, { name: 'Wurmkur Ziege (Demo)', unit: 'ml', amount: 40, expiresOn: addDays(today, 20), withdrawalMeatDays: 14, withdrawalMilkDays: 5, receivedOn: ago(60) });
@@ -124,7 +147,28 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await addInspection(farmId, raps, { date: ago(5), beeFrames: 11, broodFrames: 4, eggsSeen: true, temper: 3, mitesPerDay: 6 });
   await addFeeding(farmId, linde, { date: ago(20), kind: 'sirup', amountKg: 5 });
   await addTreatment(farmId, raps, { date: ago(40), method: 'drohnenbrut', notes: 'Demo' });
+  // Varroa treatment from the Arzneimittel-Vorrat – shows in the Bestandsbuch of the vet export.
+  const oxal = await createMedicine(farmId, { name: 'Oxalsäure 3,5 % (Demo)', unit: 'ml', amount: 500, batch: 'OX-11', vet: 'Imkereibedarf (Demo)', receivedOn: ago(80), expiresOn: addDays(today, 500) });
+  await addTreatment(farmId, linde, { date: ago(70), method: 'oxalsaeure', medicineId: oxal.id, dose: 30, notes: 'Demo: Winterbehandlung' });
   await addHoney(farmId, linde, { date: ago(60), amountKg: 14, note: 'Frühtracht' });
+
+  // Standort-Check: what the AI said about the stand (written here, no photo, no AI call).
+  await db.insert(beeSiteChecksTable).values({
+    farmId,
+    apiary: 'Obstwiese',
+    heading: 135,
+    question: 'Ist es hier zu feucht?',
+    createdAt: new Date(Date.now() - 14 * 86_400_000),
+    analysis: {
+      overall: 'Demo: Guter, geschützter Stand – nur der Boden ist zu feucht.',
+      orientation: 'Die Fluglöcher zeigen nach Südosten: Morgensonne, mittags Schatten der Obstbäume – günstig.',
+      shelter: 'Die Hecke im Westen hält den Hauptwind ab; nach Norden ist der Stand offen.',
+      forage: 'Obstbäume und Wiese bringen Frühtracht; im Hochsommer ist wenig zu sehen – Phacelia oder Buchweizen säen.',
+      moisture: 'Das Gras ist nass und die Beuten stehen niedrig in einer leichten Senke – höher stellen, Unterbau mit Abstand zum Boden.',
+      neighbours: 'Kein Weg in der Flugbahn zu erkennen.',
+      tips: ['Beuten auf 40 cm Unterbau stellen', 'Phacelia und Buchweizen für die Sommertracht säen', 'Nach Norden eine niedrige Hecke pflanzen'],
+    },
+  });
 
   // Vorratskammer: preserved, frozen, honey – one to use up soon.
   const beans = await createPantryItem(farmId, { name: 'Bohnen sauer (Demo)', kind: 'pickled', amount: 6, unit: 'Glas', location: 'Keller', madeOn: ago(70), bestBefore: addDays(today, 300) });
@@ -147,7 +191,10 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   // Beet-Architekt and Saatgut.
   const raised = await createBed(farmId, { name: 'Hochbeet (Demo)', type: 'raised', lengthCm: 200, widthCm: 100 });
   const bed = await createBed(farmId, { name: 'Gemüsebeet (Demo)', type: 'bed', lengthCm: 300, widthCm: 120 });
-  await addPlanting(farmId, raised.id, year, { cropKey: 'tomate', x: 0, y: 0 });
+  const tomato = await addPlanting(farmId, raised.id, year, { cropKey: 'tomate', x: 0, y: 0 });
+  // Ernte-Auswertung: two harvests of the tomatoes.
+  await addHarvest(farmId, tomato.id, { harvestedOn: ago(30), amountKg: 2.4, use: 'kitchen' });
+  await addHarvest(farmId, tomato.id, { harvestedOn: ago(12), amountKg: 3.1, use: 'kitchen', note: 'Demo' });
   await addPlanting(farmId, bed.id, year, { cropKey: 'salat', x: 1, y: 1 });
   await createSeed(farmId, { cropKey: 'tomate', variety: 'Ochsenherz', amount: 30, unit: 'Korn', source: 'bought', harvestYear: year - 1 }, today);
   await createSeed(farmId, { cropKey: 'moehre', variety: 'Nantaise', amount: 2, unit: 'g', source: 'bought', harvestYear: year - 3 }, today);

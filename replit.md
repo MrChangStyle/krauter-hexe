@@ -222,6 +222,7 @@ Bienen (`docs/bienen.md`): Modul `bees`, `/farm/bienen` mit Stockkarte je Volk (
 Vorratskammer (`docs/vorratskammer.md`): Modul `pantry`, `/vorrat` – Vorräte mit Art, Menge, Lagerort und MHD (Vorschlag je Art), aus der Ernte anlegen, „1 Glas genommen“ mit Rückgängig, Montags-Push für bald Ablaufendes (`lib/pantry.ts`).
 Weide (`docs/weide.md`): Modul `pasture`, `/farm/weide` – Weiden mit Fläche, Ruhezeit und längster Weidedauer, Weidetagebuch (auf-, um-, abtreiben), Status beweidet/ruht/bereit, Tier-Tage je ha, Hinweise und Push (`lib/pasture.ts`); Weidekarte auf OpenStreetMap (Leaflet, lädt erst nach Tipp) mit eingezeichneten Umrissen, Fläche daraus berechnet (`pastures.boundary`).
 Spracheingabe (`docs/spracheingabe.md`): Knopf „Sprechen“ an den längeren Notizfeldern (Gesundheitsakte, Durchsicht, Vorrat, Weidetagebuch, Stallaufgabe) über `lib/speech.ts`, gekürzt auf die Feldlänge (`components/dictate-button.tsx`).
+Hilfe & FAQ (`docs/hilfe.md`): eine Quelle `lib/help.ts` für den Kasten „So funktioniert’s“ oben auf jeder Modulseite (`components/module-intro.tsx`, vom Layout nach Pfad eingesetzt) und für `/hilfe` (Suche, allgemeine Fragen, Module nach Bereich). `lib/help.test.ts` verlangt einen Eintrag je Modul. **Bei jedem neuen Modul oder Feld: Hilfe-Eintrag, Demo-Daten (`lib/demoData.ts`, `docs/demo.md`) und Doku mitpflegen** (siehe `CLAUDE.md`).
 
 ## Hof-Dashboard
 

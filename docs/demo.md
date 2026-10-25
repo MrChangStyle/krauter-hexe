@@ -7,15 +7,23 @@ Zum Ausprobieren lädt jedes Konto unter Mehr → **„Meine Module“** (`/modu
 Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt danach dorthin. Solange er gewählt ist, zeigt die Tiere-Seite einen Hinweis mit dem Weg zum Löschen.
 
 - **Tiere**: zwei Gruppen („Hühner“ mit 2 Hühnern, „Ziegen“ mit 2 Ziegen) über den Schnellstart. Daraus entstehen auch die Rationen (Futterplaner) und die Stall-Aufgaben.
+- **Gesundheitsakte und Gewicht**: eine Entwurmung mit Wartezeit und Erinnerung an die Wiederholung in drei Monaten, drei Wiegungen.
 - **Futtervorrat**: Legehennenfutter (fast leer) und Heu.
-- **Zucht**: eine trächtige Ziege und eine Brut unter der Glucke.
-- **Arzneimittel**: eine Wurmkur, die bald abläuft, und ein Wundspray.
-- **Ertrag & Bilanz**: Eier und Milch von gestern, eine Ausgabe für Futter.
+- **Zucht**: eine trächtige Ziege, eine Brut unter der Glucke; die zweite Ziege mit zwei Brunsten im Brunstkalender und Zwillingen vor sechs Wochen (steht unter „Absetzen“).
+- **Arzneimittel**: eine Wurmkur, die bald abläuft, ein Wundspray und Oxalsäure für die Bienen.
+- **Pflichten**: eine erfundene Registriernummer.
+- **Ertrag & Bilanz**: acht Wochen Eier (Legeleistung), Milch, eine Ausgabe für Futter.
+- **Weide**: Obstwiese und Hangweide, auf der Karte eingezeichnet; die Ziegen sind umgetrieben.
+- **Bienen**: zwei Völker mit Durchsichten, Fütterung, Honig, einer Behandlung mit Drohnenbrut und einer Winterbehandlung mit Oxalsäure aus dem Vorrat (Bestandsbuch im Export); dazu ein Standort-Check mit festem Text (ohne Foto, ohne KI-Aufruf).
+- **Vorratskammer**: Eingelegtes, Eingefrorenes und Honig, eines davon bald aufzubrauchen.
 - **Wildtier-Radar**: zwei Kameras, noch ohne Ereignisse.
-- **Beet-Architekt**: ein Hochbeet mit Tomate und ein Gemüsebeet mit Salat, im laufenden Jahr.
+- **Übergabe**: eine Notiz für die Vertretung.
+- **Beet-Architekt**: ein Hochbeet mit Tomate (zwei Ernten für die Ernte-Auswertung) und ein Gemüsebeet mit Salat, im laufenden Jahr.
 - **Saatgut**: Tomate „Ochsenherz“ und Möhre „Nantaise“.
 - **Farm & Team**: eine Tierarztpraxis und eine Stallhilfe als wichtige Kontakte.
 - **Grow**: ein „Demo-Zelt“ mit zwei Pflanzen, aber nur, wenn das Konto Grow schon freigeschaltet hat (Alter bestätigt).
+
+Fotos (Tier, Beet, Standort eines Volks) gibt es in der Demo nicht – dafür müsste ein Bild hochgeladen werden.
 
 Pflegeplan, Pflanzen-Doc und Schädlinge bekommen keine Demo-Daten. Sie hängen an eigenen Scans und an der KI.
 

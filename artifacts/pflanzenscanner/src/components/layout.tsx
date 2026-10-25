@@ -13,6 +13,7 @@ import { Onboarding } from "@/components/onboarding";
 import { MovePickup } from "@/components/move-pickup";
 import { FeedbackBubble } from "@/components/feedback-bubble";
 import { TourCard } from "@/components/tour-card";
+import { ModuleIntro } from "@/components/module-intro";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
@@ -74,6 +75,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       )}
 
       <main className="flex-1 pb-24 w-full max-w-2xl mx-auto flex flex-col">
+        {/* Keyed by page, so each module page starts with its own state. */}
+        <ModuleIntro key={location} path={location} />
         {children}
       </main>
       <Onboarding />

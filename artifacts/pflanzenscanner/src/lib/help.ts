@@ -1,0 +1,347 @@
+import type { ModuleId } from "@workspace/api-client-react";
+
+/**
+ * Hilfe & FAQ (docs/hilfe.md): ONE source for the explanation at the top of
+ * every module page (components/module-intro.tsx) and for the help area
+ * (/hilfe). Every module in lib/modules.ts has an entry here – help.test.ts
+ * checks it. A new module or a new field that changes how a module is used:
+ * update its entry (intro, steps, FAQ) in the same change.
+ */
+
+export interface HelpEntry {
+  title: string;
+  /** Where the module lives. */
+  href: string;
+  /** Two or three sentences: what it is for. */
+  intro: string;
+  /** "So funktioniert's" – the steps, in the order one uses them. */
+  steps: string[];
+  faq: { q: string; a: string }[];
+}
+
+export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
+  // ── Pflanzen ──────────────────────────────────────────────────────────────
+  plants: {
+    title: "Pflanzen erkennen",
+    href: "/pflanzen",
+    intro: "Mit der Kamera bestimmt die App Pflanzen, Pilze und Insekten. Sie sagt dir, ob etwas giftig ist – für Menschen und für deine Tiere – und wie du es pflegst.",
+    steps: [
+      "Unten in der Mitte auf den Scan-Knopf tippen und die Pflanze möglichst formatfüllend fotografieren.",
+      "Pilze immer mit zwei Fotos scannen (von oben und von der Seite) – nur dann gibt es eine Aussage zur Essbarkeit.",
+      "Das Ergebnis landet in „Meine Pflanzen“; von dort geht es zu Pflegeplan, Pflanzendoc und Lexikon.",
+      "Ohne Netz werden Fotos zwischengespeichert und gescannt, sobald du wieder online bist.",
+    ],
+    faq: [
+      { q: "Wie sicher ist die Bestimmung?", a: "Die KI liegt meist richtig, aber nicht immer. Bei Giftpflanzen und Pilzen gilt: im Zweifel nicht essen und nicht verfüttern – frag eine Fachperson." },
+      { q: "Wie viele Scans habe ich?", a: "Es gibt ein tägliches Kontingent je Konto; um Mitternacht beginnt es neu. Die App zeigt, wenn es erreicht ist." },
+    ],
+  },
+  "my-plants": {
+    title: "Meine Pflanzen",
+    href: "/meine-pflanzen",
+    intro: "Deine Sammlung: alle gescannten Pflanzen mit Foto, Standort und Pflegehinweisen – von der Zimmerpflanze bis zum Beet.",
+    steps: [
+      "Nach einem Scan „Speichern“ wählen – die Pflanze erscheint hier.",
+      "Einen Ort zuordnen (Zimmer, Balkon, Beet), damit du sie wiederfindest.",
+      "Von der Pflanze aus einen Pflegeplan anlegen oder den Pflanzendoc fragen.",
+    ],
+    faq: [{ q: "Kann ich eine Pflanze wieder entfernen?", a: "Ja, in der Pflanze unten über „Löschen“. Der Pflegeplan dazu geht mit." }],
+  },
+  "care-plan": {
+    title: "Pflegeplan",
+    href: "/aufgaben",
+    intro: "Erinnerungen fürs Gießen, Düngen und Umtopfen – mit Rücksicht aufs Wetter: Draußen wird bei Regen nicht gegossen, bei Frost gibt es einen Hinweis.",
+    steps: [
+      "Eine Aufgabe anlegen: Pflanze, was zu tun ist und wie oft.",
+      "„Draußen“ ankreuzen, wenn die Pflanze im Freien steht – dann zählt der Regen mit.",
+      "Fällige Aufgaben abhaken; die nächste rückt automatisch nach.",
+      "Push-Erinnerungen in „Mehr → Benachrichtigungen“ einschalten.",
+    ],
+    faq: [{ q: "Warum ist eine Gieß-Aufgabe verschoben?", a: "Bei genug Regen schiebt die App Gieß-Aufgaben für Pflanzen draußen auf. Du siehst es an der Aufgabe." }],
+  },
+  "plant-doc": {
+    title: "Pflanzendoc",
+    href: "/pflanzendoc",
+    intro: "Kranke Pflanze? Ein Foto der Blätter genügt: Der Pflanzendoc nennt mögliche Ursachen – Schädlinge, Pilz, Nährstoffmangel, Gießfehler – und was hilft.",
+    steps: [
+      "Die betroffene Stelle nah und scharf fotografieren, am besten bei Tageslicht.",
+      "Die Diagnose lesen: Ursache, Sicherheit der Einschätzung und Behandlung.",
+      "Daraus einen Pflege-Guide mit Erinnerungen machen.",
+    ],
+    faq: [{ q: "Ersetzt das einen Fachbetrieb?", a: "Nein. Bei wertvollen Pflanzen oder Unsicherheit lieber eine Gärtnerei fragen." }],
+  },
+  pests: {
+    title: "Schädlinge & Nützlinge",
+    href: "/schaedlinge",
+    intro: "Erkennen, wer da krabbelt: Schädlinge mit biologischen und chemischen Mitteln dagegen, Nützlinge, die du fördern solltest.",
+    steps: ["Ein Insekt scannen oder in der Liste suchen.", "Bei Schädlingen zuerst die biologischen Wege lesen.", "Nützlinge fördern – sie erledigen oft die Arbeit."],
+    faq: [{ q: "Warum steht bio vor chemisch?", a: "Weil es Nützlinge, Bienen und deine Tiere schont. Chemie nur, wenn nichts anderes hilft – und Wartezeiten beachten." }],
+  },
+  lexicon: {
+    title: "Lexikon",
+    href: "/lexikon",
+    intro: "Alle Arten, die die App kennt – Pflanzen, Pilze und Insekten – mit Giftigkeit für Menschen und Tiere, Inhaltsstoffen und Nutzen.",
+    steps: ["Nach Namen oder Merkmalen suchen.", "Bei Pflanzen auf die Giftigkeit für deine Tierarten achten.", "Aus einem Eintrag direkt zum Pflegeplan."],
+    faq: [{ q: "Warum fehlt eine Art?", a: "Neue Arten kommen über Scans dazu. Scanne sie einfach – dann steht sie danach auch im Lexikon." }],
+  },
+  "herb-witch": {
+    title: "Kräuter-Hexe",
+    href: "/kraeuter-hexe",
+    intro: "Der Heilkräuter-Ratgeber: Welche Kräuter bei welchen Beschwerden traditionell verwendet werden – mit Zubereitung und Vorsicht-Hinweisen.",
+    steps: ["Eine Beschwerde wählen oder ein Kraut suchen.", "Anwendung und Gegenanzeigen lesen.", "Kräuter aus dem eigenen Garten im Beet-Architekt einplanen."],
+    faq: [{ q: "Ist das medizinischer Rat?", a: "Nein. Es ist überliefertes Wissen; bei Beschwerden ärztlichen Rat einholen, besonders in Schwangerschaft und bei Kindern." }],
+  },
+  garden: {
+    title: "Beet-Architekt",
+    href: "/beete",
+    intro: "Beete planen wie auf Karopapier: Mischkultur, Fruchtfolge, Licht und Abstände prüft die App. Dazu Gartenkalender, Frostwarnung, Saatgut-Vorrat und Ernte-Auswertung.",
+    steps: [
+      "Ein Beet anlegen (Größe, Standort mit Postleitzahl für Frosttermine).",
+      "Kulturen ins Raster setzen – die App warnt bei schlechten Nachbarn und zu wenig Platz.",
+      "Optional ein Foto des Beets: Die KI schätzt Schatten, Boden und Unkraut ein.",
+      "Im Gartenkalender sehen, wann gesät, gepflanzt und geerntet wird.",
+      "Ernten eintragen – die Ernte-Auswertung zeigt, was sich gelohnt hat.",
+    ],
+    faq: [
+      { q: "Woher kennt die App meine Frosttermine?", a: "Aus Wetterdaten des Deutschen Wetterdienstes für deine Postleitzahl (auf etwa 10 km gerundet)." },
+      { q: "Was ist mit dem Saatgut?", a: "Unter „Saatgut“ führst du deine Tüten. Die App sagt, wie lange sie keimen, und bucht beim Säen ab." },
+    ],
+  },
+  pantry: {
+    title: "Vorratskammer",
+    href: "/vorrat",
+    intro: "Was eingekocht, eingefroren, getrocknet oder als Honig im Regal steht – mit Mindesthaltbarkeit, damit nichts verdirbt.",
+    steps: [
+      "„Einlagern“: was, wie viel, wo und bis wann – oder direkt aus einer Ernte übernehmen.",
+      "Beim Entnehmen „1 Glas genommen“ tippen; „rückgängig“ korrigiert Vertipper.",
+      "Montags kommt ein Push für alles, was bald aufgebraucht werden sollte.",
+    ],
+    faq: [{ q: "Wie kommt die Haltbarkeit zustande?", a: "Die App schlägt je Art eine übliche Dauer vor (z. B. Eingekochtes ein Jahr). Du kannst sie ändern." }],
+  },
+  grow: {
+    title: "Grow",
+    href: "/grow",
+    intro: "Für Erwachsene ab 18: der private Eigenanbau nach dem Konsumcannabisgesetz – Plan, Tagebuch, Wetter, Strom und Kosten. Der KI-Check gehört zu Premium.",
+    steps: ["Das Alter einmal bestätigen.", "Ein Grow anlegen (drinnen, draußen, Gewächshaus) und Pflanzen eintragen.", "Dem Plan folgen und das Tagebuch führen; die App erinnert an die Schritte."],
+    faq: [{ q: "Ist das Rechtsberatung?", a: "Nein. Die App zeigt die Grenzen des Gesetzes (Anzahl, Besitz), entscheidet aber nichts für dich." }],
+  },
+
+  // ── Tiere ─────────────────────────────────────────────────────────────────
+  animals: {
+    title: "Tierbestand",
+    href: "/farm",
+    intro: "Alle Tiere des Hofs, einzeln oder in Gruppen: mit Gesundheitsakte, Gewicht, Abstammung und Wartezeiten. Für den Anfang genügen Tierart, Geschlecht und Geburtsdatum.",
+    steps: [
+      "„Schnellstart“: eine Gruppe mit nummerierten Tieren, Startration und Erinnerungen in einem Rutsch.",
+      "Oder ein Tier einzeln anlegen – Foto, Name und Ring-/Ohrmarke sind optional (ohne Namen heißt es z. B. „Ziege 1“).",
+      "In der Gesundheitsakte Behandlungen mit Wartezeit eintragen; Entwurmen und Impfen erinnern auf Wunsch an die Wiederholung.",
+      "Gewicht eintragen – die App warnt bei mehr als 5 % Abnahme in 14 Tagen.",
+    ],
+    faq: [
+      { q: "Muss ich die Ohrmarkennummer eintragen?", a: "Nein, sie lässt sich jederzeit nachtragen. Rinder, Schafe, Ziegen und Schweine müssen aber gekennzeichnet sein – das Formular erinnert daran." },
+      { q: "Was passiert beim Archivieren?", a: "Das Tier verschwindet aus den Listen, bleibt aber mit seiner Akte für den Veterinäramt-Export erhalten." },
+    ],
+  },
+  "farm-tasks": {
+    title: "Stall-Aufgaben",
+    href: "/farm/aufgaben",
+    intro: "Füttern, Tränken, Ausmisten, Eier sammeln: wiederkehrende Aufgaben für alle auf dem Hof, mit Erinnerung und Abhaken – auch schnell „Am Stall“.",
+    steps: [
+      "Eine Aufgabe anlegen: was, für welches Tier oder welche Gruppe, wie oft und um wie viel Uhr.",
+      "Wer sie erledigt, hakt sie ab – alle sehen es.",
+      "„Am Stall“ zeigt nur das Heute, mit großen Knöpfen, und geht auch ohne Netz.",
+    ],
+    faq: [{ q: "Wer bekommt die Erinnerung?", a: "Admins und Mitarbeiter des Hofs, Gäste nicht. Ruhezeiten stellst du unter „Mehr → Benachrichtigungen“ ein." }],
+  },
+  feed: {
+    title: "Futterplaner",
+    href: "/farm/futter",
+    intro: "Rationen je Tier oder Gruppe, gerechnet auf den Bedarf der Art: Protein, Rohfaser, Mineralien und Wasser mit Ampel. Dazu Sommer- und Winterration, Futtervorrat und Mehrbedarf bei Kälte.",
+    steps: [
+      "Eine Ration anlegen: Futtermittel aus der Liste oder vom Etikett, Menge je Tier und Lebensphase.",
+      "Die Ampel zeigt, was fehlt oder zu viel ist – mit Tipp zum Ausgleich.",
+      "Sommer- und Winterration anlegen; die App stellt schrittweise um.",
+      "Unter „Vorrat & Kosten“ den Bestand führen – die App sagt, wann nachkaufen.",
+      "Mit Hofstandort zeigt sie bei Kälte, wie viel mehr Heu oder Körner es braucht.",
+    ],
+    faq: [
+      { q: "Warum warnt die App bei Mineralfutter?", a: "Manches Mineralfutter ist für eine andere Art gemacht – zu viel Kupfer ist für Schafe giftig, Kokzidiostatika für Pferde. Diese Warnungen lassen sich nicht wegklicken." },
+      { q: "Sind das genaue Werte?", a: "Es sind Richtwerte aus der Fachliteratur für ein typisches Tier. Im Zweifel mit Tierärztin oder Fütterungsberatung abstimmen." },
+    ],
+  },
+  breeding: {
+    title: "Zucht",
+    href: "/farm/zucht",
+    intro: "Von der Deckung bis zur Geburt, vom Einlegen bis zum Schlupf: Termine und Schritte dazwischen, Jungtiere mit Eltern, Brunstkalender und Absetzen.",
+    steps: [
+      "„Deckung oder Brut eintragen“ mit Datum – die App rechnet den Termin und die Schritte (Schieren, Nestbox, Trockenstellen …).",
+      "Bei der Geburt die Jungtiere auf Wunsch gleich mit Mutter und Vater anlegen.",
+      "Im Brunstkalender „Brunst gesehen“ tippen – die nächste Brunst wird berechnet, am Vortag kommt ein Push.",
+      "Unter „Absetzen“ steht, wann die Jungtiere von der Mutter getrennt werden.",
+    ],
+    faq: [
+      { q: "Warum eine Warnung bei Mutter und Vater?", a: "Wenn sie verwandt sind (Geschwister, Elterntier, Cousins). Inzucht erhöht das Risiko für Erbfehler – die App blockiert aber nicht." },
+      { q: "Wie genau sind die Termine?", a: "Durchschnittswerte aus der Fachliteratur. Jedes Tier ist anders; der normale Bereich steht dabei." },
+    ],
+  },
+  medicines: {
+    title: "Arzneimittel",
+    href: "/farm/arzneimittel",
+    intro: "Der Vorrat an Tierarzneimitteln mit Charge, Haltbarkeit und Wartezeiten für Fleisch, Milch und Eier. Behandlungen buchen die Menge ab.",
+    steps: [
+      "Ein Mittel eintragen: Name, Menge, Charge, Ablaufdatum, Wartezeiten, woher.",
+      "In der Gesundheitsakte oder bei den Bienen das Mittel wählen – Menge und Charge werden übernommen.",
+      "Vor dem Ablauf kommt eine Erinnerung.",
+    ],
+    faq: [{ q: "Wo sehe ich laufende Wartezeiten?", a: "Am Tier, in der Übergabe und im Futterplaner – solange Fleisch, Milch oder Eier nicht genutzt werden dürfen." }],
+  },
+  duties: {
+    title: "Pflichten & Tierseuchen",
+    href: "/farm/pflichten",
+    intro: "Was die Haltung auf dem Papier bedeutet: Anmeldung beim Veterinäramt, Tierseuchenkasse, Stichtagsmeldung, Stallpflicht – je nach Tierart, auch für Bienen.",
+    steps: [
+      "Die Liste zeigt nur die Pflichten deiner Tierarten.",
+      "Erledigtes abhaken; jährliche Meldungen kommen im nächsten Jahr wieder.",
+      "Registriernummer des Betriebs eintragen – sie steht dann im Veterinäramt-Export.",
+      "Eine amtliche Stallpflicht für Geflügel mit Enddatum eintragen – alle auf dem Hof sehen sie.",
+    ],
+    faq: [{ q: "Gilt das in jedem Bundesland gleich?", a: "Die Grundlagen sind bundesweit; Fristen der Tierseuchenkassen unterscheiden sich. Im Zweifel beim Veterinäramt nachfragen. Keine Rechtsberatung." }],
+  },
+  yields: {
+    title: "Ertrag & Bilanz",
+    href: "/farm/ertrag",
+    intro: "Eier, Milch, Fleisch, Wolle, Honig und Ernte – und was das im Laden kosten würde, gegen Futter und andere Ausgaben gerechnet. Mit Legeleistung je Henne.",
+    steps: [
+      "Oben schnell eintragen: Produkt, Menge, Datum, optional Gruppe oder Henne.",
+      "Ausgaben eintragen (Futter, Tierarzt, Einstreu) – die Bilanz rechnet mit.",
+      "„Legeleistung“ zeigt Eier je Henne und Woche.",
+    ],
+    faq: [{ q: "Woher kommen die Preise?", a: "Grobe Bio- bzw. Hofladen-Preise als Vergleich – du kannst sie anpassen." }],
+  },
+  pasture: {
+    title: "Weide",
+    href: "/farm/weide",
+    intro: "Welche Herde wann wo steht und wann eine Fläche wieder bereit ist: Weidetagebuch, Ruhezeiten, Tier-Tage je Hektar und eine Karte mit eingezeichneten Weiden.",
+    steps: [
+      "Jede Weide einmal anlegen: Fläche, Ruhezeit, längste Weidedauer.",
+      "Optional auf der Karte einzeichnen – die Fläche rechnet die App dann selbst aus.",
+      "Auf-, um- und abtreiben mit einem Tipp; die App merkt sich Herde, Tiere und Tage.",
+      "Hinweise und Push sagen, wann umzutreiben ist und wann eine Weide wieder bereit ist.",
+    ],
+    faq: [{ q: "Woher kommen die Kartenbilder?", a: "Von OpenStreetMap – erst nach einem Tipp auf „Karte zeigen“. Deine eingezeichneten Weiden bleiben bei uns." }],
+  },
+  bees: {
+    title: "Bienen",
+    href: "/farm/bienen",
+    intro: "Die Stockkarte für jedes Volk: Durchsicht, Fütterung, Varroa und Honig, mit Hinweisen durchs Bienenjahr. Dazu ein Foto vom Standort je Volk und der KI-Standort-Check.",
+    steps: [
+      "Jedes Volk einmal anlegen (Stand, Beute, Königin) und ein Foto vom Standort hinterlegen.",
+      "Durchsichten eintragen – Waben, Brut, Weiselzellen, Milbenfall.",
+      "Varroa-Behandlungen mit Mittel aus dem Arzneimittel-Vorrat – das ist das Bestandsbuch fürs Veterinäramt.",
+      "Honig eintragen – er zählt in Ertrag & Bilanz und in der Vorratskammer.",
+      "„Standort prüfen lassen“: Foto eines Bienenstands, die KI rät zu Ausrichtung, Wind, Bepflanzung und Feuchtigkeit.",
+    ],
+    faq: [
+      { q: "Muss ich meine Völker melden?", a: "Ja, beim Veterinäramt, und in den meisten Ländern bei der Tierseuchenkasse. Unter „Pflichten“ steht es." },
+      { q: "Zählt der Standort-Check?", a: "Ja, als KI-Anfrage für die Farm (15 am Tag). Das Foto geht zur Auswertung an Google Gemini." },
+    ],
+  },
+  wildlife: {
+    title: "Wildtier-Radar",
+    href: "/farm/kameras",
+    intro: "Kameras am Stall melden Fuchs, Marder und Greifvogel. Die App zeigt die Bilder und schickt einen Alarm – nicht in Echtzeit, Licht oder Sirene besser direkt an der Kamera auslösen.",
+    steps: ["Eine Kamera anlegen und den Webhook in der Kamera eintragen.", "Ruhezeit zwischen zwei Alarmen wählen.", "Bilder ansehen und Fehlalarme löschen."],
+    faq: [{ q: "Warum kommt der Alarm manchmal spät?", a: "Der Server schläft bei wenig Betrieb und braucht bis zu einer Minute zum Aufwachen. Für echten Schutz die Kamera vor Ort reagieren lassen." }],
+  },
+  handover: {
+    title: "Übergabe",
+    href: "/farm/uebergabe",
+    intro: "Alles für die Vertretung auf einer Seite: Notiz der Admins, heutige Stall-Aufgaben, Wartezeiten, Wetter und letzte Behandlungen.",
+    steps: ["Eine Notiz für die Vertretung schreiben (Schlüssel, Tierarzt, Besonderheiten).", "Die Vertretung unter „Farm & Team“ mit Enddatum einladen.", "Sie hakt die Aufgaben auf dieser Seite ab."],
+    faq: [{ q: "Was sieht die Vertretung?", a: "Nur, was ihre Rolle und Freigaben erlauben – nach dem letzten Tag endet der Zugang von selbst." }],
+  },
+  members: {
+    title: "Farm & Team",
+    href: "/team",
+    intro: "Wer gehört zum Hof und was darf wer: Admins, Mitarbeiter, Gäste, Vertretungen mit Enddatum, Freigaben je Modul und wichtige Kontakte wie Tierarzt und Hufschmied.",
+    steps: ["Mitglieder per E-Mail einladen und eine Rolle wählen.", "Optional Module freigeben – etwa nur Stall-Aufgaben.", "Kontakte eintragen; sie stehen auch in der Übergabe."],
+    faq: [{ q: "Was dürfen Gäste?", a: "Lesen, aber nichts ändern." }],
+  },
+  export: {
+    title: "Veterinäramt-Export",
+    href: "/farm/export",
+    intro: "Bestandsliste und Medizin-Historie für einen Zeitraum als PDF oder CSV – mit Bienen auch die Völker und das Bestandsbuch der Behandlungen.",
+    steps: ["Zeitraum wählen.", "PDF zum Ausdrucken oder CSV für Excel.", "Tiere ohne Ohrmarke stehen am Ende der Liste – Nummern lassen sich nachtragen."],
+    faq: [{ q: "Reicht das fürs Veterinäramt?", a: "Es ist eine Arbeitshilfe mit den üblichen Angaben. Was genau verlangt wird, sagt dein Veterinäramt." }],
+  },
+};
+
+export interface HelpTopic {
+  id: string;
+  title: string;
+  faq: { q: string; a: string }[];
+}
+
+/** Things that are not one module. */
+export const GENERAL_HELP: HelpTopic[] = [
+  {
+    id: "start",
+    title: "Erste Schritte",
+    faq: [
+      { q: "Wo fange ich an?", a: "Auf der Hof-Seite führt „Einrichtung“ durch die ersten Schritte: Hofname, Standort, erste Tiere, Rationen, Aufgaben, Beete, Team. Jeder Schritt lässt sich überspringen." },
+      { q: "Kann ich erst mal ausprobieren?", a: "Ja, mit den Demo-Daten unter „Mehr → Meine Module“: ein Demo-Hof mit Beispielen in jedem Modul. Ein Tipp löscht ihn wieder, deine eigenen Daten bleiben." },
+      { q: "Was steht oben auf den Seiten?", a: "Jedes Modul hat oben einen Kasten „So funktioniert’s“. Du kannst ihn zuklappen; die ganze Erklärung steht hier in der Hilfe." },
+    ],
+  },
+  {
+    id: "module",
+    title: "Module ein- und ausblenden",
+    faq: [{ q: "Ich brauche nicht alles – geht das kleiner?", a: "Unter „Mehr → Meine Module“ blendest du ganze Bereiche oder einzelne Module aus. Nichts wird gelöscht; du kannst sie jederzeit wieder einblenden." }],
+  },
+  {
+    id: "push",
+    title: "Benachrichtigungen",
+    faq: [
+      { q: "Wie bekomme ich Erinnerungen aufs Handy?", a: "Unter „Mehr → Benachrichtigungen“ einschalten und im Browser erlauben. Auf dem iPhone muss die App dafür zum Home-Bildschirm hinzugefügt sein." },
+      { q: "Kann ich nachts Ruhe haben?", a: "Ja, mit einer Ruhezeit (Standard 22–7 Uhr). Dann kommt nichts außer dem Raubtier-Alarm des Wildtier-Radars." },
+    ],
+  },
+  {
+    id: "offline",
+    title: "Ohne Netz",
+    faq: [{ q: "Was geht ohne Empfang?", a: "Fotos zum Scannen werden zwischengespeichert, „Am Stall“ zählt Eier und hakt Aufgaben ab. Sobald wieder Netz da ist, wird alles nachgereicht." }],
+  },
+  {
+    id: "daten",
+    title: "Daten und Konto",
+    faq: [
+      { q: "Wer sieht meine Daten?", a: "Die Hofdaten sehen nur die Mitglieder des Hofs. Fotos für die KI gehen zur Auswertung an Google Gemini; Details in der Datenschutzerklärung." },
+      { q: "Kann ich meine Daten herunterladen oder löschen?", a: "Ja, unter „Mehr → Konto“: alles als Datei herunterladen oder das Konto löschen." },
+    ],
+  },
+  {
+    id: "premium",
+    title: "Premium",
+    faq: [{ q: "Was kostet etwas?", a: "Fast alles ist kostenlos. Premium betrifft nur Funktionen, deren KI Geld kostet, etwa den KI-Check im Grow." }],
+  },
+];
+
+const norm = (s: string) => s.toLocaleLowerCase("de-DE");
+
+/** Help entries whose text contains every word of the query. */
+export function searchHelp(query: string, ids: readonly ModuleId[]): ModuleId[] {
+  const words = norm(query).split(/\s+/).filter((w) => w.length > 1);
+  if (words.length === 0) return [...ids];
+  return ids.filter((id) => {
+    const e = MODULE_HELP[id];
+    const text = norm([e.title, e.intro, ...e.steps, ...e.faq.flatMap((f) => [f.q, f.a])].join(" "));
+    return words.every((w) => text.includes(w));
+  });
+}
+
+/** The help entry of the module page at `path` (exact), for the box at the top. */
+export function helpForPath(path: string): { id: ModuleId; entry: HelpEntry } | null {
+  const clean = path.replace(/\/+$/, "") || "/";
+  for (const [id, entry] of Object.entries(MODULE_HELP) as [ModuleId, HelpEntry][]) if (entry.href === clean) return { id, entry };
+  return null;
+}

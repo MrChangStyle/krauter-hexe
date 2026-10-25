@@ -6578,6 +6578,11 @@ export const GetFarmDutiesParams = zod.object({
 })
 
 export const GetFarmDutiesResponse = zod.object({
+  "state": zod.union([zod.null(),zod.enum(['BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV', 'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH'])]).describe('The farm\'s Bundesland – which Tierseuchenkasse, stock day and deadline apply.'),
+  "states": zod.array(zod.object({
+  "code": zod.enum(['BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV', 'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH']),
+  "name": zod.string()
+})).describe('All Länder to choose from, by name.'),
   "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
@@ -6594,13 +6599,18 @@ export const GetFarmDutiesResponse = zod.object({
   "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
   "dueOn": zod.string().nullable().describe('YYYY-MM-DD'),
   "stock": zod.object({
-  "day": zod.string().describe('The stock day (1 January, YYYY-MM-DD).'),
+  "day": zod.string().describe('The stock day (1 or 3 January depending on the Land, YYYY-MM-DD).'),
   "counts": zod.array(zod.object({
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "count": zod.number()
 })),
   "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
-}).nullable()
+}).nullable(),
+  "link": zod.object({
+  "label": zod.string(),
+  "url": zod.string().nullable()
+}).nullable().describe('The Land\'s Tierseuchenkasse, once the farm has a Bundesland.'),
+  "note": zod.string().nullable().describe('What differs in the farm\'s Land.')
 }))
 })
 
@@ -6618,10 +6628,16 @@ export const setFarmDutySettingsBodyHoldingNumberMax = 30;
 
 export const SetFarmDutySettingsBody = zod.object({
   "holdingNumber": zod.string().max(setFarmDutySettingsBodyHoldingNumberMax).nullish(),
-  "housingOrderUntil": zod.string().nullish().describe('YYYY-MM-DD, or null to end the housing order.')
+  "housingOrderUntil": zod.string().nullish().describe('YYYY-MM-DD, or null to end the housing order.'),
+  "state": zod.union([zod.null(),zod.enum(['BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV', 'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH'])]).optional().describe('Bundesland; null removes it.')
 })
 
 export const SetFarmDutySettingsResponse = zod.object({
+  "state": zod.union([zod.null(),zod.enum(['BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV', 'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH'])]).describe('The farm\'s Bundesland – which Tierseuchenkasse, stock day and deadline apply.'),
+  "states": zod.array(zod.object({
+  "code": zod.enum(['BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV', 'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH']),
+  "name": zod.string()
+})).describe('All Länder to choose from, by name.'),
   "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
@@ -6638,13 +6654,18 @@ export const SetFarmDutySettingsResponse = zod.object({
   "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
   "dueOn": zod.string().nullable().describe('YYYY-MM-DD'),
   "stock": zod.object({
-  "day": zod.string().describe('The stock day (1 January, YYYY-MM-DD).'),
+  "day": zod.string().describe('The stock day (1 or 3 January depending on the Land, YYYY-MM-DD).'),
   "counts": zod.array(zod.object({
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "count": zod.number()
 })),
   "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
-}).nullable()
+}).nullable(),
+  "link": zod.object({
+  "label": zod.string(),
+  "url": zod.string().nullable()
+}).nullable().describe('The Land\'s Tierseuchenkasse, once the farm has a Bundesland.'),
+  "note": zod.string().nullable().describe('What differs in the farm\'s Land.')
 }))
 })
 
@@ -6662,6 +6683,11 @@ export const CheckFarmDutyBody = zod.object({
 })
 
 export const CheckFarmDutyResponse = zod.object({
+  "state": zod.union([zod.null(),zod.enum(['BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV', 'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH'])]).describe('The farm\'s Bundesland – which Tierseuchenkasse, stock day and deadline apply.'),
+  "states": zod.array(zod.object({
+  "code": zod.enum(['BW', 'BY', 'BE', 'BB', 'HB', 'HH', 'HE', 'MV', 'NI', 'NW', 'RP', 'SL', 'SN', 'ST', 'SH', 'TH']),
+  "name": zod.string()
+})).describe('All Länder to choose from, by name.'),
   "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
@@ -6678,13 +6704,18 @@ export const CheckFarmDutyResponse = zod.object({
   "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
   "dueOn": zod.string().nullable().describe('YYYY-MM-DD'),
   "stock": zod.object({
-  "day": zod.string().describe('The stock day (1 January, YYYY-MM-DD).'),
+  "day": zod.string().describe('The stock day (1 or 3 January depending on the Land, YYYY-MM-DD).'),
   "counts": zod.array(zod.object({
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "count": zod.number()
 })),
   "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
-}).nullable()
+}).nullable(),
+  "link": zod.object({
+  "label": zod.string(),
+  "url": zod.string().nullable()
+}).nullable().describe('The Land\'s Tierseuchenkasse, once the farm has a Bundesland.'),
+  "note": zod.string().nullable().describe('What differs in the farm\'s Land.')
 }))
 })
 

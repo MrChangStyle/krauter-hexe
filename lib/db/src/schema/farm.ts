@@ -91,6 +91,9 @@ export const farmsTable = pgTable("farms", {
   // to keep poultry indoors (Aufstallungspflicht wegen Geflügelpest).
   holdingNumber: text("holding_number"),
   housingOrderUntil: date("housing_order_until", { mode: "string" }),
+  // Pflichten je Bundesland: the Land (code like "BY") – which Tierseuchenkasse,
+  // stock day and deadline apply (api-server lib/dutyStates.ts).
+  state: text("state"),
   // Demo-Hof with example data (lib/demoData.ts) – "Demo-Daten löschen" removes it whole.
   isDemo: boolean("is_demo").notNull().default(false),
 });

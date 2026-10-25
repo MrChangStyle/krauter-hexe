@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Loader2, ShieldCheck, Undo2 } from "lucide-react";
+import { ArrowLeft, Check, ExternalLink, Loader2, ShieldCheck, Undo2 } from "lucide-react";
 import {
   getGetFarmDutiesQueryKey,
   useCheckFarmDuty,
@@ -11,6 +11,7 @@ import {
   type FarmDuties,
   type FarmDuty,
   type FarmSummary,
+  type StateCode,
 } from "@workspace/api-client-react";
 import { HousingOrderBanner } from "@/components/housing-order-banner";
 import { Button } from "@/components/ui/button";
@@ -31,11 +32,14 @@ function useSaved(farm: FarmSummary) {
   return (data: FarmDuties) => queryClient.setQueryData(getGetFarmDutiesQueryKey(farm.id), data);
 }
 
-/** Registration number and, with poultry, the housing order. */
+const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
+
+/** Bundesland, registration number and, with poultry, the housing order. */
 function Settings({ farm, duties }: { farm: FarmSummary; duties: FarmDuties }) {
   const { toast } = useToast();
   const saved = useSaved(farm);
   const [number, setNumber] = useState(duties.holdingNumber ?? "");
+  const [state, setState] = useState<StateCode | "">(duties.state ?? "");
   const [until, setUntil] = useState(duties.housingOrderUntil ?? "");
   const save = useSetFarmDutySettings({
     mutation: {
@@ -48,16 +52,18 @@ function Settings({ farm, duties }: { farm: FarmSummary; duties: FarmDuties }) {
   });
   const isAdmin = farm.role === "admin";
   const poultry = duties.species.includes("poultry");
+  const stateName = duties.states.find((s) => s.code === duties.state)?.name ?? null;
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    save.mutate({ farmId: farm.id, data: { holdingNumber: number.trim() || null, ...(poultry ? { housingOrderUntil: until || null } : {}) } });
+    save.mutate({ farmId: farm.id, data: { holdingNumber: number.trim() || null, state: state || null, ...(poultry ? { housingOrderUntil: until || null } : {}) } });
   }
 
   if (!isAdmin) {
     return (
       <section className="space-y-1 rounded-xl border border-border bg-card p-4 text-sm">
         <h2 className="font-semibold">Betrieb</h2>
+        <p>Bundesland: {stateName ?? <span className="text-muted-foreground">nicht eingetragen</span>}</p>
         <p>Registriernummer: {duties.holdingNumber ?? <span className="text-muted-foreground">nicht eingetragen</span>}</p>
       </section>
     );
@@ -66,6 +72,18 @@ function Settings({ farm, duties }: { farm: FarmSummary; duties: FarmDuties }) {
   return (
     <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
       <h2 className="font-semibold">Betrieb</h2>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor="duty-state">Bundesland</Label>
+        <select id="duty-state" className={selectClass} value={state} onChange={(e) => setState(e.target.value as StateCode | "")}>
+          <option value="">Bitte wählen</option>
+          {duties.states.map((s) => (
+            <option key={s.code} value={s.code}>
+              {s.name}
+            </option>
+          ))}
+        </select>
+        <span className="text-xs text-muted-foreground">Dann nennt die App eure Tierseuchenkasse mit Link und rechnet mit deren Stichtag und Frist.</span>
+      </div>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="holding-number">Registriernummer vom Veterinäramt</Label>
         <Input id="holding-number" maxLength={30} value={number} placeholder="z. B. 276 09 123 456 7890" onChange={(e) => setNumber(e.target.value)} />
@@ -113,10 +131,20 @@ function DutyCard({ farm, duty }: { farm: FarmSummary; duty: FarmDuty }) {
         {badge && <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.tone}`}>{badge.label}</span>}
       </div>
       <p>{duty.text}</p>
+      {duty.note && <p className="text-muted-foreground">{duty.note}</p>}
+      {duty.link &&
+        (duty.link.url ? (
+          <a href={duty.link.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 font-medium text-primary underline-offset-2 hover:underline">
+            {duty.link.label}
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        ) : (
+          <p className="font-medium">{duty.link.label}</p>
+        ))}
       {duty.stock && <p className="rounded-lg bg-muted/60 p-2 font-medium">{stockText(duty.stock)}</p>}
-      {duty.kind === "yearly" && done && duty.doneOn && (
+      {duty.kind === "yearly" && done && duty.doneOn && duty.stock && (
         <p className="text-xs text-muted-foreground">
-          Abgehakt am {deDay(duty.doneOn)}. Nächster Stichtag: 01.01.{Number(duty.period) + 1}.
+          Abgehakt am {deDay(duty.doneOn)}. Nächster Stichtag: {deDay(`${Number(duty.period) + 1}${duty.stock.day.slice(4)}`)}.
         </p>
       )}
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -167,7 +195,7 @@ function Duties({ farm }: { farm: FarmSummary }) {
         </p>
       ) : (
         <>
-          <Settings key={`${data.holdingNumber}-${data.housingOrderUntil}`} farm={farm} duties={data} />
+          <Settings key={`${data.holdingNumber}-${data.housingOrderUntil}-${data.state}`} farm={farm} duties={data} />
           <Group farm={farm} title="Zu erledigen" duties={of("overdue", "due", "open")} />
           <Group farm={farm} title="Erledigt und als Nächstes" duties={of("done", "upcoming")} />
           <Group farm={farm} title="Regeln im Alltag" duties={data.duties.filter((d) => d.kind === "rule")} />

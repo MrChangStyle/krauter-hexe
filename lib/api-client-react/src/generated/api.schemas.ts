@@ -2706,6 +2706,33 @@ export interface GrowCheckInput {
   imageData: string;
 }
 
+export type StateCode = typeof StateCode[keyof typeof StateCode];
+
+
+export const StateCode = {
+  BW: 'BW',
+  BY: 'BY',
+  BE: 'BE',
+  BB: 'BB',
+  HB: 'HB',
+  HH: 'HH',
+  HE: 'HE',
+  MV: 'MV',
+  NI: 'NI',
+  NW: 'NW',
+  RP: 'RP',
+  SL: 'SL',
+  SN: 'SN',
+  ST: 'ST',
+  SH: 'SH',
+  TH: 'TH',
+} as const;
+
+export interface StateOption {
+  code: StateCode;
+  name: string;
+}
+
 export type FarmDutyKind = typeof FarmDutyKind[keyof typeof FarmDutyKind];
 
 
@@ -2734,11 +2761,19 @@ export type FarmDutyStockCountsItem = {
 };
 
 export type FarmDutyStock = {
-  /** The stock day (1 January, YYYY-MM-DD). */
+  /** The stock day (1 or 3 January depending on the Land, YYYY-MM-DD). */
   day: string;
   counts: FarmDutyStockCountsItem[];
   /** True when the stock day is still ahead and the counts are today's. */
   current: boolean;
+} | null;
+
+/**
+ * The Land's Tierseuchenkasse, once the farm has a Bundesland.
+ */
+export type FarmDutyLink = {
+  label: string;
+  url: string | null;
 } | null;
 
 export interface FarmDuty {
@@ -2756,9 +2791,17 @@ export interface FarmDuty {
   /** YYYY-MM-DD */
   dueOn: string | null;
   stock: FarmDutyStock;
+  /** The Land's Tierseuchenkasse, once the farm has a Bundesland. */
+  link: FarmDutyLink;
+  /** What differs in the farm's Land. */
+  note: string | null;
 }
 
 export interface FarmDuties {
+  /** The farm's Bundesland – which Tierseuchenkasse, stock day and deadline apply. */
+  state: null | StateCode;
+  /** All Länder to choose from, by name. */
+  states: StateOption[];
   /** Active bee colonies – the beekeeping duties apply. */
   bees: boolean;
   holdingNumber: string | null;
@@ -2773,6 +2816,8 @@ export interface FarmDutySettingsInput {
   holdingNumber?: string | null;
   /** YYYY-MM-DD, or null to end the housing order. */
   housingOrderUntil?: string | null;
+  /** Bundesland; null removes it. */
+  state?: null | StateCode;
 }
 
 export interface FarmDutyCheckInput {

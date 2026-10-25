@@ -9469,8 +9469,18 @@ components:
             - $ref: "#/components/schemas/GrowTrichomeResult"
     FarmDuties:
       type: object
-      required: [holdingNumber, housingOrderUntil, species, bees, duties]
+      required: [holdingNumber, housingOrderUntil, state, states, species, bees, duties]
       properties:
+        state:
+          description: The farm's Bundesland – which Tierseuchenkasse, stock day and deadline apply.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/StateCode"
+        states:
+          type: array
+          description: All Länder to choose from, by name.
+          items:
+            $ref: "#/components/schemas/StateOption"
         bees:
           type: boolean
           description: Active bee colonies – the beekeeping duties apply.
@@ -9491,7 +9501,7 @@ components:
             $ref: "#/components/schemas/FarmDuty"
     FarmDuty:
       type: object
-      required: [key, kind, title, text, source, species, status, period, doneOn, dueOn, stock]
+      required: [key, kind, title, text, source, species, status, period, doneOn, dueOn, stock, link, note]
       properties:
         key:
           type: string
@@ -9530,7 +9540,7 @@ components:
           properties:
             day:
               type: string
-              description: The stock day (1 January, YYYY-MM-DD).
+              description: The stock day (1 or 3 January depending on the Land, YYYY-MM-DD).
             counts:
               type: array
               items:
@@ -9544,6 +9554,32 @@ components:
             current:
               type: boolean
               description: True when the stock day is still ahead and the counts are today's.
+        link:
+          type: object
+          nullable: true
+          description: The Land's Tierseuchenkasse, once the farm has a Bundesland.
+          required: [label, url]
+          properties:
+            label:
+              type: string
+            url:
+              type: string
+              nullable: true
+        note:
+          type: string
+          nullable: true
+          description: What differs in the farm's Land.
+    StateCode:
+      type: string
+      enum: [BW, BY, BE, BB, HB, HH, HE, MV, NI, NW, RP, SL, SN, ST, SH, TH]
+    StateOption:
+      type: object
+      required: [code, name]
+      properties:
+        code:
+          $ref: "#/components/schemas/StateCode"
+        name:
+          type: string
     FarmDutySettingsInput:
       type: object
       properties:
@@ -9555,6 +9591,11 @@ components:
           type: string
           nullable: true
           description: YYYY-MM-DD, or null to end the housing order.
+        state:
+          description: Bundesland; null removes it.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/StateCode"
     FarmDutyCheckInput:
       type: object
       required: [done]

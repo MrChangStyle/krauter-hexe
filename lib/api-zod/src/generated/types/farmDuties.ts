@@ -7,8 +7,14 @@
  */
 import type { FarmDuty } from './farmDuty';
 import type { FarmSpecies } from './farmSpecies';
+import type { StateCode } from './stateCode';
+import type { StateOption } from './stateOption';
 
 export interface FarmDuties {
+  /** The farm's Bundesland – which Tierseuchenkasse, stock day and deadline apply. */
+  state: null | StateCode;
+  /** All Länder to choose from, by name. */
+  states: StateOption[];
   /** Active bee colonies – the beekeeping duties apply. */
   bees: boolean;
   holdingNumber: string | null;

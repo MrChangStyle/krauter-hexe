@@ -81,7 +81,7 @@ describe.skipIf(!enabled)("Pflichten (real database)", () => {
   const duty = (data: any, key: string) => data.duties.find((d: any) => d.key === key);
 
   it("lists the duties of the farm's species", async () => {
-    expect((await api("GET", `/farms/${farmId}/duties`)).data).toEqual({ holdingNumber: null, housingOrderUntil: null, species: [], bees: false, duties: [] });
+    expect((await api("GET", `/farms/${farmId}/duties`)).data).toMatchObject({ holdingNumber: null, housingOrderUntil: null, state: null, species: [], bees: false, duties: [] });
     await animal("goat", "2025-06-01T10:00:00Z");
     await animal("goat", "2025-06-01T10:00:00Z", "2025-11-01T10:00:00Z");
     await q("INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Hühner', 'poultry')", [farmId]);
@@ -154,6 +154,35 @@ describe.skipIf(!enabled)("Pflichten (real database)", () => {
     expect((await api("GET", `/farms/${farmId}/duties`)).data.housingOrderUntil).toBeNull();
     r = await api("PUT", `/farms/${farmId}/duties`, { holdingNumber: null });
     expect(r.data.holdingNumber).toBeNull();
+  });
+
+  it("stores the Bundesland and pushes by the Land's deadline", async () => {
+    await animal("goat", "2026-06-01T10:00:00Z");
+    let r = await api("GET", `/farms/${farmId}/duties`);
+    expect(r.data).toMatchObject({ state: null });
+    expect(r.data.states).toHaveLength(16);
+    expect(r.data.states[0]).toEqual({ code: "BW", name: "Baden-Württemberg" });
+    expect((await api("PUT", `/farms/${farmId}/duties`, { state: "XX" })).status).toBe(400);
+    as = "pia";
+    expect((await api("PUT", `/farms/${farmId}/duties`, { state: "NW" })).status).toBe(403);
+    as = "anna";
+    r = await api("PUT", `/farms/${farmId}/duties`, { state: "NW" });
+    expect(r.data.state).toBe("NW");
+    expect(duty(r.data, "tsk_report")).toMatchObject({ dueOn: "2027-01-31", link: { label: "Tierseuchenkasse NRW (Landwirtschaftskammer)" } });
+    // The holding number stays when only the Land changes.
+    await api("PUT", `/farms/${farmId}/duties`, { holdingNumber: "276" });
+    r = await api("PUT", `/farms/${farmId}/duties`, { state: "NW" });
+    expect(r.data.holdingNumber).toBe("276");
+
+    const { sendDutyDigests } = await import("./farmDuties");
+    // HI-Tier (goats) on the 2nd and 12th, the Kasse on the 18th and 28th.
+    expect(await sendDutyDigests("08:00", "2027-01-02")).toBe(1);
+    expect(sendPushToUser.mock.calls[0]![1]).toMatchObject({ body: "Stand 1. Januar laut App: Ziegen 1. Bitte bis 15.01. an HI-Tier melden und in der App abhaken." });
+    expect(await sendDutyDigests("08:00", "2027-01-18")).toBe(1);
+    expect(sendPushToUser.mock.calls[1]![1]).toMatchObject({ body: "Stand 1. Januar laut App: Ziegen 1. Bitte bis 31.01. an Tierseuchenkasse NRW (Landwirtschaftskammer) melden und in der App abhaken." });
+    expect(await sendDutyDigests("08:00", "2027-01-20")).toBe(0);
+    r = await api("PUT", `/farms/${farmId}/duties`, { state: null });
+    expect(r.data.state).toBeNull();
   });
 
   it("pushes the stock report to the admins on 2 and 12 January until it is ticked off", async () => {

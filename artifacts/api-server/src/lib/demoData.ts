@@ -116,7 +116,8 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   for (const [days, kg] of [[60, 52], [30, 54.5], [2, 55]] as const) await createWeightLog(farmId, goat!.id, { date: ago(days), weightKg: kg });
 
   // Pflichten: the farm's registration number (made up).
-  await setDutySettings(farmId, { holdingNumber: '276 09 000 000 0000 (Demo)' });
+  // Thüringen: the demo pastures lie there too.
+  await setDutySettings(farmId, { holdingNumber: '276 09 000 000 0000 (Demo)', state: 'TH' });
   // Übergabe: what a stand-in needs to know.
   await setHandoverNote(farmId, 'Demo: Schlüssel liegt im Futterraum links. Hühner abends um 20 Uhr einsperren, Ziegen bekommen morgens Heu und abends eine Handvoll Hafer. Tierarzt steht unter „Farm & Team“.');
 

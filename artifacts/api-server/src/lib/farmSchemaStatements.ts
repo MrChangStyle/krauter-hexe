@@ -32,6 +32,7 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"setup_dismissed_at" timestamp with time zone,
 	"holding_number" text,
 	"housing_order_until" date,
+	"state" text,
 	"is_demo" boolean DEFAULT false NOT NULL
 )`,
   // Wetter: where the farm is.
@@ -46,6 +47,8 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "holding_number" text`,
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "housing_order_until" date`,
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "is_demo" boolean DEFAULT false NOT NULL`,
+  // Pflichten je Bundesland.
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "state" text`,
   `CREATE TABLE IF NOT EXISTS "farm_memberships" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

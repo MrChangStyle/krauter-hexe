@@ -11,7 +11,7 @@ Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt dan
 - **Futtervorrat**: Legehennenfutter (fast leer) und Heu.
 - **Zucht**: eine trächtige Ziege, eine Brut unter der Glucke; die zweite Ziege mit zwei Brunsten im Brunstkalender und Zwillingen vor sechs Wochen (steht unter „Absetzen“).
 - **Arzneimittel**: eine Wurmkur, die bald abläuft, ein Wundspray und Oxalsäure für die Bienen.
-- **Pflichten**: eine erfundene Registriernummer.
+- **Pflichten**: eine erfundene Registriernummer, Bundesland Thüringen (Thüringer Tierseuchenkasse, Stichtag 3. Januar).
 - **Ertrag & Bilanz**: acht Wochen Eier (Legeleistung), Milch, eine Ausgabe für Futter.
 - **Weide**: Obstwiese und Hangweide, auf der Karte eingezeichnet; die Ziegen sind auf die Hangweide umgetrieben, auf der sie vor gut zwei Monaten schon standen (Wurm-Hinweis); die Talwiese ist einmal gemäht (18 Ballen), die Obstwiese nach dem Beweiden nachgemäht.
 - **Bienen**: zwei Völker mit Durchsichten, Fütterung, Honig, einer Behandlung mit Drohnenbrut und einer Winterbehandlung mit Oxalsäure aus dem Vorrat (Bestandsbuch im Export); dazu ein Standort-Check mit festem Text (ohne Foto, ohne KI-Aufruf).

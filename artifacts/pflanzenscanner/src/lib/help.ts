@@ -201,11 +201,18 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     intro: "Was die Haltung auf dem Papier bedeutet: Anmeldung beim Veterinäramt, Tierseuchenkasse, Stichtagsmeldung, Stallpflicht – je nach Tierart, auch für Bienen.",
     steps: [
       "Die Liste zeigt nur die Pflichten deiner Tierarten.",
+      "Bundesland unter „Betrieb“ wählen – dann nennt die App deine Tierseuchenkasse mit Link, ihren Stichtag und ihre Frist.",
       "Erledigtes abhaken; jährliche Meldungen kommen im nächsten Jahr wieder.",
       "Registriernummer des Betriebs eintragen – sie steht dann im Veterinäramt-Export.",
       "Eine amtliche Stallpflicht für Geflügel mit Enddatum eintragen – alle auf dem Hof sehen sie.",
     ],
-    faq: [{ q: "Gilt das in jedem Bundesland gleich?", a: "Die Grundlagen sind bundesweit; Fristen der Tierseuchenkassen unterscheiden sich. Im Zweifel beim Veterinäramt nachfragen. Keine Rechtsberatung." }],
+    faq: [
+      {
+        q: "Gilt das in jedem Bundesland gleich?",
+        a: "Die Grundlagen sind bundesweit. Stichtag und Frist der Bestandsmeldung legt jede Tierseuchenkasse selbst fest – z. B. Bayern bis 20. Januar, NRW bis 31. Januar, Niedersachsen und Thüringen mit Stichtag 3. Januar. Mit eingetragenem Bundesland rechnet die App damit. Maßgeblich bleibt der Meldebogen der Kasse. Keine Rechtsberatung.",
+      },
+      { q: "Wann erinnert mich die App?", a: "Etwa zwei Wochen und drei Tage vor der Frist, je Meldung: an HI-Tier also am 2. und 12. Januar, an die Kasse je nach Bundesland." },
+    ],
   },
   yields: {
     title: "Ertrag & Bilanz",

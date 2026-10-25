@@ -5,10 +5,13 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { StateCode } from './stateCode';
 
 export interface FarmDutySettingsInput {
   /** @maxLength 30 */
   holdingNumber?: string | null;
   /** YYYY-MM-DD, or null to end the housing order. */
   housingOrderUntil?: string | null;
+  /** Bundesland; null removes it. */
+  state?: null | StateCode;
 }

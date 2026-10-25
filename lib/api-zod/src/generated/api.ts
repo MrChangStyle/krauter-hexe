@@ -2136,7 +2136,18 @@ export const GetFarmWeatherResponse = zod.object({
   "kind": zod.enum(['hardFrost', 'frost', 'heat', 'storm', 'rain', 'dry']),
   "date": zod.string(),
   "text": zod.string()
-}))
+})),
+  "alerts": zod.array(zod.object({
+  "id": zod.string(),
+  "event": zod.string(),
+  "headline": zod.string(),
+  "description": zod.string(),
+  "instruction": zod.string().nullable(),
+  "severity": zod.enum(['minor', 'moderate', 'severe', 'extreme']),
+  "onset": zod.string(),
+  "expires": zod.string().nullable()
+}).describe('An official warning of the DWD for the farm\'s area (via Bright Sky).')).describe('Official DWD warnings in effect or coming, the worst first.'),
+  "alertArea": zod.string().nullable().describe('The DWD warning area the farm\'s position falls in.')
 })
 
 
@@ -2172,7 +2183,18 @@ export const SetFarmLocationResponse = zod.object({
   "kind": zod.enum(['hardFrost', 'frost', 'heat', 'storm', 'rain', 'dry']),
   "date": zod.string(),
   "text": zod.string()
-}))
+})),
+  "alerts": zod.array(zod.object({
+  "id": zod.string(),
+  "event": zod.string(),
+  "headline": zod.string(),
+  "description": zod.string(),
+  "instruction": zod.string().nullable(),
+  "severity": zod.enum(['minor', 'moderate', 'severe', 'extreme']),
+  "onset": zod.string(),
+  "expires": zod.string().nullable()
+}).describe('An official warning of the DWD for the farm\'s area (via Bright Sky).')).describe('Official DWD warnings in effect or coming, the worst first.'),
+  "alertArea": zod.string().nullable().describe('The DWD warning area the farm\'s position falls in.')
 })
 
 
@@ -2470,6 +2492,128 @@ export const CreateBreedingResponse = zod.object({
   "past": zod.boolean()
 })),
   "warning": zod.string().nullable().describe('Mother and father are related.')
+})
+
+
+/**
+ * @summary Brunstkalender and weaning – every female of a species with a cycle, and the young to wean
+ */
+export const GetBreedingCyclesParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetBreedingCyclesResponse = zod.object({
+  "animals": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "status": zod.enum(['pregnant', 'nursing', 'resting', 'open']),
+  "until": zod.string().nullable().describe('Due day (pregnant), weaning (nursing) or ready to mate (resting).'),
+  "lastHeat": zod.string().nullable(),
+  "nextHeat": zod.string().nullable().describe('From the last heat seen and the cycle; null when too long ago or out of season.'),
+  "inSeason": zod.boolean(),
+  "season": zod.string().nullable(),
+  "signs": zod.string(),
+  "heats": zod.array(zod.object({
+  "id": zod.number(),
+  "observedOn": zod.string(),
+  "notes": zod.string().nullable()
+})).describe('The last five heats seen.')
+})),
+  "weanings": zod.array(zod.object({
+  "recordId": zod.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "motherName": zod.string().nullable(),
+  "bornOn": zod.string(),
+  "alive": zod.number(),
+  "weanOn": zod.string(),
+  "text": zod.string()
+}))
+})
+
+
+/**
+ * @summary A heat seen on a female (caretaker)
+ */
+export const AddHeatParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const addHeatBodyNotesMax = 300;
+
+
+
+export const AddHeatBody = zod.object({
+  "animalId": zod.number(),
+  "observedOn": zod.string(),
+  "notes": zod.string().max(addHeatBodyNotesMax).nullish()
+})
+
+export const AddHeatResponse = zod.object({
+  "animals": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "status": zod.enum(['pregnant', 'nursing', 'resting', 'open']),
+  "until": zod.string().nullable().describe('Due day (pregnant), weaning (nursing) or ready to mate (resting).'),
+  "lastHeat": zod.string().nullable(),
+  "nextHeat": zod.string().nullable().describe('From the last heat seen and the cycle; null when too long ago or out of season.'),
+  "inSeason": zod.boolean(),
+  "season": zod.string().nullable(),
+  "signs": zod.string(),
+  "heats": zod.array(zod.object({
+  "id": zod.number(),
+  "observedOn": zod.string(),
+  "notes": zod.string().nullable()
+})).describe('The last five heats seen.')
+})),
+  "weanings": zod.array(zod.object({
+  "recordId": zod.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "motherName": zod.string().nullable(),
+  "bornOn": zod.string(),
+  "alive": zod.number(),
+  "weanOn": zod.string(),
+  "text": zod.string()
+}))
+})
+
+
+/**
+ * @summary Remove a heat entered by mistake (caretaker)
+ */
+export const DeleteHeatParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "heatId": zod.coerce.number()
+})
+
+export const DeleteHeatResponse = zod.object({
+  "animals": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "status": zod.enum(['pregnant', 'nursing', 'resting', 'open']),
+  "until": zod.string().nullable().describe('Due day (pregnant), weaning (nursing) or ready to mate (resting).'),
+  "lastHeat": zod.string().nullable(),
+  "nextHeat": zod.string().nullable().describe('From the last heat seen and the cycle; null when too long ago or out of season.'),
+  "inSeason": zod.boolean(),
+  "season": zod.string().nullable(),
+  "signs": zod.string(),
+  "heats": zod.array(zod.object({
+  "id": zod.number(),
+  "observedOn": zod.string(),
+  "notes": zod.string().nullable()
+})).describe('The last five heats seen.')
+})),
+  "weanings": zod.array(zod.object({
+  "recordId": zod.number(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "motherName": zod.string().nullable(),
+  "bornOn": zod.string(),
+  "alive": zod.number(),
+  "weanOn": zod.string(),
+  "text": zod.string()
+}))
 })
 
 

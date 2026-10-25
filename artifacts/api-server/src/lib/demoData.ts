@@ -9,10 +9,11 @@
  */
 
 import { db, farmAnimalsTable, farmMembershipsTable, farmsTable, farmYieldsTable, growAccessTable, growsTable, pastureGrazingsTable, pasturesTable } from '@workspace/db';
-import { and, asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, ne } from 'drizzle-orm';
 
 import { addFeeding, addHoney, addInspection, addTreatment, createColony } from './bees';
 import { createBreeding } from './breeding';
+import { addHeat } from './breedingCycle';
 import { createItem as createPantryItem, takeOut } from './pantry';
 import { createPasture, startGrazing } from './pasture';
 import { FarmDataError } from './farmAnimals';
@@ -87,6 +88,14 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
     .returning({ id: farmAnimalsTable.id });
   await createBreeding(farmId, { species: 'goat', motherId: goat!.id, fatherName: 'Bock vom Nachbarn', startedOn: ago(130), notes: 'Demo: Deckakt beim Nachbarn' });
   await createBreeding(farmId, { species: 'poultry', startedOn: ago(12), eggCount: 8, notes: 'Demo: Glucke im Stall' });
+  // Brunstkalender: the other goat, two heats seen.
+  const [second] = await db
+    .update(farmAnimalsTable)
+    .set({ sex: 'female' })
+    .where(and(eq(farmAnimalsTable.herdId, goats.herdId), ne(farmAnimalsTable.id, goat!.id)))
+    .returning({ id: farmAnimalsTable.id });
+  await addHeat(farmId, { animalId: second!.id, observedOn: ago(30), notes: 'Demo: meckert, Schwanzwedeln' });
+  await addHeat(farmId, { animalId: second!.id, observedOn: ago(9) });
 
   // Arzneimittel: one running out soon, one fine.
   await createMedicine(farmId, { name: 'Wurmkur Ziege (Demo)', unit: 'ml', amount: 40, expiresOn: addDays(today, 20), withdrawalMeatDays: 14, withdrawalMilkDays: 5, receivedOn: ago(60) });

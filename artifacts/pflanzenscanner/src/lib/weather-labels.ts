@@ -16,3 +16,27 @@ export function tempText(t: number): string {
 export function berlinToday(now = new Date()): string {
   return new Intl.DateTimeFormat("sv", { timeZone: "Europe/Berlin" }).format(now);
 }
+
+const berlinParts = (iso: string) => {
+  const d = new Date(iso);
+  const day = berlinToday(d);
+  const time = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" }).format(d);
+  return { day, time };
+};
+
+/** When an official warning holds: "Heute 14:00 – 20:00", "ab Morgen 06:00", "Mi 14:00 – Do 03:00". */
+export function alertWindow(onset: string, expires: string | null, today: string): string {
+  const from = berlinParts(onset);
+  const fromText = `${dayLabel(from.day, today)} ${from.time}`;
+  if (!expires) return `ab ${fromText}`;
+  const to = berlinParts(expires);
+  return `${fromText} – ${to.day === from.day ? "" : `${dayLabel(to.day, today)} `}${to.time}`;
+}
+
+/** DWD levels as the DWD names them. */
+export const ALERT_LEVEL_LABELS = {
+  minor: "Wetterwarnung",
+  moderate: "Markantes Wetter",
+  severe: "Unwetter",
+  extreme: "Extremes Unwetter",
+} as const;

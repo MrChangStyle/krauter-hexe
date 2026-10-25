@@ -31,5 +31,14 @@ Wetter-Streifen oben auf der Hof-Seite: heute und die nächsten zwei Tage, die e
 `PUT /farms/:id/location`, Push über den Cron (`sendWeatherDigests`, Tabelle
 `weather_digest_log`).
 
-Später denkbar: amtliche DWD-Unwetterwarnungen (CAP) zusätzlich zur eigenen Regel, Hitze-
-und Frostverlauf über mehrere Tage, Wetter im Futterplaner (Mehrbedarf bei Kälte).
+## Amtliche Warnungen des DWD
+
+Zusätzlich zu den eigenen Regeln zeigt der Wetter-Streifen die amtlichen Warnungen des DWD für das Warngebiet des Hofs (Bright Sky `/alerts`, gleicher gerundeter Ort).
+
+- **Welche:** Wetter- und Hitzewarnungen (Kategorie `met` und `health`), die gelten oder angekündigt sind. Testmeldungen, Entwarnungen und abgelaufene Warnungen fallen weg. Die schlimmste steht oben.
+- **Anzeige:** über den eigenen Hinweisen, eingefärbt nach den Stufen des DWD: Wetterwarnung gelb, markantes Wetter orange, Unwetter rot, extremes Unwetter violett. Dazu Überschrift und Zeitraum („Heute 14:00 – 20:00“), mit einem Tipp der Text des DWD samt Handlungsempfehlung. Darüber steht das Warngebiet (z. B. „Berlin“). Weil der Ort auf etwa 10 km gerundet ist, kann das ein Nachbarort sein.
+- **Push** (Thema „Wetter“) für **Unwetter und extremes Unwetter**: sofort beim nächsten Cron-Lauf, nicht erst morgens, an Admins und Betreuer von Höfen mit Tieren oder Beeten. Der DWD gibt eine Warnung bei jeder Änderung unter neuer Kennung neu heraus. Deshalb merkt sich die App Ereignis und ersten Tag (`weather_alert_log`) und schickt erst wieder, wenn die Warnung schlimmer wird. Ruhezeiten gelten wie bei jedem Push; eine Warnung in der Ruhezeit kommt danach nicht noch einmal.
+- Die Warnungen werden je Ort 10 Minuten zwischengespeichert. Antwortet der Dienst nicht, fehlen sie einfach.
+- API: `alerts` und `alertArea` in `GET /farms/:id/weather`. Push: `sendAlertPushes` im Cron.
+
+Später denkbar: Hitze- und Frostverlauf über mehrere Tage, Wetter im Futterplaner (Mehrbedarf bei Kälte).

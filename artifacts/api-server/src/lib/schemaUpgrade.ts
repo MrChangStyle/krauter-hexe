@@ -153,6 +153,17 @@ const STATEMENTS = [
   `DO $$ BEGIN
      ALTER TABLE "weather_digest_log" ADD CONSTRAINT "weather_digest_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  // Amtliche DWD-Warnungen: which warning went to which farm (schema/weather.ts).
+  `CREATE TABLE IF NOT EXISTS "weather_alert_log" (
+	"farm_id" integer NOT NULL,
+	"key" text NOT NULL,
+	"level" integer NOT NULL,
+	"sent_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "weather_alert_log_farm_id_key_pk" PRIMARY KEY("farm_id","key")
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "weather_alert_log" ADD CONSTRAINT "weather_alert_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE TABLE IF NOT EXISTS "farm_push_log" (
 	"farm_id" integer NOT NULL,
 	"topic" text NOT NULL,

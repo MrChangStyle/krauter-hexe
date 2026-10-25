@@ -8,16 +8,43 @@ import {
   type DayForecast,
   type FarmSummary,
   type FarmWeather,
+  type OfficialAlert,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { berlinToday, dayLabel, tempText } from "@/lib/weather-labels";
+import { ALERT_LEVEL_LABELS, alertWindow, berlinToday, dayLabel, tempText } from "@/lib/weather-labels";
 import { cn } from "@/lib/utils";
 
 const ICONS: Record<DayForecast["icon"], typeof Sun> = { sun: Sun, cloud: Cloud, rain: CloudRain, snow: CloudSnow, storm: CloudLightning };
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
+}
+
+// The DWD's colours, toned for the card: yellow, orange, red, violet.
+export const ALERT_STYLES: Record<OfficialAlert["severity"], string> = {
+  minor: "border-yellow-300 bg-yellow-50 text-yellow-950 dark:border-yellow-700 dark:bg-yellow-950/40 dark:text-yellow-100",
+  moderate: "border-orange-400 bg-orange-50 text-orange-950 dark:border-orange-700 dark:bg-orange-950/40 dark:text-orange-100",
+  severe: "border-red-500 bg-red-50 text-red-950 dark:border-red-700 dark:bg-red-950/40 dark:text-red-100",
+  extreme: "border-fuchsia-600 bg-fuchsia-50 text-fuchsia-950 dark:border-fuchsia-700 dark:bg-fuchsia-950/40 dark:text-fuchsia-100",
+};
+
+/** One official warning: level, what, when; a tap shows the DWD's text and advice. */
+export function AlertBox({ alert, today }: { alert: OfficialAlert; today: string }) {
+  return (
+    <details className={cn("rounded-xl border p-3 text-sm", ALERT_STYLES[alert.severity])} data-testid="dwd-alert">
+      <summary className="flex cursor-pointer list-none gap-2">
+        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+        <span className="min-w-0 flex-1">
+          <span className="block text-[11px] font-semibold uppercase tracking-wide">{ALERT_LEVEL_LABELS[alert.severity]}</span>
+          <span className="block font-medium">{alert.headline}</span>
+          <span className="block text-xs opacity-80">{alertWindow(alert.onset, alert.expires, today)}</span>
+        </span>
+      </summary>
+      <p className="mt-2">{alert.description}</p>
+      {alert.instruction && <p className="mt-1 font-medium">{alert.instruction}</p>}
+    </details>
+  );
 }
 
 export function LocationForm({ farm, onDone }: { farm: FarmSummary; onDone?: () => void }) {
@@ -92,6 +119,8 @@ export function FarmWeatherCard({ farm }: { farm: FarmSummary }) {
   if (weather.isLoading) return null;
   const data = weather.data;
   const today = berlinToday();
+  // A server from before the DWD warnings sends none.
+  const alerts = data?.alerts ?? [];
 
   return (
     <section className="space-y-3 rounded-xl border border-border bg-card p-4">
@@ -148,6 +177,14 @@ export function FarmWeatherCard({ farm }: { farm: FarmSummary }) {
               })}
             </div>
           )}
+          {alerts.length > 0 && (
+            <div className="space-y-2" role="alert">
+              <p className="text-xs font-semibold text-muted-foreground">Amtliche Warnungen des DWD{data.alertArea ? ` · ${data.alertArea}` : ""}</p>
+              {alerts.map((a) => (
+                <AlertBox key={a.id} alert={a} today={today} />
+              ))}
+            </div>
+          )}
           {data.warnings.length > 0 && (
             <ul role="alert" className="space-y-1.5 rounded-xl border border-amber-400 bg-amber-50 p-3 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
               {data.warnings.map((w) => (
@@ -158,7 +195,9 @@ export function FarmWeatherCard({ farm }: { farm: FarmSummary }) {
               ))}
             </ul>
           )}
-          <p className="text-[11px] text-muted-foreground">Vorhersage: Deutscher Wetterdienst (über Bright Sky). Warnungen kommen morgens auch als Push.</p>
+          <p className="text-[11px] text-muted-foreground">
+            Vorhersage und amtliche Warnungen: Deutscher Wetterdienst (über Bright Sky). Hinweise für die Tiere kommen morgens als Push, Unwetterwarnungen des DWD sofort.
+          </p>
         </>
       )}
     </section>

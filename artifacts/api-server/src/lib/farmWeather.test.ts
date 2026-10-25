@@ -4,7 +4,7 @@ vi.hoisted(() => {
   process.env["DATABASE_URL"] ??= "postgres://unused@127.0.0.1:1/unused";
 });
 
-const { daysFromHours, weatherWarnings } = await import("./farmWeather");
+const { daysFromHours, pickAlerts, weatherWarnings } = await import("./farmWeather");
 
 type Day = Parameters<typeof weatherWarnings>[0][number];
 const day = (date: string, over: Partial<Day> = {}): Day => ({ date, minTemp: 5, maxTemp: 15, precipitationMm: 2, maxGustKmh: 30, icon: "cloud", ...over });
@@ -63,5 +63,52 @@ describe("weather warnings", () => {
   it("says nothing about animals on a farm without animals, and nothing on mild days", () => {
     expect(weatherWarnings([day("2026-12-01", { minTemp: -5 }), day("2026-12-02")], [], true)).toEqual([]);
     expect(weatherWarnings([day("2026-05-01"), day("2026-05-02")], ["cattle"], true)).toEqual([]);
+  });
+});
+
+describe("official DWD warnings", () => {
+  const rec = (id: string, over: Record<string, unknown> = {}) =>
+    ({
+      alert_id: id,
+      status: "actual",
+      onset: "2026-12-01T14:00:00+01:00",
+      expires: "2026-12-01T20:00:00+01:00",
+      category: "met",
+      response_type: "prepare",
+      severity: "moderate",
+      event_code: 31,
+      event_de: "GEWITTER",
+      headline_de: "Amtliche WARNUNG vor GEWITTER",
+      description_de: "Es treten Gewitter auf.",
+      instruction_de: "",
+      ...over,
+    }) as Parameters<typeof pickAlerts>[0][number];
+  const now = new Date("2026-12-01T12:00:00+01:00");
+
+  it("keeps real weather and heat warnings that are not over, the worst first", () => {
+    const picked = pickAlerts(
+      [
+        rec("gewitter"),
+        rec("hitze", { category: "health", severity: "severe", event_de: "STARKE HITZE", onset: "2026-12-01T16:00:00+01:00" }),
+        rec("test", { status: "test" }),
+        rec("entwarnung", { response_type: "allclear" }),
+        rec("vorbei", { expires: "2026-12-01T11:00:00+01:00" }),
+        rec("offen", { expires: null, severity: "minor" }),
+        rec("ohne", { severity: null }),
+      ],
+      now,
+    );
+    expect(picked.map((a) => a.id)).toEqual(["hitze", "gewitter", "offen"]);
+    // An empty instruction counts as none.
+    expect(picked[1]).toEqual({
+      id: "gewitter",
+      event: "GEWITTER",
+      headline: "Amtliche WARNUNG vor GEWITTER",
+      description: "Es treten Gewitter auf.",
+      instruction: null,
+      severity: "moderate",
+      onset: "2026-12-01T14:00:00+01:00",
+      expires: "2026-12-01T20:00:00+01:00",
+    });
   });
 });

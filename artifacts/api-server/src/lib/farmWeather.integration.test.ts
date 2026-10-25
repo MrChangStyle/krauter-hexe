@@ -2,7 +2,8 @@
  * Wetter für den Hof against a REAL Postgres, through the HTTP routes, with
  * the weather service and the postal-code lookup replaced: the location (farm,
  * or taken from a bed), forecast and warnings, roles, and the morning push
- * that sends a lasting warning only once.
+ * that sends a lasting warning only once; the official DWD warnings and their
+ * push.
  *
  * Skipped unless TEST_DATABASE_URL equals DATABASE_URL (throwaway database
  * with the schema pushed). Truncates tables – never point it at real data.
@@ -26,6 +27,23 @@ const enabled =
 /** Bright Sky: every day `minTemp` at night, 8 °C at noon. */
 let minTemp = -3;
 const weatherCalls: string[] = [];
+/** Bright Sky /alerts: what the DWD has out for the area. */
+let alerts: Record<string, unknown>[] = [];
+const alert = (id: string, severity: string, over: Record<string, unknown> = {}) => ({
+  alert_id: id,
+  status: "actual",
+  onset: "2026-12-01T14:00:00+01:00",
+  expires: "2099-12-01T20:00:00+01:00",
+  category: "met",
+  response_type: "prepare",
+  severity,
+  event_code: 52,
+  event_de: "ORKANARTIGE BÖEN",
+  headline_de: "Amtliche UNWETTERWARNUNG vor ORKANARTIGEN BÖEN",
+  description_de: "Es treten orkanartige Böen bis 110 km/h auf.",
+  instruction_de: "Halten Sie Abstand von Gebäuden, Bäumen und Gerüsten.",
+  ...over,
+});
 const realFetch = globalThis.fetch;
 function fakeFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
   const url = String(input);
@@ -48,6 +66,9 @@ function fakeFetch(input: string | URL | Request, init?: RequestInit): Promise<R
       }));
     });
     return Promise.resolve(new Response(JSON.stringify({ weather })));
+  }
+  if (url.startsWith("https://api.brightsky.dev/alerts")) {
+    return Promise.resolve(new Response(JSON.stringify({ alerts, location: { name: "Berlin", warn_cell_id: 811000000 } })));
   }
   return realFetch(input, init);
 }
@@ -97,6 +118,7 @@ describe.skipIf(!enabled)("Wetter für den Hof (real database, weather replaced)
     await q(`INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Hühner', 'poultry')`, [farm.anna]);
     as = "anna";
     minTemp = -3;
+    alerts = [];
     fixedDay = "2026-12-01";
     sendPushToUser.mockClear();
   });
@@ -113,7 +135,7 @@ describe.skipIf(!enabled)("Wetter für den Hof (real database, weather replaced)
   const fetchLocal = (url: string, init: RequestInit) => realFetch(url, init);
 
   it("takes the location from a bed until the farm has its own, then forecasts and warns", async () => {
-    expect((await api("GET", `/farms/${farm.anna}/weather`)).data).toEqual({ location: null, days: [], warnings: [] });
+    expect((await api("GET", `/farms/${farm.anna}/weather`)).data).toEqual({ location: null, days: [], warnings: [], alerts: [], alertArea: null });
     await q(`INSERT INTO garden_beds (farm_id, name, type, length_cm, width_cm, postal_code, latitude, longitude) VALUES ($1, 'Beet', 'bed', 200, 100, '01067', 51.1, 13.7)`, [farm.anna]);
     expect((await api("GET", `/farms/${farm.anna}/weather`)).data.location).toEqual({ source: "bed", postalCode: "01067", latitude: 51.1, longitude: 13.7 });
 
@@ -163,5 +185,45 @@ describe.skipIf(!enabled)("Wetter für den Hof (real database, weather replaced)
     minTemp = -14;
     expect(await sendWeatherDigests("07:30", "2026-12-03")).toBe(1);
     expect((sendPushToUser.mock.calls.at(-1)![1] as any).title).toBe("Unwetter-Warnung für deinen Hof");
+  });
+
+  it("shows the DWD warnings for the area and pushes a severe one once, again only when it gets worse", async () => {
+    alerts = [
+      alert("a-frost", "minor", { event_code: 22, event_de: "FROST", headline_de: "Amtliche WARNUNG vor FROST" }),
+      alert("a-storm", "severe"),
+      alert("a-test", "extreme", { status: "test" }),
+      alert("a-over", "severe", { expires: "2020-01-01T00:00:00+01:00" }),
+    ];
+    // A place of its own: the warnings are cached per place for ten minutes.
+    await api("PUT", `/farms/${farm.anna}/location`, { latitude: 50.1, longitude: 8.7 });
+    await q("UPDATE farms SET latitude = 50.1, longitude = 8.7 WHERE id = $1", [farm.bert]);
+    const { data } = await api("GET", `/farms/${farm.anna}/weather`);
+    expect(data.alertArea).toBe("Berlin");
+    expect(data.alerts.map((a: any) => [a.id, a.severity])).toEqual([
+      ["a-storm", "severe"],
+      ["a-frost", "minor"],
+    ]);
+    expect(data.alerts[0]).toMatchObject({ event: "ORKANARTIGE BÖEN", instruction: "Halten Sie Abstand von Gebäuden, Bäumen und Gerüsten." });
+
+    // The cache holds for ten minutes – every step is a new cron call later.
+    const { sendAlertPushes } = await import("./farmWeather");
+    let now = Date.parse("2026-12-01T12:00:00Z");
+    const tick = () => new Date((now += 11 * 60_000));
+    expect(await sendAlertPushes("2026-12-01", tick())).toBe(1);
+    // Admin and caretaker of the farm with animals; the frost (level 1) is not pushed.
+    expect(sendPushToUser.mock.calls.map(([user, p]) => [user, (p as any).title])).toEqual([
+      ["anna", "Unwetterwarnung des DWD"],
+      ["pia", "Unwetterwarnung des DWD"],
+    ]);
+    expect((sendPushToUser.mock.calls[0]![1] as any).body).toBe("Amtliche UNWETTERWARNUNG vor ORKANARTIGEN BÖEN – Halten Sie Abstand von Gebäuden, Bäumen und Gerüsten.");
+    expect(await sendAlertPushes("2026-12-01", tick())).toBe(0);
+    // DWD re-issues it under a new id: the same warning, no second push …
+    alerts = [alert("a-storm-2", "severe")];
+    expect(await sendAlertPushes("2026-12-01", tick())).toBe(0);
+    // … until it gets worse.
+    alerts = [alert("a-storm-3", "extreme", { headline_de: "Amtliche EXTREME UNWETTERWARNUNG vor ORKANBÖEN" })];
+    expect(await sendAlertPushes("2026-12-01", tick())).toBe(1);
+    expect((sendPushToUser.mock.calls.at(-1)![1] as any).title).toBe("Extreme Unwetterwarnung (DWD)");
+    expect(sendPushToUser).toHaveBeenCalledTimes(4);
   });
 });

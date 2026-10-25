@@ -32,6 +32,8 @@ let rainPerHour = 0;
 const realFetch = globalThis.fetch;
 function fakeFetch(input: string | URL | Request, init?: RequestInit): Promise<Response> {
   const url = String(input);
+  // No official warnings – the scheduler must not reach the real service.
+  if (url.startsWith("https://api.brightsky.dev/alerts")) return Promise.resolve(new Response(JSON.stringify({ alerts: [], location: null })));
   if (url.startsWith("https://api.brightsky.dev/weather")) {
     const from = new URL(url).searchParams.get("date")!;
     const weather = [0, 1, 2, 3, 4, 5, 6, 7].flatMap((i) => {

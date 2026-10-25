@@ -173,8 +173,8 @@ export function DatenschutzPage() {
           <li>Neon (Datenbank, Rechenzentrum Frankfurt)</li>
           <li>Cloudinary (Speicherung und Auslieferung der Fotos)</li>
           <li>
-            Google Gemini (KI-Bestimmung und KI-Vorschläge, z. B. im Beet-Architekt: deine Fotos werden zur Auswertung an
-            Google übermittelt)
+            Google Gemini (KI-Bestimmung und KI-Vorschläge, z. B. im Beet-Architekt und beim Standort-Check der Bienen: deine
+            Fotos werden zur Auswertung an Google übermittelt)
           </li>
           <li>Google (nur bei „Mit Google anmelden“)</li>
           <li>Cloudflare Turnstile (Schutz der Registrierung vor Bots)</li>

@@ -7,6 +7,9 @@ import {
   CreateBeeColonyBody,
   GetBeeColonyResponse,
   GetBeeOverviewResponse,
+  ListBeeSiteChecksResponse,
+  RunBeeSiteCheckBody,
+  SetBeeColonyPhotoBody,
   UpdateBeeColonyBody,
 } from '@workspace/api-zod';
 
@@ -24,7 +27,8 @@ import {
   updateColony,
   type BeeEntryKind,
 } from '../lib/bees';
-import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
+import { deleteSiteCheck, listSiteChecks, removeColonyPhoto, runSiteCheck, setColonyPhoto, siteCheckValues } from '../lib/beeSite';
+import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
 
 // Bienen (docs/bienen.md). Reading: every member with the grant; writing:
 // caretaker or admin; deleting a colony: admin.
@@ -46,6 +50,66 @@ router.post(
     const body = CreateBeeColonyBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
     res.status(201).json(GetBeeColonyResponse.parse(await createColony(req.farm!.farmId, body.data)));
+  }),
+);
+
+// ── Standort-Check (before /bees/:colonyId) ──────────────────────────────────
+
+router.get(
+  '/farms/:farmId/bees/site-checks',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(ListBeeSiteChecksResponse.parse(await listSiteChecks(req.farm!.farmId)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/bees/site-checks',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = RunBeeSiteCheckBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    // A wrong photo is refused before it counts as an AI request.
+    const values = siteCheckValues(body.data);
+    const farmId = req.farm!.farmId;
+    const checks = await withAiQuota(req, res, 'farm', () => runSiteCheck(farmId, values));
+    if (checks) res.status(201).json(ListBeeSiteChecksResponse.parse(checks));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/bees/site-checks/:checkId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const checkId = idParam(req, 'checkId');
+    if (checkId === null) return notFound(res);
+    res.json(ListBeeSiteChecksResponse.parse(await deleteSiteCheck(req.farm!.farmId, checkId)));
+  }),
+);
+
+// ── Photo of a colony's stand ────────────────────────────────────────────────
+
+router.put(
+  '/farms/:farmId/bees/:colonyId/photo',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const colonyId = idParam(req, 'colonyId');
+    if (colonyId === null) return notFound(res);
+    const body = SetBeeColonyPhotoBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    await setColonyPhoto(req.farm!.farmId, colonyId, body.data.imageData);
+    res.json(GetBeeColonyResponse.parse(await colonyDetail(req.farm!.farmId, colonyId)));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/bees/:colonyId/photo',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const colonyId = idParam(req, 'colonyId');
+    if (colonyId === null) return notFound(res);
+    await removeColonyPhoto(req.farm!.farmId, colonyId);
+    res.json(GetBeeColonyResponse.parse(await colonyDetail(req.farm!.farmId, colonyId)));
   }),
 );
 

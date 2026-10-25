@@ -59,6 +59,16 @@ Nur an dem Tag, an dem etwas fällig wird, damit nichts täglich nervt. Einmal j
 - **Suche:** aktive Völker nach Name und Stand.
 - **Demo-Hof:** zwei Völker mit Durchsichten, Fütterung, Behandlung und Honig.
 - **Tests:** `bees.test.ts` (Regeln), `bees.integration.test.ts` (Routen, Vorrat, Honig in Ertrag, Rechte, Freigabe, Push) und `search.integration.test.ts`.
+- **Foto vom Standort:** Auf der Stockkarte lässt sich je Volk ein Foto hinterlegen, wo die Beute steht („Foto vom Standort“, später „Neues Foto“ oder „Entfernen“). Es erscheint klein in der Liste der Völker. Gespeichert wird es bei Cloudinary. Mit dem Volk oder dem Hof wird es gelöscht (`PUT/DELETE /farms/:id/bees/:colonyId/photo`, `bee_colonies.photo_url`).
+- **Standort-Check (KI)**, unabhängig vom Foto eines Volks: Unten auf der Bienen-Seite fotografiert man einen Bienenstand, am besten mit Beuten und Umgebung in Flugrichtung. Die Himmelsrichtung kommt vom Kompass des Handys, wenn es einen meldet. Dazu kommen optional der Name des Stands und eine Frage („Ist es hier zu feucht?“). Die KI (Google Gemini, `lib/beeSite.ts`) beurteilt nur, was auf dem Foto zu sehen ist:
+  - **Ausrichtung:** Fluglöcher, Morgensonne, Mittagsschatten (günstig Südost bis Süd),
+  - **Wind und Wetter:** Hecke, Mauer, offenes Feld,
+  - **Bepflanzung und Tracht:** über das Jahr, Wasser in der Nähe, was sich pflanzen ließe,
+  - **Feuchtigkeit:** Senke, nasser Boden, Feuchtgebiet, Höhe der Beuten, was gegen Nässe hilft,
+  - **Wege und Nachbarn:** Flugbahn, Hecke oder Zaun, um die Bienen nach oben zu lenken,
+  - dazu ein Satz zum Ganzen und bis zu fünf Schritte zur Verbesserung.
+
+  Die Checks bleiben mit Foto gespeichert (Tabelle `bee_site_checks`, `GET/POST /farms/:id/bees/site-checks`, `DELETE …/:checkId`). Jeder Check zählt als KI-Anfrage für die Farm (15 am Tag, wie die übrigen Farm-KI-Funktionen). Ein ungültiges Foto wird vorher abgewiesen und nicht gezählt; antwortet die KI unvollständig, wird nichts gespeichert und die Anfrage nicht gezählt. Gäste können die Checks lesen, Betreuer und Admins anlegen und löschen.
 - **Veterinäramt-Export** (Tiere → Export): Wer die Bienen sehen darf, bekommt im PDF und in der CSV zusätzlich
   - die **Bienenvölker** im Zeitraum (Volk, Bienenstand, Status, seit, bis) und
   - das **Bestandsbuch der Behandlungen** (Datum, Volk, Bienenstand, Behandlung, Mittel, Menge, Charge, Bezug, Notiz). Mittel, Charge und Bezug kommen aus dem Arzneimittel-Vorrat, wenn die Behandlung von dort abgebucht wurde.

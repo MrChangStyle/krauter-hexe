@@ -1572,6 +1572,11 @@ export interface BeeColony {
   name: string;
   /** @nullable */
   apiary: string | null;
+  /**
+     * Photo of where the colony stands.
+     * @nullable
+     */
+  photoUrl: string | null;
   /** @nullable */
   hiveType: string | null;
   /** @nullable */
@@ -1679,6 +1684,54 @@ export interface BeeColonyDetail {
   feedings: BeeFeeding[];
   treatments: BeeTreatment[];
   honey: BeeHoney[];
+}
+
+export interface BeeColonyPhotoInput {
+  /** data:image/jpeg|png|webp;base64,… */
+  imageData: string;
+}
+
+export interface BeeSiteAnalysis {
+  overall: string;
+  orientation: string;
+  shelter: string;
+  forage: string;
+  moisture: string;
+  neighbours: string;
+  tips: string[];
+}
+
+export interface BeeSiteCheck {
+  id: number;
+  /** @nullable */
+  apiary: string | null;
+  /** @nullable */
+  photoUrl: string | null;
+  /** @nullable */
+  heading: number | null;
+  /** @nullable */
+  question: string | null;
+  analysis: BeeSiteAnalysis;
+  createdAt: string;
+}
+
+export interface BeeSiteCheckInput {
+  imageData: string;
+  /**
+     * Where the camera looked, 0–360° from the phone's compass.
+     * @nullable
+     */
+  heading?: number | null;
+  /**
+     * @maxLength 60
+     * @nullable
+     */
+  apiary?: string | null;
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  question?: string | null;
 }
 
 export interface BeeColonyInput {

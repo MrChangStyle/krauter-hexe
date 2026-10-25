@@ -26,6 +26,7 @@ import {
 } from '@workspace/db';
 import { and, asc, desc, eq, gte, inArray, lt } from 'drizzle-orm';
 
+import { deleteImageByUrl } from './imageStorage';
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
 import { grantedSql } from './farmModules';
 import { addDays } from './feedSeason';
@@ -197,8 +198,9 @@ export async function updateColony(farmId: number, colonyId: number, input: Colo
 
 /** Gone with its hive card; its honey stays in Ertrag & Bilanz. */
 export async function deleteColony(farmId: number, colonyId: number): Promise<void> {
-  await colonyOf(farmId, colonyId);
+  const colony = await colonyOf(farmId, colonyId);
   await db.delete(beeColoniesTable).where(eq(beeColoniesTable.id, colonyId));
+  if (colony.photoUrl) void deleteImageByUrl(colony.photoUrl).catch(() => false);
 }
 
 // ── Facts and overview ───────────────────────────────────────────────────────

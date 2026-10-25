@@ -9,6 +9,7 @@ import {
   type BeeHint,
   type FarmSummary,
 } from "@workspace/api-client-react";
+import { BeeSiteCheckSection } from "@/components/bee-site-check";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -120,24 +121,27 @@ function NewColonyDialog({ farm, apiaries, open, onOpenChange }: { farm: FarmSum
 
 function ColonyCard({ c }: { c: BeeColony }) {
   return (
-    <Link href={`/farm/bienen/${c.id}`} className="block rounded-xl border border-border bg-card p-3 text-sm hover:bg-muted/50">
-      <div className="flex items-center gap-2">
-        <span className="font-semibold">{c.name}</span>
-        <QueenDot year={c.queenYear} />
-        {c.status !== "active" && <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{COLONY_STATUS[c.status]}</span>}
-        <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {[c.apiary, c.hiveType].filter(Boolean).join(" · ") || "Ohne Stand"}
-      </p>
-      {c.status === "active" && (
-        <p className="mt-1 text-xs text-muted-foreground">
-          {c.lastInspectionOn ? `Durchsicht ${deDay(c.lastInspectionOn)}` : "Noch keine Durchsicht"}
-          {c.beeFrames !== null ? ` · ${c.beeFrames} Waben` : ""}
-          {c.lastMites ? ` · ${num(c.lastMites.mitesPerDay)} Milben/Tag` : ""}
-          {c.honeyKgThisYear > 0 ? ` · ${num(c.honeyKgThisYear)} kg Honig` : ""}
+    <Link href={`/farm/bienen/${c.id}`} className="flex gap-3 rounded-xl border border-border bg-card p-3 text-sm hover:bg-muted/50">
+      {c.photoUrl && <img src={c.photoUrl} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />}
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="font-semibold">{c.name}</span>
+          <QueenDot year={c.queenYear} />
+          {c.status !== "active" && <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{COLONY_STATUS[c.status]}</span>}
+          <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground" />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          {[c.apiary, c.hiveType].filter(Boolean).join(" · ") || "Ohne Stand"}
         </p>
-      )}
+        {c.status === "active" && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {c.lastInspectionOn ? `Durchsicht ${deDay(c.lastInspectionOn)}` : "Noch keine Durchsicht"}
+            {c.beeFrames !== null ? ` · ${c.beeFrames} Waben` : ""}
+            {c.lastMites ? ` · ${num(c.lastMites.mitesPerDay)} Milben/Tag` : ""}
+            {c.honeyKgThisYear > 0 ? ` · ${num(c.honeyKgThisYear)} kg Honig` : ""}
+          </p>
+        )}
+      </div>
     </Link>
   );
 }
@@ -212,6 +216,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
           </details>
         )}
       </section>
+      <BeeSiteCheckSection farm={farm} apiaries={d.apiaries} />
       <p className="text-xs text-muted-foreground">
         Bienenvölker müssen beim Veterinäramt gemeldet sein (Bienenseuchen-Verordnung). Die Hinweise sind Richtwerte – im Zweifel mit dem Bienensachverständigen abstimmen.
       </p>

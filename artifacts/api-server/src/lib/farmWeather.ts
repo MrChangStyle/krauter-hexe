@@ -173,12 +173,27 @@ export async function forecast(latitude: number, longitude: number, today: strin
 
 // ── Warnings ─────────────────────────────────────────────────────────────────
 
-export type WarningKind = 'hardFrost' | 'frost' | 'heat' | 'storm' | 'rain' | 'dry';
+export type WarningKind = 'hardFrost' | 'frost' | 'frostSpell' | 'heat' | 'heatSpell' | 'storm' | 'rain' | 'dry';
 
 export interface WeatherWarning {
   kind: WarningKind;
   date: string;
   text: string;
+}
+
+const WEEKDAY = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
+const dayText = (day: string) => `${WEEKDAY[new Date(`${day}T12:00:00Z`).getUTCDay()]} ${day.slice(8, 10)}.${day.slice(5, 7)}.`;
+
+/** At least this many days in a row make a frost or heat spell. */
+export const SPELL_DAYS = 3;
+
+/** The run of days matching `test` that starts today or tomorrow, if it is a spell. */
+function spell(days: DayForecast[], test: (d: DayForecast) => boolean): DayForecast[] | null {
+  const start = days.slice(0, 2).findIndex(test);
+  if (start < 0) return null;
+  let end = start;
+  while (end + 1 < days.length && test(days[end + 1]!)) end += 1;
+  return end - start + 1 >= SPELL_DAYS ? days.slice(start, end + 1) : null;
 }
 
 const temp = (t: number) => `${t < 0 ? '−' : ''}${Math.abs(t).toLocaleString('de-DE')} °C`;
@@ -199,6 +214,19 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
 
   if (species.length > 0 && next.length > 0) {
     const cold = worst((d) => d.minTemp, -1);
+    // Several days of frost in the week ahead: one warning for the whole spell.
+    const frostRun = spell(days, (d) => d.minTemp <= 0);
+    if (frostRun) {
+      const low = Math.min(...frostRun.map((d) => d.minTemp));
+      out.push({
+        kind: 'frostSpell',
+        date: frostRun[0]!.date,
+        text:
+          `Frostperiode: ${frostRun.length} Tage in Folge Frost bis ${temp(low)} (bis ${dayText(frostRun.at(-1)!.date)}${frostRun.length === days.length ? ' und länger' : ''}): ` +
+          'Tränken mehrmals am Tag frostfrei, Vorrat an Heu, Einstreu und Futter für die ganze Zeit prüfen, Wasserleitungen schützen.' +
+          (species.includes('guineaPig') ? ' Meerschweinchen frostfrei unterbringen.' : ''),
+      });
+    }
     if (cold.minTemp <= -10) {
       out.push({
         kind: 'hardFrost',
@@ -207,7 +235,7 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
           `Strenger Frost bis ${temp(cold.minTemp)} (${when(cold)}): Ställe zugfrei schließen, Tränken mehrmals am Tag wechseln, mehr Raufutter.` +
           (has(SMALL_PETS) ? ' Außenställe von Kaninchen isolieren, Meerschweinchen ins Haus.' : ''),
       });
-    } else if (cold.minTemp <= 0) {
+    } else if (cold.minTemp <= 0 && !frostRun) {
       out.push({
         kind: 'frost',
         date: cold.date,
@@ -218,7 +246,18 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
     }
     const hot = worst((d) => d.maxTemp, 1);
     const heatLimit = has(SMALL_PETS) ? 28 : 30;
-    if (hot.maxTemp >= heatLimit) {
+    const heatRun = spell(days, (d) => d.maxTemp >= heatLimit);
+    if (heatRun) {
+      const high = Math.max(...heatRun.map((d) => d.maxTemp));
+      out.push({
+        kind: 'heatSpell',
+        date: heatRun[0]!.date,
+        text:
+          `Hitzewelle: ${heatRun.length} Tage in Folge bis ${temp(high)} (bis ${dayText(heatRun.at(-1)!.date)}${heatRun.length === days.length ? ' und länger' : ''}): ` +
+          'Ställe nachts lüften, Wasser mehrmals am Tag frisch und kühl, Schatten auf Weide und Auslauf, Arbeit in die Morgenstunden; auf Fliegen und Madenbefall achten.' +
+          (has(SMALL_PETS) ? ' Kaninchen und Meerschweinchen sind ab 28 °C hitzschlaggefährdet – kühle Fliesen, nie in die pralle Sonne.' : ''),
+      });
+    } else if (hot.maxTemp >= heatLimit) {
       out.push({
         kind: 'heat',
         date: hot.date,

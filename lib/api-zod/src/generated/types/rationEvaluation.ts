@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { ColdBoost } from './coldBoost';
 import type { FeedTransition } from './feedTransition';
 import type { FeedWarning } from './feedWarning';
 import type { LifeStage } from './lifeStage';
@@ -33,6 +34,8 @@ export interface RationEvaluation {
   warnings: FeedWarning[];
   transition: null | FeedTransition;
   hints: string[];
+  /** More feed for the cold of the next three days (forecast at the farm); only on the ration in effect. */
+  cold: null | ColdBoost;
   group: RationEvaluationGroup;
   updatedAt: string;
 }

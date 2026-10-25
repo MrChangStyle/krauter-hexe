@@ -168,6 +168,40 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     expect((await ration({ herdId: ids.hens, stage: "laying", items: [], times: [] })).status).toBe(400);
   });
 
+  it("asks for more feed when the forecast at the farm gets colder than the animals cope with", async () => {
+    fixedDay = "2027-01-10";
+    // Bright Sky: −6 °C the night after, otherwise mild.
+    const realFetch = globalThis.fetch;
+    vi.stubGlobal("fetch", (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (!url.startsWith("https://api.brightsky.dev/weather")) return realFetch(input, init);
+      const weather = [0, 1, 2, 3, 4, 5, 6, 7].flatMap((i) => {
+        const d = new Date("2027-01-10T12:00:00Z");
+        d.setUTCDate(d.getUTCDate() + i);
+        const date = d.toISOString().slice(0, 10);
+        return Array.from({ length: 24 }, (_, h) => ({ timestamp: `${date}T${String(h).padStart(2, "0")}:00:00+01:00`, temperature: h === 4 && i === 1 ? -6 : 4, precipitation: 0, wind_gust_speed: 10, icon: "cloudy" }));
+      });
+      return Promise.resolve(new Response(JSON.stringify({ weather })));
+    });
+    try {
+      const hens = await ration({ herdId: ids.hens, stage: "laying", items: [{ feedKey: "legehennen", grams: 120 }], times: ["morgens"] });
+      // No location yet: nothing about the cold.
+      expect(hens.data.cold).toBeNull();
+      await q("UPDATE farms SET latitude = 47.3, longitude = 11.4 WHERE id = $1", [farm.anna]);
+      const list = (await api("GET", `/farms/${farm.anna}/rations`)).data;
+      // Hens: limit 5 °C, −6 °C → 11 % more.
+      expect(list[0].cold).toEqual({
+        date: "2027-01-11",
+        minTemp: -6,
+        percent: 11,
+        extra: [{ name: expect.any(String), grams: 13 }],
+        text: expect.stringMatching(/^Kälte bis −6 °C: etwa 11 % mehr Körner und Legefutter: \+13 g .* je Tier und Tag\.$/),
+      });
+    } finally {
+      vi.stubGlobal("fetch", realFetch);
+    }
+  });
+
   it("warns, without a way to dismiss it, about foreign mineral feed and copper for sheep", async () => {
     const res = await ration({ animalId: ids.sheep, stage: "maintenance", items: [{ feedKey: "heu", grams: 1700 }, { feedKey: "mineral_rind", grams: 20 }], times: ["morgens"] });
     expect(res.data.warnings.map((w: any) => w.kind)).toEqual(["foreignMineral", "copper"]);

@@ -60,6 +60,25 @@ describe("weather warnings", () => {
     expect(weatherWarnings([day("2026-07-01", { precipitationMm: 25 }), day("2026-07-02")], ["horse"], true).map((x) => x.kind)).toEqual(["rain"]);
   });
 
+  it("warns once about a spell of three or more frost or hot days, instead of the single day", () => {
+    // Frost from tomorrow for three days, then mild: a spell until Friday.
+    const week = ["2026-12-01", "2026-12-02", "2026-12-03", "2026-12-04", "2026-12-05", "2026-12-06", "2026-12-07"];
+    const frost = week.map((d, i) => day(d, { minTemp: i >= 1 && i <= 3 ? -2 - i : 2 }));
+    const w = weatherWarnings(frost, ["goat"], false);
+    expect(w).toEqual([
+      { kind: "frostSpell", date: "2026-12-02", text: expect.stringMatching(/^Frostperiode: 3 Tage in Folge Frost bis −5 °C \(bis Fr 04\.12\.\): Tränken mehrmals/) },
+    ]);
+    // Two frost days are no spell; a spell starting only in three days is not yet one.
+    expect(weatherWarnings(week.map((d, i) => day(d, { minTemp: i < 2 ? -1 : 3 })), ["goat"], false).map((x) => x.kind)).toEqual(["frost"]);
+    expect(weatherWarnings(week.map((d, i) => day(d, { minTemp: i >= 3 ? -1 : 3 })), ["goat"], false)).toEqual([]);
+    // Hard frost still comes on its own.
+    expect(weatherWarnings(week.map((d) => day(d, { minTemp: -12 })), ["goat"], false).map((x) => x.kind)).toEqual(["frostSpell", "hardFrost"]);
+    // A heat wave for the whole week.
+    const hot = weatherWarnings(week.map((d) => day(d, { maxTemp: 32 })), ["rabbit"], false);
+    expect(hot.map((x) => x.kind)).toEqual(["heatSpell"]);
+    expect(hot[0]!.text).toMatch(/^Hitzewelle: 7 Tage in Folge bis 32 °C \(bis Mo 07\.12\. und länger\):.*Kaninchen/);
+  });
+
   it("says nothing about animals on a farm without animals, and nothing on mild days", () => {
     expect(weatherWarnings([day("2026-12-01", { minTemp: -5 }), day("2026-12-02")], [], true)).toEqual([]);
     expect(weatherWarnings([day("2026-05-01"), day("2026-05-02")], ["cattle"], true)).toEqual([]);

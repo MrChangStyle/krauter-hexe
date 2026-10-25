@@ -1610,6 +1610,16 @@ export const ListRationsResponseItem = zod.object({
 }))
 }).describe('A change of feed spread over some days – today\'s mixture of the old and the new ration')]),
   "hints": zod.array(zod.string()),
+  "cold": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "minTemp": zod.number(),
+  "percent": zod.number(),
+  "extra": zod.array(zod.object({
+  "name": zod.string(),
+  "grams": zod.number()
+})).describe('Per animal and day.'),
+  "text": zod.string()
+})]).describe('More feed for the cold of the next three days (forecast at the farm); only on the ration in effect.'),
   "group": zod.object({
   "feedKg": zod.number(),
   "waterL": zod.number().nullable()
@@ -1707,6 +1717,16 @@ export const SaveRationResponse = zod.object({
 }))
 }).describe('A change of feed spread over some days – today\'s mixture of the old and the new ration')]),
   "hints": zod.array(zod.string()),
+  "cold": zod.union([zod.null(),zod.object({
+  "date": zod.string(),
+  "minTemp": zod.number(),
+  "percent": zod.number(),
+  "extra": zod.array(zod.object({
+  "name": zod.string(),
+  "grams": zod.number()
+})).describe('Per animal and day.'),
+  "text": zod.string()
+})]).describe('More feed for the cold of the next three days (forecast at the farm); only on the ration in effect.'),
   "group": zod.object({
   "feedKg": zod.number(),
   "waterL": zod.number().nullable()
@@ -2133,7 +2153,7 @@ export const GetFarmWeatherResponse = zod.object({
   "icon": zod.enum(['sun', 'cloud', 'rain', 'snow', 'storm'])
 })),
   "warnings": zod.array(zod.object({
-  "kind": zod.enum(['hardFrost', 'frost', 'heat', 'storm', 'rain', 'dry']),
+  "kind": zod.enum(['hardFrost', 'frost', 'frostSpell', 'heat', 'heatSpell', 'storm', 'rain', 'dry']),
   "date": zod.string(),
   "text": zod.string()
 })),
@@ -2180,7 +2200,7 @@ export const SetFarmLocationResponse = zod.object({
   "icon": zod.enum(['sun', 'cloud', 'rain', 'snow', 'storm'])
 })),
   "warnings": zod.array(zod.object({
-  "kind": zod.enum(['hardFrost', 'frost', 'heat', 'storm', 'rain', 'dry']),
+  "kind": zod.enum(['hardFrost', 'frost', 'frostSpell', 'heat', 'heatSpell', 'storm', 'rain', 'dry']),
   "date": zod.string(),
   "text": zod.string()
 })),

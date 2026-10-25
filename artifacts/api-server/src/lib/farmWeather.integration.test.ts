@@ -146,7 +146,8 @@ describe.skipIf(!enabled)("Wetter für den Hof (real database, weather replaced)
     expect(set.data.days.map((d: any) => [d.date, d.minTemp, d.maxTemp])).toEqual(
       ["2026-12-01", "2026-12-02", "2026-12-03", "2026-12-04", "2026-12-05", "2026-12-06", "2026-12-07"].map((d) => [d, -3, 8]),
     );
-    expect(set.data.warnings).toEqual([{ kind: "frost", date: "2026-12-01", text: expect.stringMatching(/^Frost bis −3 °C \(heute\): Tränken frostfrei/) }]);
+    // Frost all week: one warning for the spell.
+    expect(set.data.warnings).toEqual([{ kind: "frostSpell", date: "2026-12-01", text: expect.stringMatching(/^Frostperiode: 7 Tage in Folge Frost bis −3 °C/) }]);
     expect(weatherCalls.at(-1)).toContain("lat=52.5&lon=13.4&date=2026-12-01&last_date=2026-12-08");
 
     // The phone's position wins and is rounded to about 10 km.
@@ -177,7 +178,8 @@ describe.skipIf(!enabled)("Wetter für den Hof (real database, weather replaced)
       ["anna", "Wetter-Hinweis für deinen Hof"],
       ["pia", "Wetter-Hinweis für deinen Hof"],
     ]);
-    expect((sendPushToUser.mock.calls[0]![1] as any).body).toMatch(/^Frost bis −3 °C \(heute\)/);
+    // A week of frost: one warning for the spell.
+    expect((sendPushToUser.mock.calls[0]![1] as any).body).toMatch(/^Frostperiode: 7 Tage in Folge Frost bis −3 °C \(bis Mo 07\.12\. und länger\): Tränken/);
     // Next day still frost: no second push. Then it gets much colder: a new warning.
     fixedDay = "2026-12-02";
     expect(await sendWeatherDigests("07:30", "2026-12-02")).toBe(0);

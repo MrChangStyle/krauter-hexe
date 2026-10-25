@@ -12,7 +12,9 @@ export type WeatherWarningKind = typeof WeatherWarningKind[keyof typeof WeatherW
 export const WeatherWarningKind = {
   hardFrost: 'hardFrost',
   frost: 'frost',
+  frostSpell: 'frostSpell',
   heat: 'heat',
+  heatSpell: 'heatSpell',
   storm: 'storm',
   rain: 'rain',
   dry: 'dry',

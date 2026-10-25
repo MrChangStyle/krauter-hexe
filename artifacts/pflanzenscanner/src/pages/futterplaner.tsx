@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertOctagon, ArrowLeft, Bell, BookOpen, Camera, Droplets, Info, Leaf, Loader2, Package, Plus, Repeat, Scale, Trash2, Wheat, X } from "lucide-react";
+import { AlertOctagon, ArrowLeft, Bell, BookOpen, Camera, Droplets, Info, Leaf, Loader2, Package, Plus, Repeat, Scale, Snowflake, Trash2, Wheat, X } from "lucide-react";
 import {
   getListFarmFeedsQueryKey,
   getListRationsQueryKey,
@@ -37,6 +37,7 @@ import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { downscaleFile } from "@/lib/image";
 import { SPECIES_LABELS } from "@/lib/farm-labels";
 import { CATEGORY_LABELS, NUTRIENT_LABELS, SEASON_LABELS, STAGE_LABELS, formatRange, formatValue, grams, light, lightText, rationName, shareText, shortDate } from "@/lib/feed-labels";
+import { berlinToday, dayLabel } from "@/lib/weather-labels";
 import { cn } from "@/lib/utils";
 
 const TIMES = ["morgens", "mittags", "abends"] as const;
@@ -104,6 +105,23 @@ function SeasonHints({ hints }: { hints: string[] }) {
         </li>
       ))}
     </ul>
+  );
+}
+
+/** More feed for the cold ahead (forecast at the farm), per animal and for the group. */
+function ColdBox({ ration }: { ration: RationEvaluation }) {
+  const cold = ration.cold;
+  if (!cold) return null;
+  const perAnimal = cold.extra.reduce((s, e) => s + e.grams, 0);
+  const count = ration.target.count;
+  return (
+    <p className="flex gap-2 rounded-xl border border-sky-300 bg-sky-50 p-3 text-sm text-sky-950 dark:border-sky-800 dark:bg-sky-950/40 dark:text-sky-100" data-testid="cold-boost">
+      <Snowflake className="mt-0.5 h-4 w-4 shrink-0" />
+      <span>
+        <span className="font-medium">{dayLabel(cold.date, berlinToday())}:</span> {cold.text}
+        {count > 1 && perAnimal > 0 && ` Für alle ${count} zusammen ${grams(perAnimal * count)} mehr am Tag.`}
+      </span>
+    </p>
   );
 }
 
@@ -678,6 +696,7 @@ function Planner({ farm }: { farm: FarmSummary }) {
                 ) : (
                   <p className="text-sm text-muted-foreground">{all.length ? "Für die jetzige Jahreszeit ist keine Ration eingetragen." : "Noch keine Ration eingetragen."}</p>
                 )}
+                {r && <ColdBox ration={r} />}
                 {r && <SeasonHints hints={r.hints} />}
                 {others.length > 0 && (
                   <ul className="space-y-1 border-t border-border pt-2 text-xs">

@@ -41,4 +41,8 @@ Zusätzlich zu den eigenen Regeln zeigt der Wetter-Streifen die amtlichen Warnun
 - Die Warnungen werden je Ort 10 Minuten zwischengespeichert. Antwortet der Dienst nicht, fehlen sie einfach.
 - API: `alerts` und `alertArea` in `GET /farms/:id/weather`. Push: `sendAlertPushes` im Cron.
 
-Später denkbar: Hitze- und Frostverlauf über mehrere Tage, Wetter im Futterplaner (Mehrbedarf bei Kälte).
+## Frost- und Hitzeperioden
+
+Ab **drei Tagen in Folge** mit Frost (Tiefstwert ≤ 0 °C) bzw. Hitze (Höchstwert ab der Hitzegrenze der Tiere), die heute oder morgen beginnen, kommt statt des einfachen Hinweises einer für die ganze Periode: „Frostperiode: 4 Tage in Folge Frost bis −6 °C (bis Fr 04.12.)“ mit Tipps für die Dauer (Vorrat an Heu, Einstreu und Futter, Wasserleitungen; bei Hitze Lüften, Fliegen und Madenbefall). Reicht sie bis ans Ende der Vorhersage, steht „und länger“ dabei. Strenger Frost kommt weiter einzeln. Auch der Push meldet eine Periode nur einmal (Arten `frostSpell`, `heatSpell`).
+
+Mehrbedarf an Futter bei Kälte: siehe `docs/futterplaner.md`, „Wetter im Futterplaner“.

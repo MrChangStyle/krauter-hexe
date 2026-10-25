@@ -242,8 +242,8 @@ unfreigeschaltet; optionaler REGISTRATION_CODE; Inhaber verwaltet unter /benutze
   - Das Inhaber-Konto kann sich nicht selbst löschen.
   - Das Löschen durch den Inhaber unter /benutzer nutzt dieselbe Funktion.
   - Test: Nach dem Löschen gibt es keine Zeile mit der userId mehr.
-  - Später: Farm-Daten (eine Farm, deren einziger Admin gelöscht wird, wird mitgelöscht;
-    sonst nur die Mitgliedschaft).
+  - Farm-Daten (UMGESETZT): Eine Farm, deren letztes Mitglied geht, wird mitgelöscht; verliert sie
+    ihren letzten Admin, wird das am längsten dabei gebliebene Mitglied Admin.
 - A3 Moderation (UMGESETZT – Details in replit.md):
   - "Melden" an allen öffentlich sichtbaren Inhalten: Archiv-Fotos von Pflanzen/Insekten,
     Benutzernamen in der Rangliste.

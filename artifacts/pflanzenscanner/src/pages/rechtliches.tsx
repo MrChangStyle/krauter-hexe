@@ -186,6 +186,10 @@ export function DatenschutzPage() {
             Bright Sky mit Daten des Deutschen Wetterdienstes (Beet-Architekt:
             Frosttermine und Frostwarnung; übermittelt wird nur ein auf etwa 10 km gerundeter Ort)
           </li>
+          <li>
+            OpenStreetMap Foundation (Weidekarte: Kartenbilder, erst nach Tipp auf „Karte zeigen“; deren
+            Server sieht dabei deine IP-Adresse und den Kartenausschnitt, nicht die eingezeichneten Weiden)
+          </li>
         </ul>
         <p className="mt-2">
           Einige dieser Anbieter haben ihren Sitz in den USA. Die Übermittlung

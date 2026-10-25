@@ -25,6 +25,7 @@ export const PASTURE_SCHEMA_STATEMENTS: readonly string[] = [
 	"name" text NOT NULL,
 	"kind" text DEFAULT 'pasture' NOT NULL,
 	"area_ha" double precision,
+	"boundary" jsonb,
 	"rest_days" integer DEFAULT 35 NOT NULL,
 	"max_graze_days" integer DEFAULT 10 NOT NULL,
 	"notes" text,

@@ -63,6 +63,8 @@ const STATEMENTS = [
   ...PANTRY_SCHEMA_STATEMENTS,
   // Weide (generated, see pastureSchemaStatements.ts).
   ...PASTURE_SCHEMA_STATEMENTS,
+  // Weidekarte: the outline came after the Weide tables.
+  `ALTER TABLE "pastures" ADD COLUMN IF NOT EXISTS "boundary" jsonb`,
   // Module and first-start assistant (schema/settings.ts).
   `CREATE TABLE IF NOT EXISTS "user_settings" (
 	"user_id" text PRIMARY KEY NOT NULL,

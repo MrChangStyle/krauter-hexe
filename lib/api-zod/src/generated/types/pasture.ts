@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { Grazing } from './grazing';
+import type { PastureBoundary } from './pastureBoundary';
 import type { PastureHint } from './pastureHint';
 import type { PastureKind } from './pastureKind';
 import type { PastureStatus } from './pastureStatus';
@@ -16,6 +17,7 @@ export interface Pasture {
   kind: PastureKind;
   /** @nullable */
   areaHa: number | null;
+  boundary: null | PastureBoundary;
   restDays: number;
   maxGrazeDays: number;
   /** @nullable */

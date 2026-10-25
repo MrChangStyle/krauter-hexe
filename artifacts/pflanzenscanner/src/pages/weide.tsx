@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, ArrowRightLeft, Info, Loader2, LogIn, LogOut, Pencil, Plus, Trash2, Trees } from "lucide-react";
+import { AlertTriangle, ArrowLeft, ArrowRightLeft, Info, Loader2, LogIn, LogOut, Map as MapIcon, Pencil, Plus, Trash2, Trees, Undo2 } from "lucide-react";
 import {
   getGetPasturesQueryKey,
   useCreatePasture,
@@ -13,7 +13,9 @@ import {
   useStartGrazing,
   useUpdatePasture,
   type FarmSummary,
+  type MapCenter,
   type Pasture,
+  type PastureBoundary,
   type PastureKind,
   type PastureOverview,
 } from "@workspace/api-client-react";
@@ -23,9 +25,21 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
+import { STATUS_COLORS, allowMap, boundaryAreaHa, mapAllowed } from "@/lib/pasture-map";
 import { todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { num } from "@/lib/yield-labels";
+
+// Leaflet only loads when a map is shown.
+const PastureMap = lazy(() => import("@/components/pasture-map"));
+
+const mapLoading = (
+  <div className="flex h-64 items-center justify-center rounded-xl border border-border">
+    <Loader2 className="h-6 w-6 animate-spin text-primary" />
+  </div>
+);
+
+const OSM_NOTE = "Die Kartenbilder kommen von OpenStreetMap; deren Server sieht dabei deine IP-Adresse.";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -63,7 +77,60 @@ function useSaved(farm: FarmSummary, after: () => void, setError: (e: string) =>
   };
 }
 
-function PastureDialog({ farm, pasture, onClose }: { farm: FarmSummary; pasture: Pasture | null; onClose: () => void }) {
+/** Tap the corners one after another; „Übernehmen“ hands the outline back to the form. */
+function DrawOutline({
+  data,
+  pasture,
+  start,
+  onDone,
+  onCancel,
+}: {
+  data: PastureOverview;
+  pasture: Pasture | null;
+  start: PastureBoundary;
+  onDone: (b: PastureBoundary) => void;
+  onCancel: () => void;
+}) {
+  const [points, setPoints] = useState(start);
+  const others = useMemo(() => data.pastures.filter((p) => p.id !== pasture?.id), [data.pastures, pasture?.id]);
+  const area = boundaryAreaHa(points);
+  return (
+    <div className="space-y-3">
+      <DialogHeader>
+        <DialogTitle>Umriss einzeichnen</DialogTitle>
+      </DialogHeader>
+      <p className="text-sm text-muted-foreground">Tippe die Ecken der Fläche der Reihe nach an – am Zaun entlang. Verschieben und zoomen geht wie gewohnt.</p>
+      <Suspense fallback={mapLoading}>
+        <PastureMap mode="draw" center={data.center} others={others} value={points} onChange={setPoints} className="h-[50dvh]" />
+      </Suspense>
+      <div className="flex flex-wrap items-center gap-2">
+        <Button type="button" size="sm" variant="outline" className="gap-1.5" disabled={points.length === 0} onClick={() => setPoints(points.slice(0, -1))}>
+          <Undo2 className="h-4 w-4" />
+          Letzte Ecke weg
+        </Button>
+        <Button type="button" size="sm" variant="ghost" disabled={points.length === 0} onClick={() => setPoints([])}>
+          Neu anfangen
+        </Button>
+        <span className="ml-auto text-sm" data-testid="draw-area">
+          {points.length < 3 ? `${points.length} von mind. 3 Ecken` : `≈ ${num(Math.round(area * 100) / 100)} ha`}
+        </span>
+      </div>
+      <p className="text-xs text-muted-foreground">{OSM_NOTE}</p>
+      <DialogFooter className="gap-2">
+        <Button type="button" variant="ghost" onClick={onCancel}>
+          Abbrechen
+        </Button>
+        <Button type="button" disabled={points.length < 3} onClick={() => onDone(points)}>
+          Übernehmen
+        </Button>
+      </DialogFooter>
+    </div>
+  );
+}
+
+function PastureDialog({ farm, data, pasture, onClose }: { farm: FarmSummary; data: PastureOverview; pasture: Pasture | null; onClose: () => void }) {
+  const [boundary, setBoundary] = useState<PastureBoundary | null>(pasture?.boundary ?? null);
+  const [drawing, setDrawing] = useState(false);
   const [form, setForm] = useState({
     name: pasture?.name ?? "",
     kind: pasture?.kind ?? ("pasture" as PastureKind),
@@ -87,6 +154,8 @@ function PastureDialog({ farm, pasture, onClose }: { farm: FarmSummary; pasture:
       name: form.name,
       kind: form.kind,
       areaHa: form.areaHa ? Number(form.areaHa.replace(",", ".")) : null,
+      // With an outline the server takes the area from it.
+      boundary,
       restDays: Number(form.restDays),
       maxGrazeDays: Number(form.maxGrazeDays),
       notes: form.notes || null,
@@ -99,65 +168,103 @@ function PastureDialog({ farm, pasture, onClose }: { farm: FarmSummary; pasture:
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-h-[90dvh] overflow-y-auto">
-        <form onSubmit={submit} className="space-y-3">
-          <DialogHeader>
-            <DialogTitle>{pasture ? "Weide bearbeiten" : "Weide anlegen"}</DialogTitle>
-          </DialogHeader>
-          <Field id="pw-name" label="Name *">
-            <Input id="pw-name" required maxLength={60} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="z. B. Obstwiese, Koppel 2" />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field id="pw-kind" label="Nutzung">
-              <select id="pw-kind" className={selectClass} value={form.kind} onChange={(e) => set("kind", e.target.value as PastureKind)}>
-                {(Object.keys(PASTURE_KINDS) as PastureKind[]).map((k) => (
-                  <option key={k} value={k}>
-                    {PASTURE_KINDS[k]}
-                  </option>
-                ))}
-              </select>
+        {drawing ? (
+          <DrawOutline
+            data={data}
+            pasture={pasture}
+            start={boundary ?? []}
+            onCancel={() => setDrawing(false)}
+            onDone={(b) => {
+              setBoundary(b);
+              setDrawing(false);
+            }}
+          />
+        ) : (
+          <form onSubmit={submit} className="space-y-3">
+            <DialogHeader>
+              <DialogTitle>{pasture ? "Weide bearbeiten" : "Weide anlegen"}</DialogTitle>
+            </DialogHeader>
+            <Field id="pw-name" label="Name *">
+              <Input id="pw-name" required maxLength={60} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="z. B. Obstwiese, Koppel 2" />
             </Field>
-            <Field id="pw-area" label="Fläche (ha)">
-              <Input id="pw-area" inputMode="decimal" value={form.areaHa} onChange={(e) => set("areaHa", e.target.value)} placeholder="0,5" />
-            </Field>
-            <Field id="pw-rest" label="Ruhezeit (Tage)">
-              <Input id="pw-rest" type="number" min={1} max={365} required value={form.restDays} onChange={(e) => set("restDays", e.target.value)} />
-            </Field>
-            <Field id="pw-max" label="Höchstens beweiden (Tage)">
-              <Input id="pw-max" type="number" min={1} max={365} required value={form.maxGrazeDays} onChange={(e) => set("maxGrazeDays", e.target.value)} />
-            </Field>
-          </div>
-          <p className="text-xs text-muted-foreground">Üblich sind 4–6 Wochen Ruhe, damit das Gras nachwächst und Wurmlarven absterben, und kurze Weidezeiten von 1–2 Wochen.</p>
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="pw-notes">Notiz</Label>
-              <DictateButton value={form.notes} onChange={(t) => set("notes", t)} max={500} />
+            <div className="grid grid-cols-2 gap-3">
+              <Field id="pw-kind" label="Nutzung">
+                <select id="pw-kind" className={selectClass} value={form.kind} onChange={(e) => set("kind", e.target.value as PastureKind)}>
+                  {(Object.keys(PASTURE_KINDS) as PastureKind[]).map((k) => (
+                    <option key={k} value={k}>
+                      {PASTURE_KINDS[k]}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field id="pw-area" label="Fläche (ha)">
+                {boundary ? (
+                  <Input id="pw-area" disabled value={num(Math.round(boundaryAreaHa(boundary) * 1000) / 1000)} />
+                ) : (
+                  <Input id="pw-area" inputMode="decimal" value={form.areaHa} onChange={(e) => set("areaHa", e.target.value)} placeholder="0,5" />
+                )}
+              </Field>
+              <Field id="pw-rest" label="Ruhezeit (Tage)">
+                <Input id="pw-rest" type="number" min={1} max={365} required value={form.restDays} onChange={(e) => set("restDays", e.target.value)} />
+              </Field>
+              <Field id="pw-max" label="Höchstens beweiden (Tage)">
+                <Input id="pw-max" type="number" min={1} max={365} required value={form.maxGrazeDays} onChange={(e) => set("maxGrazeDays", e.target.value)} />
+              </Field>
             </div>
-            <Input id="pw-notes" maxLength={500} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
-          </div>
-          {pasture && (
-            <label className="flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.archived} onChange={(e) => set("archived", e.target.checked)} className="h-4 w-4" />
-              Wird nicht mehr genutzt
-            </label>
-          )}
-          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-          <DialogFooter className="gap-2">
-            {pasture && farm.role === "admin" && (
+            <div className="flex flex-wrap items-center gap-2">
               <Button
                 type="button"
-                variant="ghost"
-                className="mr-auto gap-1.5 text-destructive hover:text-destructive"
-                onClick={() => window.confirm("Diese Weide mit ihrem Weidetagebuch löschen?") && remove.mutate({ farmId: farm.id, pastureId: pasture.id })}
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+                onClick={() => {
+                  allowMap();
+                  setDrawing(true);
+                }}
               >
-                <Trash2 className="h-4 w-4" />
-                Löschen
+                <MapIcon className="h-4 w-4" />
+                {boundary ? "Umriss ändern" : "Auf der Karte einzeichnen"}
               </Button>
+              {boundary && (
+                <Button type="button" size="sm" variant="ghost" onClick={() => setBoundary(null)}>
+                  Umriss entfernen
+                </Button>
+              )}
+              {boundary && <span className="text-xs text-muted-foreground">Fläche aus der Karte</span>}
+            </div>
+            <p className="text-xs text-muted-foreground">Üblich sind 4–6 Wochen Ruhe, damit das Gras nachwächst und Wurmlarven absterben, und kurze Weidezeiten von 1–2 Wochen.</p>
+            <div className="flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="pw-notes">Notiz</Label>
+                <DictateButton value={form.notes} onChange={(t) => set("notes", t)} max={500} />
+              </div>
+              <Input id="pw-notes" maxLength={500} value={form.notes} onChange={(e) => set("notes", e.target.value)} />
+            </div>
+            {pasture && (
+              <label className="flex items-center gap-2 text-sm">
+                <input type="checkbox" checked={form.archived} onChange={(e) => set("archived", e.target.checked)} className="h-4 w-4" />
+                Wird nicht mehr genutzt
+              </label>
             )}
-            <Button type="submit" disabled={create.isPending || update.isPending}>
-              {pasture ? "Speichern" : "Anlegen"}
-            </Button>
-          </DialogFooter>
-        </form>
+            {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+            <DialogFooter className="gap-2">
+              {pasture && farm.role === "admin" && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="mr-auto gap-1.5 text-destructive hover:text-destructive"
+                  onClick={() => window.confirm("Diese Weide mit ihrem Weidetagebuch löschen?") && remove.mutate({ farmId: farm.id, pastureId: pasture.id })}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Löschen
+                </Button>
+              )}
+              <Button type="submit" disabled={create.isPending || update.isPending}>
+                {pasture ? "Speichern" : "Anlegen"}
+              </Button>
+            </DialogFooter>
+          </form>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -270,7 +377,7 @@ function PastureCard({ farm, p, onMove, onEdit }: { farm: FarmSummary; p: Pastur
   const remove = useDeleteGrazing({ mutation: { onSuccess: (next) => queryClient.setQueryData(getGetPasturesQueryKey(farm.id), next) } });
   const canWrite = farm.role !== "guest";
   return (
-    <li className="rounded-xl border border-border bg-card p-3" data-testid="pasture">
+    <li id={`pasture-${p.id}`} className="scroll-mt-20 rounded-xl border border-border bg-card p-3" data-testid="pasture">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{p.name}</p>
@@ -341,6 +448,55 @@ function PastureCard({ farm, p, onMove, onEdit }: { farm: FarmSummary; p: Pastur
   );
 }
 
+/** The drawn pastures on OpenStreetMap – loaded after a tap, remembered on the device. */
+function PastureMapSection({ pastures, center }: { pastures: Pasture[]; center: MapCenter | null }) {
+  const [shown, setShown] = useState(mapAllowed);
+  const drawn = pastures.filter((p) => p.boundary).length;
+  return (
+    <section className="space-y-2">
+      <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Karte</h2>
+      {shown ? (
+        <>
+          <Suspense fallback={mapLoading}>
+            <PastureMap mode="view" center={center} pastures={pastures} onSelect={(id) => document.getElementById(`pasture-${id}`)?.scrollIntoView({ behavior: "smooth" })} />
+          </Suspense>
+          <p className="flex flex-wrap gap-x-3 text-xs text-muted-foreground">
+            {(
+              [
+                ["grazed", "beweidet"],
+                ["resting", "ruht"],
+                ["ready", "bereit"],
+              ] as const
+            ).map(([s, label]) => (
+              <span key={s} className="inline-flex items-center gap-1">
+                <span className="h-2.5 w-2.5 rounded-sm" style={{ background: STATUS_COLORS[s] }} />
+                {label}
+              </span>
+            ))}
+            {drawn < pastures.length && <span>· {pastures.length - drawn} noch nicht eingezeichnet (Stift → „Auf der Karte einzeichnen“)</span>}
+          </p>
+        </>
+      ) : (
+        <div className="rounded-xl border border-dashed border-border p-3 text-sm">
+          <p className="text-muted-foreground">{OSM_NOTE}</p>
+          <Button
+            size="sm"
+            variant="outline"
+            className="mt-2 gap-1.5"
+            onClick={() => {
+              allowMap();
+              setShown(true);
+            }}
+          >
+            <MapIcon className="h-4 w-4" />
+            Karte zeigen
+          </Button>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function Pastures({ farm }: { farm: FarmSummary }) {
   const pastures = useGetPastures(farm.id);
   const [move, setMove] = useState<Move | null>(null);
@@ -373,6 +529,7 @@ function Pastures({ farm }: { farm: FarmSummary }) {
           ))}
         </section>
       )}
+      {used.length > 0 && <PastureMapSection pastures={used} center={d.center} />}
       {hints.length > 0 && (
         <ul className="space-y-2">
           {hints.map((h) => (
@@ -417,7 +574,7 @@ function Pastures({ farm }: { farm: FarmSummary }) {
         )}
       </section>
       {move && <MoveDialog farm={farm} data={d} move={move} onClose={() => setMove(null)} />}
-      {edit && <PastureDialog farm={farm} pasture={edit.pasture} onClose={() => setEdit(null)} />}
+      {edit && <PastureDialog farm={farm} data={d} pasture={edit.pasture} onClose={() => setEdit(null)} />}
     </div>
   );
 }

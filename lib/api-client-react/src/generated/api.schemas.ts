@@ -1175,12 +1175,22 @@ export interface PastureHint {
   text: string;
 }
 
+/**
+ * The outline drawn on the map – corners as [latitude, longitude], at least three.
+ * @minItems 3
+ * @maxItems 100
+ * @items.minItems 2
+ * @items.maxItems 2
+ */
+export type PastureBoundary = number[][];
+
 export interface Pasture {
   id: number;
   name: string;
   kind: PastureKind;
   /** @nullable */
   areaHa: number | null;
+  boundary: null | PastureBoundary;
   restDays: number;
   maxGrazeDays: number;
   /** @nullable */
@@ -1211,7 +1221,14 @@ export interface PastureHerd {
   animals: number;
 }
 
+export interface MapCenter {
+  latitude: number;
+  longitude: number;
+}
+
 export interface PastureOverview {
+  /** The farm's location (or a garden bed's) – where the map opens without drawn pastures. */
+  center: null | MapCenter;
   pastures: Pasture[];
   herds: PastureHerd[];
   year: number;
@@ -1224,8 +1241,13 @@ export interface PastureInput {
      */
   name: string;
   kind?: PastureKind;
-  /** @nullable */
+  /**
+     * Ignored when the pasture has an outline – then it is computed.
+     * @nullable
+     */
   areaHa?: number | null;
+  /** Null removes the outline; left out keeps it. */
+  boundary?: null | PastureBoundary;
   restDays?: number;
   maxGrazeDays?: number;
   /**

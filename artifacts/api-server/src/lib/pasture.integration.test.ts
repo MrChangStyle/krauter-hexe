@@ -123,6 +123,27 @@ describe.skipIf(!enabled)("Weide (real database)", () => {
     expect((await api("POST", `${W()}/${bach}/grazings`, { herdId, animals: 3, startOn: "2026-06-20" })).data.error).toBe("Diese Weide wird nicht mehr genutzt.");
   });
 
+  it("stores an outline, takes the area from it and keeps it unless removed", async () => {
+    const dLat = 100 / 111_319.49, dLng = 100 / (111_319.49 * Math.cos((51 * Math.PI) / 180));
+    const square = [[51, 10], [51 + dLat, 10], [51 + dLat, 10 + dLng], [51, 10 + dLng]];
+    expect((await api("GET", W())).data.center).toBeNull();
+    await q("UPDATE farms SET latitude = 51.5, longitude = 9.9 WHERE id = $1", [farmId]);
+    let d = (await api("POST", W(), { name: "Koppel", areaHa: 5, boundary: square })).data;
+    expect(d.center).toEqual({ latitude: 51.5, longitude: 9.9 });
+    const id = named(d, "Koppel").id;
+    expect(named(d, "Koppel").areaHa).toBeCloseTo(1, 2);
+    expect(named(d, "Koppel").boundary).toHaveLength(4);
+    // Left out: the outline stays, the typed area is ignored.
+    d = (await api("PUT", `${W()}/${id}`, { name: "Koppel", areaHa: 7 })).data;
+    expect(named(d, "Koppel")).toMatchObject({ areaHa: 1 });
+    expect(named(d, "Koppel").boundary).toHaveLength(4);
+    // Null: gone, the typed area counts again.
+    d = (await api("PUT", `${W()}/${id}`, { name: "Koppel", areaHa: 0.7, boundary: null })).data;
+    expect(named(d, "Koppel")).toMatchObject({ areaHa: 0.7, boundary: null });
+    expect((await api("PUT", `${W()}/${id}`, { name: "Koppel", boundary: [[51, 10], [51.1, 10]] })).status).toBe(400);
+    expect((await api("PUT", `${W()}/${id}`, { name: "Koppel", boundary: [[51, 10], [51.1, 10], [51.2, 10]] })).data.error).toBe("Der Umriss hat keine Fläche.");
+  });
+
   it("keeps the pastures to the farm, its roles and the grant", async () => {
     const id = (await api("POST", W(), { name: "Weide" })).data.pastures[0].id;
     const [foreignHerd] = await q<{ id: number }>("INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Fremd', 'sheep') RETURNING id", [otherFarm]);

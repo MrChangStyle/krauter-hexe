@@ -124,8 +124,10 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await createPantryItem(farmId, { name: 'Blütenhonig (Demo)', kind: 'honey', amount: 8, unit: 'Glas', location: 'Keller', madeOn: ago(60), bestBefore: addDays(today, 670) });
 
   // Weide: the goats moved from one pasture to the other.
-  await createPasture(farmId, { name: 'Obstwiese (Demo)', areaHa: 0.6, restDays: 35, maxGrazeDays: 10 });
-  await createPasture(farmId, { name: 'Hangweide (Demo)', areaHa: 0.9, restDays: 35, maxGrazeDays: 10 });
+  // Drawn side by side on the map (somewhere in Thuringia): 100 m × 60 m and 100 m × 90 m.
+  const m = (north: number, east: number): [number, number] => [50.98 + north / 111_320, 10.02 + east / 70_070];
+  await createPasture(farmId, { name: 'Obstwiese (Demo)', boundary: [m(0, 0), m(60, 0), m(60, 100), m(0, 100)], restDays: 35, maxGrazeDays: 10 });
+  await createPasture(farmId, { name: 'Hangweide (Demo)', boundary: [m(-95, 0), m(-5, 0), m(-5, 100), m(-95, 100)], restDays: 35, maxGrazeDays: 10 });
   const pastures = await db.select({ id: pasturesTable.id, name: pasturesTable.name }).from(pasturesTable).where(eq(pasturesTable.farmId, farmId));
   const obst = pastures.find((p) => p.name.startsWith('Obstwiese'));
   const hang = pastures.find((p) => p.name.startsWith('Hangweide'));

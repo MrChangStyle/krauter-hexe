@@ -298,6 +298,22 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "farm_animals" ADD CONSTRAINT "farm_animals_father_id_farm_animals_id_fk" FOREIGN KEY ("father_id") REFERENCES "public"."farm_animals"("id") ON DELETE set null ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "breeding_records_farm_idx" ON "breeding_records" USING btree ("farm_id")`,
+  // Zucht – Brunstkalender.
+  `CREATE TABLE IF NOT EXISTS "heat_records" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"animal_id" integer NOT NULL,
+	"observed_on" date NOT NULL,
+	"notes" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "heat_records" ADD CONSTRAINT "heat_records_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "heat_records" ADD CONSTRAINT "heat_records_animal_id_farm_animals_id_fk" FOREIGN KEY ("animal_id") REFERENCES "public"."farm_animals"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "heat_records_animal_idx" ON "heat_records" USING btree ("animal_id","observed_on")`,
   `CREATE TABLE IF NOT EXISTS "farm_yields" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

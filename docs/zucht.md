@@ -35,7 +35,47 @@ Bei kurzen Bruten wie der Wachtel fallen Schritte weg, die vor dem Beginn oder n
 - Ist der späteste normale Tag überschritten, wird der Eintrag rot markiert.
 - Push um 07:30 an Admins und Betreuer, höchstens einmal pro Hof und Tag (`farm_push_log`, Thema `breeding`).
 
+## Brunstkalender und Absetzen (`lib/breedingCycle.ts`)
+
+Unter den laufenden Einträgen stehen zwei weitere Bereiche: „Absetzen“ und „Brunstkalender“ (`GET /farms/:id/breeding/cycles`).
+
+**Brunstkalender:** jedes weibliche, nicht archivierte Tier einer Art mit Zyklus. „Brunst gesehen“ trägt einen Tag mit Notiz ein (`POST …/breeding/heats`, Betreuer; Tabelle `heat_records`). Die App sagt:
+- **wo das Tier steht:**
+  - tragend (laufende Trächtigkeit, bis zum erwarteten Tag),
+  - säugt (bis zum Absetzen),
+  - Pause nach der Geburt (bis zum frühesten Decktag),
+  - deckbereit;
+- **wann die nächste Brunst kommt:** letzte gesehene Brunst plus ganze Zyklen. Eine Brunst, die gerade läuft, zählt mit. Ist die letzte länger als drei Zyklen her oder fällt der Tag außerhalb der Saison, sagt die App das statt eines Datums.
+- **Push** (Zucht, 07:30) am Vortag: „Lotte: Brunst ab morgen erwartet – beobachten.“ Nicht bei tragenden Tieren.
+
+| Tierart | Zyklus (Brunstdauer) | Saison | wieder decken |
+|---|---|---|---|
+| Ziege | 21 Tage (2) | August–Februar | 60 Tage nach der Geburt |
+| Schaf | 17 Tage (1) | August–Januar | 60 Tage nach der Geburt |
+| Schwein | 21 Tage (2) | ganzjährig | 5 Tage nach dem Absetzen |
+| Rind | 21 Tage (1) | ganzjährig | 60 Tage nach der Kalbung (freiwillige Wartezeit) |
+| Pferd | 21 Tage (6) | April–September | ab Tag 7 (Fohlenrosse) |
+| Meerschweinchen | 16 Tage (1) | ganzjährig | direkt nach der Geburt – Männchen vorher trennen |
+| Hund | etwa 180 Tage (21) | ganzjährig | 120 Tage nach dem Wurf |
+
+Kaninchen (Eisprung erst beim Decken) und Katzen haben keinen Kalender.
+
+**Absetzen:** Nach jeder Geburt mit lebenden Jungtieren rechnet die App den Tag zum Absetzen oder Abgeben. Er steht bis zwei Wochen danach auf der Seite und kommt am Tag als Push.
+
+| Tierart | Tage | Hinweis |
+|---|---|---|
+| Kaninchen | 56 | frühestens mit acht Wochen |
+| Meerschweinchen | 21 | Böckchen spätestens mit vier Wochen trennen |
+| Ziege, Schaf | 84 | etwa zwölf Wochen |
+| Schwein | 35 | nicht vor vier Wochen (Tierschutz-Nutztierhaltungsverordnung) |
+| Rind | 240 | Mutterkuhhaltung, etwa acht Monate |
+| Pferd | 180 | etwa sechs Monate, mit Gefährten |
+| Katze | 84 | frühestens mit zwölf Wochen abgeben |
+| Hund | 56 | frühestens mit acht Wochen (Tierschutz-Hundeverordnung) |
+
+- **Demo-Hof:** Die zweite Ziege ist weiblich und hat zwei eingetragene Brunsten.
+- **Tests:** `breedingCycle.test.ts` (nächste Brunst, Saison, Stand, Push-Zeilen) und `breeding.integration.test.ts` (Kalender, Prüfungen, tragend → säugt → Absetzliste, Rechte, Push).
+
 ## Offen
 
-- Fachliche Prüfung der Tage und Schritte.
-- Eine Ansicht für Brunstzyklen (wann wieder decken) und Absetzen der Jungtiere.
+- Fachliche Prüfung der Tage und Schritte, auch im Brunstkalender.

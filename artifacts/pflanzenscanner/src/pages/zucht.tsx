@@ -1,17 +1,23 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, Baby, CheckCircle2, Circle, Egg, Heart, Loader2, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Baby, CalendarHeart, CheckCircle2, Circle, Egg, Heart, Loader2, Plus, Trash2 } from "lucide-react";
 import {
+  getGetBreedingCyclesQueryKey,
   getListBreedingQueryKey,
   getListFarmAnimalsQueryKey,
+  useAddHeat,
   useCreateBreeding,
   useDeleteBreeding,
+  useDeleteHeat,
   useEndBreeding,
   useEnsureOwnFarm,
+  useGetBreedingCycles,
   useListBreeding,
   useListFarmAnimals,
+  type BreedingCycles,
   type BreedingRecord,
+  type CycleAnimal,
   type FarmSpecies,
   type FarmSummary,
 } from "@workspace/api-client-react";
@@ -22,7 +28,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
-import { BIRDS, BREEDING_DAYS, breedingTitle, outcomeText, parentChoices, progress } from "@/lib/breeding-labels";
+import { BIRDS, BREEDING_DAYS, breedingTitle, cycleStatusText, nextHeatText, outcomeText, parentChoices, progress, relDay } from "@/lib/breeding-labels";
 import { SPECIES_LABELS, SPECIES_ORDER, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 
@@ -36,6 +42,8 @@ function useRefresh(farm: FarmSummary) {
   const queryClient = useQueryClient();
   return () => {
     void queryClient.invalidateQueries({ queryKey: getListBreedingQueryKey(farm.id) });
+    // A mating or a birth changes where the mother stands.
+    void queryClient.invalidateQueries({ queryKey: getGetBreedingCyclesQueryKey(farm.id) });
     void queryClient.invalidateQueries({ queryKey: getListFarmAnimalsQueryKey(farm.id) });
   };
 }
@@ -341,6 +349,148 @@ function RecordCard({ farm, record, canWrite }: { farm: FarmSummary; record: Bre
   );
 }
 
+/** „Brunst gesehen“: the day (today by default) and a note. */
+function HeatDialog({ farm, animal, onClose }: { farm: FarmSummary; animal: CycleAnimal; onClose: () => void }) {
+  const queryClient = useQueryClient();
+  const [observedOn, setObservedOn] = useState(todayIso());
+  const [notes, setNotes] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const add = useAddHeat({
+    mutation: {
+      onSuccess(next: BreedingCycles) {
+        queryClient.setQueryData(getGetBreedingCyclesQueryKey(farm.id), next);
+        onClose();
+      },
+      onError: (err) => setError(errorText(err, "Das hat nicht geklappt.")),
+    },
+  });
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    add.mutate({ farmId: farm.id, data: { animalId: animal.id, observedOn, notes: notes.trim() || null } });
+  }
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <form onSubmit={submit} className="space-y-3">
+          <DialogHeader>
+            <DialogTitle>Brunst bei {animal.name}</DialogTitle>
+            <DialogDescription>{animal.signs}</DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="heat-day">Gesehen am</Label>
+            <Input id="heat-day" type="date" required max={todayIso()} value={observedOn} onChange={(e) => setObservedOn(e.target.value)} />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="heat-notes">Notiz</Label>
+            <Input id="heat-notes" maxLength={300} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="z. B. stark, Bock gesucht" />
+          </div>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          <Button type="submit" className="w-full" disabled={add.isPending}>
+            Eintragen
+          </Button>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+const STATUS_STYLES: Record<CycleAnimal["status"], string> = {
+  pregnant: "text-primary",
+  nursing: "text-sky-700 dark:text-sky-300",
+  resting: "text-amber-700 dark:text-amber-300",
+  open: "text-lime-700 dark:text-lime-300",
+};
+
+/** Brunstkalender and weaning (docs/zucht.md): every female with a cycle, and the young to wean. */
+function Cycles({ farm, canWrite }: { farm: FarmSummary; canWrite: boolean }) {
+  const queryClient = useQueryClient();
+  const cycles = useGetBreedingCycles(farm.id);
+  const [heatFor, setHeatFor] = useState<CycleAnimal | null>(null);
+  const remove = useDeleteHeat({ mutation: { onSuccess: (next) => queryClient.setQueryData(getGetBreedingCyclesQueryKey(farm.id), next) } });
+  const d = cycles.data;
+  if (!d || (d.animals.length === 0 && d.weanings.length === 0)) return null;
+  const today = todayIso();
+  return (
+    <>
+      {d.weanings.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Absetzen</h2>
+          <ul className="space-y-2">
+            {d.weanings.map((w) => (
+              <li key={w.recordId} className="rounded-xl border border-border bg-card p-3 text-sm" data-testid="weaning">
+                <p className="font-semibold">
+                  {w.motherName ?? SPECIES_LABELS[w.species]} · {w.alive} {w.alive === 1 ? "Jungtier" : "Jungtiere"}, geboren {deDay(w.bornOn)}
+                </p>
+                <p className={w.weanOn <= today ? "font-medium text-amber-700 dark:text-amber-300" : "text-muted-foreground"}>
+                  Absetzen am {deDay(w.weanOn)} ({relDay(w.weanOn, today)})
+                </p>
+                <p className="text-xs text-muted-foreground">{w.text}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+      {d.animals.length > 0 && (
+        <section className="space-y-2">
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Brunstkalender</h2>
+          <ul className="space-y-2">
+            {d.animals.map((a) => {
+              const heat = nextHeatText(a, today);
+              return (
+                <li key={a.id} className="rounded-xl border border-border bg-card p-3 text-sm" data-testid="cycle-animal">
+                  <div className="flex items-start gap-2">
+                    <CalendarHeart className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                    <div className="min-w-0 flex-1">
+                      <p className="font-semibold">
+                        {a.name} <span className="text-xs font-normal text-muted-foreground">{SPECIES_LABELS[a.species]}</span>
+                      </p>
+                      <p className={STATUS_STYLES[a.status]}>{cycleStatusText(a)}</p>
+                      {heat && <p className={a.nextHeat && relDay(a.nextHeat, today).match(/^(heute|morgen)$/) ? "font-medium" : "text-muted-foreground"}>{heat}</p>}
+                    </div>
+                    {canWrite && a.status !== "pregnant" && (
+                      <Button size="sm" variant="outline" className="shrink-0" onClick={() => setHeatFor(a)}>
+                        Brunst gesehen
+                      </Button>
+                    )}
+                  </div>
+                  {a.heats.length > 0 && (
+                    <details className="mt-2 text-xs">
+                      <summary className="cursor-pointer text-muted-foreground">Eingetragen ({a.heats.length})</summary>
+                      <ul className="divide-y divide-border pt-1">
+                        {a.heats.map((h) => (
+                          <li key={h.id} className="flex items-center gap-2 py-1.5">
+                            <span className="flex-1">
+                              {deDay(h.observedOn)}
+                              {h.notes && ` · ${h.notes}`}
+                            </span>
+                            {canWrite && (
+                              <button
+                                type="button"
+                                aria-label="Eintrag löschen"
+                                className="text-muted-foreground hover:text-destructive"
+                                onClick={() => window.confirm("Diesen Eintrag löschen?") && remove.mutate({ farmId: farm.id, heatId: h.id })}
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </button>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          <p className="text-xs text-muted-foreground">Aus der zuletzt gesehenen Brunst und der üblichen Zykluslänge – am Vortag kommt ein Push. Durchschnittswerte, jedes Tier ist anders.</p>
+        </section>
+      )}
+      {heatFor && <HeatDialog farm={farm} animal={heatFor} onClose={() => setHeatFor(null)} />}
+    </>
+  );
+}
+
 function Breeding({ farm }: { farm: FarmSummary }) {
   const list = useListBreeding(farm.id);
   const [adding, setAdding] = useState(false);
@@ -372,6 +522,7 @@ function Breeding({ farm }: { farm: FarmSummary }) {
           </ul>
         </section>
       )}
+      <Cycles farm={farm} canWrite={canWrite} />
       {done.length > 0 && (
         <section className="space-y-2">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Abgeschlossen</h2>

@@ -1700,6 +1700,77 @@ paths:
           description: Invalid input.
         "409":
           description: The mother is already pregnant.
+  /farms/{farmId}/breeding/cycles:
+    get:
+      tags: [farm]
+      operationId: getBreedingCycles
+      summary: Brunstkalender and weaning – every female of a species with a cycle, and the young to wean
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Females and weanings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreedingCycles"
+        "404":
+          description: Not found.
+  /farms/{farmId}/breeding/heats:
+    post:
+      tags: [farm]
+      operationId: addHeat
+      summary: A heat seen on a female (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HeatInput"
+      responses:
+        "201":
+          description: Females and weanings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreedingCycles"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/breeding/heats/{heatId}:
+    delete:
+      tags: [farm]
+      operationId: deleteHeat
+      summary: Remove a heat entered by mistake (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: heatId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Females and weanings.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreedingCycles"
+        "404":
+          description: Not found.
   /farms/{farmId}/breeding/{recordId}:
     put:
       tags: [farm]
@@ -6807,6 +6878,87 @@ components:
         archived:
           type: [boolean, 'null']
           description: true marks it used up or thrown away
+    CycleAnimal:
+      type: object
+      required: [id, name, species, status, until, lastHeat, nextHeat, inSeason, season, signs, heats]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        status:
+          type: string
+          enum: [pregnant, nursing, resting, open]
+        until:
+          type: [string, 'null']
+          description: Due day (pregnant), weaning (nursing) or ready to mate (resting).
+        lastHeat:
+          type: [string, 'null']
+        nextHeat:
+          type: [string, 'null']
+          description: From the last heat seen and the cycle; null when too long ago or out of season.
+        inSeason:
+          type: boolean
+        season:
+          type: [string, 'null']
+        signs:
+          type: string
+        heats:
+          type: array
+          description: The last five heats seen.
+          items:
+            type: object
+            required: [id, observedOn, notes]
+            properties:
+              id:
+                type: integer
+              observedOn:
+                type: string
+              notes:
+                type: [string, 'null']
+    Weaning:
+      type: object
+      required: [recordId, species, motherName, bornOn, alive, weanOn, text]
+      properties:
+        recordId:
+          type: integer
+        species:
+          $ref: "#/components/schemas/FarmSpecies"
+        motherName:
+          type: [string, 'null']
+        bornOn:
+          type: string
+        alive:
+          type: integer
+        weanOn:
+          type: string
+        text:
+          type: string
+    BreedingCycles:
+      type: object
+      required: [animals, weanings]
+      properties:
+        animals:
+          type: array
+          items:
+            $ref: "#/components/schemas/CycleAnimal"
+        weanings:
+          type: array
+          items:
+            $ref: "#/components/schemas/Weaning"
+    HeatInput:
+      type: object
+      required: [animalId, observedOn]
+      properties:
+        animalId:
+          type: integer
+        observedOn:
+          type: string
+        notes:
+          type: [string, 'null']
+          maxLength: 300
     BreedingRecord:
       type: object
       required: [id, species, kind, motherId, motherName, fatherId, fatherName, startedOn, durationDays, eggCount, status, endedOn, bornAlive, bornDead, notes, dueOn, earliestOn, latestOn, day, late, steps, warning]

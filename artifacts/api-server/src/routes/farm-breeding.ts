@@ -1,9 +1,13 @@
 import { Router, type IRouter } from 'express';
 import {
+  AddHeatBody,
+  AddHeatResponse,
   CreateBreedingBody,
   CreateBreedingResponse,
+  DeleteHeatResponse,
   EndBreedingBody,
   EndBreedingResponse,
+  GetBreedingCyclesResponse,
   GetLineageResponse,
   ListBreedingResponse,
   SetLineageBody,
@@ -14,6 +18,7 @@ import {
 
 import { requireFarm } from '../middlewares/requireFarm';
 import { createBreeding, deleteBreeding, endBreeding, lineage, listBreeding, setLineage, updateBreeding } from '../lib/breeding';
+import { addHeat, breedingCycles, deleteHeat } from '../lib/breedingCycle';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
 // Zucht: matings, clutches and the parents of the animals. Reading: every
@@ -26,6 +31,35 @@ router.get(
   requireFarm('guest'),
   handle(async (req, res) => {
     res.json(ListBreedingResponse.parse(await listBreeding(req.farm!.farmId)));
+  }),
+);
+
+// Brunstkalender and weaning – before /breeding/:recordId.
+router.get(
+  '/farms/:farmId/breeding/cycles',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(GetBreedingCyclesResponse.parse(await breedingCycles(req.farm!.farmId)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/breeding/heats',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = AddHeatBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.status(201).json(AddHeatResponse.parse(await addHeat(req.farm!.farmId, body.data)));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/breeding/heats/:heatId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const id = idParam(req, 'heatId');
+    if (id === null) return notFound(res);
+    res.json(DeleteHeatResponse.parse(await deleteHeat(req.farm!.farmId, id)));
   }),
 );
 

@@ -385,6 +385,25 @@ export const breedingRecordsTable = pgTable(
   (table) => [index("breeding_records_farm_idx").on(table.farmId)],
 );
 
+// Zucht – Brunstkalender (lib/breedingCycle.ts): a heat seen on a female; the
+// next one is computed from the species' cycle.
+export const heatRecordsTable = pgTable(
+  "heat_records",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    animalId: integer("animal_id")
+      .notNull()
+      .references(() => farmAnimalsTable.id, { onDelete: "cascade" }),
+    observedOn: date("observed_on", { mode: "string" }).notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("heat_records_animal_idx").on(table.animalId, table.observedOn)],
+);
+
 // Ertrag & Bilanz (lib/farmYields.ts): what the animals gave – eggs, milk,
 // meat, wool – one row per entry. The garden's harvests are in harvest_logs.
 export const FARM_PRODUCTS = ["eggs", "milk", "meat", "wool", "honey"] as const;

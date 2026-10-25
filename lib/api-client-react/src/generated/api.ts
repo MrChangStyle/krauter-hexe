@@ -46,6 +46,7 @@ import type {
   BeeInspectionInput,
   BeeOverview,
   BeeTreatmentInput,
+  BreedingCycles,
   BreedingEndInput,
   BreedingEndResult,
   BreedingInput,
@@ -146,6 +147,7 @@ import type {
   HarvestInput,
   HarvestReport,
   HealthStatus,
+  HeatInput,
   HelpfulPlants,
   Herd,
   HerdInput,
@@ -5848,6 +5850,228 @@ export const useCreateBreeding = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getCreateBreedingMutationOptions(options));
+    }
+
+export const getGetBreedingCyclesUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/breeding/cycles`
+}
+
+/**
+ * @summary Brunstkalender and weaning – every female of a species with a cycle, and the young to wean
+ */
+export const getBreedingCycles = async (farmId: number, options?: RequestInit): Promise<BreedingCycles> => {
+
+  return customFetch<BreedingCycles>(getGetBreedingCyclesUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBreedingCyclesQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/breeding/cycles`
+    ] as const;
+    }
+
+
+export const getGetBreedingCyclesQueryOptions = <TData = Awaited<ReturnType<typeof getBreedingCycles>>, TError = ErrorType<void>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBreedingCycles>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBreedingCyclesQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBreedingCycles>>> = ({ signal }) => getBreedingCycles(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBreedingCycles>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBreedingCyclesQueryResult = NonNullable<Awaited<ReturnType<typeof getBreedingCycles>>>
+export type GetBreedingCyclesQueryError = ErrorType<void>
+
+
+/**
+ * @summary Brunstkalender and weaning – every female of a species with a cycle, and the young to wean
+ */
+
+export function useGetBreedingCycles<TData = Awaited<ReturnType<typeof getBreedingCycles>>, TError = ErrorType<void>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBreedingCycles>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBreedingCyclesQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddHeatUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/breeding/heats`
+}
+
+/**
+ * @summary A heat seen on a female (caretaker)
+ */
+export const addHeat = async (farmId: number,
+    heatInput: HeatInput, options?: RequestInit): Promise<BreedingCycles> => {
+
+  return customFetch<BreedingCycles>(getAddHeatUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(heatInput)
+  }
+);}
+
+
+
+
+
+export const getAddHeatMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addHeat>>, TError,{farmId: number;data: BodyType<HeatInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addHeat>>, TError,{farmId: number;data: BodyType<HeatInput>}, TContext> => {
+
+const mutationKey = ['addHeat'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addHeat>>, {farmId: number;data: BodyType<HeatInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  addHeat(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddHeatMutationResult = NonNullable<Awaited<ReturnType<typeof addHeat>>>
+    export type AddHeatMutationBody = BodyType<HeatInput>
+    export type AddHeatMutationError = ErrorType<void>
+
+    /**
+ * @summary A heat seen on a female (caretaker)
+ */
+export const useAddHeat = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addHeat>>, TError,{farmId: number;data: BodyType<HeatInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addHeat>>,
+        TError,
+        {farmId: number;data: BodyType<HeatInput>},
+        TContext
+      > => {
+      return useMutation(getAddHeatMutationOptions(options));
+    }
+
+export const getDeleteHeatUrl = (farmId: number,
+    heatId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/breeding/heats/${heatId}`
+}
+
+/**
+ * @summary Remove a heat entered by mistake (caretaker)
+ */
+export const deleteHeat = async (farmId: number,
+    heatId: number, options?: RequestInit): Promise<BreedingCycles> => {
+
+  return customFetch<BreedingCycles>(getDeleteHeatUrl(farmId,heatId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteHeatMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHeat>>, TError,{farmId: number;heatId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteHeat>>, TError,{farmId: number;heatId: number}, TContext> => {
+
+const mutationKey = ['deleteHeat'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteHeat>>, {farmId: number;heatId: number}> = (props) => {
+          const {farmId,heatId} = props ?? {};
+
+          return  deleteHeat(farmId,heatId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteHeatMutationResult = NonNullable<Awaited<ReturnType<typeof deleteHeat>>>
+
+    export type DeleteHeatMutationError = ErrorType<void>
+
+    /**
+ * @summary Remove a heat entered by mistake (caretaker)
+ */
+export const useDeleteHeat = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteHeat>>, TError,{farmId: number;heatId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteHeat>>,
+        TError,
+        {farmId: number;heatId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteHeatMutationOptions(options));
     }
 
 export const getUpdateBreedingUrl = (farmId: number,

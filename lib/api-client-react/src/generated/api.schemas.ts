@@ -637,6 +637,74 @@ export interface MedicineInput {
   archived?: boolean | null;
 }
 
+export type CycleAnimalStatus = typeof CycleAnimalStatus[keyof typeof CycleAnimalStatus];
+
+
+export const CycleAnimalStatus = {
+  pregnant: 'pregnant',
+  nursing: 'nursing',
+  resting: 'resting',
+  open: 'open',
+} as const;
+
+export type CycleAnimalHeatsItem = {
+  id: number;
+  observedOn: string;
+  /** @nullable */
+  notes: string | null;
+};
+
+export interface CycleAnimal {
+  id: number;
+  name: string;
+  species: FarmSpecies;
+  status: CycleAnimalStatus;
+  /**
+     * Due day (pregnant), weaning (nursing) or ready to mate (resting).
+     * @nullable
+     */
+  until: string | null;
+  /** @nullable */
+  lastHeat: string | null;
+  /**
+     * From the last heat seen and the cycle; null when too long ago or out of season.
+     * @nullable
+     */
+  nextHeat: string | null;
+  inSeason: boolean;
+  /** @nullable */
+  season: string | null;
+  signs: string;
+  /** The last five heats seen. */
+  heats: CycleAnimalHeatsItem[];
+}
+
+export interface Weaning {
+  recordId: number;
+  species: FarmSpecies;
+  /** @nullable */
+  motherName: string | null;
+  bornOn: string;
+  alive: number;
+  weanOn: string;
+  text: string;
+}
+
+export interface BreedingCycles {
+  animals: CycleAnimal[];
+  weanings: Weaning[];
+}
+
+export interface HeatInput {
+  animalId: number;
+  observedOn: string;
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  notes?: string | null;
+}
+
 export type BreedingRecordKind = typeof BreedingRecordKind[keyof typeof BreedingRecordKind];
 
 

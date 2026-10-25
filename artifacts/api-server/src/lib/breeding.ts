@@ -8,10 +8,11 @@
  * Fixed rules, no AI; the numbers are averages (docs/zucht.md).
  */
 
-import { breedingRecordsTable, db, farmAnimalsTable, farmMembershipsTable, farmPushLogTable, type FarmSpecies } from '@workspace/db';
+import { breedingRecordsTable, db, farmAnimalsTable, farmMembershipsTable, farmPushLogTable, heatRecordsTable, type FarmSpecies } from '@workspace/db';
 import { grantedSql } from './farmModules';
 import { and, asc, desc, eq, inArray, lt, or } from 'drizzle-orm';
 
+import { breedingCycles, cycleLines } from './breedingCycle';
 import { FarmDataError, freeNumbers, notFound, text, validDate } from './farmAnimals';
 import { addDays, daysBetween } from './feedSeason';
 import { logger } from './logger';
@@ -530,11 +531,15 @@ export async function setLineage(farmId: number, animalId: number, input: Parent
 
 const PUSH_TIME = '07:30';
 
-/** "Lotte: Nestbox … · Brut (12 Eier): Schieren …", or null when nothing is due today. */
-export function breedingMessage(records: BreedingRecord[], day: string): { title: string; body: string } | null {
+/**
+ * "Lotte: Nestbox … · Brut (12 Eier): Schieren …", or null when nothing is due
+ * today. `extra`: heats and weanings (breedingCycle.ts cycleLines).
+ */
+export function breedingMessage(records: BreedingRecord[], day: string, extra: string[] = []): { title: string; body: string } | null {
   const lines = records
     .filter((r) => r.status === 'running')
-    .flatMap((r) => r.steps.filter((s) => s.on === day).map((s) => `${r.motherName ?? `Brut (${r.eggCount} Eier)`}: ${s.text}`));
+    .flatMap((r) => r.steps.filter((s) => s.on === day).map((s) => `${r.motherName ?? `Brut (${r.eggCount} Eier)`}: ${s.text}`))
+    .concat(extra);
   if (lines.length === 0) return null;
   return { title: lines.length === 1 ? 'Zucht: heute zu tun' : `Zucht: ${lines.length} Dinge heute`, body: lines.join(' · ') };
 }
@@ -543,15 +548,16 @@ export async function sendBreedingDigests(hhmm: string, day: string): Promise<nu
   if (hhmm < PUSH_TIME) return 0;
   let sent = 0;
   try {
+    // Running pregnancies, births (weaning) and heats seen.
     const farms = await db
       .selectDistinct({ farmId: breedingRecordsTable.farmId })
       .from(breedingRecordsTable)
-      .where(eq(breedingRecordsTable.status, 'running'));
+      .union(db.selectDistinct({ farmId: heatRecordsTable.farmId }).from(heatRecordsTable));
     if (farms.length === 0) return 0;
     await db.delete(farmPushLogTable).where(and(eq(farmPushLogTable.topic, 'breeding'), lt(farmPushLogTable.day, addDays(day, -14))));
     for (const { farmId } of farms) {
       try {
-        const message = breedingMessage(await listBreeding(farmId, day), day);
+        const message = breedingMessage(await listBreeding(farmId, day), day, cycleLines(await breedingCycles(farmId, day), day));
         if (!message) continue;
         const claimed = await db.insert(farmPushLogTable).values({ farmId, topic: 'breeding', day }).onConflictDoNothing().returning();
         if (claimed.length === 0) continue;

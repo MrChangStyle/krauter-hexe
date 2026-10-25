@@ -1,4 +1,4 @@
-import type { BreedingRecord, FarmAnimal, FarmSpecies } from "@workspace/api-client-react";
+import type { BreedingRecord, CycleAnimal, FarmAnimal, FarmSpecies } from "@workspace/api-client-react";
 import { deDay } from "@/lib/medicine-labels";
 
 /** Average length per species (as on the server, lib/breeding.ts) – for the form's preview. */
@@ -47,4 +47,37 @@ export function outcomeText(r: Pick<BreedingRecord, "status" | "kind" | "endedOn
   if (r.status === "failed") return `Nicht trächtig oder abgebrochen (${deDay(r.endedOn)})`;
   const what = r.kind === "incubation" ? "Geschlüpft" : "Geboren";
   return `${what} am ${deDay(r.endedOn)}: ${r.bornAlive ?? 0} lebend${r.bornDead ? `, ${r.bornDead} tot` : ""}`;
+}
+
+/** "heute", "morgen", "in 5 Tagen", "seit 3 Tagen" – how far a day is from today. */
+export function relDay(day: string, today: string): string {
+  const diff = Math.round((Date.parse(`${day}T12:00:00Z`) - Date.parse(`${today}T12:00:00Z`)) / 86_400_000);
+  if (diff === 0) return "heute";
+  if (diff === 1) return "morgen";
+  if (diff === -1) return "gestern";
+  return diff > 0 ? `in ${diff} Tagen` : `vor ${-diff} Tagen`;
+}
+
+/** The status line of a female in the Brunstkalender. */
+export function cycleStatusText(a: Pick<CycleAnimal, "status" | "until">): string {
+  switch (a.status) {
+    case "pregnant":
+      return `Tragend – Geburt um den ${deDay(a.until!)}`;
+    case "nursing":
+      return `Säugt – Absetzen am ${deDay(a.until!)}`;
+    case "resting":
+      return `Pause nach der Geburt – wieder decken ab ${deDay(a.until!)}`;
+    default:
+      return "Deckbereit";
+  }
+}
+
+/** When to watch for the next heat, or why the app cannot say. */
+export function nextHeatText(a: Pick<CycleAnimal, "status" | "lastHeat" | "nextHeat" | "inSeason" | "season">, today: string): string | null {
+  if (a.status === "pregnant") return null;
+  if (a.nextHeat === today) return "Brunst heute erwartet";
+  if (a.nextHeat) return `Nächste Brunst um den ${deDay(a.nextHeat)} (${relDay(a.nextHeat, today)})`;
+  if (!a.inSeason && a.season) return `Außerhalb der Brunstsaison (${a.season})`;
+  if (a.lastHeat) return "Letzte Brunst zu lange her – die nächste bitte eintragen.";
+  return "Noch keine Brunst eingetragen.";
 }

@@ -2,7 +2,8 @@
  * Zucht against a REAL Postgres, through the HTTP routes: matings and clutches
  * with their expected day, checks on mother and father, the related-parents
  * warning, the birth creating the young with their parents, the lineage on the
- * animal page, roles and farm isolation, and the push on a step's day.
+ * animal page, roles and farm isolation, and the push on a step's day; the
+ * Brunstkalender (heats, where each female stands) and weaning.
  *
  * Skipped unless TEST_DATABASE_URL equals DATABASE_URL (throwaway database
  * with the schema pushed). Truncates tables – never point it at real data.
@@ -223,5 +224,61 @@ describe.skipIf(!enabled)("Zucht (real database)", () => {
       tag: `breeding-${farmId}-2026-10-27`,
       url: "/farm/zucht",
     });
+  });
+
+  it("keeps a heat calendar for the females and lists the young to wean", async () => {
+    const C = () => `${B()}/cycles`;
+    let d = (await api("GET", C())).data;
+    // Lotte only: the bucks are male, the rabbit has no calendar, Fremd is on another farm.
+    expect(d.animals.map((a: any) => [a.name, a.status, a.inSeason, a.season])).toEqual([["Lotte", "open", true, "August bis Februar"]]);
+    expect(d.weanings).toEqual([]);
+
+    d = (await api("POST", `${B()}/heats`, { animalId: ids["Lotte"], observedOn: "2026-10-10", notes: "meckert viel" })).data;
+    expect(d.animals[0]).toMatchObject({ lastHeat: "2026-10-10", nextHeat: "2026-10-31" });
+    expect(d.animals[0].heats).toEqual([{ id: expect.any(Number), observedOn: "2026-10-10", notes: "meckert viel" }]);
+    for (const [body, error] of [
+      [{ animalId: ids["Max"], observedOn: "2026-10-10" }, "Max ist nicht als weiblich eingetragen."],
+      [{ animalId: ids["Hase"], observedOn: "2026-10-10" }, "Für diese Tierart führt die App keinen Brunstkalender."],
+      [{ animalId: ids["Fremd"], observedOn: "2026-10-10" }, "Dieses Tier gibt es auf der Farm nicht."],
+      [{ animalId: ids["Lotte"], observedOn: "2026-10-20" }, "Das Datum liegt in der Zukunft."],
+    ] as const) {
+      expect((await api("POST", `${B()}/heats`, body)).data.error).toBe(error);
+    }
+
+    // Mated: pregnant until the due day, no heat expected.
+    const r = (await api("POST", B(), { species: "goat", motherId: ids["Lotte"], fatherId: ids["Max"], startedOn: "2026-05-01" })).data;
+    expect((await api("GET", C())).data.animals[0]).toMatchObject({ status: "pregnant", until: "2026-09-28", nextHeat: null });
+    // Born: two kids – nursing until they are weaned after twelve weeks, and on the weaning list.
+    await api("POST", `${B()}/${r.id}/end`, { outcome: "born", date: "2026-09-28", alive: 2, dead: 0, createYoung: false });
+    d = (await api("GET", C())).data;
+    expect(d.animals[0]).toMatchObject({ status: "nursing", until: "2026-12-21" });
+    expect(d.weanings).toEqual([{ recordId: r.id, species: "goat", motherName: "Lotte", bornOn: "2026-09-28", alive: 2, weanOn: "2026-12-21", text: expect.stringMatching(/^Kitze absetzen/) }]);
+    // Two weeks after the day it leaves the list.
+    fixedDay = "2027-01-05";
+    expect((await api("GET", C())).data.weanings).toEqual([]);
+
+    // Guests read; a heat goes again; farms stay apart.
+    const heatId = d.animals[0].heats[0].id;
+    as = "gina";
+    expect((await api("GET", C())).status).toBe(200);
+    expect((await api("DELETE", `${B()}/heats/${heatId}`)).status).toBe(403);
+    as = "bert";
+    expect((await api("DELETE", `/farms/${otherFarm}/breeding/heats/${heatId}`)).status).toBe(404);
+    as = "anna";
+    expect((await api("DELETE", `${B()}/heats/${heatId}`)).data.animals[0].heats).toEqual([]);
+  });
+
+  it("pushes a heat the day before and a weaning on its day", async () => {
+    const { sendBreedingDigests } = await import("./breeding");
+    await api("POST", `${B()}/heats`, { animalId: ids["Lotte"], observedOn: "2026-10-10" });
+    expect(await sendBreedingDigests("08:00", "2026-10-29")).toBe(0);
+    expect(await sendBreedingDigests("08:00", "2026-10-30")).toBe(1);
+    expect((sendPushToUser.mock.calls[0]![1] as any).body).toBe("Lotte: Brunst ab morgen erwartet – beobachten.");
+    // A rabbit litter born on 1 September is weaned on 27 October.
+    const r = (await api("POST", B(), { species: "rabbit", motherId: ids["Hase"], startedOn: "2026-08-01" })).data;
+    await api("POST", `${B()}/${r.id}/end`, { outcome: "born", date: "2026-09-01", alive: 6, dead: 0 });
+    await q("DELETE FROM heat_records");
+    expect(await sendBreedingDigests("08:00", "2026-10-27")).toBe(1);
+    expect((sendPushToUser.mock.calls.at(-1)![1] as any).body).toBe("Hase: Jungtiere absetzen – frühestens mit acht Wochen.");
   });
 });

@@ -173,7 +173,8 @@ Details in `docs/zucht.md` (`lib/breeding.ts`, `routes/farm-breeding.ts`, page `
 - A record is a mating or a clutch (poultry: eggs, optional broody hen) with start day and length; expected day, range and steps come from `BREEDING` per species and are not stored. Statuses: running, born, failed.
 - The birth can create the young (`freeNumbers` from `farmAnimals.ts`, also used by the quick start) with birth date, parents and the mother's group.
 - Parents live on the animal; `relation()` warns when mother and father are related, without blocking. The lineage endpoint and card show the parents and young, and let caretakers set the parents by hand (no cycles).
-- `sendBreedingDigests()` (push cron, 07:30) pushes the day's steps once per farm (`farm_push_log`, topic `breeding`) to admins and caretakers.
+- `sendBreedingDigests()` (push cron, 07:30) pushes the day's steps once per farm (`farm_push_log`, topic `breeding`) to admins and caretakers – plus heats expected tomorrow and weanings due today.
+- Brunstkalender and weaning (`lib/breedingCycle.ts`, table `heat_records`): `CYCLES` (cycle, heat length, season, rest after birth/weaning) and `WEANING` per species; `GET /breeding/cycles` gives every female's state (pregnant/nursing/resting/open) and next heat, and the young to wean; heats via `POST/DELETE /breeding/heats` (routes before `/breeding/:recordId`).
 
 ## Saatgut
 

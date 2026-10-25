@@ -3,18 +3,21 @@
  * herd grazed where, from when to when, with how many animals. From it: is a
  * pasture grazed, resting (until when) or ready, how many grazing days and
  * animal days per hectare it had this year, and when a herd should move on.
- * Fixed rules, no AI.
+ * Schnitt and Parasiten come from pastureCare.ts. Fixed rules, no AI.
  */
 
 import {
+  FARM_SPECIES,
   PASTURE_KINDS,
   db,
   farmAnimalsTable,
   farmMembershipsTable,
   farmPushLogTable,
   herdsTable,
+  pastureCutsTable,
   pastureGrazingsTable,
   pasturesTable,
+  type FarmSpecies,
   type PastureBoundary,
   type PastureKind,
 } from '@workspace/db';
@@ -22,10 +25,11 @@ import { and, asc, desc, eq, inArray, isNull, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
 import { grantedSql } from './farmModules';
-import { farmLocation } from './farmWeather';
+import { farmLocation, forecast, type DayForecast } from './farmWeather';
 import { addDays } from './feedSeason';
 import { logger } from './logger';
 import { berlinDay } from './monitoring';
+import { careHints, mowPlan, mowPushLine, type Cut } from './pastureCare';
 import { sendPushToUser } from './webPush';
 
 export const PASTURE_PUSH_TIME = '07:30';
@@ -37,6 +41,7 @@ export interface Grazing {
   pastureId: number;
   herdId: number | null;
   label: string;
+  species: FarmSpecies | null;
   animals: number;
   startOn: string;
   endOn: string | null;
@@ -46,6 +51,7 @@ export interface Grazing {
 export interface PastureFacts {
   id: number;
   name: string;
+  kind: PastureKind;
   restDays: number;
   maxGrazeDays: number;
   areaHa: number | null;
@@ -112,7 +118,7 @@ export function pastureHints(p: PastureFacts, grazings: Grazing[], today: string
 }
 
 /** The morning push: only on the day something comes due. */
-export function pushLines(pastures: PastureFacts[], grazings: Grazing[], today: string): string[] {
+export function pushLines(pastures: PastureFacts[], grazings: Grazing[], today: string, cuts: Cut[] = []): string[] {
   const lines: string[] = [];
   for (const p of pastures) {
     const state = pastureState(p, grazings, today);
@@ -120,17 +126,28 @@ export function pushLines(pastures: PastureFacts[], grazings: Grazing[], today: 
       lines.push(`${state.current.label} seit ${p.maxGrazeDays} Tagen auf ${p.name} – umtreiben?`);
     }
     if (!state.current && state.readyOn === today) lines.push(`${p.name} ist wieder bereit`);
+    const mow = mowPushLine(p, state.current !== null, grazings, cuts, today);
+    if (mow) lines.push(mow);
   }
   return lines;
 }
 
 // ── Database ──────────────────────────────────────────────────────────────────
 
+const cutColumns = {
+  id: pastureCutsTable.id,
+  pastureId: pastureCutsTable.pastureId,
+  cutOn: pastureCutsTable.cutOn,
+  bales: pastureCutsTable.bales,
+  notes: pastureCutsTable.notes,
+};
+
 const grazingColumns = {
   id: pastureGrazingsTable.id,
   pastureId: pastureGrazingsTable.pastureId,
   herdId: pastureGrazingsTable.herdId,
   label: pastureGrazingsTable.label,
+  species: pastureGrazingsTable.species,
   animals: pastureGrazingsTable.animals,
   startOn: pastureGrazingsTable.startOn,
   endOn: pastureGrazingsTable.endOn,
@@ -187,9 +204,10 @@ export function validBoundary(raw: unknown): PastureBoundary | null {
 }
 
 export async function pastureOverview(farmId: number, today = berlinDay()) {
-  const [pastures, grazings, herds, location] = await Promise.all([
+  const [pastures, grazings, cuts, herds, location] = await Promise.all([
     db.select().from(pasturesTable).where(eq(pasturesTable.farmId, farmId)).orderBy(asc(pasturesTable.name)),
     db.select(grazingColumns).from(pastureGrazingsTable).where(eq(pastureGrazingsTable.farmId, farmId)).orderBy(desc(pastureGrazingsTable.startOn), desc(pastureGrazingsTable.id)),
+    db.select(cutColumns).from(pastureCutsTable).where(eq(pastureCutsTable.farmId, farmId)).orderBy(desc(pastureCutsTable.cutOn), desc(pastureCutsTable.id)),
     db
       .select({ id: herdsTable.id, name: herdsTable.name, species: herdsTable.species, animals: sql<number>`count(${farmAnimalsTable.id})::int` })
       .from(herdsTable)
@@ -200,8 +218,15 @@ export async function pastureOverview(farmId: number, today = berlinDay()) {
     farmLocation(farmId),
   ]);
   const year = Number(today.slice(0, 4));
+  // The forecast only when a cut is due – for the hay weather.
+  const mowDue = pastures.some((p) => {
+    const plan = !p.archivedAt && mowPlan(p.kind, p.id, grazings, cuts, today);
+    return plan && plan.nextCutOn <= today && !pastureState(p, grazings, today).current;
+  });
+  const days: DayForecast[] = mowDue && location ? await forecast(location.latitude, location.longitude, today) : [];
   const list = pastures.map((p) => {
     const state = pastureState(p, grazings, today);
+    const plan = mowPlan(p.kind, p.id, grazings, cuts, today);
     return {
       id: p.id,
       name: p.name,
@@ -217,7 +242,10 @@ export async function pastureOverview(farmId: number, today = berlinDay()) {
       readyOn: state.readyOn,
       ...yearUse(p, grazings, year, today),
       grazings: grazings.filter((g) => g.pastureId === p.id).slice(0, 10),
-      hints: p.archivedAt ? [] : pastureHints(p, grazings, today),
+      cuts: cuts.filter((c) => c.pastureId === p.id).slice(0, 10),
+      nextCutOn: p.archivedAt ? null : (plan?.nextCutOn ?? null),
+      cutsThisYear: cuts.filter((c) => c.pastureId === p.id && c.cutOn.startsWith(String(year))).length,
+      hints: p.archivedAt ? [] : [...pastureHints(p, grazings, today), ...careHints(p, state.current, grazings, cuts, today, days)],
     };
   });
   const center = location ? { latitude: location.latitude, longitude: location.longitude } : null;
@@ -282,6 +310,8 @@ export async function deletePasture(farmId: number, pastureId: number): Promise<
 export interface GrazingInput {
   herdId?: number | null;
   label?: unknown;
+  /** For other animals; a herd brings its own. */
+  species?: FarmSpecies | null;
   animals: number;
   startOn: unknown;
   /** Umtreiben: the grazing this herd leaves, ended the day before it arrives here. */
@@ -305,11 +335,14 @@ export async function startGrazing(farmId: number, pastureId: number, input: Gra
   const startOn = validDate(input.startOn, 'Datum');
   if (!Number.isInteger(input.animals) || input.animals < 1 || input.animals > 100_000) throw new FarmDataError(400, 'Die Zahl der Tiere ist ungültig.');
   let label = text(input.label, 60, 'Der Name');
+  let species = input.species ?? null;
+  if (species !== null && !(FARM_SPECIES as readonly string[]).includes(species)) throw new FarmDataError(400, 'Diese Tierart gibt es nicht.');
   const herdId = input.herdId ?? null;
   if (herdId !== null) {
-    const [herd] = await db.select({ name: herdsTable.name }).from(herdsTable).where(and(eq(herdsTable.id, herdId), eq(herdsTable.farmId, farmId)));
+    const [herd] = await db.select({ name: herdsTable.name, species: herdsTable.species }).from(herdsTable).where(and(eq(herdsTable.id, herdId), eq(herdsTable.farmId, farmId)));
     if (!herd) throw new FarmDataError(400, 'Diese Gruppe gibt es auf der Farm nicht.');
     label = herd.name;
+    species = herd.species;
   }
   if (!label) throw new FarmDataError(400, 'Bitte wähle eine Gruppe oder gib einen Namen an.');
   if (input.fromGrazingId != null) {
@@ -319,7 +352,7 @@ export async function startGrazing(farmId: number, pastureId: number, input: Gra
     if (startOn < from.startOn) throw new FarmDataError(400, 'Das Datum liegt vor dem Auftrieb auf der alten Weide.');
     await db.update(pastureGrazingsTable).set({ endOn: startOn > from.startOn ? addDays(startOn, -1) : startOn }).where(eq(pastureGrazingsTable.id, from.id));
   }
-  await db.insert(pastureGrazingsTable).values({ farmId, pastureId, herdId, label, animals: input.animals, startOn, notes: text(input.notes, 300, 'Die Notiz') });
+  await db.insert(pastureGrazingsTable).values({ farmId, pastureId, herdId, label, species, animals: input.animals, startOn, notes: text(input.notes, 300, 'Die Notiz') });
 }
 
 /** Abtreiben: the last day on the pasture. */
@@ -335,13 +368,39 @@ export async function deleteGrazing(farmId: number, grazingId: number): Promise<
   await db.delete(pastureGrazingsTable).where(eq(pastureGrazingsTable.id, grazingId));
 }
 
+// ── Schnitt ──────────────────────────────────────────────────────────────────
+
+export interface CutInput {
+  cutOn: unknown;
+  bales?: number | null;
+  notes?: unknown;
+}
+
+/** Gemäht: a cut on any pasture – the plan for Mähweide and Wiese, Weidepflege on the others. */
+export async function addCut(farmId: number, pastureId: number, input: CutInput): Promise<void> {
+  const pasture = await pastureOf(farmId, pastureId);
+  if (pasture.archivedAt) throw new FarmDataError(400, 'Diese Weide wird nicht mehr genutzt.');
+  const cutOn = validDate(input.cutOn, 'Datum');
+  const bales = input.bales ?? null;
+  if (bales !== null && (!Number.isInteger(bales) || bales < 0 || bales > 100_000)) throw new FarmDataError(400, 'Die Zahl der Ballen ist ungültig.');
+  await db.insert(pastureCutsTable).values({ farmId, pastureId, cutOn, bales, notes: text(input.notes, 300, 'Die Notiz') });
+}
+
+export async function deleteCut(farmId: number, cutId: number): Promise<void> {
+  const [gone] = await db
+    .delete(pastureCutsTable)
+    .where(and(eq(pastureCutsTable.id, cutId), eq(pastureCutsTable.farmId, farmId)))
+    .returning({ id: pastureCutsTable.id });
+  if (!gone) throw notFound();
+}
+
 // ── Morning push ─────────────────────────────────────────────────────────────
 
 export async function sendPastureDigests(hhmm: string, day: string): Promise<number> {
   if (hhmm < PASTURE_PUSH_TIME) return 0;
   let sent = 0;
   try {
-    const farms = await db.selectDistinct({ farmId: pastureGrazingsTable.farmId }).from(pastureGrazingsTable);
+    const farms = await db.selectDistinct({ farmId: pasturesTable.farmId }).from(pasturesTable).where(isNull(pasturesTable.archivedAt));
     if (farms.length === 0) return 0;
     await db.delete(farmPushLogTable).where(and(eq(farmPushLogTable.topic, 'pasture'), lt(farmPushLogTable.day, addDays(day, -14))));
     const done = new Set(
@@ -349,11 +408,12 @@ export async function sendPastureDigests(hhmm: string, day: string): Promise<num
     );
     for (const { farmId } of farms.filter((f) => !done.has(f.farmId))) {
       try {
-        const [pastures, grazings] = await Promise.all([
+        const [pastures, grazings, cuts] = await Promise.all([
           db.select().from(pasturesTable).where(and(eq(pasturesTable.farmId, farmId), isNull(pasturesTable.archivedAt))),
           db.select(grazingColumns).from(pastureGrazingsTable).where(eq(pastureGrazingsTable.farmId, farmId)),
+          db.select(cutColumns).from(pastureCutsTable).where(eq(pastureCutsTable.farmId, farmId)),
         ]);
-        const lines = pushLines(pastures, grazings, day);
+        const lines = pushLines(pastures, grazings, day, cuts);
         if (lines.length === 0) continue;
         const claimed = await db.insert(farmPushLogTable).values({ farmId, topic: 'pasture', day }).onConflictDoNothing().returning();
         if (claimed.length === 0) continue;

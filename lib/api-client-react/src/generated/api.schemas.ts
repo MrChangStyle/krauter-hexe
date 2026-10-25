@@ -1252,6 +1252,8 @@ export interface Grazing {
   /** @nullable */
   herdId: number | null;
   label: string;
+  /** The animals that grazed – for the parasite hints; null when unknown. */
+  species: null | FarmSpecies;
   animals: number;
   startOn: string;
   /**
@@ -1269,6 +1271,8 @@ export type PastureHintKind = typeof PastureHintKind[keyof typeof PastureHintKin
 export const PastureHintKind = {
   'too-long': 'too-long',
   early: 'early',
+  mow: 'mow',
+  parasite: 'parasite',
 } as const;
 
 export interface PastureHint {
@@ -1286,6 +1290,16 @@ export interface PastureHint {
  * @items.maxItems 2
  */
 export type PastureBoundary = number[][];
+
+export interface PastureCut {
+  id: number;
+  pastureId: number;
+  cutOn: string;
+  /** @nullable */
+  bales: number | null;
+  /** @nullable */
+  notes: string | null;
+}
 
 export interface Pasture {
   id: number;
@@ -1314,7 +1328,29 @@ export interface Pasture {
   animalDaysPerHa: number | null;
   /** The last ten entries of the diary. */
   grazings: Grazing[];
+  /** The last ten cuts. */
+  cuts: PastureCut[];
+  /**
+     * Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.
+     * @nullable
+     */
+  nextCutOn: string | null;
+  cutsThisYear: number;
   hints: PastureHint[];
+}
+
+export interface PastureCutInput {
+  cutOn: string;
+  /**
+     * @minimum 0
+     * @nullable
+     */
+  bales?: number | null;
+  /**
+     * @maxLength 300
+     * @nullable
+     */
+  notes?: string | null;
 }
 
 export interface PastureHerd {
@@ -1369,6 +1405,8 @@ export interface GrazingInput {
      * @nullable
      */
   label?: string | null;
+  /** For other animals; a herd brings its own. */
+  species?: null | FarmSpecies;
   animals: number;
   startOn: string;
   /**

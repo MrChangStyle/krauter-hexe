@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { FarmSpecies } from './farmSpecies';
 
 export interface Grazing {
   id: number;
@@ -12,6 +13,8 @@ export interface Grazing {
   /** @nullable */
   herdId: number | null;
   label: string;
+  /** The animals that grazed – for the parasite hints; null when unknown. */
+  species: null | FarmSpecies;
   animals: number;
   startOn: string;
   /**

@@ -2934,6 +2934,64 @@ paths:
           description: Invalid input.
         "404":
           description: Not found.
+  /farms/{farmId}/pastures/{pastureId}/cuts:
+    post:
+      tags: [farm]
+      operationId: addPastureCut
+      summary: Gemäht – a cut on a pasture (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: pastureId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PastureCutInput"
+      responses:
+        "201":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "400":
+          description: Invalid input.
+        "404":
+          description: Not found.
+  /farms/{farmId}/pasture-cuts/{cutId}:
+    delete:
+      tags: [farm]
+      operationId: deletePastureCut
+      summary: Delete a cut (caretaker)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: cutId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The pastures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PastureOverview"
+        "404":
+          description: Not found.
   /farms/{farmId}/grazings/{grazingId}/end:
     put:
       tags: [farm]
@@ -7704,7 +7762,7 @@ components:
       enum: [grazed, resting, ready]
     Grazing:
       type: object
-      required: [id, pastureId, herdId, label, animals, startOn, endOn, notes]
+      required: [id, pastureId, herdId, label, species, animals, startOn, endOn, notes]
       properties:
         id:
           type: integer
@@ -7714,6 +7772,11 @@ components:
           type: [integer, 'null']
         label:
           type: string
+        species:
+          description: The animals that grazed – for the parasite hints; null when unknown.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/FarmSpecies"
         animals:
           type: integer
         startOn:
@@ -7729,7 +7792,7 @@ components:
       properties:
         kind:
           type: string
-          enum: [too-long, early]
+          enum: [too-long, early, mow, parasite]
         pastureId:
           type: integer
         urgent:
@@ -7738,7 +7801,7 @@ components:
           type: string
     Pasture:
       type: object
-      required: [id, name, kind, areaHa, boundary, restDays, maxGrazeDays, notes, archived, status, current, readyOn, grazingDays, animalDays, animalDaysPerHa, grazings, hints]
+      required: [id, name, kind, areaHa, boundary, restDays, maxGrazeDays, notes, archived, status, current, readyOn, grazingDays, animalDays, animalDaysPerHa, grazings, cuts, nextCutOn, cutsThisYear, hints]
       properties:
         id:
           type: integer
@@ -7782,10 +7845,46 @@ components:
           description: The last ten entries of the diary.
           items:
             $ref: "#/components/schemas/Grazing"
+        cuts:
+          type: array
+          description: The last ten cuts.
+          items:
+            $ref: "#/components/schemas/PastureCut"
+        nextCutOn:
+          type: [string, 'null']
+          description: Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.
+        cutsThisYear:
+          type: integer
         hints:
           type: array
           items:
             $ref: "#/components/schemas/PastureHint"
+    PastureCut:
+      type: object
+      required: [id, pastureId, cutOn, bales, notes]
+      properties:
+        id:
+          type: integer
+        pastureId:
+          type: integer
+        cutOn:
+          type: string
+        bales:
+          type: [integer, 'null']
+        notes:
+          type: [string, 'null']
+    PastureCutInput:
+      type: object
+      required: [cutOn]
+      properties:
+        cutOn:
+          type: string
+        bales:
+          type: [integer, 'null']
+          minimum: 0
+        notes:
+          type: [string, 'null']
+          maxLength: 300
     PastureHerd:
       type: object
       required: [id, name, species, animals]
@@ -7872,6 +7971,11 @@ components:
         label:
           type: [string, 'null']
           maxLength: 60
+        species:
+          description: For other animals; a herd brings its own.
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/FarmSpecies"
         animals:
           type: integer
         startOn:

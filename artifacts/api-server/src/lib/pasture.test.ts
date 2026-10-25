@@ -7,9 +7,9 @@ vi.hoisted(() => {
 const { boundaryAreaHa, pastureHints, pastureState, pushLines, validBoundary, yearUse } = await import("./pasture");
 type G = Parameters<typeof pastureState>[1][number];
 
-const p = { id: 1, name: "Obere Weide", restDays: 30, maxGrazeDays: 10, areaHa: 2 };
+const p = { id: 1, name: "Obere Weide", kind: "pasture" as const, restDays: 30, maxGrazeDays: 10, areaHa: 2 };
 let gid = 0;
-const g = (startOn: string, endOn: string | null, o: Partial<G> = {}): G => ({ id: ++gid, pastureId: 1, herdId: 1, label: "Schafe", animals: 10, startOn, endOn, notes: null, ...o });
+const g = (startOn: string, endOn: string | null, o: Partial<G> = {}): G => ({ id: ++gid, pastureId: 1, herdId: 1, label: "Schafe", species: "sheep", animals: 10, startOn, endOn, notes: null, ...o });
 
 describe("pastureState", () => {
   it("is grazed, resting until the grass is back, then ready", () => {

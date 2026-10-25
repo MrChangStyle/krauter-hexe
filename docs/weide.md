@@ -1,6 +1,6 @@
 # Weide
 
-Das Modul „Weide“ (Bereich Tiere, Freigabe `pasture`) führt die Weideflächen und ein Weidetagebuch: welche Herde wann wo stand und wann eine Fläche wieder bereit ist. Man erreicht es über die Kachel „Weide“ auf der Tiere-Seite (`/farm/weide`) oder über die Suche. Feste Regeln, keine KI (`lib/pasture.ts`).
+Das Modul „Weide“ (Bereich Tiere, Freigabe `pasture`) führt die Weideflächen und ein Weidetagebuch: welche Herde wann wo stand, wann eine Fläche wieder bereit ist, wann gemäht wird und wo Wurmlarven von früheren Weidegängen drohen. Man erreicht es über die Kachel „Weide“ auf der Tiere-Seite (`/farm/weide`) oder über die Suche. Feste Regeln, keine KI (`lib/pasture.ts`, Schnitt und Parasiten in `lib/pastureCare.ts`).
 
 ## Weiden
 
@@ -27,10 +27,38 @@ Das Modul „Weide“ (Bereich Tiere, Freigabe `pasture`) führt die Weidefläch
 
 ## Weidetagebuch
 
-- **Auftreiben:** Gruppe des Hofs (die Zahl ihrer Tiere ist vorbelegt) oder „andere Tiere“ mit Namen, Anzahl und Datum.
+- **Auftreiben:** Gruppe des Hofs (die Zahl ihrer Tiere ist vorbelegt) oder „andere Tiere“ mit Namen, Anzahl, Datum und optional der Tierart. Die Tierart steht am Eintrag (`pasture_grazings.species`): von der Gruppe übernommen, bei anderen Tieren wie gewählt, sonst leer.
 - **Umtreiben:** auf eine andere Weide (bereite zuerst vorgeschlagen). Der alte Eintrag endet am Tag davor.
 - **Abtreiben:** der letzte Tag auf der Weide.
 - Einträge lassen sich löschen. Der Name der Gruppe bleibt im Tagebuch, auch wenn die Gruppe später gelöscht wird.
+
+## Schnitt
+
+- **Gemäht** gibt es an jeder Weide: Datum, optional Ballen und Notiz (Heu, Silage, nachgemäht nach dem Beweiden). Die letzten zehn Schnitte stehen unter „Schnitte“ und lassen sich löschen.
+- **Nächster Schnitt** nur bei Mähweide und Wiese (Richtwerte, `MOW_RULES`):
+
+  | Nutzung | erster Schnitt ab | danach | letzter bis |
+  |---|---|---|---|
+  | Mähweide | 15.05. | alle 42 Tage | 30.09. |
+  | Wiese | 15.06. | alle 56 Tage | 30.09. |
+
+  Gezählt wird ab dem letzten Schnitt oder dem Ende des letzten Weidegangs des Jahres, je nachdem, was später war. Nach dem 30.09. (oder wenn der nächste Schnitt danach läge) gilt der erste Termin des nächsten Jahres. Die Karte zeigt „N Schnitte dieses Jahr · nächster ab …“.
+- **Hinweis „Schnitt fällig“**, solange keine Herde draufsteht; dringend 21 Tage nach dem Termin („das Gras wird jetzt holzig“).
+- **Heuwetter:** Ist ein Schnitt fällig und der Standort des Hofs bekannt, schaut die App in die Vorhersage (Bright Sky, wie das Hof-Wetter): die ersten 3 Tage am Stück mit weniger als 1 mm Regen („Heuwetter: ab 27.10. 3 trockene Tage“) – oder dass keine kommen (für Silage reicht ein trockener Tag). Die Vorhersage wird nur geladen, wenn ein Schnitt fällig ist.
+
+## Parasiten
+
+Steht eine Herde auf einer Weide, auf der vor Kurzem schon Tiere derselben Gruppe standen, kommt ein Hinweis (`parasiteHint`): Deren Wurmlarven oder -eier können noch im Gras sein. Ziegen und Schafe zählen als eine Gruppe, weil sie dieselben Würmer teilen; Rinder, Pferde, Schweine und Geflügel jeweils für sich. Wie lange das zählt (Richtwerte, `PARASITE_RULES`):
+
+| Gruppe | Zeitraum | Hinweis |
+|---|---|---|
+| Ziegen, Schafe | 90 Tage | Magen-Darm-Würmer (u. a. Roter Magenwurm); Kotprobe in 3–4 Wochen, Wechselweide mit Rindern oder Pferden, nachmähen. Juli bis September: „Im Spätsommer ist der Wurmdruck am höchsten.“ |
+| Rinder | 90 Tage | Magen-Darm-Würmer und Lungenwurm; Jungrinder im ersten Weidejahr beobachten, Kotprobe, Wechselweide. |
+| Pferde | 60 Tage | kleine Strongyliden; Äpfel 1–2× pro Woche absammeln, Kotprobe vor dem Entwurmen. |
+| Schweine | 365 Tage | Spulwurm-Eier überdauern Jahre im Boden; Auslauf wechseln, Kotprobe. |
+| Geflügel | 90 Tage | Spulwurm-Eier und Kokzidien; Auslauf teilen und abwechselnd ruhen lassen. |
+
+Ohne Tierart (andere Tiere ohne Angabe, ältere Einträge ohne Gruppe) gibt es keinen Hinweis. Die App rät nie zu einem Mittel – entwurmt wird nach Kotprobe und mit dem Tierarzt.
 
 ## Hinweise und Push
 
@@ -38,20 +66,26 @@ Das Modul „Weide“ (Bereich Tiere, Freigabe `pasture`) führt die Weidefläch
 - **Zu früh beweidet:** Beginnt ein Weidegang, bevor die Ruhezeit um ist, gibt es einen Hinweis.
 - **Push** (Thema „Weide“, ab 7:30 Uhr) nur an dem Tag, an dem es fällig wird:
   - die Herde steht genau die längste Weidedauer,
-  - eine Weide ist wieder bereit.
+  - eine Weide ist wieder bereit,
+  - an einer Mähweide oder Wiese ist der nächste Schnitt fällig („Talwiese: Schnitt fällig“).
 
   Er kommt einmal je Hof und Tag (`farm_push_log`, Thema `pasture`) an Admins und Mitarbeiter mit der Freigabe.
 
 ## Technik
 
-- **Tabellen** (`lib/db/src/schema/pasture.ts`): `pastures` und `pasture_grazings`. Die DDL steht in `pastureSchemaStatements.ts`. Der Umriss liegt in `pastures.boundary` (jsonb, Ecken als `[Breite, Länge]`); für bestehende Datenbanken ergänzt `schemaUpgrade.ts` die Spalte.
+- **Tabellen** (`lib/db/src/schema/pasture.ts`): `pastures`, `pasture_grazings` und `pasture_cuts`. Die DDL steht in `pastureSchemaStatements.ts`. Der Umriss liegt in `pastures.boundary` (jsonb, Ecken als `[Breite, Länge]`). Für bestehende Datenbanken ergänzt `schemaUpgrade.ts` die Spalten `boundary` und `pasture_grazings.species` und übernimmt bei alten Einträgen die Tierart der Gruppe.
 - **API:**
   - `GET/POST /api/farms/:farmId/pastures`, `PUT/DELETE /pastures/:pastureId`,
   - `POST /pastures/:pastureId/grazings` (mit `fromGrazingId` = umtreiben),
-  - `PUT /grazings/:grazingId/end`, `DELETE /grazings/:grazingId`.
+  - `PUT /grazings/:grazingId/end`, `DELETE /grazings/:grazingId`,
+  - `POST /pastures/:pastureId/cuts` (gemäht, `cutOn`, `bales`, `notes`), `DELETE /pasture-cuts/:cutId`.
   - Jede Änderung antwortet mit allen Weiden, den Gruppen samt Tierzahl und `center` (Standort des Hofs für die Karte).
   - `boundary` im Body: weglassen behält den Umriss, `null` entfernt ihn.
 - **Suche:** genutzte Weiden nach Name.
-- **Demo-Hof:** zwei Weiden, nebeneinander eingezeichnet (irgendwo in Thüringen); die Ziegen sind von der Obstwiese auf die Hangweide umgetrieben.
-- **Tests:** `pasture.test.ts` (Status, Jahresnutzung, Hinweise, Push, Fläche und Prüfung des Umrisses), `pasture.integration.test.ts` (Auf-, Um-, Abtreiben, Prüfungen, Rechte, Freigabe, Push, Umriss) und in der App `lib/pasture-map.test.ts`.
-- **Später denkbar:** Luftbild statt Straßenkarte (braucht einen Anbieter mit passender Lizenz), Weide-Parasiten-Hinweise je Tierart, Mähtermine für Mähweiden.
+- **Demo-Hof:** zwei Weiden, nebeneinander eingezeichnet (irgendwo in Thüringen); die Ziegen sind von der Obstwiese auf die Hangweide umgetrieben, auf der sie vor gut zwei Monaten schon standen (Wurm-Hinweis). Dazu die Talwiese (Wiese, 0,6 ha), vor 45 Tagen gemäht, 18 Ballen; die Obstwiese ist nach dem Beweiden nachgemäht.
+- **Tests:** `pasture.test.ts` (Status, Jahresnutzung, Hinweise, Push, Fläche und Prüfung des Umrisses), `pastureCare.test.ts` (Schnittplan, Heuwetter, Schnitt- und Wurm-Hinweise, Push), `pasture.integration.test.ts` (Auf-, Um-, Abtreiben, Prüfungen, Rechte, Freigabe, Push, Umriss, Schnitte, Tierart) und in der App `lib/pasture-map.test.ts`.
+- **Später denkbar:** Luftbild statt Straßenkarte (braucht einen Anbieter mit passender Lizenz), Schnitttermine je Region oder Höhenlage, Kotproben-Ergebnisse an der Weide.
+
+## Offen
+
+- Fachliche Prüfung der Richtwerte: Schnitttermine und Abstände (`MOW_RULES`, 21 Tage bis „holzig“), Heuwetter (3 Tage unter 1 mm), die Zeiträume und Texte der Wurm-Hinweise (`PARASITE_RULES`), Ruhezeit 35 und Weidedauer 10 Tage.

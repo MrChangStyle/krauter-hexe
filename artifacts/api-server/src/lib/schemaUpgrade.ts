@@ -65,6 +65,10 @@ const STATEMENTS = [
   ...PASTURE_SCHEMA_STATEMENTS,
   // Weidekarte: the outline came after the Weide tables.
   `ALTER TABLE "pastures" ADD COLUMN IF NOT EXISTS "boundary" jsonb`,
+  // Parasite hints: the species on a grazing came later; older entries take
+  // it from their herd.
+  `ALTER TABLE "pasture_grazings" ADD COLUMN IF NOT EXISTS "species" "farm_species"`,
+  `UPDATE "pasture_grazings" g SET "species" = h."species" FROM "herds" h WHERE g."herd_id" = h."id" AND g."species" IS NULL`,
   // Module and first-start assistant (schema/settings.ts).
   `CREATE TABLE IF NOT EXISTS "user_settings" (
 	"user_id" text PRIMARY KEY NOT NULL,

@@ -23,7 +23,7 @@ const testUrl = process.env["TEST_DATABASE_URL"];
 const enabled =
   !!testUrl && testUrl === (process.env["NEON_DATABASE_URL"] ?? process.env["DATABASE_URL"]);
 
-const MODULE_TABLES = ["herds", "farm_tasks", "feed_stocks", "breeding_records", "heat_records", "medicines", "farm_yields", "cameras", "garden_beds", "bed_plantings", "seeds", "farm_contacts", "bee_colonies", "bee_inspections", "pantry_items", "pastures", "pasture_grazings", "weight_logs", "harvest_logs", "bee_treatments"];
+const MODULE_TABLES = ["herds", "farm_tasks", "feed_stocks", "breeding_records", "heat_records", "medicines", "farm_yields", "cameras", "garden_beds", "bed_plantings", "seeds", "farm_contacts", "bee_colonies", "bee_inspections", "pantry_items", "pastures", "pasture_grazings", "pasture_cuts", "weight_logs", "harvest_logs", "bee_treatments"];
 
 describe.skipIf(!enabled)("Demo-Daten (real database)", () => {
   let server: Server;

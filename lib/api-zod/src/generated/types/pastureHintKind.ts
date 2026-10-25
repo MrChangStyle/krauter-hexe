@@ -12,4 +12,6 @@ export type PastureHintKind = typeof PastureHintKind[keyof typeof PastureHintKin
 export const PastureHintKind = {
   'too-long': 'too-long',
   early: 'early',
+  mow: 'mow',
+  parasite: 'parasite',
 } as const;

@@ -15,7 +15,7 @@ import { addFeeding, addHoney, addInspection, addTreatment, createColony } from 
 import { createBreeding, endBreeding } from './breeding';
 import { addHeat } from './breedingCycle';
 import { createItem as createPantryItem, takeOut } from './pantry';
-import { createPasture, startGrazing } from './pasture';
+import { addCut, createPasture, endGrazing, startGrazing } from './pasture';
 import { FarmDataError } from './farmAnimals';
 import { setDutySettings } from './farmDuties';
 import { setHandoverNote } from './farmHandover';
@@ -184,9 +184,19 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   const pastures = await db.select({ id: pasturesTable.id, name: pasturesTable.name }).from(pasturesTable).where(eq(pasturesTable.farmId, farmId));
   const obst = pastures.find((p) => p.name.startsWith('Obstwiese'));
   const hang = pastures.find((p) => p.name.startsWith('Hangweide'));
+  // Earlier in the year on the Hangweide too – the parasite hint now.
+  await startGrazing(farmId, hang!.id, { herdId: goats.herdId, animals: 2, startOn: ago(80) });
+  const [earlier] = await db.select({ id: pastureGrazingsTable.id }).from(pastureGrazingsTable).where(eq(pastureGrazingsTable.pastureId, hang!.id));
+  await endGrazing(farmId, earlier!.id, ago(70));
   await startGrazing(farmId, obst!.id, { herdId: goats.herdId, animals: 2, startOn: ago(16) });
   const [onObst] = await db.select({ id: pastureGrazingsTable.id }).from(pastureGrazingsTable).where(eq(pastureGrazingsTable.pastureId, obst!.id));
   await startGrazing(farmId, hang!.id, { herdId: goats.herdId, animals: 2, startOn: ago(6), fromGrazingId: onObst!.id });
+  // A meadow for hay, mown once – the next cut follows from it.
+  await createPasture(farmId, { name: 'Talwiese (Demo)', kind: 'meadow', areaHa: 0.6, restDays: 35, maxGrazeDays: 10 });
+  const [tal] = await db.select({ id: pasturesTable.id }).from(pasturesTable).where(and(eq(pasturesTable.farmId, farmId), eq(pasturesTable.name, 'Talwiese (Demo)')));
+  await addCut(farmId, tal!.id, { cutOn: ago(45), bales: 18, notes: 'Demo: erster Schnitt, Heu' });
+  // Weidepflege: the Obstwiese mown after the goats left.
+  await addCut(farmId, obst!.id, { cutOn: ago(4), notes: 'Demo: nachgemäht nach dem Beweiden' });
 
   // Beet-Architekt and Saatgut.
   const raised = await createBed(farmId, { name: 'Hochbeet (Demo)', type: 'raised', lengthCm: 200, widthCm: 100 });

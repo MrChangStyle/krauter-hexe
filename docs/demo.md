@@ -13,7 +13,7 @@ Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt dan
 - **Arzneimittel**: eine Wurmkur, die bald abläuft, ein Wundspray und Oxalsäure für die Bienen.
 - **Pflichten**: eine erfundene Registriernummer.
 - **Ertrag & Bilanz**: acht Wochen Eier (Legeleistung), Milch, eine Ausgabe für Futter.
-- **Weide**: Obstwiese und Hangweide, auf der Karte eingezeichnet; die Ziegen sind umgetrieben.
+- **Weide**: Obstwiese und Hangweide, auf der Karte eingezeichnet; die Ziegen sind auf die Hangweide umgetrieben, auf der sie vor gut zwei Monaten schon standen (Wurm-Hinweis); die Talwiese ist einmal gemäht (18 Ballen), die Obstwiese nach dem Beweiden nachgemäht.
 - **Bienen**: zwei Völker mit Durchsichten, Fütterung, Honig, einer Behandlung mit Drohnenbrut und einer Winterbehandlung mit Oxalsäure aus dem Vorrat (Bestandsbuch im Export); dazu ein Standort-Check mit festem Text (ohne Foto, ohne KI-Aufruf).
 - **Vorratskammer**: Eingelegtes, Eingefrorenes und Honig, eines davon bald aufzubrauchen.
 - **Wildtier-Radar**: zwei Kameras, noch ohne Ereignisse.

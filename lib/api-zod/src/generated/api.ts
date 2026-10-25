@@ -4705,6 +4705,7 @@ export const GetPasturesResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -4719,13 +4720,23 @@ export const GetPasturesResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
   "notes": zod.string().nullable()
 })).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
   "hints": zod.array(zod.object({
-  "kind": zod.enum(['too-long', 'early']),
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
   "pastureId": zod.number(),
   "urgent": zod.boolean(),
   "text": zod.string()
@@ -4800,6 +4811,7 @@ export const CreatePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -4814,13 +4826,23 @@ export const CreatePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
   "notes": zod.string().nullable()
 })).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
   "hints": zod.array(zod.object({
-  "kind": zod.enum(['too-long', 'early']),
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
   "pastureId": zod.number(),
   "urgent": zod.boolean(),
   "text": zod.string()
@@ -4896,6 +4918,7 @@ export const UpdatePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -4910,13 +4933,23 @@ export const UpdatePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
   "notes": zod.string().nullable()
 })).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
   "hints": zod.array(zod.object({
-  "kind": zod.enum(['too-long', 'early']),
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
   "pastureId": zod.number(),
   "urgent": zod.boolean(),
   "text": zod.string()
@@ -4969,6 +5002,7 @@ export const DeletePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -4983,13 +5017,23 @@ export const DeletePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
   "notes": zod.string().nullable()
 })).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
   "hints": zod.array(zod.object({
-  "kind": zod.enum(['too-long', 'early']),
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
   "pastureId": zod.number(),
   "urgent": zod.boolean(),
   "text": zod.string()
@@ -5022,6 +5066,7 @@ export const startGrazingBodyNotesMax = 300;
 export const StartGrazingBody = zod.object({
   "herdId": zod.number().nullish(),
   "label": zod.string().max(startGrazingBodyLabelMax).nullish(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).optional().describe('For other animals; a herd brings its own.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "fromGrazingId": zod.number().nullish().describe('Umtreiben – the grazing the herd leaves; it ends the day before.'),
@@ -5057,6 +5102,7 @@ export const StartGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5071,13 +5117,203 @@ export const StartGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
   "notes": zod.string().nullable()
 })).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
   "hints": zod.array(zod.object({
-  "kind": zod.enum(['too-long', 'early']),
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Gemäht – a cut on a pasture (caretaker)
+ */
+export const AddPastureCutParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "pastureId": zod.coerce.number()
+})
+
+export const addPastureCutBodyBalesMin = 0;
+
+export const addPastureCutBodyNotesMax = 300;
+
+
+
+export const AddPastureCutBody = zod.object({
+  "cutOn": zod.string(),
+  "bales": zod.number().min(addPastureCutBodyBalesMin).nullish(),
+  "notes": zod.string().max(addPastureCutBodyNotesMax).nullish()
+})
+
+export const addPastureCutResponsePasturesItemBoundaryTwoItemMin = 2;
+export const addPastureCutResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const addPastureCutResponsePasturesItemBoundaryTwoMin = 3;
+export const addPastureCutResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
+export const AddPastureCutResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(addPastureCutResponsePasturesItemBoundaryTwoItemMin).max(addPastureCutResponsePasturesItemBoundaryTwoItemMax)).min(addPastureCutResponsePasturesItemBoundaryTwoMin).max(addPastureCutResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
+  "pastureId": zod.number(),
+  "urgent": zod.boolean(),
+  "text": zod.string()
+}))
+})),
+  "herds": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
+  "animals": zod.number()
+})),
+  "year": zod.number()
+})
+
+
+/**
+ * @summary Delete a cut (caretaker)
+ */
+export const DeletePastureCutParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "cutId": zod.coerce.number()
+})
+
+export const deletePastureCutResponsePasturesItemBoundaryTwoItemMin = 2;
+export const deletePastureCutResponsePasturesItemBoundaryTwoItemMax = 2;
+
+export const deletePastureCutResponsePasturesItemBoundaryTwoMin = 3;
+export const deletePastureCutResponsePasturesItemBoundaryTwoMax = 100;
+
+
+
+export const DeletePastureCutResponse = zod.object({
+  "center": zod.union([zod.null(),zod.object({
+  "latitude": zod.number(),
+  "longitude": zod.number()
+})]).describe('The farm\'s location (or a garden bed\'s) – where the map opens without drawn pastures.'),
+  "pastures": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "kind": zod.enum(['pasture', 'mowing', 'paddock', 'meadow']),
+  "areaHa": zod.number().nullable(),
+  "boundary": zod.union([zod.null(),zod.array(zod.array(zod.number()).min(deletePastureCutResponsePasturesItemBoundaryTwoItemMin).max(deletePastureCutResponsePasturesItemBoundaryTwoItemMax)).min(deletePastureCutResponsePasturesItemBoundaryTwoMin).max(deletePastureCutResponsePasturesItemBoundaryTwoMax).describe('The outline drawn on the map – corners as [latitude, longitude], at least three.')]),
+  "restDays": zod.number(),
+  "maxGrazeDays": zod.number(),
+  "notes": zod.string().nullable(),
+  "archived": zod.boolean(),
+  "status": zod.enum(['grazed', 'resting', 'ready']),
+  "current": zod.union([zod.null(),zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})]),
+  "readyOn": zod.string().nullable().describe('When the rest after the last grazing ends.'),
+  "grazingDays": zod.number().describe('This year.'),
+  "animalDays": zod.number().describe('This year – days × animals.'),
+  "animalDaysPerHa": zod.number().nullable(),
+  "grazings": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "herdId": zod.number().nullable(),
+  "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "animals": zod.number(),
+  "startOn": zod.string(),
+  "endOn": zod.string().nullable().describe('Null – still grazing.'),
+  "notes": zod.string().nullable()
+})).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
+  "hints": zod.array(zod.object({
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
   "pastureId": zod.number(),
   "urgent": zod.boolean(),
   "text": zod.string()
@@ -5134,6 +5370,7 @@ export const EndGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5148,13 +5385,23 @@ export const EndGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
   "notes": zod.string().nullable()
 })).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
   "hints": zod.array(zod.object({
-  "kind": zod.enum(['too-long', 'early']),
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
   "pastureId": zod.number(),
   "urgent": zod.boolean(),
   "text": zod.string()
@@ -5207,6 +5454,7 @@ export const DeleteGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5221,13 +5469,23 @@ export const DeleteGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
   "notes": zod.string().nullable()
 })).describe('The last ten entries of the diary.'),
+  "cuts": zod.array(zod.object({
+  "id": zod.number(),
+  "pastureId": zod.number(),
+  "cutOn": zod.string(),
+  "bales": zod.number().nullable(),
+  "notes": zod.string().nullable()
+})).describe('The last ten cuts.'),
+  "nextCutOn": zod.string().nullable().describe('Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.'),
+  "cutsThisYear": zod.number(),
   "hints": zod.array(zod.object({
-  "kind": zod.enum(['too-long', 'early']),
+  "kind": zod.enum(['too-long', 'early', 'mow', 'parasite']),
   "pastureId": zod.number(),
   "urgent": zod.boolean(),
   "text": zod.string()

@@ -7,6 +7,7 @@
  */
 import type { Grazing } from './grazing';
 import type { PastureBoundary } from './pastureBoundary';
+import type { PastureCut } from './pastureCut';
 import type { PastureHint } from './pastureHint';
 import type { PastureKind } from './pastureKind';
 import type { PastureStatus } from './pastureStatus';
@@ -38,5 +39,13 @@ export interface Pasture {
   animalDaysPerHa: number | null;
   /** The last ten entries of the diary. */
   grazings: Grazing[];
+  /** The last ten cuts. */
+  cuts: PastureCut[];
+  /**
+     * Mähweide and Wiese – from when the next cut is due (guide value); null for the other kinds.
+     * @nullable
+     */
+  nextCutOn: string | null;
+  cutsThisYear: number;
   hints: PastureHint[];
 }

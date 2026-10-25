@@ -221,14 +221,25 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
   pasture: {
     title: "Weide",
     href: "/farm/weide",
-    intro: "Welche Herde wann wo steht und wann eine Fläche wieder bereit ist: Weidetagebuch, Ruhezeiten, Tier-Tage je Hektar und eine Karte mit eingezeichneten Weiden.",
+    intro: "Welche Herde wann wo steht, wann eine Fläche wieder bereit ist und wann gemäht wird: Weidetagebuch, Ruhezeiten, Tier-Tage je Hektar, Schnitte mit Heuwetter, Wurm-Hinweise je Tierart und eine Karte mit eingezeichneten Weiden.",
     steps: [
-      "Jede Weide einmal anlegen: Fläche, Ruhezeit, längste Weidedauer.",
+      "Jede Weide einmal anlegen: Nutzung, Fläche, Ruhezeit, längste Weidedauer.",
       "Optional auf der Karte einzeichnen – die Fläche rechnet die App dann selbst aus.",
-      "Auf-, um- und abtreiben mit einem Tipp; die App merkt sich Herde, Tiere und Tage.",
-      "Hinweise und Push sagen, wann umzutreiben ist und wann eine Weide wieder bereit ist.",
+      "Auf-, um- und abtreiben mit einem Tipp; die App merkt sich Herde, Tierart, Tiere und Tage.",
+      "„Gemäht“ eintragen (gern mit Ballen) – bei Mähweide und Wiese zeigt die App den nächsten Schnitt und ob Heuwetter kommt.",
+      "Hinweise und Push sagen, wann umzutreiben ist, wann eine Weide wieder bereit ist und wann ein Schnitt fällig ist.",
     ],
-    faq: [{ q: "Woher kommen die Kartenbilder?", a: "Von OpenStreetMap – erst nach einem Tipp auf „Karte zeigen“. Deine eingezeichneten Weiden bleiben bei uns." }],
+    faq: [
+      { q: "Woher kommen die Kartenbilder?", a: "Von OpenStreetMap – erst nach einem Tipp auf „Karte zeigen“. Deine eingezeichneten Weiden bleiben bei uns." },
+      {
+        q: "Wann soll ich mähen?",
+        a: "Die App rechnet mit Richtwerten: Mähweide ab Mitte Mai, dann etwa alle 6 Wochen; Wiese fürs Heu ab Mitte Juni, dann etwa alle 8 Wochen; nach September nicht mehr. Nach einem Weidegang beginnt das Nachwachsen neu. Mit Standort des Hofs prüft sie, ob drei trockene Tage am Stück kommen.",
+      },
+      {
+        q: "Was bedeutet der Wurm-Hinweis?",
+        a: "Standen vor Kurzem schon Tiere derselben Art auf der Fläche (Ziegen und Schafe zählen zusammen), können ihre Wurmlarven noch im Gras sein. Dann helfen eine Kotprobe, Wechselweide mit einer anderen Tierart oder Nachmähen. Bei „anderen Tieren“ wähle die Tierart, sonst gibt es keinen Hinweis. Ob und womit entwurmt wird, besprich mit dem Tierarzt.",
+      },
+    ],
   },
   bees: {
     title: "Bienen",

@@ -333,6 +333,8 @@ export * from './pantryTakeInput';
 export * from './pantryUse';
 export * from './pasture';
 export * from './pastureBoundary';
+export * from './pastureCut';
+export * from './pastureCutInput';
 export * from './pastureHerd';
 export * from './pastureHint';
 export * from './pastureHintKind';

@@ -124,11 +124,26 @@ describe.skipIf(!enabled)("Meine Farm – herds and animals (real database)", ()
     expect((await api("POST", `/farms/${farm.bert}/animals`, animal())).status).toBe(201);
   });
 
+  it("creates an animal without name, ring or ear tag and photo, and keeps the name when edited without one", async () => {
+    const path = `/farms/${farm.anna}/animals`;
+    const bare = { species: "goat", birthDate: "2024-03-01", sex: "female" };
+    const first = await api("POST", path, bare);
+    expect(first.status).toBe(201);
+    expect(first.data).toMatchObject({ name: "Ziege 1", registrationNumber: null, imageUrl: null });
+    // Blank counts as none; several animals may be without a tag; the next free number is taken.
+    await q("UPDATE farm_animals SET name = 'Ziege 2' WHERE id = $1", [first.data.id]);
+    expect((await api("POST", path, { ...bare, name: "  ", registrationNumber: " " })).data).toMatchObject({ name: "Ziege 1", registrationNumber: null });
+    expect((await api("POST", path, { ...bare, species: "poultry" })).data.name).toBe("Huhn 1");
+    // Editing without a name keeps the one it has; a tag can be added later.
+    const edited = await api("PATCH", `${path}/${first.data.id}`, { ...bare, name: null, registrationNumber: "DE 01 999" });
+    expect(edited.data).toMatchObject({ name: "Ziege 2", registrationNumber: "DE 01 999" });
+  });
+
   it("validates input", async () => {
     const path = `/farms/${farm.anna}/animals`;
     expect((await api("POST", path, animal({ birthDate: "2999-01-01" }))).data.error).toMatch(/Zukunft/);
     expect((await api("POST", path, animal({ birthDate: "2023-02-30" }))).data.error).toMatch(/ungültig/);
-    expect((await api("POST", path, animal({ name: "   " }))).status).toBe(400);
+    expect((await api("POST", path, animal({ name: "x".repeat(61) }))).status).toBe(400);
     expect((await api("POST", path, animal({ species: "dragon" }))).status).toBe(400);
     expect((await api("POST", path, animal({ registrationNumber: "x".repeat(41) }))).status).toBe(400);
   });

@@ -19,7 +19,7 @@ import {
 } from '@workspace/db';
 import { and, count, eq, isNotNull, isNull } from 'drizzle-orm';
 
-import { FarmDataError, freeNumbers, notFound, text } from './farmAnimals';
+import { FarmDataError, NAMES, freeNumbers, notFound, text } from './farmAnimals';
 import { DEFAULT_FARM_NAME } from './farmMembers';
 import { createFarmTask } from './farmTasks';
 import { feedReminders, saveRation } from './feedPlanner';
@@ -73,21 +73,6 @@ export async function dismissSetup(farmId: number, dismissed: boolean): Promise<
 }
 
 // ── Quick start ──────────────────────────────────────────────────────────────
-
-/** Name of one animal, and the group name to suggest. */
-export const NAMES: Record<FarmSpecies, { one: string; group: string; prefix: string }> = {
-  poultry: { one: 'Huhn', group: 'Hühner', prefix: 'H' },
-  rabbit: { one: 'Kaninchen', group: 'Kaninchen', prefix: 'K' },
-  guineaPig: { one: 'Meerschweinchen', group: 'Meerschweinchen', prefix: 'M' },
-  goat: { one: 'Ziege', group: 'Ziegen', prefix: 'Z' },
-  sheep: { one: 'Schaf', group: 'Schafe', prefix: 'S' },
-  horse: { one: 'Pferd', group: 'Pferde', prefix: 'P' },
-  cattle: { one: 'Rind', group: 'Rinder', prefix: 'R' },
-  pig: { one: 'Schwein', group: 'Schweine', prefix: 'SW' },
-  cat: { one: 'Katze', group: 'Katzen', prefix: 'KA' },
-  dog: { one: 'Hund', group: 'Hunde', prefix: 'HU' },
-  other: { one: 'Tier', group: 'Tiere', prefix: 'T' },
-};
 
 /**
  * A sensible first ration per species from the feed list (per animal and day,

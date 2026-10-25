@@ -177,8 +177,10 @@ DATENMODELL (neue Tabellen, Dateien in lib/db/src/schema)
   farm_tasks und dieselbe Cron-Logik mitbenutzen – Entscheidung in replit.md begründen.
 
 KERNFUNKTIONEN
-1. Tierbestand: Einzeltier oder Herde anlegen. Pflichtfelder: Foto, Name, Geburtsdatum,
-   Registriernummer (Ring/Ohrmarke), Geschlecht (manuell), Tierart.
+1. Tierbestand: Einzeltier oder Herde anlegen. Pflichtfelder: Geburtsdatum, Geschlecht (manuell),
+   Tierart. Optional (später nachzutragen): Foto, Name (ohne Namen vergibt die App „Ziege 1“,
+   „Huhn 2“ …) und Registriernummer (Ring/Ohrmarke; wenn angegeben, eindeutig je Farm; für Rind,
+   Schaf, Ziege, Schwein und Pferd zeigt das Formular einen Hinweis zur Kennzeichnungspflicht).
 2. Medizin: Krankenakte je Tier, verknüpft mit der Registriernummer. Button
    "Veterinäramt-Export": CSV und PDF (Bestandsliste + Medizin-Historie, nach Zeitraum).
 3. Tracking: Gewichtsdiagramm je Tier; rote Warnung bei Abnahme > 5 % in 14 Tagen

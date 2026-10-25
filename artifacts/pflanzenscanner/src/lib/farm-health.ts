@@ -114,7 +114,8 @@ export function exportForPeriod(data: FarmExport, period: ExportPeriod): ExportD
         a.createdAt.slice(0, 10) <= period.to &&
         (!a.archivedAt || a.archivedAt.slice(0, 10) >= period.from),
     )
-    .sort((a, b) => a.registrationNumber.localeCompare(b.registrationNumber, "de"));
+    // Animals without a ring or ear tag last, by name.
+    .sort((a, b) => (a.registrationNumber === null) !== (b.registrationNumber === null) ? (a.registrationNumber === null ? 1 : -1) : (a.registrationNumber ?? a.name).localeCompare(b.registrationNumber ?? b.name, "de"));
   const byId = new Map(data.animals.map((a) => [a.id, a]));
   const records = data.medicalRecords
     .filter((r) => r.date >= period.from && r.date <= period.to && byId.has(r.animalId))
@@ -154,7 +155,7 @@ export const MEDICAL_COLUMNS = [
 
 export function stockRow(a: FarmAnimal): string[] {
   return [
-    a.registrationNumber,
+    a.registrationNumber ?? "",
     a.name,
     SPECIES_LABELS[a.species],
     a.breed ?? "",
@@ -174,7 +175,7 @@ export function doseText(r: Pick<MedicalRecord, "dose" | "doseUnit" | "batch">):
 export function medicalRow({ record: r, animal: a }: ExportData["records"][number]): string[] {
   return [
     deDate(r.date),
-    a.registrationNumber,
+    a.registrationNumber ?? "",
     a.name,
     r.diagnosis,
     r.treatment ?? "",

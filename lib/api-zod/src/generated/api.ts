@@ -7121,7 +7121,7 @@ export const ListFarmAnimalsResponseItem = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -7148,12 +7148,12 @@ export const createFarmAnimalBodyNotesMax = 2000;
 
 
 export const CreateFarmAnimalBody = zod.object({
-  "name": zod.string().min(1).max(createFarmAnimalBodyNameMax),
+  "name": zod.string().max(createFarmAnimalBodyNameMax).nullish().describe('Optional – a new animal without one is called like \"Ziege 3\", an edited one keeps its name.'),
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "breed": zod.string().max(createFarmAnimalBodyBreedMax).nullish(),
   "birthDate": zod.string().describe('YYYY-MM-DD, not in the future'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string().min(1).max(createFarmAnimalBodyRegistrationNumberMax).describe('Ring or ear tag; unique within the farm.'),
+  "registrationNumber": zod.string().max(createFarmAnimalBodyRegistrationNumberMax).nullish().describe('Optional – empty or null means none (yet).'),
   "herdId": zod.number().nullish(),
   "notes": zod.string().max(createFarmAnimalBodyNotesMax).nullish()
 })
@@ -7167,7 +7167,7 @@ export const CreateFarmAnimalResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -7192,7 +7192,7 @@ export const GetFarmAnimalResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -7219,12 +7219,12 @@ export const updateFarmAnimalBodyNotesMax = 2000;
 
 
 export const UpdateFarmAnimalBody = zod.object({
-  "name": zod.string().min(1).max(updateFarmAnimalBodyNameMax),
+  "name": zod.string().max(updateFarmAnimalBodyNameMax).nullish().describe('Optional – a new animal without one is called like \"Ziege 3\", an edited one keeps its name.'),
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'other']),
   "breed": zod.string().max(updateFarmAnimalBodyBreedMax).nullish(),
   "birthDate": zod.string().describe('YYYY-MM-DD, not in the future'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string().min(1).max(updateFarmAnimalBodyRegistrationNumberMax).describe('Ring or ear tag; unique within the farm.'),
+  "registrationNumber": zod.string().max(updateFarmAnimalBodyRegistrationNumberMax).nullish().describe('Optional – empty or null means none (yet).'),
   "herdId": zod.number().nullish(),
   "notes": zod.string().max(updateFarmAnimalBodyNotesMax).nullish()
 })
@@ -7238,7 +7238,7 @@ export const UpdateFarmAnimalResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -7267,7 +7267,7 @@ export const SetFarmAnimalArchivedResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -7296,7 +7296,7 @@ export const SetFarmAnimalPhotoResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),
@@ -7695,7 +7695,7 @@ export const GetFarmExportResponse = zod.object({
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
-  "registrationNumber": zod.string(),
+  "registrationNumber": zod.string().nullable().describe('Ring \/ ear tag; null when the animal has none (yet).'),
   "imageUrl": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "archivedAt": zod.coerce.date().nullable(),

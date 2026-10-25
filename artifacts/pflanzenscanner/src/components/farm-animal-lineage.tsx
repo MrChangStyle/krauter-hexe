@@ -36,7 +36,8 @@ export function LineageSection({ farmId, animal, canWrite }: { farmId: number; a
   const options = (list: FarmAnimal[]) =>
     list.map((a) => (
       <option key={a.id} value={a.id}>
-        {a.name} ({a.registrationNumber})
+        {a.name}
+        {a.registrationNumber && ` (${a.registrationNumber})`}
       </option>
     ));
 

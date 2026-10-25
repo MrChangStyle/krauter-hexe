@@ -148,8 +148,9 @@ export const farmAnimalsTable = pgTable(
     breed: text("breed"),
     birthDate: date("birth_date", { mode: "string" }),
     sex: animalSexEnum("sex").notNull().default("unknown"),
-    // Ring / ear tag. Unique within a farm, so the vet export can rely on it.
-    registrationNumber: text("registration_number").notNull(),
+    // Ring / ear tag – optional (not every animal has one yet); unique within
+    // a farm when given, so the vet export can rely on it.
+    registrationNumber: text("registration_number"),
     // Cloudinary URL. Nullable: uploads are non-fatal, like plant scans.
     imageUrl: text("image_url"),
     notes: text("notes"),

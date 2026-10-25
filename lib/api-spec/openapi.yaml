@@ -11088,7 +11088,8 @@ components:
         sex:
           $ref: "#/components/schemas/AnimalSex"
         registrationNumber:
-          type: string
+          type: [string, 'null']
+          description: Ring / ear tag; null when the animal has none (yet).
         imageUrl:
           type: [string, 'null']
         notes:
@@ -11101,12 +11102,12 @@ components:
           format: date-time
     FarmAnimalInput:
       type: object
-      required: [name, species, birthDate, sex, registrationNumber]
+      required: [species, birthDate, sex]
       properties:
         name:
-          type: string
-          minLength: 1
+          type: [string, 'null']
           maxLength: 60
+          description: Optional – a new animal without one is called like "Ziege 3", an edited one keeps its name.
         species:
           $ref: "#/components/schemas/FarmSpecies"
         breed:
@@ -11118,10 +11119,9 @@ components:
         sex:
           $ref: "#/components/schemas/AnimalSex"
         registrationNumber:
-          type: string
-          minLength: 1
+          type: [string, 'null']
           maxLength: 40
-          description: Ring or ear tag; unique within the farm.
+          description: Optional – empty or null means none (yet).
         herdId:
           type: [integer, 'null']
         notes:

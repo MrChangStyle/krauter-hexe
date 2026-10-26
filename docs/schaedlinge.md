@@ -6,6 +6,7 @@ Das Modul „Schädlinge & Nützlinge“ (Bereich Pflanzen, Freigabe `pests`, Se
 - **Nützlinge fördern** (`/schaedlinge?tab=nuetzlinge`): Kacheln im Stil der Pflanzen- und Tiere-Übersicht.
   - „Wobei brauchst du Hilfe?“: eine Kachel je Problem.
   - „Nützlinge kennenlernen“: eine Kachel je Nützling.
+  - Damit die Seite kurz bleibt, zeigt jeder Bereich nur vier Kacheln. Darunter steht „X weitere anzeigen“ (derselbe Knopf wie bei „Meine Insekten“, `components/show-more-button.tsx`), „Weniger anzeigen“ klappt wieder zu.
   - Jede Kachel öffnet eine eigene Seite – der Inhalt erscheint nicht weiter unten, sondern oben auf der neuen Seite. „Nützlinge fördern“ oben links führt zurück.
 
 ## Meine Insekten

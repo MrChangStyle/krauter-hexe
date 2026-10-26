@@ -1,7 +1,8 @@
-import { useState, type ComponentType } from "react";
+import { useState, type ComponentType, type ReactNode } from "react";
 import { Link } from "wouter";
 import { Bird, Bug, CalendarDays, ChevronDown, ChevronLeft, ChevronRight, Droplets, Flower2, Hexagon, Home, Leaf, Microscope, PawPrint, Shovel, Snail, Worm } from "lucide-react";
 import { HubGrid, HubTile } from "@/components/hub-tile";
+import { ShowMoreButton } from "@/components/show-more-button";
 import { BENEFICIALS, PROBLEMS, type Beneficial, type BeneficialId, type Measure, type ProblemId } from "@/lib/beneficials";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +60,21 @@ export const problemHref = (id: ProblemId) => `/schaedlinge/hilfe/${id}`;
 export const beneficialHref = (id: BeneficialId) => `/schaedlinge/nuetzling/${id}`;
 export const GUIDE_HREF = "/schaedlinge?tab=nuetzlinge";
 
+/** How many tiles a section shows before "… weitere anzeigen". */
+export const TILES_SHOWN = 4;
+
+/** A tile grid that shows the first four tiles and opens the rest on a tap. */
+function CollapsibleHubGrid({ children }: { children: ReactNode[] }) {
+  const [expanded, setExpanded] = useState(false);
+  const hidden = children.length - TILES_SHOWN;
+  return (
+    <div className="space-y-3">
+      <HubGrid>{expanded ? children : children.slice(0, TILES_SHOWN)}</HubGrid>
+      {hidden > 0 && <ShowMoreButton hidden={hidden} expanded={expanded} onToggle={() => setExpanded((v) => !v)} />}
+    </div>
+  );
+}
+
 /** The tab "Nützlinge fördern": tiles for the problems and the beneficials. */
 export function BeneficialsHub() {
   return (
@@ -68,19 +84,19 @@ export function BeneficialsHub() {
       </p>
       <section className="space-y-3">
         <h2 className="text-base font-semibold">Wobei brauchst du Hilfe?</h2>
-        <HubGrid>
+        <CollapsibleHubGrid>
           {PROBLEMS.map((p) => (
             <HubTile key={p.id} href={problemHref(p.id)} icon={PROBLEM_LOOK[p.id].icon} tone={PROBLEM_LOOK[p.id].tone} label={p.title} hint={p.hint} />
           ))}
-        </HubGrid>
+        </CollapsibleHubGrid>
       </section>
       <section className="space-y-3">
         <h2 className="text-base font-semibold">Nützlinge kennenlernen</h2>
-        <HubGrid>
+        <CollapsibleHubGrid>
           {Object.values(BENEFICIALS).map((b) => (
             <HubTile key={b.id} href={beneficialHref(b.id)} icon={BENEFICIAL_LOOK[b.id].icon} tone={BENEFICIAL_LOOK[b.id].tone} label={b.name} hint={b.buy ? "Auch zu kaufen" : "Selbst ansiedeln"} />
           ))}
-        </HubGrid>
+        </CollapsibleHubGrid>
       </section>
     </div>
   );

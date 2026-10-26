@@ -19,7 +19,7 @@ import {
   Crown, ShieldCheck, Hourglass, Trash2, UserCheck, UserX,
   Pin, Camera, Users, WifiOff, Wifi, Loader2, Clock, AlertCircle,
   RefreshCw, ImageOff, TriangleAlert, Bug, Download, BookHeart, ChevronRight,
-  ChevronDown, Leaf, Trophy, Tractor, Bell, UserCog, LayoutGrid,
+  Leaf, Trophy, Tractor, Bell, UserCog, LayoutGrid,
   CircleHelp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -35,6 +35,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PeckingChicken } from "@/components/pecking-chicken";
+import { ShowMoreButton } from "@/components/show-more-button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
 import { ThemeCard } from "@/components/theme-card";
@@ -354,15 +355,7 @@ function CollapsibleCardList({ children }: { children: React.ReactNode }) {
   return (
     <div className="space-y-3">
       {visible}
-      {hidden > 0 && (
-        <button
-          onClick={() => setExpanded((v) => !v)}
-          className="w-full flex items-center justify-center gap-1.5 rounded-xl border border-dashed border-border py-2.5 text-sm font-medium text-muted-foreground hover:text-primary hover:border-primary/50 transition-colors"
-        >
-          <ChevronDown className={cn("w-4 h-4 transition-transform", expanded && "rotate-180")} />
-          {expanded ? "Weniger anzeigen" : `${hidden} weitere anzeigen`}
-        </button>
-      )}
+      {hidden > 0 && <ShowMoreButton hidden={hidden} expanded={expanded} onToggle={() => setExpanded((v) => !v)} />}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { normalizeStoredSymptoms } from "../lib/plantSymptoms";
 import { createHash, timingSafeEqual } from "node:crypto";
 import {
   Router,
@@ -63,7 +64,6 @@ import {
   reviewMedicinalPlant,
   reviewEdibleForMedicinal,
   checkPlantHealth,
-  normalizeSymptomTag,
   UNKNOWN_BOTANICAL_NAME,
 } from "../lib/plantIdentification";
 import { requireApproved, requireOwner } from "../middlewares/requireApproved";
@@ -1192,72 +1192,9 @@ router.post(
   requireApproved,
   requireOwner,
   async (req, res): Promise<void> => {
-    const rows = await db
-      .select({
-        id: plantsTable.id,
-        symptoms: plantsTable.symptoms,
-        symptomApplications: plantsTable.symptomApplications,
-      })
-      .from(plantsTable)
-      .orderBy(desc(plantsTable.createdAt));
-
-    let processed = 0;
-    let updated = 0;
-
-    for (const row of rows) {
-      processed++;
-      const rawSymptoms = (row.symptoms as SymptomsMap) ?? {};
-      const rawApps = (row.symptomApplications as SymptomApplicationsMap) ?? {};
-
-      const newSymptoms: SymptomsMap = {};
-      const newApps: SymptomApplicationsMap = {};
-      let changed = false;
-
-      for (const target of HEAL_TARGET_KINDS) {
-        const tags = rawSymptoms[target] ?? [];
-        const seen = new Set<string>();
-        const normalizedTags: string[] = [];
-
-        for (const tag of tags) {
-          const normalised = normalizeSymptomTag(tag);
-          const key = normalised.toLocaleLowerCase("de-DE");
-          if (seen.has(key)) {
-            // Dedup: normalisation collapsed two variants into one
-            changed = true;
-            continue;
-          }
-          seen.add(key);
-          normalizedTags.push(normalised);
-          if (normalised !== tag) changed = true;
-        }
-
-        newSymptoms[target] = normalizedTags;
-
-        // Re-key symptomApplications: old tag → new tag.
-        const appObj = (rawApps[target] ?? {}) as Record<string, string>;
-        const newAppObj: Record<string, string> = {};
-        for (let i = 0; i < tags.length && i < normalizedTags.length; i++) {
-          const oldTag = tags[i];
-          const newTag = normalizedTags[i];
-          const instruction = appObj[oldTag] ?? appObj[newTag] ?? "";
-          if (instruction) newAppObj[newTag] = instruction;
-        }
-        // Also carry over any keys that already match the normalised form.
-        for (const [k, v] of Object.entries(appObj)) {
-          const normalised = normalizeSymptomTag(k);
-          if (!(normalised in newAppObj) && v) newAppObj[normalised] = v;
-        }
-        newApps[target] = newAppObj;
-      }
-
-      if (changed) {
-        await db
-          .update(plantsTable)
-          .set({ symptoms: newSymptoms, symptomApplications: newApps })
-          .where(eq(plantsTable.id, row.id));
-        updated++;
-      }
-    }
+    // Same renaming as at start (lib/plantSymptoms.ts): fixed names,
+    // variants collapsed, instructions moved to the new name.
+    const { processed, updated } = await normalizeStoredSymptoms();
 
     res.json(
       BackfillPlantSymptomCasingResponse.parse({

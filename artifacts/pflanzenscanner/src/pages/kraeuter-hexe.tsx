@@ -18,10 +18,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { HEAL_TARGETS, type HealTarget } from "@/lib/heal-targets";
+import { HEAL_TARGETS, canonicalizeSymptom, type HealTarget } from "@/lib/heal-targets";
+import { SYMPTOM_NAMES } from "@/lib/symptom-vocabulary";
 import {
   availableSymptomsFor,
   filterByAilment,
+  groupSymptoms,
   relevantPlantsFor,
 } from "@/lib/ailment-filter";
 import { parseUrlState, buildSearchString, canonicaliseSymptoms } from "@/lib/url-state";
@@ -70,6 +72,14 @@ const TARGET_META: Record<
   },
 };
 
+function withCanonicalSymptoms<T extends { symptoms: string[] }>(state: T): T {
+  const fixed = (s: string) => {
+    const name = canonicalizeSymptom(s);
+    return SYMPTOM_NAMES.includes(name) ? name : s;
+  };
+  return { ...state, symptoms: [...new Set(state.symptoms.map(fixed))] };
+}
+
 // ─── component ────────────────────────────────────────────────────────────────
 
 export default function KraeuterHexePage() {
@@ -77,7 +87,9 @@ export default function KraeuterHexePage() {
   const [shareCopied, setShareCopied] = useState(false);
 
   // Initialise from URL so a shared link restores state immediately
-  const initialUrlState = useRef(parseUrlState(window.location.search));
+  // Older links may name a complaint by a former wording ("Verdauungs-
+  // beschwerden") – map it to today's fixed name.
+  const initialUrlState = useRef(withCanonicalSymptoms(parseUrlState(window.location.search)));
   const [target, setTarget] = useState<HealTarget>(() => initialUrlState.current.target);
   const [query, setQuery] = useState(() => initialUrlState.current.query);
   const [selectedByTarget, setSelectedByTarget] = useState<
@@ -118,6 +130,21 @@ export default function KraeuterHexePage() {
     () => availableSymptomsFor(relevantPlants, target),
     [relevantPlants, target],
   );
+
+  const symptomGroups = useMemo(() => groupSymptoms(availableSymptoms), [availableSymptoms]);
+  // Groups opened or closed by hand in the menu.
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  const [closedGroups, setClosedGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = (label: string, isOpen: boolean) => {
+    const without = (set: Set<string>) => new Set([...set].filter((l) => l !== label));
+    if (isOpen) {
+      setOpenGroups(without);
+      setClosedGroups((c) => new Set(c).add(label));
+    } else {
+      setClosedGroups(without);
+      setOpenGroups((o) => new Set(o).add(label));
+    }
+  };
 
   const selected = selectedByTarget[target] ?? new Set<string>();
   const hasQuery = query.trim().length > 0;
@@ -393,20 +420,50 @@ export default function KraeuterHexePage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="start"
-              className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-72 overflow-y-auto"
+              className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[60vh] overflow-y-auto"
             >
               <DropdownMenuLabel>Beschwerden</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {availableSymptoms.map((tag) => (
-                <DropdownMenuCheckboxItem
-                  key={tag}
-                  checked={selected.has(tag)}
-                  onCheckedChange={() => toggleSymptom(tag)}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  {tag}
-                </DropdownMenuCheckboxItem>
-              ))}
+              {/* Groups open on a tap; a lone group or one with a chosen
+                  complaint is open from the start. */}
+              {symptomGroups.map((g) => {
+                const chosen = g.names.filter((n) => selected.has(n)).length;
+                const open = symptomGroups.length === 1 || openGroups.has(g.label) || (chosen > 0 && !closedGroups.has(g.label));
+                return (
+                  <div key={g.label}>
+                    <DropdownMenuItem
+                      onSelect={(e?: Event) => {
+                        e?.preventDefault?.();
+                        toggleGroup(g.label, open);
+                      }}
+                      aria-expanded={open}
+                      className="justify-between gap-2 font-medium"
+                    >
+                      <span className="truncate">
+                        {g.label} <span className="font-normal text-muted-foreground">({g.names.length})</span>
+                      </span>
+                      <span className="flex items-center gap-1.5 shrink-0">
+                        {chosen > 0 && (
+                          <span className="rounded-full bg-indigo-600 px-1.5 text-[11px] font-semibold text-white">{chosen}</span>
+                        )}
+                        <ChevronRight className={cn("w-4 h-4 opacity-60 transition-transform", open && "rotate-90")} />
+                      </span>
+                    </DropdownMenuItem>
+                    {open &&
+                      g.names.map((tag) => (
+                        <DropdownMenuCheckboxItem
+                          key={tag}
+                          checked={selected.has(tag)}
+                          onCheckedChange={() => toggleSymptom(tag)}
+                          onSelect={(e) => e.preventDefault()}
+                          className="pl-10"
+                        >
+                          {tag}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                  </div>
+                );
+              })}
               {selected.size > 0 && (
                 <>
                   <DropdownMenuSeparator />

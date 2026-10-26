@@ -152,9 +152,9 @@ describe("hasHealingFor", () => {
 describe("symptomsFor", () => {
   it("returns the stored tags for the target", () => {
     expect(symptomsFor(kamille, "human")).toEqual(["Husten", "Kopfschmerzen"]);
-    // "Verdauungsprobleme" is canonicalized to "Verdauungsbeschwerden"
+    // "Verdauungsprobleme" is canonicalized to "Magen-Darm-Beschwerden"
     expect(symptomsFor(brennnessel, "poultry")).toEqual([
-      "Verdauungsbeschwerden",
+      "Magen-Darm-Beschwerden",
     ]);
   });
 
@@ -192,10 +192,10 @@ describe("availableSymptomsFor", () => {
   it("aggregates, de-duplicates case-insensitively and sorts (de-DE)", () => {
     const a = makePlant({ symptoms: { human: ["husten", "Ödeme"] } });
     const b = makePlant({ symptoms: { human: ["Husten", "Akne"] } });
-    // "Husten" < "husten" lexicographically (uppercase letters sort before
-    // lowercase in Unicode), so "Husten" is the stable canonical form.
+    // Casing is normalised; "Akne" is one of the "Hautprobleme"; "Ödeme" is
+    // outside the vocabulary and keeps its name.
     expect(availableSymptomsFor([a, b], "human")).toEqual([
-      "Akne",
+      "Hautprobleme",
       "Husten",
       "Ödeme",
     ]);
@@ -220,9 +220,9 @@ describe("availableSymptomsFor", () => {
 
   it("only exposes tags of the chosen target", () => {
     expect(availableSymptomsFor([brennnessel], "human")).toEqual([]);
-    // "Verdauungsprobleme" is canonicalized to "Verdauungsbeschwerden"
+    // "Verdauungsprobleme" is canonicalized to "Magen-Darm-Beschwerden"
     expect(availableSymptomsFor([brennnessel], "poultry")).toEqual([
-      "Verdauungsbeschwerden",
+      "Magen-Darm-Beschwerden",
     ]);
   });
 });
@@ -257,7 +257,7 @@ describe("filterByAilment", () => {
       relevant,
       "human",
       "",
-      new Set(["magenschmerzen"]),
+      new Set(["magen-darm-beschwerden"]),
     );
     expect(res.map((r) => r.plant.germanName)).toEqual(["Beinwell"]);
     // A selected value that is only a substring of a tag must not match.
@@ -271,14 +271,14 @@ describe("filterByAilment", () => {
       relevant,
       "human",
       "kopf",
-      new Set(["Magenschmerzen"]),
+      new Set(["Magen-Darm-Beschwerden"]),
     );
     const byName = Object.fromEntries(
       res.map((r) => [r.plant.germanName, r.matched]),
     );
     expect(byName).toEqual({
       Kamille: ["Kopfschmerzen"], // via query
-      Beinwell: ["Magenschmerzen"], // via selection
+      Beinwell: ["Magen-Darm-Beschwerden"], // via selection ("Magenschmerzen")
     });
   });
 
@@ -318,10 +318,16 @@ describe("filterByAilment", () => {
     const poultryRelevant = relevantPlantsFor(ALL, "poultry");
     const res = filterByAilment(poultryRelevant, "poultry", "verdauung", new Set());
     expect(res.map((r) => r.plant.germanName)).toEqual(["Brennnessel"]);
-    // Human-target search never sees poultry tags.
+    // Human-target search only sees human tags: Beinwell's "Magenschmerzen"
+    // is the same complaint, Brennnessel (poultry only) stays out.
     expect(
-      filterByAilment(relevant, "human", "verdauung", new Set()),
-    ).toEqual([]);
+      filterByAilment(relevant, "human", "verdauung", new Set()).map((r) => r.plant.germanName),
+    ).toEqual(["Beinwell"]);
+  });
+
+  it("a typed synonym finds the fixed complaint", () => {
+    const res = filterByAilment(relevant, "human", "Magenkrämpfe", new Set());
+    expect(res.map((r) => [r.plant.germanName, r.matched])).toEqual([["Beinwell", ["Magen-Darm-Beschwerden"]]]);
   });
 });
 
@@ -423,5 +429,18 @@ describe("availableSymptomsFor – same symptom, different casing across targets
     // Sentence-case normalisation unifies the casing; both lists see "Husten".
     expect(humanAvailable).toEqual(["Husten"]);
     expect(poultryAvailable).toEqual(["Husten"]);
+  });
+});
+
+describe("groupSymptoms", () => {
+  it("sorts the complaints into the menu groups, a name may sit in two", async () => {
+    const { groupSymptoms } = await import("@/lib/ailment-filter");
+    const groups = groupSymptoms(["Hautentzündungen", "Husten", "Legenot", "Entzündungen (allgemein)", "Ödeme"]);
+    expect(groups.map((g) => [g.label, g.names])).toEqual([
+      ["Entzündungen", ["Entzündungen (allgemein)", "Hautentzündungen"]],
+      ["Erkältung & Atemwege", ["Husten"]],
+      ["Haut & Wunden", ["Hautentzündungen"]],
+      ["Weitere", ["Legenot", "Ödeme"]],
+    ]);
   });
 });

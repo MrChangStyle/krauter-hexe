@@ -235,10 +235,10 @@ describe("KraeuterHexePage – shared link restores UI state on mount", () => {
 
     renderPage();
 
-    // After canonicalisation the chip for "Verdauungsbeschwerden" must appear.
+    // The former name "Verdauungsbeschwerden" is today's "Magen-Darm-Beschwerden".
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /verdauungsbeschwerden entfernen/i }),
+        screen.getByRole("button", { name: /magen-darm-beschwerden entfernen/i }),
       ).toBeTruthy();
     });
   });
@@ -1284,7 +1284,7 @@ describe("KraeuterHexePage – switching targets after opening a shared link", (
     // Wait for the rabbit symptom chip to appear (canonicalisation has run).
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /verdauungsbeschwerden entfernen/i }),
+        screen.getByRole("button", { name: /magen-darm-beschwerden entfernen/i }),
       ).toBeTruthy();
     });
 
@@ -1294,7 +1294,7 @@ describe("KraeuterHexePage – switching targets after opening a shared link", (
     // Assert 1: the rabbit symptom chip is no longer visible for the new target.
     await waitFor(() => {
       expect(
-        screen.queryByRole("button", { name: /verdauungsbeschwerden entfernen/i }),
+        screen.queryByRole("button", { name: /magen-darm-beschwerden entfernen/i }),
       ).toBeNull();
     });
 
@@ -1331,7 +1331,7 @@ describe("KraeuterHexePage – switching targets after opening a shared link", (
     // Wait for the rabbit symptom chip to appear (initial URL state applied).
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /verdauungsbeschwerden entfernen/i }),
+        screen.getByRole("button", { name: /magen-darm-beschwerden entfernen/i }),
       ).toBeTruthy();
     });
 
@@ -1341,7 +1341,7 @@ describe("KraeuterHexePage – switching targets after opening a shared link", (
     // Rabbit chip must disappear; human has no symptoms selected.
     await waitFor(() => {
       expect(
-        screen.queryByRole("button", { name: /verdauungsbeschwerden entfernen/i }),
+        screen.queryByRole("button", { name: /magen-darm-beschwerden entfernen/i }),
       ).toBeNull();
     });
 
@@ -1354,7 +1354,7 @@ describe("KraeuterHexePage – switching targets after opening a shared link", (
     // The original rabbit selection must be restored from selectedByTarget.
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /verdauungsbeschwerden entfernen/i }),
+        screen.getByRole("button", { name: /magen-darm-beschwerden entfernen/i }),
       ).toBeTruthy();
     });
 
@@ -1365,7 +1365,7 @@ describe("KraeuterHexePage – switching targets after opening a shared link", (
     const lastArg = calls[calls.length - 1][0] as string;
     const params = new URLSearchParams(lastArg.startsWith("?") ? lastArg.slice(1) : lastArg);
     expect(params.get("target")).toBe("rabbit");
-    expect(params.get("symptoms")).toContain("Verdauungsbeschwerden");
+    expect(params.get("symptoms")).toContain("Magen-Darm-Beschwerden");
   });
 
   it("clears the 'symptom not found' warning banner when the user switches targets", async () => {

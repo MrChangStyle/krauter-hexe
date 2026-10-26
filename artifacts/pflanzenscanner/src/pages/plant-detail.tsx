@@ -27,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ANIMALS, animalLabel, getAnimalInfo, type AnimalKey } from "@/lib/animals";
-import { HEAL_TARGETS, symptomsFor } from "@/lib/heal-targets";
+import { HEAL_TARGETS, applicationsFor, symptomsFor } from "@/lib/heal-targets";
 import { humanBadge, animalBadge, animalCardClass } from "@/lib/plant-detail-helpers";
 import { viewCategoryOf } from "@/lib/view-categories";
 import { format } from "date-fns";
@@ -662,8 +662,7 @@ export default function PlantDetailPage() {
                 Behandelbare Beschwerden
               </h3>
               {symptomGroups.map((group) => {
-                const groupApplications =
-                  (plant.symptomApplications as Record<string, Record<string, string>> | undefined)?.[group.key] ?? {};
+                const groupApplications = applicationsFor(plant, group.key);
                 return (
                   <div key={group.key}>
                     <h4 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">

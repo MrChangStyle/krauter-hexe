@@ -9,7 +9,7 @@ import {
 import { plantImageUrl, plantSideImageUrl, insectImageUrl } from "./image";
 import { getImage } from "./image-store";
 import { ANIMALS, getAnimalInfo } from "./animals";
-import { HEAL_TARGETS, symptomsFor } from "./heal-targets";
+import { HEAL_TARGETS, applicationsFor, symptomsFor } from "./heal-targets";
 import {
   VIEW_CATEGORIES,
   VIEW_CATEGORY_LABELS,
@@ -360,8 +360,7 @@ export async function exportPlantPdf(plant: Plant, appUrl?: string): Promise<Blo
       ensureSpace(10);
       paragraph(group.label.toUpperCase(), margin, contentW, 8.5, "bold", TEXT, 1.2);
       y += 1;
-      const applications =
-        (plant.symptomApplications as Record<string, Record<string, string>> | undefined)?.[group.key] ?? {};
+      const applications = applicationsFor(plant, group.key);
       for (const tag of group.tags) {
         ensureSpace(8);
         // Tag pill — thin border box

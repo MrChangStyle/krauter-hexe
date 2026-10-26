@@ -7,6 +7,7 @@ import { SCENES, SceneStyles } from "@/components/site/scenes";
 import { SiteFeedback } from "@/components/site/site-feedback";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 import { SITE_NAV, SITE_PATHS, planById, type PlanId } from "@/lib/site";
+import { APP_PATH } from "@/lib/app-entry";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -93,7 +94,7 @@ export function useSiteActions(actions: SiteActions) {
     login: actions.onLogin ?? (() => go("login")),
     register: actions.onRegister ?? (() => go("register")),
     toApp: () => {
-      window.location.href = `${BASE}/`;
+      window.location.href = `${BASE}${APP_PATH}`;
     },
   };
 }

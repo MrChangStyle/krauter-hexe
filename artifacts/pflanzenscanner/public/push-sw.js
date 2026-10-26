@@ -2,7 +2,7 @@
 // workbox.importScripts. Keeps push support without switching the PWA build
 // to injectManifest.
 self.addEventListener("push", (event) => {
-  let payload = { title: "Little Farming", body: "", tag: undefined, url: "/" };
+  let payload = { title: "Little Farming", body: "", tag: undefined, url: "/app" };
   try {
     payload = { ...payload, ...event.data.json() };
   } catch (e) {
@@ -24,7 +24,7 @@ self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   // Resolve app-relative paths against the SW scope so links work when the
   // app is served under a base path (payload "/aufgaben" -> "<scope>/aufgaben").
-  const rawUrl = (event.notification.data && event.notification.data.url) || "/";
+  const rawUrl = (event.notification.data && event.notification.data.url) || "/app";
   const targetUrl = new URL(rawUrl.replace(/^\//, ""), self.registration.scope).href;
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {

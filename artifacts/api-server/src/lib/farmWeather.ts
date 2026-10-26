@@ -477,7 +477,7 @@ export async function sendWeatherDigests(hhmm: string, day: string): Promise<num
           .where(and(eq(farmMembershipsTable.farmId, farmId), inArray(farmMembershipsTable.role, ['admin', 'caretaker'])));
         const title = fresh.some((w) => w.kind === 'hardFrost' || w.kind === 'storm') ? 'Unwetter-Warnung für deinen Hof' : 'Wetter-Hinweis für deinen Hof';
         for (const { userId } of members) {
-          await sendPushToUser(userId, { topic: 'weather', title, body: fresh.map((w) => w.text).join(' '), tag: `weather-${farmId}-${day}`, url: '/' });
+          await sendPushToUser(userId, { topic: 'weather', title, body: fresh.map((w) => w.text).join(' '), tag: `weather-${farmId}-${day}`, url: '/app' });
         }
         sent += 1;
       } catch (err) {
@@ -534,7 +534,7 @@ export async function sendAlertPushes(day: string, now = new Date()): Promise<nu
           const title = level === ALERT_LEVEL.extreme ? 'Extreme Unwetterwarnung (DWD)' : 'Unwetterwarnung des DWD';
           const body = [alert.headline, alert.instruction].filter(Boolean).join(' – ').slice(0, 300);
           for (const { userId } of members) {
-            await sendPushToUser(userId, { topic: 'weather', title, body, tag: `dwd-${farmId}-${alert.id}`, url: '/' });
+            await sendPushToUser(userId, { topic: 'weather', title, body, tag: `dwd-${farmId}-${alert.id}`, url: '/app' });
           }
           sent += 1;
         }

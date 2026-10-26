@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { syncPushSubscription } from '@/lib/push';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
@@ -86,6 +86,7 @@ import SuchePage from '@/pages/suche';
 import GrowWissenPage from '@/pages/grow-wissen';
 import GrowRechtPage from '@/pages/grow-recht';
 import { StatusBanner } from '@/components/status-banner';
+import { resolveEntry } from '@/lib/app-entry';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -247,6 +248,8 @@ function publicPageFor(pathname: string) {
 
 function App() {
   const publicPage = publicPageFor(window.location.pathname);
+  // "/" in a browser tab is the homepage, "/app" the app (lib/app-entry.ts) – decided once per load.
+  const [site] = useState(() => (publicPage ? false : resolveEntry(import.meta.env.BASE_URL.replace(/\/$/, '')) === 'site'));
   if (publicPage) return publicPage;
 
   return (
@@ -258,7 +261,7 @@ function App() {
         <AuthProvider>
           {/* Everything - including the offline scan queue - only runs for
               signed-in, approved accounts. */}
-          <AuthGate>
+          <AuthGate site={site}>
             <ScanQueueProvider>
               <TooltipProvider>
                 <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>

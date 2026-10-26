@@ -56,7 +56,8 @@ export default defineConfig({
         short_name: 'Little Farming',
         description:
           'Little Farming – deine App für Garten, Hof und Tiere. Mit der Kräuterhexe scannst du Wildpflanzen, Pilze und Insekten.',
-        start_url: basePath,
+        // The installed app starts in the app; "/" in a browser tab is the homepage (lib/app-entry.ts).
+        start_url: `${basePath}app`,
         scope: basePath,
         display: 'standalone',
         background_color: '#F4F1EA',

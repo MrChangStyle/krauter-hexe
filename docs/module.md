@@ -9,7 +9,7 @@ Little Farming besteht aus zwei Bereichen, **Pflanzen** und **Tiere**, mit je me
 
 ## Was „ausblenden“ bewirkt
 
-- Die Kachel auf der Bereichsseite (Pflanzen, Tiere) verschwindet, beim Pflegeplan auch die grüne Karte oben. Auf „Tiere“ steht oben immer „Meine Tiere“ (Liste unter `/farm/tiere`); die Stall-Aufgaben für heute zeigt der Hof.
+- Die Kachel auf der Bereichsseite (Pflanzen, Tiere) verschwindet, bei „Meine Pflanzen“ auch die grüne Karte oben auf „Pflanzen“. Auf „Tiere“ steht oben immer „Meine Tiere“ (Liste unter `/farm/tiere`). Fällige Pflege- und Stall-Aufgaben zeigt der Hof; Pflegeplan und Stall-Aufgaben bleiben als Kacheln.
 - Die Widgets des Moduls verschwinden aus dem Hof-Dashboard und aus „Dashboard anpassen“ (`WIDGET_MODULE` in `lib/modules.ts`).
 - Ein ausgeblendeter **Bereich** nimmt seinen Reiter aus der unteren Leiste und blendet alle seine Module aus.
 - Die Daten bleiben unverändert erhalten. Wer das Modul wieder einblendet, findet alles wie vorher. Direkte Links funktionieren weiter.

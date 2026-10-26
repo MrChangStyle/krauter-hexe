@@ -23,7 +23,7 @@ export const TOUR: readonly TourStep[] = [
   {
     path: "/pflanzen",
     title: "Pflanzen",
-    text: "Alles rund um Pflanzen als Kacheln: deine Pflanzen, Pflegeplan, Pflanzen-Doc, Beet-Architekt, Saatgut und mehr. Tippe eine Kachel an, um das Modul zu öffnen.",
+    text: "Oben führt „Meine Pflanzen“ zu deiner Sammlung, darunter stehen Pflegeplan, Pflanzen-Doc, Beet-Architekt, Saatgut und mehr als Kacheln. Fällige Pflegeaufgaben zeigt auch der Hof.",
     module: "plants",
   },
   {

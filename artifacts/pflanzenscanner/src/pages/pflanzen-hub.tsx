@@ -3,7 +3,6 @@ import {
   BookOpen,
   Bug,
   CalendarCheck,
-  ChevronRight,
   Fence,
   Leaf,
   Package,
@@ -11,7 +10,7 @@ import {
   Sprout,
   Stethoscope,
 } from "lucide-react";
-import { useGetPremium, useListMyFarms, useListTasks, type ModuleId } from "@workspace/api-client-react";
+import { useGetPremium, useListMyFarms, useListMyScans, type ModuleId } from "@workspace/api-client-react";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { GROW_ENABLED } from "@/lib/grow-labels";
 import { useModules } from "@/hooks/use-modules";
@@ -23,14 +22,6 @@ import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
  * the order follows the agreed Little Farming navigation (design "Option B").
  */
 const AREAS: { module: ModuleId; href: string; icon: typeof Sprout; label: string; hint: string; tone: string }[] = [
-  {
-    module: "my-plants",
-    href: "/meine-pflanzen",
-    icon: Sprout,
-    label: "Meine Pflanzen",
-    hint: "Scans, Zimmer, Beet",
-    tone: "bg-lime-100 text-lime-800 dark:bg-lime-950/50 dark:text-lime-300",
-  },
   {
     module: "care-plan",
     href: "/aufgaben",
@@ -102,22 +93,26 @@ const AREAS: { module: ModuleId; href: string; icon: typeof Sprout; label: strin
   },
 ];
 
-function TodayCard() {
-  const { data: tasks } = useListTasks();
-  const active = (tasks ?? []).filter((t) => t.isActive);
+/** Top of the Pflanzen page, like "Meine Tiere" on Tiere: the way to all of your plants. */
+function MyPlantsCard() {
+  const { data: plants } = useListMyScans({ query: { queryKey: ["/api/plants/my-scans"] } });
+  const n = plants?.length ?? 0;
   return (
     <Link
-      href="/aufgaben"
+      href="/meine-pflanzen"
       className="block rounded-3xl bg-primary text-primary-foreground p-5 space-y-2 shadow-md active:scale-[0.99] transition-transform"
+      data-testid="my-plants"
     >
       <div className="flex items-center justify-between">
-        <span className="text-lg font-semibold">Pflegeplan</span>
-        <ChevronRight className="w-5 h-5 opacity-80" />
+        <span className="text-lg font-semibold">Meine Pflanzen</span>
+        <Sprout className="w-5 h-5 opacity-80" />
       </div>
       <p className="text-sm opacity-90">
-        {active.length === 0
-          ? "Noch keine Pflegeaufgaben. Lege Gießen, Düngen oder Besprühen mit Erinnerung an."
-          : `${active.length} ${active.length === 1 ? "aktive Aufgabe" : "aktive Aufgaben"} für deine Pflanzen`}
+        {!plants
+          ? "Deine Scans und Sammlung – Zimmer, Balkon und Beet."
+          : n === 0
+            ? "Noch keine Pflanzen. Scanne deine erste – sie landet hier mit Steckbrief."
+            : `${n} ${n === 1 ? "Pflanze" : "Pflanzen"} in deiner Sammlung – mit Steckbrief und Pflege`}
       </p>
     </Link>
   );
@@ -138,7 +133,7 @@ export default function PflanzenHubPage() {
         </p>
       </div>
 
-      {visible("care-plan") && <TodayCard />}
+      {visible("my-plants") && <MyPlantsCard />}
 
       <HubGrid>
         {AREAS.filter((a) => visible(a.module) && farmModuleGranted(farm, a.module)).map(({ module, ...area }) => (

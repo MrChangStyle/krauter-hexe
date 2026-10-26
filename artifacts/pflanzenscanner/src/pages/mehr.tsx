@@ -656,18 +656,18 @@ export function MeineInsektenTab() {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Insekten filtern">
+      {/* Same chips as the Lagerort filter in the Vorratskammer. */}
+      <div className="flex gap-1 overflow-x-auto" role="group" aria-label="Insekten filtern">
         {RELATION_FILTERS.map((f) => (
           <button
             key={f.id}
             type="button"
-            role="radio"
-            aria-checked={filter === f.id}
+            aria-pressed={filter === f.id}
             onClick={() => setFilter(f.id)}
             disabled={f.id !== "all" && counts[f.id] === 0}
-            className={`rounded-full border px-3 py-1.5 text-sm transition-colors disabled:opacity-40 ${filter === f.id ? "border-primary bg-primary text-primary-foreground" : "bg-background hover:border-primary"}`}
+            className={`shrink-0 rounded-full border px-3 py-1 text-xs disabled:opacity-40 ${filter === f.id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"}`}
           >
-            {f.label} <span className="opacity-70">{counts[f.id]}</span>
+            {f.label} · {counts[f.id]}
           </button>
         ))}
       </div>

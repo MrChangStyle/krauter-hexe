@@ -3,9 +3,11 @@ import {
   BENEFICIALS,
   MEASURES,
   PROBLEMS,
+  beneficialById,
   beneficialForInsect,
   filterByRelation,
   measuresFor,
+  problemsForBeneficial,
   problemsForPest,
   relationCounts,
 } from "@/lib/beneficials";
@@ -67,6 +69,15 @@ describe("Nützlinge-Ratgeber – lookups", () => {
     expect(m[1]).toBe("flowers");
     expect(new Set(m).size).toBe(m.length);
     expect(measuresFor(["nematodes"]).map((x) => x.id)).toEqual(["buy"]);
+  });
+});
+
+describe("Nützlinge-Ratgeber – pages", () => {
+  it("finds a beneficial by id and the problems it helps with", () => {
+    expect(beneficialById("hedgehog")?.name).toBe("Igel");
+    expect(beneficialById("nope")).toBeUndefined();
+    expect(beneficialById("toString")).toBeUndefined();
+    expect(problemsForBeneficial("hedgehog").map((p) => p.id)).toEqual(["slugs", "caterpillars", "grubs"]);
   });
 });
 

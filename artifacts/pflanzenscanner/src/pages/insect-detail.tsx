@@ -27,6 +27,7 @@ import { PhotoChoiceCard } from "@/components/photo-choice-card";
 import { ImageLockToggle } from "@/components/image-lock-toggle";
 import { ReportButton } from "@/components/report-button";
 import { beneficialForInsect, problemsForPest } from "@/lib/beneficials";
+import { GUIDE_HREF, beneficialHref, problemHref } from "@/components/beneficials-guide";
 
 export default function InsectDetailPage() {
   const params = useParams();
@@ -233,7 +234,7 @@ export default function InsectDetailPage() {
         {/* Pest → the beneficials that help against it */}
         {isPest && (
           <Link
-            href={pestProblem ? `/schaedlinge?tab=nuetzlinge&problem=${pestProblem.id}` : "/schaedlinge?tab=nuetzlinge"}
+            href={pestProblem ? problemHref(pestProblem.id) : GUIDE_HREF}
             className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 flex gap-3"
           >
             <Leaf className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
@@ -256,7 +257,7 @@ export default function InsectDetailPage() {
                 frisst oder Blüten bestäubt. Bitte nicht bekämpfen!
               </p>
               <Link
-                href={knownBeneficial ? `/schaedlinge?tab=nuetzlinge&nuetzling=${knownBeneficial.id}` : "/schaedlinge?tab=nuetzlinge"}
+                href={knownBeneficial ? beneficialHref(knownBeneficial.id) : GUIDE_HREF}
                 className="font-medium text-emerald-800 dark:text-emerald-300 underline underline-offset-2"
               >
                 So holst du {knownBeneficial ? knownBeneficial.name : "Nützlinge"} in deinen Garten

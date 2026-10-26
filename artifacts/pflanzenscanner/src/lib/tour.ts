@@ -29,7 +29,7 @@ export const TOUR: readonly TourStep[] = [
   {
     path: "/farm",
     title: "Tiere",
-    text: "Oben stehen die Stall-Aufgaben für heute, darunter die Module als Kacheln und ganz unten deine Tiere. Mit „Hof einrichten“ legst du in wenigen Schritten los.",
+    text: "Oben führt „Meine Tiere“ zu allen Tieren des Hofs, darunter stehen die Module als Kacheln – die Stall-Aufgaben für heute findest du auch auf dem Hof. Mit „Hof einrichten“ legst du in wenigen Schritten los.",
     module: "animals",
   },
   {

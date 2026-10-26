@@ -36,8 +36,8 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useModules } from "@/hooks/use-modules";
 import { farmModuleGranted } from "@/lib/modules";
-import { FarmAnimalsSection } from "@/components/farm-animals-section";
-import { FarmTasksTile, FarmTodayCard } from "@/components/farm-tasks-section";
+import { MyAnimalsCard } from "@/components/farm-animals-section";
+import { FarmTasksTile } from "@/components/farm-tasks-section";
 import {
   FARM_ROLE_HINTS,
   FARM_ROLE_LABELS,
@@ -272,7 +272,7 @@ export default function FarmPage() {
 
       <HousingOrderBanner farm={farm} link />
 
-      {show("farm-tasks") && <FarmTodayCard farm={farm} />}
+      <MyAnimalsCard farm={farm} />
 
       {(show("farm-tasks") || show("yields")) && farm.role !== "guest" && (
         <Link
@@ -306,12 +306,6 @@ export default function FarmPage() {
       </HubGrid>
 
       <FarmSetupCard farm={farm} onRename={() => openDialog("rename")} />
-
-
-
-      <FarmAnimalsSection farm={farm} />
-
-
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button variant="outline" size="sm" className="gap-1.5" onClick={() => openDialog("new")}>

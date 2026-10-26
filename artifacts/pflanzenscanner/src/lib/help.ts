@@ -153,8 +153,8 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
   // ── Tiere ─────────────────────────────────────────────────────────────────
   animals: {
     title: "Tierbestand",
-    href: "/farm",
-    intro: "Alle Tiere des Hofs, einzeln oder in Gruppen: mit Gesundheitsakte, Gewicht, Abstammung und Wartezeiten. Für den Anfang genügen Tierart, Geschlecht und Geburtsdatum.",
+    href: "/farm/tiere",
+    intro: "Alle Tiere des Hofs, einzeln oder in Gruppen – auf der Seite „Meine Tiere“ (oben auf „Tiere“): mit Gesundheitsakte, Gewicht, Abstammung und Wartezeiten. Für den Anfang genügen Tierart, Geschlecht und Geburtsdatum.",
     steps: [
       "„Schnellstart“: eine Gruppe mit nummerierten Tieren, Startration und Erinnerungen in einem Rutsch.",
       "Oder ein Tier einzeln anlegen – Foto, Name und Ring-/Ohrmarke sind optional (ohne Namen heißt es z. B. „Ziege 1“).",

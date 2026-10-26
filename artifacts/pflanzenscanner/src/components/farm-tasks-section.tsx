@@ -328,32 +328,6 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
   );
 }
 
-/** Top of the Tiere page, like the Pflegeplan on Pflanzen: what is due today in the barn. */
-export function FarmTodayCard({ farm }: { farm: FarmSummary }) {
-  const tasks = useListFarmTasks(farm.id);
-  const active = (tasks.data ?? []).filter((t) => t.isActive);
-  const due = active.filter((t) => t.isDue).length;
-  return (
-    <Link
-      href="/farm/aufgaben"
-      className="block rounded-3xl bg-primary text-primary-foreground p-5 space-y-2 shadow-md active:scale-[0.99] transition-transform"
-      data-testid="farm-today"
-    >
-      <span className="flex items-center justify-between">
-        <span className="text-lg font-semibold">Stall-Aufgaben</span>
-        <ClipboardList className="w-5 h-5 opacity-80" />
-      </span>
-      <span className="block text-sm opacity-90">
-        {active.length === 0
-          ? "Noch keine Aufgaben. Lege Füttern, Ausmisten oder Eier sammeln mit Erinnerung an."
-          : due > 0
-            ? `${due} ${due === 1 ? "Aufgabe ist" : "Aufgaben sind"} heute fällig`
-            : `Heute ist alles erledigt – ${active.length} ${active.length === 1 ? "Aufgabe" : "Aufgaben"} im Plan`}
-      </span>
-    </Link>
-  );
-}
-
 /** The Stall-Aufgaben tile on the Tiere page, with what is due today. */
 export function FarmTasksTile({ farm }: { farm: FarmSummary }) {
   const tasks = useListFarmTasks(farm.id);

@@ -11,7 +11,7 @@ export const OFFEN = "[bitte ergänzen]";
 
 export const OPERATOR: Record<"business" | "name" | "street" | "city" | "email", string> = {
   /** Geschäftsbezeichnung des Gewerbes. */
-  business: "Javaria IT",
+  business: "Chavaria IT",
   /** Vor- und Nachname des Inhabers (Einzelunternehmen: Pflichtangabe). */
   name: "Stefan Huber",
   /** Straße und Hausnummer – ein Postfach reicht nicht. */

@@ -1,12 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
-import { Leaf, Menu, Sparkles, X, type LucideIcon } from "lucide-react";
+import { Gift, Leaf, Menu, Sparkles, X, type LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FarmScene } from "@/components/site/farm-scene";
 import { SCENES, SceneStyles } from "@/components/site/scenes";
 import { SiteFeedback } from "@/components/site/site-feedback";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
-import { SITE_NAV, SITE_PATHS, planById, type PlanId } from "@/lib/site";
+import { SITE_NAV, SITE_PATHS, TEST_PHASE, TEST_PHASE_TEXT, TEST_PHASE_TITLE, planById, type PlanId } from "@/lib/site";
 import { APP_PATH } from "@/lib/app-entry";
 
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -177,6 +177,17 @@ export function SiteLayout({ actions, children }: { actions: SiteActions; childr
           </nav>
         )}
       </header>
+
+      {TEST_PHASE && (
+        <div className="border-b border-amber-200 bg-amber-50 text-amber-950 dark:border-amber-900 dark:bg-amber-950/40 dark:text-amber-100" data-testid="site-test-phase">
+          <p className="mx-auto flex max-w-6xl items-start gap-2 px-4 py-2.5 text-sm">
+            <Gift className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>
+              <span className="font-semibold">{TEST_PHASE_TITLE}.</span> {TEST_PHASE_TEXT}
+            </span>
+          </p>
+        </div>
+      )}
 
       <main>{children}</main>
       <SiteFeedback />

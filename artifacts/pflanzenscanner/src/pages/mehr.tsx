@@ -41,6 +41,7 @@ import { useAuthContext } from "@/lib/auth-context";
 import { ThemeCard } from "@/components/theme-card";
 import { PushNotificationCard } from "@/components/push-notification-card";
 import { AccountCard } from "@/components/account-card";
+import { TesterNotice } from "@/components/tester-notice";
 import { ImageRescueCard } from "@/components/image-rescue-card";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { pushSupported } from "@/lib/push";
@@ -867,7 +868,11 @@ export function PflanzenretterCard() {
           <Trophy className="w-3.5 h-3.5" />
           Pflanzenretter{rank ? ` · Rang #${rank}` : ""}
         </p>
-        {premium.data && <p className="text-xs opacity-80 mt-0.5">{premium.data.active ? "Premium aktiv" : "Kostenlos"}</p>}
+        {premium.data && (
+          <p className="text-xs opacity-80 mt-0.5">
+            {premium.data.source === "test" ? "Testphase – alles kostenlos" : premium.data.source === "tester" ? "Tester – dauerhaft kostenlos" : premium.data.active ? "Premium aktiv" : "Kostenlos"}
+          </p>
+        )}
       </div>
       <div className="text-right shrink-0">
         <p className="text-2xl font-bold flex items-center justify-end gap-1">
@@ -1054,6 +1059,8 @@ export default function MehrPage() {
       </div>
 
       {me?.username && <PflanzenretterCard />}
+
+      <TesterNotice />
 
       <HubGrid>
         <HubTile href="/team" icon={Tractor} label="Farm & Team" hint="Team, Vertretung, Kontakte" tone="bg-lime-100 text-lime-800 dark:bg-lime-950/50 dark:text-lime-300" />

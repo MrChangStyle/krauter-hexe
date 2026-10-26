@@ -125,6 +125,8 @@ describe.skipIf(!enabled)("Grow KI-Check (real database, AI replaced)", () => {
   });
 
   it("needs Premium – granted without end, until a day, or the owner", async () => {
+    // After the Testphase, for an account created after it (not a tester).
+    process.env["TEST_PHASE_END"] = "2020-01-01";
     await q("DELETE FROM premium WHERE user_id = 'anna'");
     let r = await api("POST", `/grow/plants/${plantId}/checks`, { kind: "health", imageData: PHOTO });
     expect(r).toEqual({ status: 402, data: { error: "Der KI-Check gehört zu Premium.", premium: false } });
@@ -138,6 +140,14 @@ describe.skipIf(!enabled)("Grow KI-Check (real database, AI replaced)", () => {
     runModelChain.mockResolvedValueOnce({ istPflanze: true, status: "healthy", befunde: [] });
     r = await api("POST", `/grow/plants/${plantId}/checks`, { kind: "health", imageData: PHOTO });
     expect(r.status).toBe(201);
+    delete process.env["TEST_PHASE_END"];
+  });
+
+  it("is open for everyone during the Testphase", async () => {
+    delete process.env["TEST_PHASE_END"];
+    await q("DELETE FROM premium WHERE user_id = 'anna'");
+    runModelChain.mockResolvedValueOnce({ istPflanze: true, status: "healthy", befunde: [] });
+    expect((await api("POST", `/grow/plants/${plantId}/checks`, { kind: "health", imageData: PHOTO })).status).toBe(201);
   });
 
   it("reads the trichomes only in the bloom", async () => {

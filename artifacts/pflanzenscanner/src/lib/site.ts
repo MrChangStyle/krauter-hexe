@@ -63,6 +63,15 @@ export interface Plan {
 /** The prices are proposals until payment exists (docs/premium.md). */
 export const PRICES_PROVISIONAL = true;
 
+/**
+ * Testphase (docs/premium.md): everything is open and free, and whoever tests
+ * now keeps the app free after the start. Set to false once TEST_PHASE_END is
+ * set on the server and the start has happened.
+ */
+export const TEST_PHASE = true;
+export const TEST_PHASE_TITLE = "Testphase: alles offen und kostenlos";
+export const TEST_PHASE_TEXT = "Während der Testphase sind alle Funktionen frei – auch die KI, mit einem Tageslimit. Und wer jetzt testet, behält die App auch nach dem Start kostenlos.";
+
 export const PLANS: Plan[] = [
   {
     id: "basis",

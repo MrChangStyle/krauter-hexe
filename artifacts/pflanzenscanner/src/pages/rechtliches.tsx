@@ -4,6 +4,8 @@ import {
   LEGAL_PATHS,
   LEGAL_VERSION,
   OPERATOR,
+  OPERATOR_FORM,
+  OPERATOR_VAT,
   legalHref,
   operatorDataIncomplete,
 } from "@/lib/legal";
@@ -26,7 +28,7 @@ function LegalShell({ title, children }: { title: string; children: ReactNode })
         >
           <ArrowLeft className="h-4 w-4" />
           <Leaf className="h-4 w-4 text-primary" />
-          Zurück zur App
+          Zurück zur Startseite
         </a>
         <h1 className="mb-4 text-2xl font-bold tracking-tight">{title}</h1>
         {operatorDataIncomplete() && (
@@ -67,7 +69,9 @@ function LegalShell({ title, children }: { title: string; children: ReactNode })
 function OperatorBlock() {
   return (
     <p>
-      {OPERATOR.name}
+      {OPERATOR.business}
+      <br />
+      Inhaber: {OPERATOR.name}
       <br />
       {OPERATOR.street}
       <br />
@@ -84,10 +88,38 @@ export function ImpressumPage() {
       <section>
         <h2>Angaben gemäß § 5 DDG</h2>
         <OperatorBlock />
+        <p className="mt-2">{OPERATOR_FORM}.</p>
       </section>
       <section>
-        <h2>Verantwortlich für den Inhalt</h2>
-        <p>{OPERATOR.name}, Anschrift wie oben.</p>
+        <h2>Kontakt</h2>
+        <p>
+          E-Mail: {OPERATOR.email}
+          <br />
+          Außerdem erreichst du uns über die Feedback-Funktion auf der Homepage
+          und in der App.
+        </p>
+      </section>
+      <section>
+        <h2>Umsatzsteuer</h2>
+        <p>{OPERATOR_VAT}</p>
+      </section>
+      <section>
+        <h2>Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV</h2>
+        <p>
+          {OPERATOR.name}
+          <br />
+          {OPERATOR.street}
+          <br />
+          {OPERATOR.city}
+        </p>
+      </section>
+      <section>
+        <h2>Verbraucherstreitbeilegung</h2>
+        <p>
+          Wir sind nicht bereit und nicht verpflichtet, an
+          Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle
+          teilzunehmen (§ 36 VSBG).
+        </p>
       </section>
       <section>
         <h2>Inhalte von Nutzerinnen und Nutzern</h2>
@@ -229,7 +261,14 @@ export function DatenschutzPage() {
           Daten lädst du jederzeit selbst unter „Mehr → Konto → Meine Daten
           herunterladen“ herunter. Für alles andere schreib uns an die oben
           genannte E-Mail-Adresse. Außerdem kannst du dich bei einer
-          Datenschutz-Aufsichtsbehörde beschweren.
+          Datenschutz-Aufsichtsbehörde beschweren. Für uns zuständig ist das
+          Bayerische Landesamt für Datenschutzaufsicht (BayLDA), Promenade 18,
+          91522 Ansbach, www.lda.bayern.de.
+        </p>
+        <p className="mt-2">
+          Einen Datenschutzbeauftragten müssen wir nicht benennen, weil nicht
+          regelmäßig mindestens 20 Personen mit der Verarbeitung
+          personenbezogener Daten beschäftigt sind (§ 38 BDSG).
         </p>
       </section>
     </LegalShell>
@@ -242,7 +281,10 @@ export function NutzungsbedingungenPage() {
       <section>
         <h2>1. Angebot</h2>
         <p>
-          Little Farming ist eine App rund um Garten, Hof und Tiere. Ihr Teil
+          Little Farming wird angeboten von {OPERATOR.business}, Inhaber{" "}
+          {OPERATOR.name}, {OPERATOR.street}, {OPERATOR.city} (siehe
+          Impressum). Little Farming ist eine App rund um Garten, Hof und
+          Tiere. Ihr Teil
           „Kräuterhexe“ hilft beim Bestimmen von Pflanzen, Pilzen und Insekten
           per Foto und sammelt die Ergebnisse in einem gemeinsamen Archiv. Die
           Nutzung ist kostenlos. Es besteht kein Anspruch auf

@@ -41,9 +41,14 @@ describe.skipIf(!enabled)("Premium (real database)", () => {
     base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
-  afterAll(() => server?.close());
+  afterAll(() => {
+    delete process.env["TEST_PHASE_END"];
+    server?.close();
+  });
 
   beforeEach(async () => {
+    // After the Testphase, and every account created after it: only grants count.
+    process.env["TEST_PHASE_END"] = "2020-01-01";
     await q("TRUNCATE users, premium RESTART IDENTITY CASCADE");
     await q(`INSERT INTO users (id, email, username, approved, is_owner) VALUES ('owner', 'o@x.de', 'chef', true, true), ('anna', 'anna@x.de', 'anna', true, false), ('bert', 'bert@x.de', null, true, false)`);
     as = "anna";
@@ -85,6 +90,23 @@ describe.skipIf(!enabled)("Premium (real database)", () => {
     // Taken back.
     r = await api("PUT", "/admin/premium", { email: "anna@x.de", active: false });
     expect(r.data.map((e: any) => e.email)).toEqual(["bert@x.de"]);
+  });
+
+  it("is open for everyone in the Testphase, and stays for the testers after it", async () => {
+    delete process.env["TEST_PHASE_END"];
+    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: null, source: "test" });
+    process.env["TEST_PHASE_END"] = "2099-12-31";
+    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: null, source: "test" });
+    // Over: anna signed up before the end (tester), bert after it.
+    process.env["TEST_PHASE_END"] = "2024-06-30";
+    await q("UPDATE users SET created_at = '2024-06-30 20:00:00+02' WHERE id = 'anna'");
+    await q("UPDATE users SET created_at = '2024-07-01 12:00:00+02' WHERE id = 'bert'");
+    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: null, source: "tester" });
+    as = "bert";
+    expect((await api("GET", "/premium")).data).toEqual({ active: false, until: null, source: null });
+    // A grant still wins over nothing.
+    await q("INSERT INTO premium (user_id) VALUES ('bert')");
+    expect((await api("GET", "/premium")).data.source).toBe("manual");
   });
 
   it("goes with the account", async () => {

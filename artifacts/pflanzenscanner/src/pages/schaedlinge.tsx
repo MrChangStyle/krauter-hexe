@@ -3,63 +3,62 @@ import { Bug, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MeineInsektenTab } from "@/pages/mehr";
 import { BackToPflanzen } from "@/components/back-to-pflanzen";
-import { BeneficialsGuide } from "@/components/beneficials-guide";
+import { BeneficialsHub, GUIDE_HREF } from "@/components/beneficials-guide";
+import { cn } from "@/lib/utils";
 
 /**
  * Schädlinge & Nützlinge: insects on house and garden plants - identify them
- * and get biological or chemical treatment tips; the Nützlinge-Ratgeber shows
- * which beneficials help and how to attract them (docs/schaedlinge.md).
- * ?tab=nuetzlinge opens the guide, with &problem=<id> or &nuetzling=<id>.
+ * and get biological or chemical treatment tips; the tab "Nützlinge fördern"
+ * (?tab=nuetzlinge) leads to the guide pages (docs/schaedlinge.md).
  */
 export default function SchaedlingePage() {
-  const params = new URLSearchParams(useSearch());
+  const guide = new URLSearchParams(useSearch()).get("tab") === "nuetzlinge";
   const [, setLocation] = useLocation();
-  const guide = params.get("tab") === "nuetzlinge";
 
   const tabs = [
-    { id: "insekten", label: "Meine Insekten", icon: Bug, active: !guide },
-    { id: "nuetzlinge", label: "Nützlinge fördern", icon: Leaf, active: guide },
+    { href: "/schaedlinge", label: "Meine Insekten", icon: Bug, active: !guide },
+    { href: GUIDE_HREF, label: "Nützlinge fördern", icon: Leaf, active: guide },
   ];
 
   return (
-    <div className="px-4 pt-4 pb-4 space-y-5">
-      <BackToPflanzen />
-      <div>
-        <h1 className="text-2xl font-bold">Schädlinge &amp; Nützlinge</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Insekten an Haus- und Gartenpflanzen bestimmen – mit biologischen und
-          chemischen Bekämpfungstipps – und Nützlinge gezielt in den Garten holen.
-        </p>
+    <div className="flex flex-col flex-1">
+      <div className="px-4 pt-4 space-y-4">
+        <BackToPflanzen />
+        <div>
+          <h1 className="text-2xl font-bold">Schädlinge &amp; Nützlinge</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Insekten bestimmen, Schädlinge biologisch bekämpfen und Nützlinge in den Garten holen.
+          </p>
+        </div>
+        <Button asChild className="w-full h-12 gap-2 bg-amber-600 hover:bg-amber-700 text-white">
+          <Link href="/insekten-scanner">
+            <Bug className="w-5 h-5" />
+            Insekt bestimmen
+          </Link>
+        </Button>
       </div>
-      <Button asChild className="w-full h-12 gap-2 bg-amber-600 hover:bg-amber-700 text-white">
-        <Link href="/insekten-scanner">
-          <Bug className="w-5 h-5" />
-          Insekt bestimmen
-        </Link>
-      </Button>
-      <div className="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1" role="tablist">
-        {tabs.map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={t.active}
-            onClick={() => setLocation(t.id === "nuetzlinge" ? "/schaedlinge?tab=nuetzlinge" : "/schaedlinge", { replace: true })}
-            className={`flex items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-sm font-medium transition-colors ${t.active ? "bg-background shadow-sm" : "text-muted-foreground"}`}
-          >
-            <t.icon className="h-4 w-4" />
-            {t.label}
-          </button>
-        ))}
+      {/* Tab bar – the same as in the Lexikon. */}
+      <div className="sticky top-0 z-10 mt-2 bg-background border-b border-border px-4" role="tablist">
+        <div className="flex">
+          {tabs.map((t) => (
+            <button
+              key={t.href}
+              type="button"
+              role="tab"
+              aria-selected={t.active}
+              onClick={() => setLocation(t.href, { replace: true })}
+              className={cn(
+                "flex flex-1 items-center justify-center gap-2 px-3 py-3 text-sm font-medium border-b-2 transition-colors",
+                t.active ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground",
+              )}
+            >
+              <t.icon className="w-4 h-4" />
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
-      {guide ? (
-        <BeneficialsGuide key={params.toString()} initialProblem={params.get("problem")} initialBeneficial={params.get("nuetzling")} />
-      ) : (
-        <section className="space-y-3">
-          <h2 className="text-base font-semibold">Meine Insekten</h2>
-          <MeineInsektenTab />
-        </section>
-      )}
+      <div className="px-4 pt-4 pb-4">{guide ? <BeneficialsHub /> : <MeineInsektenTab />}</div>
     </div>
   );
 }

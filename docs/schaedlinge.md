@@ -1,25 +1,33 @@
 # Schädlinge & Nützlinge
 
-Das Modul „Schädlinge & Nützlinge“ (Bereich Pflanzen, Freigabe `pests`, Seite `/schaedlinge`) hat zwei Reiter:
+Das Modul „Schädlinge & Nützlinge“ (Bereich Pflanzen, Freigabe `pests`, Seite `/schaedlinge`) hat oben eine Reiterleiste wie das Lexikon:
 
 - **Meine Insekten:** die eigenen Insekten-Scans mit PDF-Export.
-- **Nützlinge fördern:** der Ratgeber. Er ist auch direkt erreichbar über `/schaedlinge?tab=nuetzlinge`.
+- **Nützlinge fördern** (`/schaedlinge?tab=nuetzlinge`): Kacheln im Stil der Pflanzen- und Tiere-Übersicht.
+  - „Wobei brauchst du Hilfe?“: eine Kachel je Problem.
+  - „Nützlinge kennenlernen“: eine Kachel je Nützling.
+  - Jede Kachel öffnet eine eigene Seite – der Inhalt erscheint nicht weiter unten, sondern oben auf der neuen Seite. „Nützlinge fördern“ oben links führt zurück.
 
 ## Meine Insekten
 
 - **Scannen:** „Insekt bestimmen“ öffnet den Insekten-Scanner (KI).
 - **Einstufung:** Jedes Insekt ist Schädling, Nützling oder neutral.
-- **Filter:** Über der Liste stehen Chips „Alle / Schädlinge / Nützlinge / Neutral“ mit Anzahl.
+- **Filter:** Über der Liste stehen Chips „Alle / Schädlinge / Nützlinge / Neutral“ mit Anzahl, im selben Stil wie der Lagerort-Filter der Vorratskammer.
   - Leere Gruppen sind ausgegraut.
   - Der PDF-Export nimmt nur die gefilterten Insekten.
-- **Detailseite eines Schädlings:** Der Kasten „Wer hilft dagegen?“ führt in den Ratgeber zum passenden Problem. Das Problem wird am deutschen Namen erkannt, z. B. „…laus“ → Blattläuse, „…schnecke“ → Schnecken, „Buchsbaumzünsler“ → Raupen.
-- **Detailseite eines Nützlings:** Der Link „So holst du … in deinen Garten“ führt zu diesem Nützling und seinen Maßnahmen, z. B. Marienkäfer, Florfliege, Ohrwurm, Mauerbiene, Hummel.
+- **Detailseite eines Schädlings:** Der Kasten „Wer hilft dagegen?“ führt zur Seite des passenden Problems (`/schaedlinge/hilfe/<problem>`). Das Problem wird am deutschen Namen erkannt, z. B. „…laus“ → Blattläuse, „…schnecke“ → Schnecken, „Buchsbaumzünsler“ → Raupen.
+- **Detailseite eines Nützlings:** Der Link „So holst du … in deinen Garten“ führt zur Seite dieses Nützlings (`/schaedlinge/nuetzling/<id>`), z. B. Marienkäfer, Florfliege, Ohrwurm, Mauerbiene, Hummel.
 
 ## Nützlinge fördern (Ratgeber)
 
-Der Ratgeber arbeitet mit festen Inhalten in `pflanzenscanner/src/lib/beneficials.ts`, ohne KI. Die Seite ist in `components/beneficials-guide.tsx`.
+Der Ratgeber arbeitet mit festen Inhalten in `pflanzenscanner/src/lib/beneficials.ts`, ohne KI. Kacheln, Farben und Bausteine stehen in `components/beneficials-guide.tsx`, die beiden Unterseiten in `pages/nuetzlinge.tsx`:
 
-1. **Wobei brauchst du Hilfe?** Zur Wahl stehen:
+- **Problem-Seite** `/schaedlinge/hilfe/<problem>`: Kopf mit Symbol, „Als Erstes“, die helfenden Nützlinge (je eine Zeile, öffnet den Nützling) und die Maßnahmen.
+- **Nützlings-Seite** `/schaedlinge/nuetzling/<id>`: was er tut, Richtwert, ob man ihn kaufen kann, „Hilft bei“ (führt zu den Problemen) und seine Maßnahmen.
+
+Im Einzelnen:
+
+1. **Probleme** (Kacheln „Wobei brauchst du Hilfe?“):
    - Blattläuse
    - Spinnmilben
    - Schnecken
@@ -30,7 +38,7 @@ Der Ratgeber arbeitet mit festen Inhalten in `pflanzenscanner/src/lib/beneficial
    - Boden verbessern
    - Mehr Ernte durch Bestäubung
 2. **Als Erstes:** ein Satz, was sofort hilft (z. B. abwarten und Läuse abspritzen).
-3. **Diese Nützlinge helfen:**
+3. **Diese Nützlinge helfen** (auf der Problem-Seite):
    - Für jeden Nützling steht, was er tut.
    - Manche haben eine Zahl zum Vorstellen (Richtwert).
    - Bei manchen steht, ob man ihn kaufen kann.

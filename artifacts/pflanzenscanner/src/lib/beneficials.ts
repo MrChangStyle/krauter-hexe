@@ -397,6 +397,15 @@ function matches(name: string, keywords: string[]): boolean {
   return keywords.some((k) => n.includes(k));
 }
 
+export function beneficialById(id: string | null | undefined): Beneficial | undefined {
+  return id && Object.hasOwn(BENEFICIALS, id) ? BENEFICIALS[id as BeneficialId] : undefined;
+}
+
+/** The problems a beneficial helps with. */
+export function problemsForBeneficial(id: BeneficialId): GardenProblem[] {
+  return PROBLEMS.filter((p) => p.beneficials.includes(id));
+}
+
 /** The problems a scanned pest belongs to, from its German name. */
 export function problemsForPest(name: string): GardenProblem[] {
   return PROBLEMS.filter((p) => matches(name, p.keywords));

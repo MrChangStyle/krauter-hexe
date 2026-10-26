@@ -77,7 +77,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     steps: [
       "Ein Insekt scannen – es landet unter „Meine Insekten“. Mit dem Filter siehst du nur Schädlinge, nur Nützlinge oder die neutralen.",
       "Bei Schädlingen zuerst die biologischen Wege lesen und auf „Wer hilft dagegen?“ tippen.",
-      "Unter „Nützlinge fördern“ ein Problem wählen, z. B. Blattläuse, Schnecken oder Boden verbessern.",
+      "Unter „Nützlinge fördern“ auf eine Kachel tippen, z. B. Blattläuse, Schnecken oder Boden verbessern – oder direkt einen Nützling wie den Igel.",
       "Die Maßnahmen umsetzen: Blühpflanzen, Insektenhotel, Ohrwurm-Topf, Tränke, wilde Ecke – jede mit Schritt-für-Schritt-Anleitung.",
     ],
     faq: [

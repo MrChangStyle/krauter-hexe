@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useLocation } from "wouter";
 import { AlertTriangle, CheckCircle2, Lightbulb, Loader2, MessageCircle, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,13 @@ import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 const BASE = import.meta.env.BASE_URL.replace(/\/$/, "");
 
 type Kind = "idea" | "problem";
+
+const OPEN_EVENT = "lf-site-feedback";
+
+/** Opens the feedback bubble from anywhere on the homepage, as an idea with a text to start from. */
+export function openSiteFeedback(text = ""): void {
+  window.dispatchEvent(new CustomEvent<string>(OPEN_EVENT, { detail: text }));
+}
 
 /**
  * Feedback on the homepage (docs/feedback.md): a speech bubble bottom right.
@@ -27,6 +34,19 @@ export function SiteFeedback() {
   const [trap, setTrap] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "sent">("idle");
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const onOpen = (e: Event) => {
+      const start = (e as CustomEvent<string>).detail ?? "";
+      setState("idle");
+      setError(null);
+      setKind("idea");
+      setText((t) => (start && !t.startsWith(start) ? start : t || start));
+      setOpen(true);
+    };
+    window.addEventListener(OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_EVENT, onOpen);
+  }, []);
 
   function reset(next: boolean) {
     setOpen(next);

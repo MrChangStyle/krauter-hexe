@@ -8,7 +8,7 @@ Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit
 |---|---|---|
 | Start | `/` | Hof-Illustration oder Foto, vier Stärken, die drei Bereiche, Hof-Startseite mit Screenshot, Pakete, drei Schritte |
 | Pflanzen | `/funktionen/pflanzen` | Untermenü mit allen Pflanzen-Modulen; je Modul Text, Punkte, KI-Teil mit Paket, Foto oder Screenshot |
-| Tiere | `/funktionen/tiere` | dasselbe für alle Tiere-Module |
+| Tiere | `/funktionen/tiere` | „Diese Tiere kennt die App“ (alle Tierarten, die neueste markiert, „Tierart wünschen“), dann dasselbe für alle Tiere-Module |
 | Gemeinsam auf dem Hof | `/funktionen/hof` | Hof-Startseite, Team und Rollen, Urlaubsvertretung, Hilfe |
 | Preise & Pakete | `/preise` | Basis, Lite, Premium monatlich/jährlich, Vergleichstabelle, Fragen |
 | Modul-Finder | `/modul-finder` | Pflanzen, Tiere, Weide, Team, Ertrag und KI auswählen → empfohlene Module mit Grund und Paket |
@@ -21,6 +21,9 @@ Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit
   - Er empfiehlt nur, was passt. Wer Hühner und einen Gemüsegarten hat, bekommt keine Bienen und keine Weide.
   - Das Paket folgt aus „KI nutzen?“: nein → Basis, ab und zu → Lite, oft → Premium, wenn ein Modul Hof-KI hat, sonst Lite. Grow mit KI → Premium.
   - „Mit dieser Auswahl starten“ merkt sich die Module auf dem Gerät (`lf-finder-modules`). Der Einrichtungsassistent bietet sie im Schritt „Module“ an: „Diese Auswahl übernehmen“ blendet alles andere aus, einen Bereich ohne gewähltes Modul auch (`hiddenForChoice`).
+- **Tierarten** (`SITE_SPECIES` in `lib/site.ts`): Kacheln mit allen Tierarten der App und den Bienen. Die neueste Art (zurzeit Alpakas) trägt „Neu“ und ist daneben gezeichnet.
+  - „Deine Tierart fehlt?“: Der Knopf „Tierart wünschen“ öffnet die Feedback-Blase als Idee mit dem Text „Bitte ergänzt die Tierart: “ (`openSiteFeedback`). Der Wunsch landet in Verwaltung → Feedback.
+  - Ein Test prüft, dass jede Tierart der App genau einmal vorkommt. Eine neue Art fehlt dort also nicht.
 - **Pakete und Preise:** vorläufig, siehe `docs/premium.md`.
 
 ### Bilder
@@ -39,13 +42,14 @@ Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit
   | Ziegen an der Heuraufe | Futterplaner |
   | Glucke mit Küken | Zucht |
   | Schafe auf der Weide | Weide |
+  | Alpakas mit Cria auf der Weide | Tiere: Tierarten |
   | Bienenstöcke auf der Blumenwiese | Bienen |
   | Fuchs nachts am Zaun, Kamera leuchtet | Wildtier-Radar |
   | Familie auf dem Hof | Team, Gemeinsam |
   | Erntekorb | Hilfe-Block |
 
   Module ohne eigene Szene zeigen einen Screenshot oder den Hof mit ihrem Symbol.
-- **Bewegung:** Wolken ziehen, Bienen summen, Hühner, Ziegen und Schafe picken, Blumen wiegen sich (`SCENE_STYLES`). Bei „Bewegung reduzieren“ im System steht alles still.
+- **Bewegung:** Wolken ziehen, Bienen summen, Hühner, Ziegen und Schafe picken, Alpakas nicken, Blumen wiegen sich (`SCENE_STYLES`). Bei „Bewegung reduzieren“ im System steht alles still.
 - **Screenshots:** echte Bilder der App vom Demo-Hof in `public/site/screens/*.jpg` (390 px breit, JPEG).
   - Neu erzeugen: Demo-Hof laden und die Seiten in Handybreite fotografieren.
   - Die Modul-Einführungen dabei zuklappen (`lf-intro-closed-<id>`).

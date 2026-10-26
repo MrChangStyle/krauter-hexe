@@ -16,6 +16,7 @@ Alpakas sind eine eigene Tierart in „Meine Farm“ (`alpaca` in `FARM_SPECIES`
 | **Arzneimittel** | Alpakas gelten als Lebensmittel liefernde Tiere: Die Wartezeit für Fleisch zählt. Für Alpakas sind kaum Mittel zugelassen; der Tierarzt widmet um und gibt die Wartezeit an. |
 | **Garten** | Ein wenig Wurzelgemüse als Zugabe (0,3 kg je Tier und Tag): Möhre, Pastinake, Fenchel. Grundfutter bleiben Weide und Heu. |
 | **Ertrag & Bilanz** | Wolle über das Produkt „Wolle“. |
+| **Homepage** | Unter „Tiere“ steht Alpaka in „Diese Tiere kennt die App“, mit „Neu“ und einer gezeichneten Alpaka-Szene. Darunter steht „Deine Tierart fehlt? → Tierart wünschen“. |
 | **Modul-Finder** | „Alpakas“ empfiehlt Stall-Aufgaben, Futterplaner, Pflichten, Arzneimittel, Export, Zucht, Weide und Ertrag. |
 | **Demo-Hof** | Drei Alpakas; eine Stute ist tragend und zweimal gewogen. |
 

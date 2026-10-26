@@ -1,4 +1,4 @@
-import type { ModuleId } from "@workspace/api-client-react";
+import type { FarmSpecies, ModuleId } from "@workspace/api-client-react";
 import { MODULES } from "@/lib/modules";
 
 /**
@@ -170,6 +170,30 @@ export const MODULE_SITE: Partial<Record<ModuleId, ModuleSite>> = {
 };
 
 export const moduleLabel = (id: ModuleId): string => MODULES.find((m) => m.id === id)?.label ?? id;
+
+// ── Tierarten ─────────────────────────────────────────────────────────────────
+
+/**
+ * The animals the app knows, for the Tiere page: every farm species but
+ * "other", and the bees (their own module). `isNew` marks the latest one.
+ */
+export const SITE_SPECIES: { key: Exclude<FarmSpecies, "other"> | "bees"; label: string; emoji: string; isNew?: true }[] = [
+  { key: "poultry", label: "Hühner & Geflügel", emoji: "🐔" },
+  { key: "goat", label: "Ziegen", emoji: "🐐" },
+  { key: "sheep", label: "Schafe", emoji: "🐑" },
+  { key: "alpaca", label: "Alpakas", emoji: "🦙", isNew: true },
+  { key: "cattle", label: "Rinder", emoji: "🐄" },
+  { key: "pig", label: "Schweine", emoji: "🐖" },
+  { key: "horse", label: "Pferde", emoji: "🐴" },
+  { key: "rabbit", label: "Kaninchen", emoji: "🐇" },
+  { key: "guineaPig", label: "Meerschweinchen", emoji: "🐹" },
+  { key: "bees", label: "Bienen", emoji: "🐝" },
+  { key: "dog", label: "Hunde", emoji: "🐕" },
+  { key: "cat", label: "Katzen", emoji: "🐈" },
+];
+
+/** Prefilled text when a visitor asks for a species the app lacks. */
+export const SPECIES_WISH_TEXT = "Bitte ergänzt die Tierart: ";
 
 // ── Modul-Finder ──────────────────────────────────────────────────────────────
 

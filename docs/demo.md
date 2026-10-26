@@ -25,7 +25,7 @@ Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt dan
 
 Fotos (Tier, Beet, Standort eines Volks) gibt es in der Demo nicht – dafür müsste ein Bild hochgeladen werden.
 
-Pflegeplan, Pflanzen-Doc und Schädlinge bekommen keine Demo-Daten. Sie hängen an eigenen Scans und an der KI.
+Pflegeplan, Pflanzen-Doc und Schädlinge bekommen keine Demo-Daten. Sie hängen an eigenen Scans und an der KI. Der Ratgeber „Nützlinge fördern“ hat feste Inhalte und braucht keine.
 
 Alles wird über die Funktionen der Module selbst angelegt. Die Demo zeigt also genau, was ein Nutzer bekäme. Schlägt ein Schritt fehl, wird der halbe Demo-Hof gleich wieder gelöscht.
 

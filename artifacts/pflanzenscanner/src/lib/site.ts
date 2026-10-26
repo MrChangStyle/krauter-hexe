@@ -141,7 +141,7 @@ export const MODULE_SITE: Partial<Record<ModuleId, ModuleSite>> = {
   },
   "care-plan": { points: ["Gießen, Düngen, Umtopfen mit Erinnerung", "Push aufs Handy zur richtigen Zeit", "Wetter-Hinweise bei Frost und Hitze"], screen: "pflegeplan" },
   "plant-doc": { points: ["Mögliche Ursachen für gelbe Blätter, Flecken und Welke", "Pflege-Guide zum Nachlesen"], ai: { text: "Diagnose per Foto", plan: "lite" }, screen: "pflanzendoc" },
-  pests: { points: ["Schädlinge und Nützlinge erkennen", "Biologische und, wenn nötig, chemische Gegenmittel"], ai: { text: "Insekten-Scan per Foto", plan: "lite" }, screen: "schaedlinge" },
+  pests: { points: ["Schädlinge und Nützlinge erkennen und filtern", "Biologische und, wenn nötig, chemische Gegenmittel", "Nützlinge fördern: wer gegen Läuse, Schnecken & Co. hilft – mit Anleitung für Insektenhotel, Ohrwurm-Topf und Tränke"], ai: { text: "Insekten-Scan per Foto", plan: "lite" }, screen: "schaedlinge" },
   lexicon: { points: ["Alle gescannten Arten zum Nachschlagen", "Pilze mit deutlichen Giftigkeits-Hinweisen"], screen: "lexikon" },
   "herb-witch": { points: ["Heilkräuter nach Beschwerden", "Traditionelle Anwendung und Zubereitung", "Mit klaren Hinweisen zu Risiken"], screen: "kraeuter" },
   garden: {

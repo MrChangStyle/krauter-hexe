@@ -121,7 +121,7 @@ export default function UmzugPage() {
                 : "Alles war schon da."}{" "}
               Melde dich jetzt an, deine Fotos sind auf diesem Gerät.
             </p>
-            <Button className="w-full gap-2" onClick={() => (window.location.href = `${base}/`)}>
+            <Button className="w-full gap-2" onClick={() => (window.location.href = `${base}/app`)}>
               Zu Little Farming
               <ArrowRight className="h-4 w-4" />
             </Button>

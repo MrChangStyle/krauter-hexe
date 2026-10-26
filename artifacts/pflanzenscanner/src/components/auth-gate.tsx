@@ -16,6 +16,7 @@ import { useAuthProviders } from "@/lib/use-auth-providers";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 import { TurnstileWidget, type TurnstileHandle } from "@/components/turnstile-widget";
 import { SiteApp } from "@/components/site/site-app";
+import { APP_PATH, markInApp, tabIsInApp } from "@/lib/app-entry";
 
 /** Google's four-colour "G", the mark their brand guidelines ask for. */
 function GoogleMark() {
@@ -422,7 +423,9 @@ function WaitingForApprovalScreen() {
 function startView(search: string): "landing" | "login" | "register" {
   if (readSignInError(search)) return "login";
   const start = new URLSearchParams(search).get("start");
-  return start === "login" || start === "register" ? start : "landing";
+  if (start === "login" || start === "register") return start;
+  // Came through littlefarming.de/app (or was in the app): straight to the form.
+  return tabIsInApp() ? "login" : "landing";
 }
 
 /**
@@ -445,7 +448,7 @@ function PublicStart() {
           variant="outline"
           size="lg"
           className="w-full gap-2 sm:w-auto"
-          onClick={() => (window.location.href = buildGoogleSignInUrl(`${window.location.pathname}${window.location.search}`))}
+          onClick={() => (window.location.href = buildGoogleSignInUrl(`${import.meta.env.BASE_URL.replace(/\/$/, "")}${APP_PATH}`))}
         >
           <GoogleMark />
           Mit Google anmelden
@@ -457,7 +460,12 @@ function PublicStart() {
         </p>
       </div>
     ) : null;
-    return <SiteApp onLogin={() => setView("login")} onRegister={() => setView("register")} google={google} />;
+    // Signing in from the homepage leads into the app afterwards.
+    const open = (next: "login" | "register") => {
+      markInApp();
+      setView(next);
+    };
+    return <SiteApp onLogin={() => open("login")} onRegister={() => open("register")} google={google} />;
   }
   return <LoginScreen key={view} initialMode={view} onBack={() => setView("landing")} />;
 }
@@ -465,7 +473,7 @@ function PublicStart() {
 // Renders the app only for signed-in AND approved accounts. Everyone else
 // sees either the login screen or the waiting-for-approval screen - no plant
 // data is fetched or shown before that.
-export default function AuthGate({ children }: { children: ReactNode }) {
+export default function AuthGate({ children, site = false }: { children: ReactNode; site?: boolean }) {
   const { user, isLoading, isAuthenticated } = useAuthContext();
 
   if (isLoading) {
@@ -478,6 +486,11 @@ export default function AuthGate({ children }: { children: ReactNode }) {
 
   if (!isAuthenticated) {
     return <PublicStart />;
+  }
+
+  // littlefarming.de in a browser tab: the homepage, also when signed in ("Zur App" in its header).
+  if (site && !tabIsInApp()) {
+    return <SiteApp />;
   }
 
   if (!user?.approved) {

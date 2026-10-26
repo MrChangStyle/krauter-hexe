@@ -61,6 +61,28 @@ Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit
 - Weitere Szenen für die Module, die noch einen Screenshot oder ihr Symbol zeigen (Pflegeplan, Pflanzendoc, Lexikon, Grow, Arzneimittel, Pflichten, Ertrag, Übergabe, Export).
 - Kennzeichnung „Lite/Premium“ in der App an das Paket-Konzept angleichen.
 
+## Homepage und App unter einer Adresse
+
+littlefarming.de zeigt im Browser immer die **Homepage**, auch wenn man angemeldet ist. Die **App** öffnet sich unter **littlefarming.de/app** – oder über „Zur App“ oben auf der Homepage. Alles bleibt auf derselben Adresse, damit Anmeldung, Push, Fotos auf dem Gerät und installierte Apps weiter funktionieren (`lib/app-entry.ts`, `entryFor`).
+
+| Was | Zeigt |
+|---|---|
+| `/` im Browser-Tab, abgemeldet | Homepage, „Anmelden“ öffnet das Formular; nach der Anmeldung geht es in die App |
+| `/` im Browser-Tab, angemeldet | Homepage mit „Zur App“ |
+| `/app` | App (Hof). Die Adresse wird danach zu `/`, damit alle Seiten der App gleich bleiben. Abgemeldet: das Anmeldeformular. |
+| `/` in der installierten App (vom Startbildschirm, `display-mode: standalone`) | App – auch bei Installationen von vor der Umstellung |
+| `/` in einem Tab, der schon in der App war (Neuladen) | App (`sessionStorage` `lf-app`) |
+| `/` mit Parametern (`?start=login`, Fehler der Google-Anmeldung …) | App |
+| jede Seite der App (`/farm`, `/aufgaben` …) | App, wie bisher |
+
+- **Manifest:** `start_url` ist jetzt `/app`, `id` und `scope` bleiben `/` – installierte Apps bleiben dieselbe App.
+- **Weitere Wege in die App:**
+  - Die Google-Anmeldung von der Homepage kehrt nach `/app` zurück.
+  - Push-Nachrichten ohne eigenes Ziel (Wetter, Unwetter) öffnen `/app`.
+  - Der Umzugshelfer führt nach `/app`.
+- **Der bekannte Haken:** In der App zeigt die Adresszeile `littlefarming.de`. Ein Lesezeichen von dort führt zur Homepage, von der „Zur App“ einen Tipp weiter ist. Für die App also besser `littlefarming.de/app` merken oder die App installieren.
+- **Tests:** `app-entry.test.ts` und ein Browsertest aller Wege (abgemeldet, angemeldet, `/app`, Neuladen, installierte App, Anmeldung von der Homepage).
+
 ## Vorschau-Schutz (Passwort vor der ganzen Seite)
 
 Solange die Umgebungsvariable **`SITE_PASSWORD`** gesetzt ist, zeigt die ganze Seite nur ein Passwortfeld: Landingpage, App und API.

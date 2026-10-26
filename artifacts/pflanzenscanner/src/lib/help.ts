@@ -336,6 +336,7 @@ export const GENERAL_HELP: HelpTopic[] = [
     faq: [
       { q: "Wo fange ich an?", a: "Auf der Hof-Seite führt „Einrichtung“ durch die ersten Schritte: Hofname, Standort, erste Tiere, Rationen, Aufgaben, Beete, Team. Jeder Schritt lässt sich überspringen." },
       { q: "Kann ich erst mal ausprobieren?", a: "Ja, mit den Demo-Daten unter „Mehr → Meine Module“: ein Demo-Hof mit Beispielen in jedem Modul. Ein Tipp löscht ihn wieder, deine eigenen Daten bleiben." },
+      { q: "Wie komme ich in die App?", a: "Über littlefarming.de/app – oder auf littlefarming.de oben auf „Zur App“. littlefarming.de selbst zeigt im Browser die Homepage. Am bequemsten: die App auf dem Startbildschirm installieren, sie öffnet sich dann immer direkt." },
       { q: "Was steht oben auf den Seiten?", a: "Jedes Modul hat oben einen Kasten „So funktioniert’s“. Du kannst ihn zuklappen; die ganze Erklärung steht hier in der Hilfe." },
     ],
   },

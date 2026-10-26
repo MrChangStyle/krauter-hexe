@@ -1,5 +1,6 @@
 import { ai } from "./geminiClient";
 import { coerceQuality } from "./imageQualityPolicy";
+import { SYMPTOM_NAMES, canonicalSymptom } from "./symptomVocabulary";
 import {
   PLANT_CATEGORIES,
   HUMAN_STATUSES,
@@ -82,7 +83,7 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
     "guineaPig": string[],
     "cat":       string[],
     "horse":     string[]
-  } (konkrete Beschwerden/Symptome, gegen die diese Pflanze bei der jeweiligen Zielgruppe helfen kann - abgeleitet aus ihrer Heilwirkung. "human"=Mensch, "poultry"=Geflügel/Hühner, "rabbit"=Hase/Kaninchen, "guineaPig"=Meerschweinchen, "cat"=Katze, "horse"=Pferd. Jeweils eine Liste kurzer, kanonischer deutscher Schlagwörter im Singular/Grundform, z.B. "Husten", "Entzündung", "Verdauungsbeschwerden", "Wunden", "Durchfall". Wichtig – verwende immer diese kanonischen Begriffe: alles mit Wunde/Wundheilung → "Wunden"; alles mit Leber → "Leberbeschwerden"; alles mit Herz-Kreislauf → "Herz-Kreislauf-Erkrankungen"; alles mit Harnweg → "Harnwegsinfektion"; alles mit Atemweg → "Atemwegsbeschwerden"; alles mit Haut (Hautleiden, Hautentzündung etc.) → "Hautprobleme"; alles mit Hals (Halsschmerzen etc.) → "Halsbeschwerden"; alles mit Zähnen → "Zahnprobleme"; alles mit Verdauung → "Verdauungsbeschwerden". Nenne nur Beschwerden, die durch die tatsächliche Heilwirkung gedeckt sind - erfinde nichts. Wenn keine Heilwirkung für eine Zielgruppe bekannt ist, gib eine leere Liste [] an.)
+  } (konkrete Beschwerden/Symptome, gegen die diese Pflanze bei der jeweiligen Zielgruppe helfen kann - abgeleitet aus ihrer Heilwirkung. "human"=Mensch, "poultry"=Geflügel/Hühner, "rabbit"=Hase/Kaninchen, "guineaPig"=Meerschweinchen, "cat"=Katze, "horse"=Pferd. Jeweils eine Liste kurzer, kanonischer deutscher Schlagwörter im Singular/Grundform, z.B. "Husten", "Entzündungen", "Magen-Darm-Beschwerden", "Wunden", "Durchfall". Wichtig – verwende möglichst genau diese festen Begriffe, ohne Varianten in Einzahl/Mehrzahl: ${SYMPTOM_NAMES.join(", ")}. Nur wenn keiner davon passt, nimm ein eigenes kurzes Schlagwort. Nenne nur Beschwerden, die durch die tatsächliche Heilwirkung gedeckt sind - erfinde nichts. Wenn keine Heilwirkung für eine Zielgruppe bekannt ist, gib eine leere Liste [] an.)
 }
 Wenn du dir bei der Bestimmung nicht sicher bist, gib trotzdem deine beste Einschätzung ab und erwähne die Unsicherheit im "edibilityDetails"-Feld. \
 Sei im Zweifel vorsichtig: wenn Giftigkeit nicht ausgeschlossen werden kann, setze den jeweiligen Status auf "poisonous". \
@@ -289,20 +290,10 @@ export function toSentenceCase(tag: string): string {
   return tag.charAt(0).toLocaleUpperCase("de-DE") + tag.slice(1).toLocaleLowerCase("de-DE");
 }
 
-// Canonical symptom normalization — must stay in sync with canonicalizeSymptom()
-// in the frontend (heal-targets.ts).
+// Canonical symptom names: the fixed Beschwerden-Wortschatz shared with the
+// app (symptomVocabulary.ts). Unknown complaints keep their wording.
 function canonicalizeSymptomTag(tag: string): string {
-  const lower = tag.toLocaleLowerCase("de-DE");
-  if (lower.includes("wund")) return "Wunden";
-  if (lower.includes("leber")) return "Leberbeschwerden";
-  if (lower.includes("kreislauf")) return "Herz-Kreislauf-Erkrankungen";
-  if (lower.includes("harnweg")) return "Harnwegsinfektion";
-  if (lower.includes("atemweg")) return "Atemwegsbeschwerden";
-  if (lower.includes("haut")) return "Hautprobleme";
-  if (lower.includes("hals")) return "Halsbeschwerden";
-  if (lower.includes("zahn")) return "Zahnprobleme";
-  if (lower.includes("verdauung")) return "Verdauungsbeschwerden";
-  return tag;
+  return canonicalSymptom(tag);
 }
 
 // Full normalisation pipeline for a single symptom tag: sentence-case first,
@@ -834,17 +825,8 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
   "cat":       string[],
   "horse":     string[]
 }
-Jeweils eine Liste kurzer, kanonischer deutscher Schlagwörter im Singular/Grundform, z.B. "Husten", "Entzündung", "Verdauungsbeschwerden", "Wunden", "Durchfall". \
-Wichtig – verwende immer diese kanonischen Begriffe: \
-alles mit Wunde/Wundheilung → "Wunden"; \
-alles mit Leber → "Leberbeschwerden"; \
-alles mit Herz-Kreislauf → "Herz-Kreislauf-Erkrankungen"; \
-alles mit Harnweg → "Harnwegsinfektion"; \
-alles mit Atemweg → "Atemwegsbeschwerden"; \
-alles mit Haut (Hautleiden, Hautentzündung, Hautprobleme etc.) → "Hautprobleme"; \
-alles mit Hals (Halsschmerzen, Halsbeschwerden etc.) → "Halsbeschwerden"; \
-alles mit Zähnen (Zahnabnutzung, Zahnproblematik etc.) → "Zahnprobleme"; \
-alles mit Verdauung (Verdauungsprobleme, Verdauungsstörung etc.) → "Verdauungsbeschwerden". \
+Jeweils eine Liste kurzer, kanonischer deutscher Schlagwörter im Singular/Grundform, z.B. "Husten", "Entzündungen", "Magen-Darm-Beschwerden", "Wunden", "Durchfall". \
+Wichtig – verwende möglichst genau diese festen Begriffe, ohne Varianten in Einzahl/Mehrzahl: ${SYMPTOM_NAMES.join(", ")}. Nur wenn keiner davon passt, nimm ein eigenes kurzes Schlagwort. \
 Stütze dich ausschließlich auf die unten genannte Heilwirkung - erfinde keine Beschwerden, die dort nicht gedeckt sind. \
 Wenn für eine Zielgruppe keine Heilwirkung beschrieben ist, gib eine leere Liste [] an.`;
 

@@ -1,5 +1,6 @@
 import type { Plant } from "@workspace/api-client-react";
 import { getAnimalInfo, type AnimalKey } from "@/lib/animals";
+import { canonicalSymptom } from "@/lib/symptom-vocabulary";
 
 // The targets the "Kräuter-Hexe" view can filter for: the human plus every
 // animal, in display order (Mensch first). Each maps to either the human status
@@ -46,37 +47,16 @@ export function hasHealingFor(plant: Plant, target: HealTarget): boolean {
   return !!text && text.length > 0 && text !== NO_BENEFIT_SENTINEL;
 }
 
-// Sentence-case normalisation: first character uppercased, rest lowercased.
-// Applied before canonicalisation so every tag displayed in the UI has a
-// consistent casing even if the stored data predates the write-time normaliser.
-// Must stay in sync with toSentenceCase() in plantIdentification.ts.
-function toSentenceCase(tag: string): string {
-  if (tag.length === 0) return tag;
-  return tag.charAt(0).toLocaleUpperCase("de-DE") + tag.slice(1).toLocaleLowerCase("de-DE");
-}
-
-// Canonical symptom name normalization. Applied both when reading stored tags
-// (UI) and when the AI writes new ones (server-side). Must stay in sync with
-// canonicalizeSymptomTag() in plantIdentification.ts on the API server.
+// Canonical symptom name (lib/symptom-vocabulary.ts). Applied when reading
+// stored tags, so older rows show the same wording as new ones; the server
+// applies the same vocabulary when the AI writes new tags.
 export function canonicalizeSymptom(tag: string): string {
-  // Sentence-case first so the keyword checks are case-independent and the
-  // returned canonical strings always have consistent casing.
-  const normalised = toSentenceCase(tag);
-  const lower = normalised.toLocaleLowerCase("de-DE");
-  if (lower.includes("wund")) return "Wunden";
-  if (lower.includes("leber")) return "Leberbeschwerden";
-  if (lower.includes("kreislauf")) return "Herz-Kreislauf-Erkrankungen";
-  if (lower.includes("harnweg")) return "Harnwegsinfektion";
-  if (lower.includes("atemweg")) return "Atemwegsbeschwerden";
-  if (lower.includes("haut")) return "Hautprobleme";
-  if (lower.includes("hals")) return "Halsbeschwerden";
-  if (lower.includes("zahn")) return "Zahnprobleme";
-  if (lower.includes("verdauung")) return "Verdauungsbeschwerden";
-  return normalised;
+  return canonicalSymptom(tag);
 }
 
 // The treatable-symptom tags stored for this target, normalized and
-// deduplicated. Multiple Zahn*/Verdauungs* variants collapse to one tag.
+// deduplicated. Variants of one complaint ("Magenkrämpfe", "Verdauungs-
+// beschwerden") collapse to one name.
 export function symptomsFor(plant: Plant, target: HealTarget): string[] {
   const raw = plant.symptoms?.[target] ?? [];
   const seen = new Set<string>();
@@ -89,4 +69,20 @@ export function symptomsFor(plant: Plant, target: HealTarget): string[] {
     }
   }
   return result;
+}
+
+// The application instructions for this target, keyed by the canonical
+// symptom name. When several stored tags collapse into one name, their
+// distinct instructions are joined.
+export function applicationsFor(plant: Plant, target: HealTarget): Record<string, string> {
+  const raw = (plant.symptomApplications as Record<string, Record<string, string>> | undefined)?.[target] ?? {};
+  const out: Record<string, string> = {};
+  for (const [tag, text] of Object.entries(raw)) {
+    const t = text?.trim();
+    if (!t) continue;
+    const key = canonicalSymptom(tag);
+    if (!out[key]) out[key] = t;
+    else if (!out[key].includes(t)) out[key] = `${out[key]} ${t}`;
+  }
+  return out;
 }

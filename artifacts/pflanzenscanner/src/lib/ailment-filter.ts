@@ -5,6 +5,7 @@ import {
   symptomsFor,
   type HealTarget,
 } from "@/lib/heal-targets";
+import { SYMPTOM_GROUPS, SYMPTOM_NAMES, canonicalSymptom } from "@/lib/symptom-vocabulary";
 
 // Pure filter logic for the Kräuter-Hexe page, extracted so it can be unit
 // tested. The page composes these three steps:
@@ -71,6 +72,10 @@ export function filterByAilment(
   const wanted = new Set(
     Array.from(selected).map((s) => s.toLocaleLowerCase("de-DE")),
   );
+  // A typed word that means a fixed complaint ("Magenkrämpfe") also finds
+  // that complaint ("Magen-Darm-Beschwerden").
+  const typedName = hasQuery ? canonicalSymptom(query) : "";
+  const typedKey = SYMPTOM_NAMES.includes(typedName) ? typedName.toLocaleLowerCase("de-DE") : null;
   const out: AilmentMatch[] = [];
   for (const p of relevantPlants) {
     const tags = symptomsFor(p, target);
@@ -78,10 +83,31 @@ export function filterByAilment(
       const key = tag.toLocaleLowerCase("de-DE");
       return (
         (hasSelected && wanted.has(key)) ||
-        (hasQuery && key.includes(normalizedQuery))
+        (hasQuery && (key.includes(normalizedQuery) || key === typedKey))
       );
     });
     if (matched.length > 0) out.push({ plant: p, matched });
   }
   return out;
+}
+
+export interface SymptomGroup {
+  label: string;
+  names: string[];
+}
+
+// The available complaints in the groups of the filter menu (Entzündungen,
+// Magen & Darm, …), in the vocabulary's order. A name can sit in two groups.
+// Complaints outside the vocabulary end up under "Weitere", alphabetically.
+// Empty groups are left out.
+export function groupSymptoms(available: readonly string[]): SymptomGroup[] {
+  const have = new Set(available);
+  const groups: SymptomGroup[] = SYMPTOM_GROUPS.map((g) => ({
+    label: g.label,
+    names: g.names.filter((n) => have.has(n)),
+  }));
+  const known = new Set(SYMPTOM_NAMES);
+  const rest = available.filter((n) => !known.has(n)).sort((a, b) => a.localeCompare(b, "de-DE"));
+  groups.push({ label: "Weitere", names: rest });
+  return groups.filter((g) => g.names.length > 0);
 }

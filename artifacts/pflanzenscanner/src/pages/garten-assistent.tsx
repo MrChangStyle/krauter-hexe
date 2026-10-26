@@ -41,6 +41,7 @@ const SPECIES_DE: Record<string, string> = {
   sheep: "Schafe",
   cattle: "Rinder",
   pig: "Schweine",
+  alpaca: "Alpakas",
   other: "Sonstige",
 };
 

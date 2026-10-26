@@ -63,6 +63,7 @@ export const FarmSpecies = {
   sheep: 'sheep',
   cattle: 'cattle',
   pig: 'pig',
+  alpaca: 'alpaca',
   other: 'other',
 } as const;
 

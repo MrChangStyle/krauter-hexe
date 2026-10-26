@@ -173,12 +173,13 @@ export const moduleLabel = (id: ModuleId): string => MODULES.find((m) => m.id ==
 
 // ── Modul-Finder ──────────────────────────────────────────────────────────────
 
-export const FINDER_ANIMALS = ["poultry", "goat", "sheep", "cattle", "pig", "horse", "rabbit", "bees", "pets"] as const;
+export const FINDER_ANIMALS = ["poultry", "goat", "sheep", "alpaca", "cattle", "pig", "horse", "rabbit", "bees", "pets"] as const;
 export type FinderAnimal = (typeof FINDER_ANIMALS)[number];
 export const FINDER_ANIMAL_LABELS: Record<FinderAnimal, string> = {
   poultry: "Hühner & Geflügel",
   goat: "Ziegen",
   sheep: "Schafe",
+  alpaca: "Alpakas",
   cattle: "Rinder",
   pig: "Schweine",
   horse: "Pferde",
@@ -222,10 +223,10 @@ export interface Recommendation {
 }
 
 /** Animals the veterinary office registers and the Tierseuchenkasse insures. */
-const LIVESTOCK: FinderAnimal[] = ["poultry", "goat", "sheep", "cattle", "pig", "horse"];
-const GRAZERS: FinderAnimal[] = ["goat", "sheep", "cattle", "horse"];
-const BREEDERS: FinderAnimal[] = ["poultry", "goat", "sheep", "cattle", "pig", "horse", "rabbit"];
-const PRODUCERS: FinderAnimal[] = ["poultry", "goat", "sheep", "cattle", "bees"];
+const LIVESTOCK: FinderAnimal[] = ["poultry", "goat", "sheep", "alpaca", "cattle", "pig", "horse"];
+const GRAZERS: FinderAnimal[] = ["goat", "sheep", "alpaca", "cattle", "horse"];
+const BREEDERS: FinderAnimal[] = ["poultry", "goat", "sheep", "alpaca", "cattle", "pig", "horse", "rabbit"];
+const PRODUCERS: FinderAnimal[] = ["poultry", "goat", "sheep", "alpaca", "cattle", "bees"];
 
 /**
  * Which modules fit what someone has, each with a reason, and the package.
@@ -256,7 +257,7 @@ export function recommend(input: FinderInput): Recommendation {
 
   const animals = input.animals.filter((a) => a !== "bees");
   if (animals.length > 0) add("farm-tasks", "Füttern, Ausmisten, Eier sammeln – mit Erinnerung");
-  if (any(["poultry", "goat", "sheep", "cattle", "pig", "horse", "rabbit"])) add("feed", "Rationen und Futtervorrat für deine Tiere");
+  if (any(["poultry", "goat", "sheep", "alpaca", "cattle", "pig", "horse", "rabbit"])) add("feed", "Rationen und Futtervorrat für deine Tiere");
   if (any(LIVESTOCK) || has("bees")) add("duties", "Anmeldung, Tierseuchenkasse und Stichtagsmeldung");
   if (any([...LIVESTOCK, "rabbit", "pets"])) add("medicines", "Arzneimittel, Wartezeiten und Bestandsbuch");
   if (any(LIVESTOCK)) add("export", "Bestandsliste fürs Veterinäramt");

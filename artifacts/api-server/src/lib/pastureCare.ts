@@ -129,8 +129,11 @@ function mowHint(name: string, pastureId: number, plan: MowPlan, grazed: boolean
 
 type WormGroup = 'smallRuminant' | 'cattle' | 'horse' | 'pig' | 'poultry';
 
-/** Goats and sheep share their worms; the others mostly keep their own. */
-const GROUP: Partial<Record<FarmSpecies, WormGroup>> = { goat: 'smallRuminant', sheep: 'smallRuminant', cattle: 'cattle', horse: 'horse', pig: 'pig', poultry: 'poultry' };
+/**
+ * Goats and sheep share their worms – and alpacas largely the same ones (Roter
+ * Magenwurm), so they count as one group; the others mostly keep their own.
+ */
+const GROUP: Partial<Record<FarmSpecies, WormGroup>> = { goat: 'smallRuminant', sheep: 'smallRuminant', alpaca: 'smallRuminant', cattle: 'cattle', horse: 'horse', pig: 'pig', poultry: 'poultry' };
 
 interface ParasiteRule {
   /** Richtwert: how long larvae or eggs from earlier grazing stay a risk. */
@@ -179,11 +182,12 @@ export function parasiteHint(name: string, pastureId: number, current: CareGrazi
   const plural = NAMES[before.species!].group;
   const who = before.label === current.label || before.label === plural ? before.label : `${plural} (${before.label})`;
   const season = group === 'smallRuminant' && ['07', '08', '09'].includes(current.startOn.slice(5, 7)) ? ' Im Spätsommer ist der Wurmdruck am höchsten.' : '';
+  const latrines = current.species === 'alpaca' ? ' Alpakas koten auf feste Plätze – die Kothaufen ein- bis zweimal die Woche absammeln.' : '';
   return {
     kind: 'parasite',
     pastureId,
     urgent: false,
-    text: `Auf ${name} standen ${who} schon bis ${deDay(before.endOn!)} – ${rule.worms} können noch im Gras sein. ${rule.tip}${season}`,
+    text: `Auf ${name} standen ${who} schon bis ${deDay(before.endOn!)} – ${rule.worms} können noch im Gras sein. ${rule.tip}${season}${latrines}`,
   };
 }
 

@@ -198,7 +198,9 @@ function spell(days: DayForecast[], test: (d: DayForecast) => boolean): DayForec
 
 const temp = (t: number) => `${t < 0 ? '−' : ''}${Math.abs(t).toLocaleString('de-DE')} °C`;
 const SMALL_PETS: FarmSpecies[] = ['rabbit', 'guineaPig'];
-const GRAZERS: FarmSpecies[] = ['goat', 'sheep', 'horse', 'cattle'];
+const GRAZERS: FarmSpecies[] = ['goat', 'sheep', 'horse', 'cattle', 'alpaca'];
+/** Alpakas suffer from heat early, above all in full fleece before shearing. */
+const ALPACA_HEAT = ' Alpakas leiden früh unter Hitze, besonders vor der Schur: Schatten, Wasser, Bauch und Beine mit dem Schlauch abkühlen – nicht den Rücken.';
 
 /**
  * Warnings for today and tomorrow – fixed rules. `species`: animals on the
@@ -255,7 +257,8 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
         text:
           `Hitzewelle: ${heatRun.length} Tage in Folge bis ${temp(high)} (bis ${dayText(heatRun.at(-1)!.date)}${heatRun.length === days.length ? ' und länger' : ''}): ` +
           'Ställe nachts lüften, Wasser mehrmals am Tag frisch und kühl, Schatten auf Weide und Auslauf, Arbeit in die Morgenstunden; auf Fliegen und Madenbefall achten.' +
-          (has(SMALL_PETS) ? ' Kaninchen und Meerschweinchen sind ab 28 °C hitzschlaggefährdet – kühle Fliesen, nie in die pralle Sonne.' : ''),
+          (has(SMALL_PETS) ? ' Kaninchen und Meerschweinchen sind ab 28 °C hitzschlaggefährdet – kühle Fliesen, nie in die pralle Sonne.' : '') +
+          (species.includes('alpaca') ? ALPACA_HEAT : ''),
       });
     } else if (hot.maxTemp >= heatLimit) {
       out.push({
@@ -264,7 +267,8 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
         text:
           `Hitze bis ${temp(hot.maxTemp)} (${when(hot)}): Schatten und frisches Wasser mehrmals am Tag, Arbeit mit den Tieren in die kühlen Morgenstunden.` +
           (has(SMALL_PETS) ? ' Kaninchen und Meerschweinchen sind ab 28 °C hitzschlaggefährdet – kühle Fliesen, nie in die pralle Sonne.' : '') +
-          (has(GRAZERS) ? ' Weidetiere brauchen Schatten auf der Weide.' : ''),
+          (has(GRAZERS) ? ' Weidetiere brauchen Schatten auf der Weide.' : '') +
+          (species.includes('alpaca') ? ALPACA_HEAT : ''),
       });
     }
     const storm = first((d) => d.maxGustKmh >= 75);

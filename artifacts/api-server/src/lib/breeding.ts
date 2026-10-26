@@ -138,6 +138,22 @@ export const BREEDING: Partial<Record<FarmSpecies, SpeciesRule>> = {
     young: 'Fohlen',
     prefix: 'FO',
   },
+  // Alpakas (docs/alpaka.md): about 11.5 months, often longer in autumn and
+  // winter; the mare ovulates on mating, so there is no heat to watch.
+  alpaca: {
+    kind: 'pregnancy',
+    days: 345,
+    early: 15,
+    late: 20,
+    steps: [
+      [14, 'Spucktest: die Stute zum Hengst führen – spuckt sie ihn ab und legt sich nicht ab, ist sie wahrscheinlich tragend. Nach drei und sechs Wochen wiederholen.'],
+      [60, 'Trächtigkeitsuntersuchung beim Tierarzt (Ultraschall).'],
+      [-110, 'Letztes Drittel: Futter langsam steigern, Mineralfutter mit Vitamin D prüfen.'],
+      [-14, 'Geburt vorbereiten: Alpakas fohlen meist vormittags. Handtücher, Waage und Jod für den Nabel bereitlegen; das Cria sollte in den ersten Stunden trinken.'],
+    ],
+    young: 'Cria',
+    prefix: 'CR',
+  },
   cat: {
     kind: 'pregnancy',
     days: 63,

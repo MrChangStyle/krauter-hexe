@@ -87,8 +87,16 @@ export const START_RATIONS: Partial<Record<FarmSpecies, { stage: LifeStage; item
   sheep: { stage: 'maintenance', items: [['heu', 1700], ['mineral_schaf', 15]] },
   horse: { stage: 'maintenance', items: [['heu', 10000], ['mineral_pferd', 50]] },
   cattle: { stage: 'maintenance', items: [['heu', 14000], ['mineral_rind', 80]] },
+  alpaca: { stage: 'maintenance', items: [['heu', 1500], ['mineral_alpaka', 10]] },
   pig: { stage: 'maintenance', items: [['schweinefutter', 2600]] },
 };
+
+/** The usual care of alpacas as stall tasks (Richtwerte). */
+export const ALPACA_TASKS = [
+  { actionType: 'Klauen-/Hufpflege', notes: 'Zehennägel kontrollieren und schneiden', intervalValue: 3, intervalUnit: 'Monate' },
+  { actionType: 'Gesundheitskontrolle', notes: 'Kotprobe zum Tierarzt – entwurmt wird nur nach Befund', intervalValue: 4, intervalUnit: 'Monate' },
+  { actionType: 'Sonstiges', notes: 'Schur (meist Mai/Juni), dabei Zähne und Körperzustand prüfen', intervalValue: 12, intervalUnit: 'Monate' },
+] as const;
 
 export interface QuickStartInput {
   species: FarmSpecies;
@@ -143,6 +151,13 @@ export async function quickStart(farmId: number, input: QuickStartInput): Promis
   if (input.species === 'poultry') {
     tasks += 1;
     await createFarmTask(farmId, { actionType: 'Eier sammeln', herdId, notes: null, intervalValue: 1, intervalUnit: 'Tage', reminderTime: '17:00' });
+  }
+  if (input.species === 'alpaca') {
+    // Alpakas (docs/alpaka.md): toenails, a faecal sample, the yearly shearing – Richtwerte.
+    for (const t of ALPACA_TASKS) {
+      tasks += 1;
+      await createFarmTask(farmId, { ...t, herdId, reminderTime: '10:00' });
+    }
   }
   return { herdId, animals: n, rationId, tasks };
 }

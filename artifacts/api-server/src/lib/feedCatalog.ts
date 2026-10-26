@@ -98,6 +98,8 @@ export const FEED_CATALOG: readonly Feed[] = [
   f('mineral_schaf', 'Mineralfutter Schaf (kupferarm)', 'mineral', [95, 0, 0, 0, 150, 40, 10], { forSpecies: ['sheep'] }),
   f('mineral_ziege', 'Mineralfutter Ziege', 'mineral', [95, 0, 0, 0, 140, 50, 600], { forSpecies: ['goat'] }),
   f('mineral_pferd', 'Mineralfutter Pferd', 'mineral', [95, 0, 0, 0, 150, 50, 1000], { forSpecies: ['horse'] }),
+  // Alpakas: their own mineral feed (zinc, selenium, vitamin D) instead of sheep or cattle feed; copper differs by product.
+  f('mineral_alpaka', 'Mineralfutter Alpaka/Lama', 'mineral', [95, 0, 0, 0, 140, 60, null], { forSpecies: ['alpaca'], hint: 'mit Zink, Selen und Vitamin D; im Winter wichtig, wenn wenig Sonne ist' }),
 ];
 
 const BY_KEY = new Map(FEED_CATALOG.map((feed) => [feed.key, feed]));

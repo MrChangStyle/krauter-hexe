@@ -57,6 +57,13 @@ describe("Modul-Finder", () => {
     expect(m).toEqual(["duties", "yields", "bees"]);
   });
 
+  it("gives alpaca keepers pasture, feed, breeding and the duties", () => {
+    const m = ids({ animals: ["alpaca"] });
+    expect(m).toEqual(expect.arrayContaining(["farm-tasks", "feed", "duties", "medicines", "export", "breeding", "pasture", "yields"]));
+    expect(m).not.toContain("bees");
+    expect(m).not.toContain("wildlife");
+  });
+
   it("adds the pasture for grazers, the team when others help", () => {
     expect(ids({ animals: ["goat"] })).toContain("pasture");
     expect(ids({ animals: ["rabbit"] })).not.toContain("pasture");

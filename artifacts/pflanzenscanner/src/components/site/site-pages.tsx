@@ -187,7 +187,7 @@ export function AreaPage({ area, actions }: { area: ModuleArea; actions: SiteAct
         text={
           plants
             ? "Pflanzen erkennen, pflegen und vermehren, Beete planen, ernten und einlagern. Die App erinnert dich zur richtigen Zeit – und warnt bei Frost."
-            : "Für Hühner, Ziegen, Schafe, Kaninchen, Rinder, Pferde und Bienen: Aufgaben im Stall, Futter, Zucht, Arzneimittel und die Pflichten gegenüber den Ämtern."
+            : "Für Hühner, Ziegen, Schafe, Alpakas, Kaninchen, Rinder, Pferde und Bienen: Aufgaben im Stall, Futter, Zucht, Arzneimittel und die Pflichten gegenüber den Ämtern."
         }
         variant={plants ? "green" : "day"}
       >

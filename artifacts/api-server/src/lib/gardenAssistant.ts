@@ -53,6 +53,8 @@ export const FODDER_KG_PER_DAY: Record<FarmSpecies, number> = {
   goat: 1,
   sheep: 1,
   pig: 0.5,
+  // Alpakas live on pasture and hay; roots only as a small extra (Richtwert).
+  alpaca: 0.3,
   horse: 0,
   cattle: 0,
   cat: 0,
@@ -68,6 +70,7 @@ export const FODDER_CROPS: Record<FarmSpecies, string[]> = {
   goat: ['mangold', 'rote_bete', 'moehre', 'kuerbis', 'pastinake'],
   sheep: ['mangold', 'rote_bete', 'moehre', 'kuerbis', 'pastinake'],
   pig: ['kuerbis', 'rote_bete', 'moehre', 'zucchini', 'mangold'],
+  alpaca: ['moehre', 'pastinake', 'fenchel'],
   horse: [],
   cattle: [],
   cat: [],
@@ -86,6 +89,7 @@ const SPECIES_DE: Record<FarmSpecies, string> = {
   sheep: 'Schafe',
   cattle: 'Rinder',
   pig: 'Schweine',
+  alpaca: 'Alpakas',
   other: 'sonstige Tiere',
 };
 

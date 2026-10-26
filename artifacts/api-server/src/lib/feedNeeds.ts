@@ -89,6 +89,15 @@ export const FEED_NEEDS: Partial<Record<FarmSpecies, Partial<Record<LifeStage, N
     pregnancy: n(700, 13, [10, 13], [18, 30], [4, 7], [3, 4.5], 60),
     growth: n(250, 6, [13, 16], [16, 25], [5, 8], [3, 5], 25),
   },
+  // Alpakas (docs/alpaka.md): about 1.5–2 % of body weight as dry matter,
+  // mostly hay and grass; much fibre, little protein when not breeding.
+  alpaca: {
+    maintenance: n(65, 1.2, [8, 12], [25, 40], [3, 6], [2, 4], 4),
+    pregnancy: n(70, 1.4, [10, 13], [22, 38], [4, 7], [2.5, 4], 5),
+    lactation: n(65, 1.7, [12, 15], [20, 35], [4, 7], [3, 5], 7),
+    growth: n(30, 0.8, [13, 16], [20, 35], [4, 7], [2.5, 4], 2),
+    winter: n(65, 1.4, [8, 12], [25, 40], [3, 6], [2, 4], 4),
+  },
   pig: {
     maintenance: n(200, 2.5, [12, 15], [5, 10], [7, 10], [5, 7], 10),
     growth: n(60, 2.2, [15, 19], [3, 8], [6, 9], [5, 7], 8),
@@ -164,6 +173,11 @@ const TIPS: Partial<Record<FarmSpecies | '*', Partial<Record<`${Nutrient}:${'low
   },
   goat: { 'crudeFibre:low': 'Mehr Heu oder Stroh – Wiederkäuer brauchen Rohfaser.' },
   horse: { 'crudeFibre:low': 'Mehr Heu (etwa 1,5 kg je 100 kg Körpergewicht), weniger Kraftfutter.' },
+  alpaca: {
+    'crudeFibre:low': 'Mehr Heu (gern zweiter Schnitt) zur freien Aufnahme, Kraftfutter nur sparsam – Alpakas verfetten schnell.',
+    'crudeProtein:high': 'Kraftfutter und Luzerne verringern – Alpakas brauchen außerhalb von Trächtigkeit und Säugezeit wenig Eiweiß.',
+    'calcium:low': 'Mineralfutter für Alpakas/Lamas ergänzen, kein Schaf- oder Rindermineral.',
+  },
   '*': {
     'amount:low': 'Die Ration reicht nicht – mehr Grundfutter (Heu) geben.',
     'amount:high': 'Die Ration ist größer als nötig – Kraftfutter verringern, Grundfutter bleibt.',

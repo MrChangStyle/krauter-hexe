@@ -40,16 +40,18 @@ export interface DutyDef {
 
 /** Species the veterinary office registers (ViehVerkV § 26) and the Tierseuchenkassen insure. */
 const LIVESTOCK: FarmSpecies[] = ['poultry', 'goat', 'sheep', 'pig', 'cattle', 'horse'];
+/** Species the veterinary office registers: the livestock plus the New World camelids (alpacas). */
+const REGISTERED: FarmSpecies[] = [...LIVESTOCK, 'alpaca'];
 /** Farm animals in the sense of the ban on catering waste. */
-const FOOD_ANIMALS: FarmSpecies[] = ['poultry', 'goat', 'sheep', 'pig', 'cattle', 'horse', 'rabbit'];
+const FOOD_ANIMALS: FarmSpecies[] = ['poultry', 'goat', 'sheep', 'pig', 'cattle', 'horse', 'rabbit', 'alpaca'];
 
 export const DUTIES: DutyDef[] = [
   {
     key: 'registration',
     kind: 'once',
-    species: LIVESTOCK,
+    species: REGISTERED,
     title: 'Beim Veterinäramt anmelden',
-    text: 'Wer Geflügel, Ziegen, Schafe, Schweine, Rinder oder Pferde hält – auch nur ein Tier und auch als Hobby –, zeigt das vor Beginn dem Veterinäramt des Kreises an. Ihr bekommt eine Registriernummer für den Betrieb; tragt sie oben unter „Betrieb“ ein.',
+    text: 'Wer Geflügel, Ziegen, Schafe, Schweine, Rinder, Pferde oder Alpakas hält – auch nur ein Tier und auch als Hobby –, zeigt das vor Beginn dem Veterinäramt des Kreises an. Ihr bekommt eine Registriernummer für den Betrieb; tragt sie oben unter „Betrieb“ ein.',
     source: 'Viehverkehrsverordnung § 26',
   },
   {
@@ -81,7 +83,7 @@ export const DUTIES: DutyDef[] = [
   {
     key: 'stock_register',
     kind: 'rule',
-    species: ['poultry', 'goat', 'sheep', 'pig', 'cattle'],
+    species: ['poultry', 'goat', 'sheep', 'pig', 'cattle', 'alpaca'],
     title: 'Bestandsregister führen',
     text: 'Zu- und Abgänge mit Datum, Herkunft oder Verbleib aufschreiben, bei Geflügel auch die Zahl der Tiere. Die Tierliste der App mit dem Veterinäramt-Export hilft dabei; fragt beim Amt, ob sie so genügt.',
     source: 'Viehverkehrsverordnung, Geflügelpest-Verordnung',
@@ -149,6 +151,24 @@ export const DUTIES: DutyDef[] = [
     title: 'Keine Küchen- und Speisereste verfüttern',
     text: 'Speisereste aus der Küche – auch Brot mit Wurst oder Reste vom Teller – sind für Nutztiere verboten, weil sie Seuchen wie die Schweinepest übertragen. Obst, Gemüse und Grünes direkt aus dem Garten sind erlaubt.',
     source: 'Verordnung (EG) 1069/2009',
+  },
+  // Alpakas (docs/alpaka.md).
+  {
+    key: 'alpaca_tsk',
+    kind: 'once',
+    species: ['alpaca'],
+    tsk: true,
+    title: 'Alpakas: bei der Tierseuchenkasse nachfragen',
+    text: 'Ob Alpakas der Tierseuchenkasse gemeldet werden und einen Beitrag kosten, regelt jedes Bundesland selbst – in manchen ja, in anderen nicht. Fragt bei der Kasse eures Bundeslandes nach und tragt die Antwort hier ein.',
+    source: 'Landesrecht',
+  },
+  {
+    key: 'alpaca_herd',
+    kind: 'rule',
+    species: ['alpaca'],
+    title: 'Alpakas nie allein halten',
+    text: 'Alpakas sind Herdentiere: mindestens zwei, besser drei Tiere zusammen halten. Dazu ein Unterstand mit etwa 2 m² je Tier und rund 1000–1500 m² Weide für zwei Tiere (Richtwerte).',
+    source: 'Tierschutzgesetz § 2, Merkblätter der Veterinärämter',
   },
   {
     key: 'rabbit_vaccination',
@@ -451,6 +471,7 @@ const SPECIES_PLURAL: Record<FarmSpecies, string> = {
   horse: 'Pferde',
   cattle: 'Rinder',
   pig: 'Schweine',
+  alpaca: 'Alpakas',
   cat: 'Katzen',
   dog: 'Hunde',
   other: 'Tiere',

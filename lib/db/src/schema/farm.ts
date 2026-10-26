@@ -48,6 +48,7 @@ export const FARM_SPECIES = [
   "sheep",
   "cattle",
   "pig",
+  "alpaca",
   "other",
 ] as const;
 export type FarmSpecies = (typeof FARM_SPECIES)[number];

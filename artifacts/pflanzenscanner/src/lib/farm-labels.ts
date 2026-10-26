@@ -11,6 +11,7 @@ export const SPECIES_LABELS: Record<FarmSpecies, string> = {
   sheep: "Schaf",
   cattle: "Rind",
   pig: "Schwein",
+  alpaca: "Alpaka",
   other: "Sonstiges",
 };
 
@@ -21,6 +22,7 @@ export const SPECIES_ORDER: FarmSpecies[] = [
   "cattle",
   "pig",
   "horse",
+  "alpaca",
   "rabbit",
   "guineaPig",
   "dog",

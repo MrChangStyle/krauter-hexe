@@ -6,6 +6,10 @@
  * Until there are payments, the owner grants Premium by e-mail, without an end
  * or until a day. The owner always has it. A payment provider will later write
  * the same rows (source, plan, activeUntil); the checks here stay as they are.
+ *
+ * Testphase: until env TEST_PHASE_END (a day, YYYY-MM-DD) – or as long as it is
+ * not set – everything is open for every account ("test"). Accounts created
+ * before that day are testers and keep everything for good ("tester").
  */
 
 import { db, premiumTable, usersTable } from '@workspace/db';
@@ -17,7 +21,7 @@ export interface Premium {
   active: boolean;
   /** Last day (ISO timestamp of its end) or null for no end. */
   until: string | null;
-  /** owner | manual | (later) the payment provider; null without Premium. */
+  /** owner | manual | test (Testphase) | tester (signed up during it) | (later) the payment provider; null without Premium. */
   source: string | null;
 }
 
@@ -25,11 +29,34 @@ function isActive(row: { activeUntil: Date | null } | undefined, now: Date): boo
   return !!row && (row.activeUntil === null || row.activeUntil > now);
 }
 
+/** The first day after the Testphase (Berlin midnight), from env TEST_PHASE_END; null while it runs open-ended. */
+export function testPhaseEnd(value = process.env['TEST_PHASE_END']): Date | null {
+  const day = value?.trim();
+  if (!day || !/^\d{4}-\d{2}-\d{2}$/.test(day)) return null;
+  const end = new Date(`${day}T00:00:00+01:00`);
+  // The phase includes its last day: free until the end of TEST_PHASE_END.
+  end.setUTCDate(end.getUTCDate() + 1);
+  return Number.isNaN(end.getTime()) ? null : end;
+}
+
+/** Testphase for everyone, or a tester for good – or nothing. Pure. */
+export function testerSource(createdAt: Date | null, end: Date | null, now: Date): 'test' | 'tester' | null {
+  if (end === null || now < end) return 'test';
+  return createdAt !== null && createdAt < end ? 'tester' : null;
+}
+
 export async function premiumOf(userId: string, isOwner: boolean, now = new Date()): Promise<Premium> {
   if (isOwner) return { active: true, until: null, source: 'owner' };
   const [row] = await db.select().from(premiumTable).where(eq(premiumTable.userId, userId));
-  if (!isActive(row, now)) return { active: false, until: null, source: null };
-  return { active: true, until: row!.activeUntil?.toISOString() ?? null, source: row!.source };
+  if (isActive(row, now)) return { active: true, until: row!.activeUntil?.toISOString() ?? null, source: row!.source };
+  const end = testPhaseEnd();
+  let createdAt: Date | null = null;
+  if (end !== null && now >= end) {
+    const [user] = await db.select({ createdAt: usersTable.createdAt }).from(usersTable).where(eq(usersTable.id, userId));
+    createdAt = user?.createdAt ?? null;
+  }
+  const source = testerSource(createdAt, end, now);
+  return source ? { active: true, until: null, source } : { active: false, until: null, source: null };
 }
 
 export interface PremiumEntry {

@@ -54,6 +54,7 @@ import {
   SPECIES_WISH_TEXT,
   PLANS,
   PRICES_PROVISIONAL,
+  TEST_PHASE,
   SITE_PATHS,
   moduleLabel,
   planById,
@@ -504,7 +505,7 @@ export function PricingPage({ actions }: { actions: SiteActions }) {
       <PageHero eyebrow="Preise & Pakete" title="Kostenlos starten. KI, wenn du sie brauchst." text="Alles, was ohne KI läuft, bleibt kostenlos. KI kostet uns bei jeder Anfrage Geld – deshalb gibt es sie in zwei Paketen." variant="evening">
         <Cta actions={actions} />
       </PageHero>
-      <Section title="Die Pakete" intro={PRICES_PROVISIONAL ? "Vorläufige Preise – bezahlen lässt sich noch nicht. Bis dahin nutzt du alles wie bisher." : undefined}>
+      <Section title="Die Pakete" intro={TEST_PHASE ? "Vorläufige Preise – bezahlen lässt sich noch nicht. In der Testphase ist alles offen und kostenlos, und wer jetzt testet, zahlt auch nach dem Start nichts." : PRICES_PROVISIONAL ? "Vorläufige Preise – bezahlen lässt sich noch nicht. Bis dahin nutzt du alles wie bisher." : undefined}>
         <div className="mb-6 inline-flex rounded-xl border bg-muted/40 p-1" role="tablist" aria-label="Abrechnung">
           {[false, true].map((y) => (
             <button key={String(y)} type="button" role="tab" aria-selected={yearly === y} className={`rounded-lg px-4 py-1.5 text-sm ${yearly === y ? "bg-background font-semibold shadow-sm" : "text-muted-foreground"}`} onClick={() => setYearly(y)}>
@@ -545,6 +546,7 @@ export function PricingPage({ actions }: { actions: SiteActions }) {
       <Section title="Häufige Fragen">
         <div className="grid gap-4 md:grid-cols-2">
           {[
+            ...(TEST_PHASE ? [["Ich teste gerade – muss ich später zahlen?", "Nein. In der Testphase ist alles offen und kostenlos. Wer jetzt ein Konto hat und testet, behält die App auch nach dem Start kostenlos – als Dankeschön."]] : []),
             ["Was ist eine KI-Anfrage?", "Jedes Foto, das die KI auswertet, und jeder KI-Vorschlag – z. B. ein Pflanzen-Scan oder ein Beet-Vorschlag. Alles andere zählt nicht."],
             ["Brauche ich für Tiere ein Paket?", "Nein. Stall-Aufgaben, Futterplaner, Zucht, Arzneimittel, Pflichten, Weide und Bienen sind ohne KI kostenlos."],
             ["Kann ich wechseln oder kündigen?", "Ja, jederzeit zum Ende des Zeitraums. Deine Daten bleiben, nur die KI-Funktionen richten sich nach dem Paket."],

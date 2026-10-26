@@ -16,7 +16,8 @@ export function GrowPremiumCard() {
       </h2>
       {p.active ? (
         <p className="text-muted-foreground">
-          Du kannst den KI-Check nutzen{p.source === "owner" ? " (Betreiber)" : p.until ? ` – bis ${dayText(p.until)}` : ""}.
+          Du kannst den KI-Check nutzen
+          {p.source === "owner" ? " (Betreiber)" : p.source === "test" ? " – in der Testphase für alle frei" : p.source === "tester" ? " – als Tester dauerhaft kostenlos" : p.until ? ` – bis ${dayText(p.until)}` : ""}.
         </p>
       ) : (
         <>

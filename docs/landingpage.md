@@ -25,6 +25,7 @@ Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit
   - „Deine Tierart fehlt?“: Der Knopf „Tierart wünschen“ öffnet die Feedback-Blase als Idee mit dem Text „Bitte ergänzt die Tierart: “ (`openSiteFeedback`). Der Wunsch landet in Verwaltung → Feedback.
   - Ein Test prüft, dass jede Tierart der App genau einmal vorkommt. Eine neue Art fehlt dort also nicht.
 - **Pakete und Preise:** vorläufig, siehe `docs/premium.md`.
+- **Testphase:** Solange `TEST_PHASE` in `lib/site.ts` an ist, steht unter dem Kopf jeder Seite ein Streifen: „Testphase: alles offen und kostenlos …, wer jetzt testet, behält die App auch nach dem Start kostenlos“. Auf `/preise` stehen dieselbe Aussage und eine Frage dazu (siehe `docs/premium.md`).
 
 ### Bilder
 

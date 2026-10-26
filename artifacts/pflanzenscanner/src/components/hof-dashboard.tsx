@@ -53,6 +53,7 @@ import { deDay } from "@/lib/medicine-labels";
 import { ALERT_LEVEL_LABELS, alertWindow, berlinToday, dayLabel, tempText } from "@/lib/weather-labels";
 import { euro } from "@/lib/yield-labels";
 import { cn } from "@/lib/utils";
+import { TesterNotice } from "@/components/tester-notice";
 
 // ── Weather ──────────────────────────────────────────────────────────────────
 
@@ -560,6 +561,7 @@ export function HofDashboard() {
   const layout = effectiveLayout(saved.data?.widgets, available);
   return (
     <div className="w-full space-y-4">
+      <TesterNotice closable />
       {farm ? <WeatherStrip farm={farm} /> : <div className="h-[72px] rounded-2xl border bg-card animate-pulse" />}
       <LeaderboardStrip />
       {farm && !saved.isLoading && (

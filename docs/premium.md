@@ -2,6 +2,29 @@
 
 Premium sind die Funktionen, die im Betrieb Geld kosten. Das ist vor allem KI: Jede Anfrage an Gemini wird bezahlt. Alles ohne KI bleibt kostenlos.
 
+## Testphase: alles offen, Tester bleiben kostenlos
+
+- **Während der Testphase** hat jedes Konto alles, was Premium hat (`premiumOf` liefert `source: "test"`). Heute betrifft das den Grow-KI-Check; das KI-Tageslimit gilt weiter.
+- **Nach der Testphase** bleibt jedes Konto, das vorher angelegt wurde, dauerhaft frei (`source: "tester"`). Grundlage ist `users.created_at`, dafür ist keine Liste nötig.
+- **Steuerung:** Env `TEST_PHASE_END` in Render.
+  - Nicht gesetzt: Die Testphase läuft.
+  - `YYYY-MM-DD`: letzter Tag der Testphase. Ab dem nächsten Tag (Mitternacht, Winterzeit) gilt sie als beendet.
+  - Wer bis dahin ein Konto hat, ist Tester.
+- **Vorrang:** Betreiber vor Hand-Vergabe vor Testphase/Tester.
+- **Hinweise:**
+  - Homepage: Streifen unter dem Kopf auf allen Seiten, Text und Frage auf `/preise` (`TEST_PHASE` in `lib/site.ts`).
+  - App: Kasten auf dem Hof, schließbar (`components/tester-notice.tsx`), dauerhaft in Mehr.
+  - Konto-Kopf in Mehr: „Testphase – alles kostenlos“ bzw. „Tester – dauerhaft kostenlos“.
+  - Grow-Karte: sagt, warum der KI-Check frei ist.
+- **Zum Start:**
+  1. `TEST_PHASE_END` setzen.
+  2. `TEST_PHASE` in `lib/site.ts` auf `false` stellen, damit die Homepage den Hinweis nicht mehr zeigt.
+- **Tests:**
+  - `premium.test.ts`
+  - `premium.integration.test.ts`: Testphase, Tester, späteres Konto, Hand-Vergabe
+  - `growDiagnosis.integration.test.ts`: KI-Check in der Testphase frei, danach Premium
+  - `tester-notice.test.ts`
+
 ## Was gehört zu Premium
 
 | Bereich | Kostenlos | Premium |

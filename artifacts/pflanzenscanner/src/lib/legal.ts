@@ -9,23 +9,29 @@
 
 export const OFFEN = "[bitte ergänzen]";
 
-export const OPERATOR = {
-  /** Vor- und Nachname (bzw. Firma) des Betreibers. */
-  name: OFFEN,
+export const OPERATOR: Record<"business" | "name" | "street" | "city" | "email", string> = {
+  /** Geschäftsbezeichnung des Gewerbes. */
+  business: "Javaria IT",
+  /** Vor- und Nachname des Inhabers (Einzelunternehmen: Pflichtangabe). */
+  name: "Stefan Huber",
   /** Straße und Hausnummer – ein Postfach reicht nicht. */
-  street: OFFEN,
+  street: "Auberg 4",
   /** Postleitzahl und Ort. */
-  city: OFFEN,
+  city: "83109 Großkarolinenfeld",
   /** E-Mail-Adresse für Kontakt und Datenschutzanfragen. */
-  email: OFFEN,
-} as const;
+  email: "info@littlefarming.de",
+};
+
+/** Kleingewerbe als Einzelunternehmen, Kleinunternehmer nach § 19 UStG. */
+export const OPERATOR_FORM = "Einzelunternehmen (Kleingewerbe), nicht im Handelsregister eingetragen";
+export const OPERATOR_VAT = "Kleinunternehmer im Sinne von § 19 UStG. Es wird keine Umsatzsteuer ausgewiesen; eine Umsatzsteuer-Identifikationsnummer besteht nicht.";
 
 /**
  * Stand der Texte. Muss zu LEGAL_VERSION im API-Server passen
  * (artifacts/api-server/src/lib/registrationPolicy.ts), denn dieser Wert wird
  * bei jeder Registrierung mit dem Konto gespeichert.
  */
-export const LEGAL_VERSION = "2026-10-18";
+export const LEGAL_VERSION = "2026-10-26";
 
 export function operatorDataIncomplete(): boolean {
   return Object.values(OPERATOR).some((value) => value === OFFEN);

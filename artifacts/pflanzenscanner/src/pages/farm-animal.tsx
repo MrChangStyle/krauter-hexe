@@ -308,9 +308,9 @@ async function uploadPhoto(
 
 function BackLink() {
   return (
-    <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+    <Link href="/farm/tiere" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
       <ArrowLeft className="h-4 w-4" />
-      Meine Farm
+      Meine Tiere
     </Link>
   );
 }
@@ -351,7 +351,7 @@ function NewAnimalPage({ farmId }: { farmId: number }) {
         busy={busy}
         error={error}
         onSubmit={(input, photo) => void save(input, photo)}
-        onCancel={() => setLocation("/farm")}
+        onCancel={() => setLocation("/farm/tiere")}
       />
     </div>
   );

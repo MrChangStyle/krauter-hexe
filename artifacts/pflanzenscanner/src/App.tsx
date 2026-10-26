@@ -25,6 +25,7 @@ import HilfePage from '@/pages/hilfe';
 import PflanzenHubPage from '@/pages/pflanzen-hub';
 import MeinePflanzenPage from '@/pages/meine-pflanzen';
 import SchaedlingePage from '@/pages/schaedlinge';
+import MeineTierePage from '@/pages/meine-tiere';
 import { BeneficialPage, ProblemPage } from '@/pages/nuetzlinge';
 import PlantDetailPage from '@/pages/plant-detail';
 import InsectScanPage from '@/pages/insect-scan';
@@ -165,6 +166,7 @@ function Router() {
         <Route path="/hilfe" component={HilfePage} />
         <Route path="/aufgaben" component={AufgabenPage} />
         <Route path="/farm" component={FarmPage} />
+        <Route path="/farm/tiere" component={MeineTierePage} />
         <Route path="/farm/kameras" component={FarmCamerasPage} />
         <Route path="/farm/futter" component={FutterplanerPage} />
         <Route path="/farm/futter/vorrat" component={FutterVorratPage} />

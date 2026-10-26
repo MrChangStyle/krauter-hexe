@@ -134,6 +134,33 @@ function NewHerdDialog({
 }
 
 /** Animals and herds of the active farm on the "Meine Farm" page. */
+/** Top of the Tiere page: the way to all animals, with how many there are. */
+export function MyAnimalsCard({ farm }: { farm: FarmSummary }) {
+  const animals = useListFarmAnimals(farm.id);
+  const herds = useListHerds(farm.id);
+  const active = (animals.data ?? []).filter((a) => !a.archivedAt);
+  const groups = (herds.data ?? []).length;
+  return (
+    <Link
+      href="/farm/tiere"
+      className="block space-y-2 rounded-3xl bg-primary p-5 text-primary-foreground shadow-md transition-transform active:scale-[0.99]"
+      data-testid="my-animals"
+    >
+      <span className="flex items-center justify-between">
+        <span className="text-lg font-semibold">Meine Tiere</span>
+        <PawPrint className="h-5 w-5 opacity-80" />
+      </span>
+      <span className="block text-sm opacity-90">
+        {!animals.data
+          ? "Alle Tiere des Hofs, einzeln oder in Gruppen."
+          : active.length === 0
+            ? "Noch keine Tiere. Leg sie einzeln oder als Gruppe an."
+            : `${active.length} ${active.length === 1 ? "Tier" : "Tiere"}${groups > 0 ? ` in ${groups} ${groups === 1 ? "Gruppe" : "Gruppen"}` : ""} – mit Gesundheitsakte, Gewicht und Abstammung`}
+      </span>
+    </Link>
+  );
+}
+
 export function FarmAnimalsSection({ farm }: { farm: FarmSummary }) {
   const animals = useListFarmAnimals(farm.id);
   const herds = useListHerds(farm.id);

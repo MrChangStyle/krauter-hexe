@@ -73,9 +73,19 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
   pests: {
     title: "Schädlinge & Nützlinge",
     href: "/schaedlinge",
-    intro: "Erkennen, wer da krabbelt: Schädlinge mit biologischen und chemischen Mitteln dagegen, Nützlinge, die du fördern solltest.",
-    steps: ["Ein Insekt scannen oder in der Liste suchen.", "Bei Schädlingen zuerst die biologischen Wege lesen.", "Nützlinge fördern – sie erledigen oft die Arbeit."],
-    faq: [{ q: "Warum steht bio vor chemisch?", a: "Weil es Nützlinge, Bienen und deine Tiere schont. Chemie nur, wenn nichts anderes hilft – und Wartezeiten beachten." }],
+    intro: "Erkennen, wer da krabbelt: Schädlinge mit biologischen und chemischen Mitteln dagegen, Nützlinge, die du fördern solltest. Der Ratgeber „Nützlinge fördern“ zeigt, wer gegen welches Problem hilft und wie du ihn in deinen Garten holst.",
+    steps: [
+      "Ein Insekt scannen – es landet unter „Meine Insekten“. Mit dem Filter siehst du nur Schädlinge, nur Nützlinge oder die neutralen.",
+      "Bei Schädlingen zuerst die biologischen Wege lesen und auf „Wer hilft dagegen?“ tippen.",
+      "Unter „Nützlinge fördern“ ein Problem wählen, z. B. Blattläuse, Schnecken oder Boden verbessern.",
+      "Die Maßnahmen umsetzen: Blühpflanzen, Insektenhotel, Ohrwurm-Topf, Tränke, wilde Ecke – jede mit Schritt-für-Schritt-Anleitung.",
+    ],
+    faq: [
+      { q: "Warum steht bio vor chemisch?", a: "Weil es Nützlinge, Bienen und deine Tiere schont. Chemie nur, wenn nichts anderes hilft – und Wartezeiten beachten." },
+      { q: "Ich habe Läuse und sehe keine Marienkäfer – was tun?", a: "Ein paar Tage abwarten und Läuse abspritzen. Nützlinge kommen erst, wenn sie Futter finden, meist mit ein bis zwei Wochen Verzögerung. Blühpflanzen und eine wilde Ecke sorgen dafür, dass sie nächstes Jahr schon da sind." },
+      { q: "Soll ich Nützlinge kaufen?", a: "Im Gewächshaus, Wintergarten und an Zimmerpflanzen lohnt es sich – etwa Raubmilben gegen Spinnmilben oder Nematoden gegen Trauermücken. Im Freien wandern gekaufte Tiere oft ab; dort hilft es mehr, ihnen dauerhaft Futter und Verstecke zu bieten." },
+      { q: "Bringt ein Insektenhotel aus dem Baumarkt etwas?", a: "Oft wenig: Zapfen, Stroh und ins Stirnholz gebohrte Löcher nutzt kaum eine Biene. Der Ratgeber zeigt, worauf es ankommt – und dass die meisten Wildbienen im Boden nisten." },
+    ],
   },
   lexicon: {
     title: "Lexikon",

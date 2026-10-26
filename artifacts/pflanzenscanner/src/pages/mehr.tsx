@@ -11,6 +11,7 @@ import {
   type ManagedUser,
 } from "@workspace/api-client-react";
 import { exportInsectsPdf, exportSelectedPlantsPdf } from "@/lib/pdf-export";
+import { RELATION_FILTERS, filterByRelation, relationCounts, type RelationFilter } from "@/lib/beneficials";
 import { viewCategoryOf, VIEW_CATEGORY_LABELS } from "@/lib/view-categories";
 import { format, formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -606,12 +607,14 @@ export function MeinBeetTab({ favorites }: { favorites: ReturnType<typeof useFav
 // ── Meine Insekten tab ───────────────────────────────────────────────────────
 
 export function MeineInsektenTab() {
-  const { data: insects, isLoading, isError } = useListMyInsects({
+  const { data: allInsects, isLoading, isError } = useListMyInsects({
     query: { queryKey: ["/api/insects/my-scans"] },
   });
+  const [filter, setFilter] = useState<RelationFilter>("all");
+  const insects = allInsects && filterByRelation(allInsects, filter);
 
   // Silently re-upload locally-cached insect photos to the server.
-  useImageBackup(insects, "insect");
+  useImageBackup(allInsects, "insect");
 
   if (isLoading) {
     return (
@@ -629,7 +632,7 @@ export function MeineInsektenTab() {
     );
   }
 
-  if (!insects || insects.length === 0) {
+  if (!allInsects || !insects || allInsects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-14 text-center gap-3">
         <Bug className="w-10 h-10 text-muted-foreground/50" />
@@ -649,11 +652,32 @@ export function MeineInsektenTab() {
     sublabel: INSECT_CATEGORY_SHORT[ins.category] ?? ins.category,
   }));
 
+  const counts = relationCounts(allInsects);
+
   return (
     <div className="space-y-3">
+      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Insekten filtern">
+        {RELATION_FILTERS.map((f) => (
+          <button
+            key={f.id}
+            type="button"
+            role="radio"
+            aria-checked={filter === f.id}
+            onClick={() => setFilter(f.id)}
+            disabled={f.id !== "all" && counts[f.id] === 0}
+            className={`rounded-full border px-3 py-1.5 text-sm transition-colors disabled:opacity-40 ${filter === f.id ? "border-primary bg-primary text-primary-foreground" : "bg-background hover:border-primary"}`}
+          >
+            {f.label} <span className="opacity-70">{counts[f.id]}</span>
+          </button>
+        ))}
+      </div>
       <PdfSelectPanel
         items={pdfItems}
-        countLabel={`${insects.length} ${insects.length === 1 ? "Insekt" : "Insekten"} gescannt`}
+        countLabel={
+          filter === "all"
+            ? `${insects.length} ${insects.length === 1 ? "Insekt" : "Insekten"} gescannt`
+            : `${insects.length} von ${allInsects.length} ${allInsects.length === 1 ? "Insekt" : "Insekten"}`
+        }
         onExport={async (selected) => {
           const ids = new Set(selected.map((i) => Number(i.id)));
           await exportInsectsPdf(insects.filter((ins) => ids.has(ins.id)));

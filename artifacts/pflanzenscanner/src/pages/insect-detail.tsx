@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useLocation } from "wouter";
+import { Link, useParams, useLocation } from "wouter";
 import {
   ArrowLeft,
   Bug,
@@ -26,6 +26,7 @@ import {
 import { PhotoChoiceCard } from "@/components/photo-choice-card";
 import { ImageLockToggle } from "@/components/image-lock-toggle";
 import { ReportButton } from "@/components/report-button";
+import { beneficialForInsect, problemsForPest } from "@/lib/beneficials";
 
 export default function InsectDetailPage() {
   const params = useParams();
@@ -74,6 +75,8 @@ export default function InsectDetailPage() {
 
   const isPest = insect.relationStatus === "pest";
   const isBeneficial = insect.relationStatus === "beneficial";
+  const pestProblem = isPest ? problemsForPest(insect.germanName)[0] : undefined;
+  const knownBeneficial = isBeneficial ? beneficialForInsect(insect.germanName) : undefined;
 
   return (
     <div className="pb-10">
@@ -227,14 +230,38 @@ export default function InsectDetailPage() {
           </section>
         )}
 
+        {/* Pest → the beneficials that help against it */}
+        {isPest && (
+          <Link
+            href={pestProblem ? `/schaedlinge?tab=nuetzlinge&problem=${pestProblem.id}` : "/schaedlinge?tab=nuetzlinge"}
+            className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 flex gap-3"
+          >
+            <Leaf className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+            <span className="text-sm text-foreground leading-relaxed">
+              <span className="font-medium block">Wer hilft dagegen?</span>
+              {pestProblem
+                ? `Nützlinge gegen ${pestProblem.title} – und wie du sie in deinen Garten holst.`
+                : "Welche Nützlinge Schädlinge fressen – und wie du sie in deinen Garten holst."}
+            </span>
+          </Link>
+        )}
+
         {/* Beneficial callout */}
         {isBeneficial && (
           <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 flex gap-3">
             <Leaf className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-            <p className="text-sm text-foreground leading-relaxed">
-              Dieses Tier ist ein Nützling – es schützt deinen Garten, indem es Schädlinge
-              frisst oder Blüten bestäubt. Bitte nicht bekämpfen!
-            </p>
+            <div className="text-sm text-foreground leading-relaxed space-y-1">
+              <p>
+                Dieses Tier ist ein Nützling – es schützt deinen Garten, indem es Schädlinge
+                frisst oder Blüten bestäubt. Bitte nicht bekämpfen!
+              </p>
+              <Link
+                href={knownBeneficial ? `/schaedlinge?tab=nuetzlinge&nuetzling=${knownBeneficial.id}` : "/schaedlinge?tab=nuetzlinge"}
+                className="font-medium text-emerald-800 dark:text-emerald-300 underline underline-offset-2"
+              >
+                So holst du {knownBeneficial ? knownBeneficial.name : "Nützlinge"} in deinen Garten
+              </Link>
+            </div>
           </div>
         )}
       </div>

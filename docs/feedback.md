@@ -13,6 +13,7 @@ Alle angemeldeten Nutzer können dem Betreiber Verbesserungsvorschläge schicken
 ## Auf der Homepage
 
 - Unten rechts sitzt eine grüne Sprechblase **„Feedback“** (`components/site/site-feedback.tsx`), auf allen Seiten der Homepage.
+- Andere Teile der Homepage öffnen sie mit einem Starttext über `openSiteFeedback(text)`. So macht es zum Beispiel „Tierart wünschen“ auf der Tiere-Seite mit „Bitte ergänzt die Tierart: “.
 - Man wählt **„Idee / Vorschlag“** oder **„Problem melden“**, schreibt die Nachricht und gibt auf Wunsch eine E-Mail-Adresse für eine Antwort an. Ein Konto braucht es nicht.
 - Mitgeschickt wird die Seite (z. B. `/preise`). Wer angemeldet ist, schickt das Feedback mit seinem Konto.
 - Schutz vor Missbrauch:

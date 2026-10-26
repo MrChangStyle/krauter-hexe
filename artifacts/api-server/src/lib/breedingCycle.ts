@@ -89,6 +89,7 @@ export const WEANING: Partial<Record<FarmSpecies, [number, string]>> = {
   pig: [35, 'Ferkel absetzen – nicht vor vier Wochen (Tierschutz-Nutztierhaltungsverordnung).'],
   cattle: [240, 'Kalb absetzen (Mutterkuhhaltung, etwa acht Monate).'],
   horse: [180, 'Fohlen absetzen (etwa sechs Monate) – am besten mit einem vertrauten Gefährten.'],
+  alpaca: [180, 'Crias absetzen (etwa sechs Monate, Richtwert mindestens 25 kg) – Hengstfohlen dann von den Stuten trennen.'],
   cat: [84, 'Kätzchen frühestens mit zwölf Wochen abgeben.'],
   dog: [56, 'Welpen frühestens mit acht Wochen abgeben (Tierschutz-Hundeverordnung).'],
 };

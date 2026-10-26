@@ -11,6 +11,7 @@ export const BREEDING_DAYS: Partial<Record<FarmSpecies, number>> = {
   pig: 115,
   cattle: 283,
   horse: 335,
+  alpaca: 345,
   cat: 63,
   dog: 63,
 };

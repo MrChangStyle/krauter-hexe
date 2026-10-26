@@ -2,7 +2,8 @@ import { existsSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { MODULES } from "@/lib/modules";
-import { MODULE_SITE, PLANS, SITE_NAV, SITE_PATHS, recommend, sitePageOf, yearlySaving, type FinderInput } from "@/lib/site";
+import { FarmSpecies } from "@workspace/api-client-react";
+import { MODULE_SITE, PLANS, SITE_NAV, SITE_PATHS, SITE_SPECIES, recommend, sitePageOf, yearlySaving, type FinderInput } from "@/lib/site";
 
 const none: FinderInput = { plants: [], animals: [], pasture: false, team: false, sells: false, ai: "never" };
 const ids = (input: Partial<FinderInput>) => recommend({ ...none, ...input }).modules.map((m) => m.id);
@@ -15,6 +16,14 @@ describe("Homepage – pages", () => {
     expect(sitePageOf("/pflanzen")).toBeNull();
     expect(sitePageOf("/farm")).toBeNull();
     expect(SITE_NAV.map((n) => SITE_PATHS[n.page])).not.toContain("/");
+  });
+});
+
+describe("Homepage – Tierarten", () => {
+  it("shows every species of the app (and the bees), each once", () => {
+    const species = Object.values(FarmSpecies).filter((s) => s !== "other");
+    expect(SITE_SPECIES.map((s) => s.key).sort()).toEqual([...species, "bees"].sort());
+    expect(SITE_SPECIES.filter((s) => s.isNew).map((s) => s.key)).toEqual(["alpaca"]);
   });
 });
 
@@ -55,6 +64,13 @@ describe("Modul-Finder", () => {
   it("gives beekeepers the bees and their duties, not the stable", () => {
     const m = ids({ animals: ["bees"] });
     expect(m).toEqual(["duties", "yields", "bees"]);
+  });
+
+  it("gives alpaca keepers pasture, feed, breeding and the duties", () => {
+    const m = ids({ animals: ["alpaca"] });
+    expect(m).toEqual(expect.arrayContaining(["farm-tasks", "feed", "duties", "medicines", "export", "breeding", "pasture", "yields"]));
+    expect(m).not.toContain("bees");
+    expect(m).not.toContain("wildlife");
   });
 
   it("adds the pasture for grazers, the team when others help", () => {

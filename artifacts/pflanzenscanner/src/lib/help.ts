@@ -164,6 +164,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     faq: [
       { q: "Muss ich die Ohrmarkennummer eintragen?", a: "Nein, sie lässt sich jederzeit nachtragen. Rinder, Schafe, Ziegen und Schweine müssen aber gekennzeichnet sein – das Formular erinnert daran." },
       { q: "Was passiert beim Archivieren?", a: "Das Tier verschwindet aus den Listen, bleibt aber mit seiner Akte für den Veterinäramt-Export erhalten." },
+      {
+        q: "Was gilt für Alpakas?",
+        a: "Alpakas sind Herdentiere – mindestens zwei, besser drei. Der Schnellstart legt Heu und Alpaka-Mineralfutter als Ration an und erinnert an Zehennägel (alle 3 Monate), Kotprobe (alle 4 Monate) und die Schur im Frühsommer. Beim Veterinäramt anmelden; ob die Tierseuchenkasse sie will, regelt das Bundesland. Alle Zahlen sind Richtwerte.",
+      },
     ],
   },
   "farm-tasks": {
@@ -268,7 +272,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       },
       {
         q: "Was bedeutet der Wurm-Hinweis?",
-        a: "Standen vor Kurzem schon Tiere derselben Art auf der Fläche (Ziegen und Schafe zählen zusammen), können ihre Wurmlarven noch im Gras sein. Dann helfen eine Kotprobe, Wechselweide mit einer anderen Tierart oder Nachmähen. Bei „anderen Tieren“ wähle die Tierart, sonst gibt es keinen Hinweis. Ob und womit entwurmt wird, besprich mit dem Tierarzt.",
+        a: "Standen vor Kurzem schon Tiere derselben Art auf der Fläche (Ziegen, Schafe und Alpakas zählen zusammen – sie teilen sich viele Würmer), können ihre Wurmlarven noch im Gras sein. Dann helfen eine Kotprobe, Wechselweide mit einer anderen Tierart oder Nachmähen. Bei „anderen Tieren“ wähle die Tierart, sonst gibt es keinen Hinweis. Ob und womit entwurmt wird, besprich mit dem Tierarzt.",
       },
     ],
   },

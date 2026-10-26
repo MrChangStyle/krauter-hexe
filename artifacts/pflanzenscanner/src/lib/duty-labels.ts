@@ -13,6 +13,7 @@ const PLURAL: Record<FarmSpecies, string> = {
   sheep: "Schafe",
   cattle: "Rinder",
   pig: "Schweine",
+  alpaca: "Alpakas",
   other: "Sonstige",
 };
 

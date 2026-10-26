@@ -187,6 +187,7 @@ export const NAMES: Record<FarmSpecies, { one: string; group: string; prefix: st
   horse: { one: 'Pferd', group: 'Pferde', prefix: 'P' },
   cattle: { one: 'Rind', group: 'Rinder', prefix: 'R' },
   pig: { one: 'Schwein', group: 'Schweine', prefix: 'SW' },
+  alpaca: { one: 'Alpaka', group: 'Alpakas', prefix: 'A' },
   cat: { one: 'Katze', group: 'Katzen', prefix: 'KA' },
   dog: { one: 'Hund', group: 'Hunde', prefix: 'HU' },
   other: { one: 'Tier', group: 'Tiere', prefix: 'T' },

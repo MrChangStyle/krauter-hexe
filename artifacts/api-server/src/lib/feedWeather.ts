@@ -25,6 +25,8 @@ export const COLD_RULES: Partial<Record<FarmSpecies, ColdRule>> = {
   cattle: { limit: -10, feeds: ['roughage'], what: 'Heu' },
   sheep: { limit: -10, feeds: ['roughage'], what: 'Heu' },
   goat: { limit: 0, feeds: ['roughage'], what: 'Heu' },
+  // Dense fleece: cold is no problem, wet and wind are – a dry shelter counts.
+  alpaca: { limit: -10, feeds: ['roughage'], what: 'Heu' },
   rabbit: { limit: 0, feeds: ['roughage'], what: 'Heu' },
   pig: { limit: 5, feeds: ['compound', 'grain'], what: 'Kraftfutter' },
   poultry: { limit: 5, feeds: ['compound', 'grain'], what: 'Körner und Legefutter' },

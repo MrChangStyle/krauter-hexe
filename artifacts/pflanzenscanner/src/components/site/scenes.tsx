@@ -2,7 +2,7 @@ import { useId, type ReactNode } from "react";
 
 /**
  * The drawn pictures of the homepage (docs/landingpage.md): one small scene
- * per topic – bees, raised bed, herbs, pantry, chickens, goats, sheep, the
+ * per topic – bees, raised bed, herbs, pantry, chickens, goats, sheep, alpacas, the
  * team, the harvest basket – in the style of the farm behind the start page,
  * with a little life in them (clouds drift, bees buzz, chickens peck). The
  * movement stops for "reduce motion".
@@ -640,6 +640,55 @@ export function ChicksScene({ className }: { className?: string }) {
   );
 }
 
+function Alpaca({ x, y, flip = false, wool = "#f3e6cf", cria = false, delay = 0 }: { x: number; y: number; flip?: boolean; wool?: string; cria?: boolean; delay?: number }) {
+  const s = cria ? 0.6 : 1;
+  return (
+    <g transform={`translate(${x} ${y}) scale(${flip ? -s : s} ${s})`}>
+      {/* Legs */}
+      <path d="M-18 10 v34 M-8 12 v32 M10 12 v32 M20 10 v34" stroke={wool} strokeWidth="7" strokeLinecap="round" />
+      <path d="M-18 10 v34 M-8 12 v32 M10 12 v32 M20 10 v34" stroke={OUTLINE} strokeWidth="1" strokeLinecap="round" fill="none" opacity=".35" />
+      {/* Fluffy body */}
+      <g fill={wool} stroke={OUTLINE} strokeWidth="1.1">
+        <ellipse cx="0" cy="0" rx="30" ry="18" />
+        <circle cx="-22" cy="-6" r="9" />
+        <circle cx="-6" cy="-12" r="10" />
+        <circle cx="12" cy="-11" r="9" />
+      </g>
+      {/* Long neck and head, nodding now and then */}
+      <g className="lf-bob" style={{ animationDelay: `${delay}s` }}>
+        <path d="M18 -6 C22 -24 22 -40 26 -52 L38 -50 C34 -38 34 -20 32 -2 Z" fill={wool} stroke={OUTLINE} strokeWidth="1.1" />
+        <ellipse cx="36" cy="-56" rx="11" ry="9" fill={wool} stroke={OUTLINE} strokeWidth="1.1" />
+        <ellipse cx="45" cy="-52" rx="5" ry="4" fill="#e9d3b4" />
+        <path d="M30 -63 q-2 -10 2 -14 q3 5 3 13 M38 -64 q0 -10 5 -13 q1 6 -1 13" fill={wool} stroke={OUTLINE} strokeWidth="1.1" />
+        <circle cx="39" cy="-58" r="1.8" fill="#2b2b2b" />
+        <path d="M44 -49 q2 1 3 0" stroke="#2b2b2b" strokeWidth="1" fill="none" />
+      </g>
+    </g>
+  );
+}
+
+/** Alpakas: a small herd with a cria on the pasture. */
+export function AlpacasScene({ className }: { className?: string }) {
+  return (
+    <Frame label="Gezeichnete Alpakas mit einem Jungtier auf der Weide" className={className}>
+      <Sun x={330} y={58} />
+      <Clouds />
+      <Hills y={170} />
+      <g stroke="#8b6a47" strokeWidth="4" strokeLinecap="round">
+        <path d="M0 200 H400" />
+        {[30, 110, 190, 270, 350].map((x) => (
+          <path key={x} d={`M${x} 190 V214`} />
+        ))}
+      </g>
+      <path d="M0 214 Q200 198 400 216 V300 H0 Z" fill="#5aa64f" />
+      <Alpaca x={110} y={238} delay={0} />
+      <Alpaca x={250} y={232} flip wool="#b98a5e" delay={1.3} />
+      <Alpaca x={185} y={262} wool="#f8f1e4" cria delay={0.6} />
+      <Flowers y={286} xs={[40, 330, 370]} />
+    </Frame>
+  );
+}
+
 /** Slot → scene; anything else falls back to the farm with an icon (SitePhoto). */
 export const SCENES: Record<string, (props: { className?: string }) => ReactNode> = {
   plants: PlantsScene,
@@ -655,4 +704,5 @@ export const SCENES: Record<string, (props: { className?: string }) => ReactNode
   wildlife: WildlifeScene,
   pests: PestsScene,
   chicks: ChicksScene,
+  alpacas: AlpacasScene,
 };

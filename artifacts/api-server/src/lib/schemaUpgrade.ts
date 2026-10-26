@@ -51,6 +51,9 @@ const STATEMENTS = [
   "CREATE INDEX IF NOT EXISTS reports_status_idx ON reports (status)",
   // "Meine Farm" (generated, see farmSchemaStatements.ts).
   ...FARM_SCHEMA_STATEMENTS,
+  // Alpakas (docs/alpaka.md): a new value in an existing enum. Runs on its
+  // own, outside any transaction, so the value can be used right after.
+  `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'alpaca' BEFORE 'other'`,
   // Beet-Architekt (generated, see gardenSchemaStatements.ts).
   ...GARDEN_SCHEMA_STATEMENTS,
   // Futterplaner (generated, see feedSchemaStatements.ts).

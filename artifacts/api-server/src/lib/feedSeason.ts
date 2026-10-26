@@ -41,6 +41,7 @@ const TRANSITION_DAYS: Record<FarmSpecies, number> = {
   goat: 14,
   sheep: 14,
   cattle: 14,
+  alpaca: 14,
   horse: 14,
   rabbit: 10,
   guineaPig: 10,
@@ -107,7 +108,7 @@ export function mix<K>(oldItems: MixItem<K>[], newItems: MixItem<K>[], share: nu
   return out.filter((i) => i.grams > 0);
 }
 
-const GRAZERS: FarmSpecies[] = ['rabbit', 'guineaPig', 'goat', 'sheep', 'horse', 'cattle'];
+const GRAZERS: FarmSpecies[] = ['rabbit', 'guineaPig', 'goat', 'sheep', 'horse', 'cattle', 'alpaca'];
 
 /** Fixed hints for the season of a ration in effect. */
 export function seasonHints(species: FarmSpecies, dayKey: string, categories: readonly FeedCategory[]): string[] {

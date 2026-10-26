@@ -33,7 +33,7 @@ function errorText(err: unknown, fallback: string): string {
 }
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-3 text-sm";
-const RECIPE_SPECIES: FarmSpecies[] = ["poultry", "rabbit", "guineaPig", "goat", "sheep", "pig", "horse", "cattle"];
+const RECIPE_SPECIES: FarmSpecies[] = ["poultry", "rabbit", "guineaPig", "goat", "sheep", "pig", "horse", "cattle", "alpaca"];
 
 // ── Futterkalender ───────────────────────────────────────────────────────────
 

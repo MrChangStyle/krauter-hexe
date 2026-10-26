@@ -116,6 +116,16 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   });
   for (const [days, kg] of [[60, 52], [30, 54.5], [2, 55]] as const) await createWeightLog(farmId, goat!.id, { date: ago(days), weightKg: kg });
 
+  // Alpakas (docs/alpaka.md): three in a herd, ration and care tasks from the quick start, a mare in cria.
+  const alpacas = await quickStart(farmId, { species: 'alpaca', count: 3, name: 'Alpakas' });
+  const [stute] = await db
+    .update(farmAnimalsTable)
+    .set({ sex: 'female' })
+    .where(eq(farmAnimalsTable.id, db.select({ id: farmAnimalsTable.id }).from(farmAnimalsTable).where(eq(farmAnimalsTable.herdId, alpacas.herdId)).orderBy(asc(farmAnimalsTable.id)).limit(1)))
+    .returning({ id: farmAnimalsTable.id });
+  await createBreeding(farmId, { species: 'alpaca', motherId: stute!.id, fatherName: 'Hengst vom Züchter', startedOn: ago(250), notes: 'Demo: Spucktest positiv' });
+  for (const [days, kg] of [[90, 64], [30, 66.5]] as const) await createWeightLog(farmId, stute!.id, { date: ago(days), weightKg: kg });
+
   // Pflichten: the farm's registration number (made up).
   // Thüringen: the demo pastures lie there too.
   await setDutySettings(farmId, { holdingNumber: '276 09 000 000 0000 (Demo)', state: 'TH' });

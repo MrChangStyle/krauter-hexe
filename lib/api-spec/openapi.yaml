@@ -11503,7 +11503,7 @@ components:
             $ref: "#/components/schemas/ModuleId"
     FarmSpecies:
       type: string
-      enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, other]
+      enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, alpaca, other]
     AnimalSex:
       type: string
       enum: [female, male, neutered, unknown]

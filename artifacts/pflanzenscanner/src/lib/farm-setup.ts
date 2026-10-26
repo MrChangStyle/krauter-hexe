@@ -22,6 +22,7 @@ const GROUP_NAMES: Record<FarmSpecies, string> = {
   horse: "Pferde",
   cattle: "Rinder",
   pig: "Schweine",
+  alpaca: "Alpakas",
   cat: "Katzen",
   dog: "Hunde",
   other: "Tiere",

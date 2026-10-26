@@ -21,6 +21,7 @@ import {
   ListChecks,
   type LucideIcon,
   Map as MapIcon,
+  MessageCircle,
   PawPrint,
   Pill,
   Radar,
@@ -38,6 +39,7 @@ import {
 import type { ModuleId } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { PageHero, PhoneShot, PlanBadge, Section, SitePhoto, useSiteActions, type SiteActions } from "@/components/site/site-parts";
+import { openSiteFeedback } from "@/components/site/site-feedback";
 import { GROW_ENABLED } from "@/lib/grow-labels";
 import { LANDING_TEXT } from "@/lib/landing";
 import { MODULES, type ModuleArea } from "@/lib/modules";
@@ -48,6 +50,8 @@ import {
   FINDER_PLANTS,
   FINDER_PLANT_LABELS,
   MODULE_SITE,
+  SITE_SPECIES,
+  SPECIES_WISH_TEXT,
   PLANS,
   PRICES_PROVISIONAL,
   SITE_PATHS,
@@ -176,6 +180,46 @@ function ModuleBlock({ id, index }: { id: ModuleId; index: number }) {
   );
 }
 
+/** Tiere page: the species the app knows, the newest one drawn, and a way to ask for more. */
+function SpeciesSection() {
+  return (
+    <Section id="tierarten" eyebrow="Tierarten" title="Diese Tiere kennt die App" intro="Für jede Art eigene Regeln: Futterbedarf, Trächtigkeit oder Brut, Weide, Pflichten gegenüber den Ämtern und Wartezeiten.">
+      <div className="grid items-start gap-8 md:grid-cols-2">
+        <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3" data-testid="site-species">
+          {SITE_SPECIES.map((s) => (
+            <li key={s.key} className={`flex items-center gap-2 rounded-2xl border bg-card px-3 py-2.5 text-sm font-medium ${s.isNew ? "border-primary" : ""}`}>
+              <span className="text-2xl leading-none" aria-hidden="true">
+                {s.emoji}
+              </span>
+              <span className="min-w-0">
+                {s.label}
+                {s.isNew && <span className="ml-1.5 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase text-primary-foreground">Neu</span>}
+              </span>
+            </li>
+          ))}
+        </ul>
+        <figure className="space-y-2">
+          <SitePhoto slot="alpacas" alt="Alpakas auf der Weide" className="aspect-[4/3] w-full" />
+          <figcaption className="text-sm text-muted-foreground">Neu dabei: Alpakas – mit Futterplan, Zucht samt Spucktest, Schur-Erinnerung und Pflichten.</figcaption>
+        </figure>
+      </div>
+      <div className="mt-8 flex flex-col gap-4 rounded-3xl border border-primary/30 bg-primary/5 p-5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex gap-3">
+          <MessageCircle className="mt-0.5 h-6 w-6 shrink-0 text-primary" />
+          <div>
+            <p className="font-semibold">Deine Tierart fehlt?</p>
+            <p className="text-sm text-muted-foreground">Sag uns Bescheid – wir ergänzen Tierarten auf Wunsch, mit Futter, Zucht und Pflichten. Enten, Wachteln oder Esel stecken schon unter Geflügel bzw. Pferden.</p>
+          </div>
+        </div>
+        <Button className="shrink-0 gap-2" onClick={() => openSiteFeedback(SPECIES_WISH_TEXT)}>
+          <MessageCircle className="h-4 w-4" />
+          Tierart wünschen
+        </Button>
+      </div>
+    </Section>
+  );
+}
+
 export function AreaPage({ area, actions }: { area: ModuleArea; actions: SiteActions }) {
   const modules = MODULES.filter((m) => m.area === area && !m.isArea && (m.id !== "grow" || GROW_ENABLED));
   const plants = area === "pflanzen";
@@ -187,7 +231,7 @@ export function AreaPage({ area, actions }: { area: ModuleArea; actions: SiteAct
         text={
           plants
             ? "Pflanzen erkennen, pflegen und vermehren, Beete planen, ernten und einlagern. Die App erinnert dich zur richtigen Zeit – und warnt bei Frost."
-            : "Für Hühner, Ziegen, Schafe, Kaninchen, Rinder, Pferde und Bienen: Aufgaben im Stall, Futter, Zucht, Arzneimittel und die Pflichten gegenüber den Ämtern."
+            : "Für Hühner, Ziegen, Schafe, Alpakas, Kaninchen, Rinder, Pferde und Bienen: Aufgaben im Stall, Futter, Zucht, Arzneimittel und die Pflichten gegenüber den Ämtern."
         }
         variant={plants ? "green" : "day"}
       >
@@ -203,6 +247,8 @@ export function AreaPage({ area, actions }: { area: ModuleArea; actions: SiteAct
           ))}
         </div>
       </nav>
+
+      {!plants && <SpeciesSection />}
 
       <div className="mx-auto max-w-6xl divide-y px-4">
         {modules.map((m, i) => (

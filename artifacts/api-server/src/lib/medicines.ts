@@ -68,6 +68,8 @@ export function withdrawalFor(m: Pick<Row, 'withdrawalMeatDays' | 'withdrawalMil
     pig: [m.withdrawalMeatDays],
     rabbit: [m.withdrawalMeatDays],
     horse: [m.withdrawalMeatDays],
+    // Alpakas count as food-producing animals: meat withdrawal applies.
+    alpaca: [m.withdrawalMeatDays],
   };
   const days = (products[species] ?? []).filter((d): d is number => d !== null);
   return days.length ? Math.max(...days) : null;

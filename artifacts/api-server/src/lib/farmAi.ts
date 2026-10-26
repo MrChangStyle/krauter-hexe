@@ -40,6 +40,7 @@ const SPECIES_DE: Record<FarmSpecies, string> = {
   sheep: 'Schaf',
   cattle: 'Rind',
   pig: 'Schwein',
+  alpaca: 'Alpaka',
   other: 'sonstiges Tier',
 };
 
@@ -252,6 +253,7 @@ export const DIET: Record<FarmSpecies, Diet> = {
   goat: 'herbivore',
   sheep: 'herbivore',
   cattle: 'herbivore',
+  alpaca: 'herbivore',
   poultry: 'omnivore',
   pig: 'omnivore',
   cat: 'carnivore',

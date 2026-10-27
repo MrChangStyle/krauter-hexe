@@ -14,6 +14,7 @@ Wer im Stall steht, hat oft keine Hand frei zum Tippen. Neben den längeren Noti
 | Neue Aufgaben, frei gesprochen (KI-Aufgabenplan) | Hof-Aufgaben | 1500 |
 | Aufgabe, Notiz | Hof-Aufgabe bearbeiten | 80 / 200 |
 | Kommentar | Hof-Aufgabe | 300 |
+| Neue Notizen, frei gesprochen (KI-Liste) | Alltagsnotizen | 1500 |
 
 ## Wie
 

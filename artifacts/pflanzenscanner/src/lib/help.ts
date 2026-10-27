@@ -173,7 +173,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
   "farm-tasks": {
     title: "Hof- & Stall-Aufgaben",
     href: "/hof-aufgaben",
-    intro: "Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Gänse füttern, Teichpumpe kontrollieren. Einfach reinsprechen, was zu tun ist – die KI macht daraus die Liste. Alle im Team sehen sie, haken ab und schreiben dazu, wenn etwas fehlt. Den Balken „Hof-Aufgaben heute“ findest du auf dem Hof unter Pflanzenretter.",
+    intro: "Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Gänse füttern, Teichpumpe kontrollieren. Einfach reinsprechen, was zu tun ist – die KI macht daraus die Liste. Alle im Team sehen sie, haken ab und schreiben dazu, wenn etwas fehlt. Auf dem Hof steht sie unter Pflanzenretter als orange Kachel, neben den Alltagsnotizen für Einkauf und Merkzettel.",
     steps: [
       "Einfach reinsprechen: Auf „Sprechen“ tippen und frei sagen, was zu tun ist – z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.",
       "Die KI macht daraus einzelne Aufgaben und erkennt Tag (heute, morgen, Freitag …), Wiederholung (jeden Tag, jede Woche, alle 2 Tage …), Uhrzeit und für wen. In der Vorschau lässt sich alles ändern oder entfernen, dann „Alle anlegen“.",
@@ -185,7 +185,8 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     faq: [
       { q: "Muss ich die Aufgaben einzeln eintippen?", a: "Nein. Sprich einfach frei rein, so wie du es jemandem sagen würdest – die KI macht daraus die Liste mit Tagen, Wiederholungen und Personen. Du prüfst sie nur noch und tippst auf „Alle anlegen“." },
       { q: "Was, wenn die KI nicht erreichbar ist?", a: "Ohne Netz oder wenn das tägliche KI-Limit erreicht ist, erkennt die App einfache Wörter selbst (heute, morgen, jeden Tag, um 7 Uhr, für Maria). Die Liste ist dann als „ohne KI erkannt“ markiert – bitte genauer prüfen." },
-      { q: "Wie teile ich die Liste?", a: "Unter „Farm & Team“ jemanden mit eigenem Konto hinzufügen (als Mitarbeiter zum Abhaken, als Gast nur zum Ansehen). Er sieht dann dieselbe Liste." },
+      { q: "Wie teile ich die Liste?", a: "Unten auf der Seite auf „Teilen“ tippen (nur Admins): jemanden aus dem Team wählen oder eine E-Mail-Adresse eingeben und „Hof-Aufgaben“, „Alltagsnotizen“ oder beides ankreuzen. Neue Personen kommen als Mitarbeiter ins Team und sehen nur die Hof-Aufgaben (und die Tiere); mehr gibst du unter „Farm & Team“ frei." },
+      { q: "Wer darf Aufgaben löschen?", a: "Nur die Admins des Hofs – sie sind die Besitzer der Liste. Mitarbeiter haken ab, legen neue Aufgaben an, ändern und kommentieren, löschen aber nichts." },
       { q: "Wer bekommt die Erinnerung?", a: "Bei einer Aufgabe für eine Person nur diese, sonst alle Admins und Mitarbeiter des Hofs. Gäste nicht. Ruhezeiten stellst du unter „Mehr → Benachrichtigungen“ ein." },
       { q: "Was ist der Unterschied zu den Stall-Aufgaben?", a: "Es ist dieselbe Liste. Die Stall-Aufgaben unter Tiere zeigen nur den Bereich Tiere, die Hof-Aufgaben alles – dazu deine fälligen Pflanzen und den Garten." },
       { q: "Verschwindet eine einmalige Aufgabe?", a: "Ja, nach dem Abhaken bleibt sie bis zum Abend unter „Heute erledigt“ und fällt dann aus der Liste." },
@@ -385,6 +386,24 @@ export const GENERAL_HELP: HelpTopic[] = [
       {
         q: "Welche Pakete wird es geben?",
         a: "Geplant sind Basis (alles ohne KI, kostenlos), Lite (KI für Pflanzen und Garten) und Premium (alle KI-Funktionen). Die vorläufigen Preise und einen Modul-Finder gibt es auf der Homepage unter „Preise & Pakete“. Bezahlen lässt sich noch nicht.",
+      },
+    ],
+  },
+  {
+    id: "notes",
+    title: "Alltagsnotizen",
+    faq: [
+      {
+        q: "Was sind die Alltagsnotizen?",
+        a: "Deine Einkaufsliste und ein Merkzettel – getrennt von den Hof-Aufgaben. Auf dem Hof unter Pflanzenretter stehen beide als orange Kacheln nebeneinander. Einfach auf „Sprechen“ tippen und sagen, z. B. „Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen“: Die KI macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.",
+      },
+      {
+        q: "Wie teile ich meine Einkaufsliste?",
+        a: "Auf der Seite der Alltagsnotizen unten auf „Teilen“ tippen und jemanden aus dem Team wählen oder eine E-Mail-Adresse eingeben – zum Beispiel jemanden aus der Familie mit eigenem Konto. Im selben Dialog lassen sich auch die Hof-Aufgaben mitteilen.",
+      },
+      {
+        q: "Was darf, wer mitmacht?",
+        a: "Abhaken und Neues hinzufügen – aber nichts löschen. Löschen kann nur der Besitzer der Liste. Wer nicht mehr mitmachen will, verlässt die Liste mit „Verlassen“.",
       },
     ],
   },

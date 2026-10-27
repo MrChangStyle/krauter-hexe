@@ -4844,6 +4844,165 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FarmTask"
+  /notes:
+    get:
+      tags: [notes]
+      operationId: listNotes
+      summary: Alltagsnotizen – the own list and the lists shared with me
+      responses:
+        "200":
+          description: The notes, open first.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DailyNote"
+    post:
+      tags: [notes]
+      operationId: createNote
+      summary: Add a note to the own list or to one shared with me
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteInput"
+      responses:
+        "201":
+          description: The new note.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyNote"
+        "400":
+          description: Invalid input.
+        "403":
+          description: The list is not shared with me.
+  /notes/plan:
+    post:
+      tags: [notes]
+      operationId: planNotes
+      summary: Free speech to proposed notes, nothing saved (daily AI limit)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanNotesInput"
+      responses:
+        "200":
+          description: The proposed notes.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NotePlan"
+        "422":
+          description: No note found in the text.
+        "429":
+          description: Daily AI limit reached.
+  /notes/clear-done:
+    post:
+      tags: [notes]
+      operationId: clearDoneNotes
+      summary: Remove the done notes of the own list
+      responses:
+        "200":
+          description: How many were removed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClearDoneNotesResult"
+  /notes/shares:
+    get:
+      tags: [notes]
+      operationId: listNoteShares
+      summary: Who the own list is shared with, and whose lists are shared with me
+      responses:
+        "200":
+          description: The shares.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteShares"
+    post:
+      tags: [notes]
+      operationId: addNoteShare
+      summary: Share the own list with a team member (userId) or any approved account (email)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddNoteShareInput"
+      responses:
+        "200":
+          description: The shares.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteShares"
+        "400":
+          description: No such account.
+  /notes/shares/{userId}:
+    delete:
+      tags: [notes]
+      operationId: removeNoteShare
+      summary: Stop sharing the own list with someone, or leave a list shared with me
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The shares.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteShares"
+  /notes/{noteId}:
+    patch:
+      tags: [notes]
+      operationId: updateNote
+      summary: Tick off (everyone on the list) or change the wording (owner or who wrote it)
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NoteUpdate"
+      responses:
+        "200":
+          description: The note.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DailyNote"
+        "403":
+          description: Not allowed.
+    delete:
+      tags: [notes]
+      operationId: deleteNote
+      summary: Delete a note (only the owner of the list)
+      parameters:
+        - name: noteId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
+        "403":
+          description: Not the owner of the list.
   /farms/{farmId}/tasks/plan:
     post:
       tags: [farm]
@@ -11848,6 +12007,142 @@ components:
       type: string
       enum: [tiere, garten, hof]
       description: Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).
+    NoteKind:
+      type: string
+      enum: [einkauf, merken]
+    NoteCategory:
+      type: string
+      enum: [lebensmittel, getraenke, drogerie, haushalt, tierbedarf, garten, sonstiges]
+    DailyNote:
+      type: object
+      required: [id, listOwnerId, listOwnerName, kind, category, text, done, doneAt, doneByName, addedByName, isOwnList, createdAt]
+      properties:
+        id:
+          type: integer
+        listOwnerId:
+          type: string
+        listOwnerName:
+          type: string
+        kind:
+          $ref: "#/components/schemas/NoteKind"
+        category:
+          oneOf:
+            - $ref: "#/components/schemas/NoteCategory"
+            - type: 'null'
+        text:
+          type: string
+        done:
+          type: boolean
+        doneAt:
+          type: [string, 'null']
+          format: date-time
+        doneByName:
+          type: [string, 'null']
+        addedByName:
+          type: string
+        isOwnList:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+    NoteInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 120
+        kind:
+          oneOf:
+            - $ref: "#/components/schemas/NoteKind"
+            - type: 'null'
+        category:
+          oneOf:
+            - $ref: "#/components/schemas/NoteCategory"
+            - type: 'null'
+        listOwnerId:
+          type: [string, 'null']
+          description: Whose list; default the own.
+    NoteUpdate:
+      type: object
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 120
+        kind:
+          oneOf:
+            - $ref: "#/components/schemas/NoteKind"
+            - type: 'null'
+        category:
+          oneOf:
+            - $ref: "#/components/schemas/NoteCategory"
+            - type: 'null'
+        done:
+          type: boolean
+    ClearDoneNotesResult:
+      type: object
+      required: [removed]
+      properties:
+        removed:
+          type: integer
+    PlanNotesInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 1500
+    PlannedNote:
+      type: object
+      required: [text, kind, category]
+      properties:
+        text:
+          type: string
+        kind:
+          $ref: "#/components/schemas/NoteKind"
+        category:
+          oneOf:
+            - $ref: "#/components/schemas/NoteCategory"
+            - type: 'null'
+    NotePlan:
+      type: object
+      required: [notes]
+      properties:
+        notes:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlannedNote"
+    NotePerson:
+      type: object
+      required: [userId, name]
+      properties:
+        userId:
+          type: string
+        name:
+          type: string
+    NoteShares:
+      type: object
+      required: [sharedWith, sharedWithMe]
+      properties:
+        sharedWith:
+          type: array
+          items:
+            $ref: "#/components/schemas/NotePerson"
+        sharedWithMe:
+          type: array
+          items:
+            $ref: "#/components/schemas/NotePerson"
+    AddNoteShareInput:
+      type: object
+      properties:
+        userId:
+          type: [string, 'null']
+        email:
+          type: [string, 'null']
+          maxLength: 200
     PlanFarmTasksInput:
       type: object
       required: [text]

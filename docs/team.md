@@ -36,6 +36,10 @@ Unter Mehr → **„Farm & Team“** (`/team`) steht alles über die Menschen au
 - Die Demo-Daten bringen zwei Kontakte mit.
 - Test: `farmContacts.integration.test.ts`.
 
+## Listen teilen
+
+Der Dialog „Listen teilen“ (auf den Seiten Hof-Aufgaben und Alltagsnotizen) teilt die Hof-Aufgaben, die eigenen Alltagsnotizen oder beides – mit jemandem aus dem Team oder per E-Mail. Für die Hof-Aufgaben kommt eine neue Person als Mitarbeiter mit der Freigabe „Hof- & Stall-Aufgaben“ ins Team (nur Admins). Wer mitmacht, hakt ab und fügt hinzu, löscht aber nichts (`docs/alltagsnotizen.md`).
+
 ## Modul-Freigaben
 
 Ein Admin legt für jedes Mitglied fest, welche Farm-Module es sieht: Im Team bzw. bei der Vertretung auf **„Freigaben: Alle Module“** tippen. Zum Beispiel sieht eine Stallhilfe dann nur Stall-Aufgaben und Futterplaner.

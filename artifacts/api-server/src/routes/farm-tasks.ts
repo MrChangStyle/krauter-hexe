@@ -31,7 +31,7 @@ import { planTasks } from '../lib/hofTaskPlanner';
 import { berlinTodayKey } from '../lib/pushScheduler';
 
 // Stall and Hof tasks of a farm (docs/hof-aufgaben.md). Reading: every member;
-// writing, ticking off and commenting: caretaker or admin.
+// writing, ticking off and commenting: caretaker or admin; deleting: admin.
 
 const router: IRouter = Router();
 
@@ -79,9 +79,11 @@ router.patch(
   }),
 );
 
+// Only the owner of the list – the farm's admins – delete a task;
+// caretakers tick off, add and comment (docs/hof-aufgaben.md).
 router.delete(
   '/farms/:farmId/tasks/:taskId',
-  requireFarm('caretaker'),
+  requireFarm('admin'),
   handle(async (req, res) => {
     const taskId = idParam(req, 'taskId');
     if (taskId === null) return notFound(res);

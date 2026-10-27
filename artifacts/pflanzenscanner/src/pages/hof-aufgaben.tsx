@@ -16,6 +16,7 @@ import {
 } from "@workspace/api-client-react";
 import { HofTaskDialog, HofTaskRow, errorText, useTeam } from "@/components/hof-tasks";
 import { GardenTodoSection } from "@/components/garden-overview";
+import { ShareListsDialog } from "@/components/share-lists-dialog";
 import { DictateButton } from "@/components/dictate-button";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,7 +140,7 @@ function HofTasks({ farm }: { farm: FarmSummary }) {
 
       {(filter === "all" || filter === "garten" || filter === "mine") && <PlantCareToday />}
       {(filter === "all" || filter === "garten") && <GardenTodoSection />}
-      <TeamCard farm={farm} count={team.length} />
+      <TeamCard farm={farm} team={team} />
 
       {dialog && <HofTaskDialog key={dialog.key} farm={farm} task={dialog.task} team={team} onClose={() => setDialog(null)} />}
     </div>
@@ -457,18 +458,23 @@ function PlantCareToday() {
   );
 }
 
-/** Sharing the list: who is on the team, and the way to add someone. */
-function TeamCard({ farm, count }: { farm: FarmSummary; count: number }) {
+/** Sharing the list (admins): the Hof-Aufgaben, the own Alltagsnotizen, or both. */
+function TeamCard({ farm, team }: { farm: FarmSummary; team: ReturnType<typeof useTeam> }) {
+  const [open, setOpen] = useState(false);
   if (farm.role !== "admin") return null;
+  const count = team.length;
   return (
-    <Link href="/team" className="flex items-center gap-3 rounded-2xl border bg-card p-4 text-sm">
+    <div className="flex items-center gap-3 rounded-2xl border bg-card p-4 text-sm">
       <Users className="h-5 w-5 shrink-0 text-primary" />
       <span className="flex-1">
         <span className="block font-medium">{count > 1 ? `Geteilt mit ${count - 1} ${count === 2 ? "Person" : "Personen"}` : "Liste teilen"}</span>
         <span className="block text-xs text-muted-foreground">
-          {count > 1 ? "Weitere Teammitglieder unter Farm & Team hinzufügen." : "Füg jemanden mit eigenem Konto zum Team hinzu – dann sieht er die Liste und kann abhaken."}
+          Mitarbeiter haken ab, legen an und kommentieren – löschen kannst nur du.{" "}
+          <Link href="/team" className="underline">Farm & Team</Link>
         </span>
       </span>
-    </Link>
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>Teilen</Button>
+      {open && <ShareListsDialog farm={farm} team={team} initial={{ hof: true, notes: false }} onClose={() => setOpen(false)} />}
+    </div>
   );
 }

@@ -1,8 +1,9 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronRight, ListChecks, Loader2, MessageCircle, Pencil, Send, Trash2, X } from "lucide-react";
+import { Check, ListChecks, Loader2, MessageCircle, Mic, NotebookPen, Pencil, Send, Trash2, X } from "lucide-react";
 import {
+  getListFarmMembersQueryKey,
   getListFarmTasksQueryKey,
   useAddFarmTaskComment,
   useCompleteFarmTask,
@@ -13,6 +14,7 @@ import {
   useListFarmMembers,
   useListFarmTasks,
   useListHerds,
+  useListNotes,
   useUncompleteFarmTask,
   useUpdateFarmTask,
   type FarmMember,
@@ -50,8 +52,11 @@ export function errorText(err: unknown, fallback: string): string {
 }
 
 /** The team for the "Für" choice; empty without the Farm & Team module. */
-export function useTeam(farm: FarmSummary): FarmMember[] {
-  const members = useListFarmMembers(farm.id, { query: { enabled: farmModuleGranted(farm, "members"), queryKey: ["farm-members-for-tasks", farm.id], staleTime: 5 * 60 * 1000 } });
+export function useTeam(farm: FarmSummary | null): FarmMember[] {
+  const farmId = farm?.id ?? 0;
+  const members = useListFarmMembers(farmId, {
+    query: { enabled: farm !== null && farmModuleGranted(farm, "members"), queryKey: getListFarmMembersQueryKey(farmId), staleTime: 5 * 60 * 1000 },
+  });
   return (members.data ?? []).filter((m) => m.role !== "guest");
 }
 
@@ -60,38 +65,85 @@ function useRefresh(farmId: number) {
   return () => void queryClient.invalidateQueries({ queryKey: getListFarmTasksQueryKey(farmId) });
 }
 
-// ── The bar on the Hof ───────────────────────────────────────────────────────
+// ── The two tools on the Hof ─────────────────────────────────────────────────
 
-/** One bar under Pflanzenretter: how much of today's list is done; opens the list. */
-export function HofTasksStrip({ farm }: { farm: FarmSummary }) {
+/** The look of the two everyday tools: square, orange frame, stands out from the widgets. */
+const TOOL_TILE =
+  "flex aspect-square flex-col rounded-2xl border-2 border-orange-400 bg-gradient-to-br from-orange-50 to-amber-50 p-3 text-left shadow-sm transition active:scale-[0.98] dark:border-orange-700 dark:from-orange-950/50 dark:to-amber-950/30";
+
+function ToolTile({ href, icon, title, value, line, progress, testId }: { href: string; icon: ReactNode; title: string; value: string; line: string; progress?: number | null; testId: string }) {
+  return (
+    <Link href={href} className={TOOL_TILE} data-testid={testId}>
+      <span className="flex items-center justify-between">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-orange-500 text-white">{icon}</span>
+        <span className="inline-flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-[11px] font-medium text-orange-700 dark:bg-black/30 dark:text-orange-300">
+          <Mic className="h-3 w-3" />
+          Sprechen
+        </span>
+      </span>
+      <span className="mt-2 block text-sm font-semibold leading-tight text-orange-950 dark:text-orange-100">{title}</span>
+      <span className="mt-auto block text-2xl font-bold leading-tight text-orange-900 dark:text-orange-50">{value}</span>
+      {progress !== undefined && progress !== null && (
+        <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-orange-200/70 dark:bg-orange-900/60" aria-hidden>
+          <span className="block h-full rounded-full bg-orange-500 transition-all" style={{ width: `${Math.round(progress * 100)}%` }} />
+        </span>
+      )}
+      <span className="mt-1 line-clamp-2 block text-xs text-orange-900/80 dark:text-orange-200/80">{line}</span>
+    </Link>
+  );
+}
+
+/** Hof-Aufgaben of today: open, done/total, what is next. */
+function HofTasksTile({ farm }: { farm: FarmSummary }) {
   const tasks = useListFarmTasks(farm.id);
   const { open, done } = hofToday(tasks.data ?? [], todayIso());
   const total = open.length + done.length;
-  const next = open.slice(0, 2).map(taskTitle);
   return (
-    <Link href="/hof-aufgaben" className="block rounded-2xl border bg-card px-4 py-2.5 text-sm" data-testid="hof-tasks-strip">
-      <span className="flex items-center gap-3">
-        <ListChecks className="h-4 w-4 shrink-0 text-primary" />
-        <span className="flex-1">
-          Hof-Aufgaben heute:{" "}
-          <span className="font-semibold">
-            {tasks.isLoading ? "…" : total === 0 ? "nichts geplant" : open.length === 0 ? "alles erledigt" : `${open.length} offen`}
-          </span>
-        </span>
-        {total > 0 && (
-          <span className="text-xs tabular-nums text-muted-foreground">
-            {done.length}/{total}
-          </span>
-        )}
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-      </span>
-      {total > 0 && (
-        <span className="mt-2 block h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden>
-          <span className="block h-full rounded-full bg-primary transition-all" style={{ width: `${Math.round((done.length / total) * 100)}%` }} />
-        </span>
-      )}
-      {next.length > 0 && <span className="mt-1.5 block truncate text-xs text-muted-foreground">Als Nächstes: {next.join(" · ")}</span>}
-    </Link>
+    <ToolTile
+      href="/hof-aufgaben"
+      testId="hof-tile-tasks"
+      icon={<ListChecks className="h-5 w-5" />}
+      title="Hof-Aufgaben"
+      value={tasks.isLoading ? "…" : total === 0 ? "Frei" : open.length === 0 ? "Erledigt" : `${open.length} offen`}
+      progress={total > 0 ? done.length / total : null}
+      line={open.length > 0 ? open.slice(0, 2).map(taskTitle).join(" · ") : total > 0 ? `${done.length} von ${total} heute geschafft` : "Heute steht nichts an"}
+    />
+  );
+}
+
+/** Alltagsnotizen: how much is on the shopping list, the first things. */
+function NotesTile() {
+  const notes = useListNotes();
+  const open = (notes.data ?? []).filter((n) => !n.done);
+  const shopping = open.filter((n) => n.kind === "einkauf");
+  const remember = open.length - shopping.length;
+  return (
+    <ToolTile
+      href="/notizen"
+      testId="hof-tile-notes"
+      icon={<NotebookPen className="h-5 w-5" />}
+      title="Alltagsnotizen"
+      value={notes.isLoading ? "…" : open.length === 0 ? "Leer" : `${shopping.length} kaufen`}
+      line={
+        open.length === 0
+          ? "Einkaufsliste & Merkzettel"
+          : [shopping.slice(0, 2).map((n) => n.text).join(" · "), remember > 0 ? `${remember} zum Merken` : ""].filter(Boolean).join(" · ")
+      }
+    />
+  );
+}
+
+/**
+ * Under Pflanzenretter: the two tools used every day, side by side as square
+ * tiles – Hof-Aufgaben (with the Freigabe) and Alltagsnotizen.
+ */
+export function HofTools({ farm }: { farm: FarmSummary | null }) {
+  const tasks = farm !== null && farmModuleGranted(farm, "farm-tasks");
+  return (
+    <div className="grid grid-cols-2 gap-3" data-testid="hof-tools">
+      {tasks && farm && <HofTasksTile farm={farm} />}
+      <NotesTile />
+    </div>
   );
 }
 
@@ -416,7 +468,8 @@ export function HofTaskDialog({
           )}
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           <DialogFooter className="gap-2">
-            {task && (
+            {/* Only the owner of the list – an admin – deletes; Mitarbeiter tick off and add. */}
+            {task && farm.role === "admin" && (
               <Button
                 type="button"
                 variant="ghost"

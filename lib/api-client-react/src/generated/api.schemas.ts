@@ -4322,6 +4322,112 @@ export const FarmTaskArea = {
   hof: 'hof',
 } as const;
 
+export type NoteKind = typeof NoteKind[keyof typeof NoteKind];
+
+
+export const NoteKind = {
+  einkauf: 'einkauf',
+  merken: 'merken',
+} as const;
+
+export type NoteCategory = typeof NoteCategory[keyof typeof NoteCategory];
+
+
+export const NoteCategory = {
+  lebensmittel: 'lebensmittel',
+  getraenke: 'getraenke',
+  drogerie: 'drogerie',
+  haushalt: 'haushalt',
+  tierbedarf: 'tierbedarf',
+  garten: 'garten',
+  sonstiges: 'sonstiges',
+} as const;
+
+export interface DailyNote {
+  id: number;
+  listOwnerId: string;
+  listOwnerName: string;
+  kind: NoteKind;
+  category: NoteCategory | null;
+  text: string;
+  done: boolean;
+  /** @nullable */
+  doneAt: string | null;
+  /** @nullable */
+  doneByName: string | null;
+  addedByName: string;
+  isOwnList: boolean;
+  createdAt: string;
+}
+
+export interface NoteInput {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  text: string;
+  kind?: NoteKind | null;
+  category?: NoteCategory | null;
+  /**
+     * Whose list; default the own.
+     * @nullable
+     */
+  listOwnerId?: string | null;
+}
+
+export interface NoteUpdate {
+  /**
+     * @minLength 1
+     * @maxLength 120
+     */
+  text?: string;
+  kind?: NoteKind | null;
+  category?: NoteCategory | null;
+  done?: boolean;
+}
+
+export interface ClearDoneNotesResult {
+  removed: number;
+}
+
+export interface PlanNotesInput {
+  /**
+     * @minLength 1
+     * @maxLength 1500
+     */
+  text: string;
+}
+
+export interface PlannedNote {
+  text: string;
+  kind: NoteKind;
+  category: NoteCategory | null;
+}
+
+export interface NotePlan {
+  notes: PlannedNote[];
+}
+
+export interface NotePerson {
+  userId: string;
+  name: string;
+}
+
+export interface NoteShares {
+  sharedWith: NotePerson[];
+  sharedWithMe: NotePerson[];
+}
+
+export interface AddNoteShareInput {
+  /** @nullable */
+  userId?: string | null;
+  /**
+     * @maxLength 200
+     * @nullable
+     */
+  email?: string | null;
+}
+
 export interface PlanFarmTasksInput {
   /**
      * @minLength 1

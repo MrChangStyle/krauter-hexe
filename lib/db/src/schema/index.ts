@@ -42,3 +42,4 @@ export * from "./dashboard";
 export * from "./settings";
 export * from "./move";
 export * from "./feedback";
+export * from "./notes";

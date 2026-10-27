@@ -200,6 +200,28 @@ const STATEMENTS = [
      ALTER TABLE "farm_task_comments" ADD CONSTRAINT "farm_task_comments_task_id_farm_tasks_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."farm_tasks"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "farm_task_comments_task_idx" ON "farm_task_comments" USING btree ("farm_id","task_id")`,
+  // Alltagsnotizen (docs/alltagsnotizen.md).
+  `CREATE TABLE IF NOT EXISTS "daily_notes" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"added_by" text,
+	"kind" text NOT NULL,
+	"category" text,
+	"text" text NOT NULL,
+	"done" boolean DEFAULT false NOT NULL,
+	"done_at" timestamp with time zone,
+	"done_by" text,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `CREATE INDEX IF NOT EXISTS "daily_notes_user_idx" ON "daily_notes" USING btree ("user_id")`,
+  `CREATE TABLE IF NOT EXISTS "note_shares" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"owner_id" text NOT NULL,
+	"user_id" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "note_shares_owner_user_unique" UNIQUE("owner_id","user_id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "note_shares_user_idx" ON "note_shares" USING btree ("user_id")`,
   `CREATE TABLE IF NOT EXISTS "farm_push_log" (
 	"farm_id" integer NOT NULL,
 	"topic" text NOT NULL,

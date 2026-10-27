@@ -39,8 +39,8 @@ vi.mock("@workspace/db", async () => {
       set: (values: Record<string, unknown>) => ({
         where: () => {
           // Hof-Aufgaben stay; only the person is taken off them.
-          if (getTableName(table) === "farm_tasks") {
-            expect([{ assigneeId: null }, { lastCompletedBy: null }]).toContainEqual(values);
+          if (getTableName(table) === "farm_tasks" || getTableName(table) === "daily_notes") {
+            expect([{ assigneeId: null }, { lastCompletedBy: null }, { addedBy: null }, { doneBy: null }]).toContainEqual(values);
             return Promise.resolve();
           }
           expect(values).toEqual({ scannedByUserId: null });

@@ -8056,6 +8056,186 @@ export const CompleteFarmTaskResponse = zod.object({
 
 
 /**
+ * @summary Alltagsnotizen – the own list and the lists shared with me
+ */
+export const ListNotesResponseItem = zod.object({
+  "id": zod.number(),
+  "listOwnerId": zod.string(),
+  "listOwnerName": zod.string(),
+  "kind": zod.enum(['einkauf', 'merken']),
+  "category": zod.union([zod.enum(['lebensmittel', 'getraenke', 'drogerie', 'haushalt', 'tierbedarf', 'garten', 'sonstiges']),zod.null()]),
+  "text": zod.string(),
+  "done": zod.boolean(),
+  "doneAt": zod.coerce.date().nullable(),
+  "doneByName": zod.string().nullable(),
+  "addedByName": zod.string(),
+  "isOwnList": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+export const ListNotesResponse = zod.array(ListNotesResponseItem)
+
+
+/**
+ * @summary Add a note to the own list or to one shared with me
+ */
+export const createNoteBodyTextMax = 120;
+
+
+
+export const CreateNoteBody = zod.object({
+  "text": zod.string().min(1).max(createNoteBodyTextMax),
+  "kind": zod.union([zod.enum(['einkauf', 'merken']),zod.null()]).optional(),
+  "category": zod.union([zod.enum(['lebensmittel', 'getraenke', 'drogerie', 'haushalt', 'tierbedarf', 'garten', 'sonstiges']),zod.null()]).optional(),
+  "listOwnerId": zod.string().nullish().describe('Whose list; default the own.')
+})
+
+export const CreateNoteResponse = zod.object({
+  "id": zod.number(),
+  "listOwnerId": zod.string(),
+  "listOwnerName": zod.string(),
+  "kind": zod.enum(['einkauf', 'merken']),
+  "category": zod.union([zod.enum(['lebensmittel', 'getraenke', 'drogerie', 'haushalt', 'tierbedarf', 'garten', 'sonstiges']),zod.null()]),
+  "text": zod.string(),
+  "done": zod.boolean(),
+  "doneAt": zod.coerce.date().nullable(),
+  "doneByName": zod.string().nullable(),
+  "addedByName": zod.string(),
+  "isOwnList": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Free speech to proposed notes, nothing saved (daily AI limit)
+ */
+export const planNotesBodyTextMax = 1500;
+
+
+
+export const PlanNotesBody = zod.object({
+  "text": zod.string().min(1).max(planNotesBodyTextMax)
+})
+
+export const PlanNotesResponse = zod.object({
+  "notes": zod.array(zod.object({
+  "text": zod.string(),
+  "kind": zod.enum(['einkauf', 'merken']),
+  "category": zod.union([zod.enum(['lebensmittel', 'getraenke', 'drogerie', 'haushalt', 'tierbedarf', 'garten', 'sonstiges']),zod.null()])
+}))
+})
+
+
+/**
+ * @summary Remove the done notes of the own list
+ */
+export const ClearDoneNotesResponse = zod.object({
+  "removed": zod.number()
+})
+
+
+/**
+ * @summary Who the own list is shared with, and whose lists are shared with me
+ */
+export const ListNoteSharesResponse = zod.object({
+  "sharedWith": zod.array(zod.object({
+  "userId": zod.string(),
+  "name": zod.string()
+})),
+  "sharedWithMe": zod.array(zod.object({
+  "userId": zod.string(),
+  "name": zod.string()
+}))
+})
+
+
+/**
+ * @summary Share the own list with a team member (userId) or any approved account (email)
+ */
+export const addNoteShareBodyEmailMax = 200;
+
+
+
+export const AddNoteShareBody = zod.object({
+  "userId": zod.string().nullish(),
+  "email": zod.string().max(addNoteShareBodyEmailMax).nullish()
+})
+
+export const AddNoteShareResponse = zod.object({
+  "sharedWith": zod.array(zod.object({
+  "userId": zod.string(),
+  "name": zod.string()
+})),
+  "sharedWithMe": zod.array(zod.object({
+  "userId": zod.string(),
+  "name": zod.string()
+}))
+})
+
+
+/**
+ * @summary Stop sharing the own list with someone, or leave a list shared with me
+ */
+export const RemoveNoteShareParams = zod.object({
+  "userId": zod.coerce.string()
+})
+
+export const RemoveNoteShareResponse = zod.object({
+  "sharedWith": zod.array(zod.object({
+  "userId": zod.string(),
+  "name": zod.string()
+})),
+  "sharedWithMe": zod.array(zod.object({
+  "userId": zod.string(),
+  "name": zod.string()
+}))
+})
+
+
+/**
+ * @summary Tick off (everyone on the list) or change the wording (owner or who wrote it)
+ */
+export const UpdateNoteParams = zod.object({
+  "noteId": zod.coerce.number()
+})
+
+export const updateNoteBodyTextMax = 120;
+
+
+
+export const UpdateNoteBody = zod.object({
+  "text": zod.string().min(1).max(updateNoteBodyTextMax).optional(),
+  "kind": zod.union([zod.enum(['einkauf', 'merken']),zod.null()]).optional(),
+  "category": zod.union([zod.enum(['lebensmittel', 'getraenke', 'drogerie', 'haushalt', 'tierbedarf', 'garten', 'sonstiges']),zod.null()]).optional(),
+  "done": zod.boolean().optional()
+})
+
+export const UpdateNoteResponse = zod.object({
+  "id": zod.number(),
+  "listOwnerId": zod.string(),
+  "listOwnerName": zod.string(),
+  "kind": zod.enum(['einkauf', 'merken']),
+  "category": zod.union([zod.enum(['lebensmittel', 'getraenke', 'drogerie', 'haushalt', 'tierbedarf', 'garten', 'sonstiges']),zod.null()]),
+  "text": zod.string(),
+  "done": zod.boolean(),
+  "doneAt": zod.coerce.date().nullable(),
+  "doneByName": zod.string().nullable(),
+  "addedByName": zod.string(),
+  "isOwnList": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a note (only the owner of the list)
+ */
+export const DeleteNoteParams = zod.object({
+  "noteId": zod.coerce.number()
+})
+
+export const DeleteNoteResponse = zod.void()
+
+
+/**
  * @summary KI-Aufgabenplan – free text to proposed tasks, nothing saved (caretaker or admin; farm AI limit)
  */
 export const PlanFarmTasksParams = zod.object({

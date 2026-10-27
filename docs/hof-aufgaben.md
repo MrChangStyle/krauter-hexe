@@ -4,7 +4,7 @@ Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Meer
 
 ## Wo
 
-- **Auf dem Hof** direkt unter „Pflanzenretter“ der Balken **„Hof-Aufgaben heute“**. Er zeigt, wie viel offen ist, einen Fortschrittsbalken (erledigt/gesamt) und die nächsten zwei Aufgaben. Ein Tipp öffnet die Liste.
+- **Auf dem Hof** direkt unter „Pflanzenretter“ die quadratische Kachel **„Hof-Aufgaben“** mit orangem Rand, neben der Kachel „Alltagsnotizen“ (`docs/alltagsnotizen.md`). Sie zeigt, wie viel heute offen ist, einen Fortschrittsbalken (erledigt/gesamt) und die nächsten Aufgaben. Ein Tipp öffnet die Liste.
 - **Seite** `/hof-aufgaben`, auch über die Suche („Aufgaben“, „Liste“, „Teich“ …).
 - Die Aufgaben stehen zusätzlich in ihrem Bereich:
   - **Tiere**: Stall-Aufgaben (`/farm/aufgaben`), „Am Stall“, Widget „Stall-Aufgaben“.
@@ -39,14 +39,14 @@ Oben auf der Seite steht ein Hinweis: **„Einfach reinsprechen – die App mach
 6. **Alle Aufgaben verwalten:** auch spätere und pausierte, zum Ändern oder Löschen.
 7. **Pflanzenpflege:** die eigenen fälligen Pflegeaufgaben aus dem Pflegeplan, mit „Erledigt“. Sie sind persönlich und nur für einen selbst sichtbar.
 8. **Im Garten:** Säen, Pflanzen, Ernten aus dem Beet-Architekten.
-9. **Liste teilen** (nur Admins): führt zu Farm & Team.
+9. **Liste teilen** (nur Admins): öffnet den Teilen-Dialog – Person aus dem Team oder per E-Mail, „Hof-Aufgaben“, „Alltagsnotizen“ oder beides (`docs/alltagsnotizen.md`).
 
 Jede Aufgabe hat eine **Sprechblase** mit der Zahl der Kommentare. Darin stehen die Kommentare mit Name und Zeit, darunter ein Feld (auch mit „Sprechen“). Eigene Kommentare lassen sich löschen; Admins können jeden löschen.
 
 ## Teilen und Rechte
 
 - Geteilt wird über **Farm & Team** (`docs/team.md`): ein Konto per E-Mail hinzufügen.
-  - **Mitarbeiter** legen an, haken ab und kommentieren.
+  - **Mitarbeiter** legen an, ändern, haken ab und kommentieren – **löschen dürfen nur Admins**, die Besitzer der Liste (`DELETE /farms/:farmId/tasks/:taskId` verlangt Admin; im Formular fehlt „Löschen“ sonst).
   - **Gäste** sehen die Liste nur.
 - Die Liste gehört zur Modul-Freigabe **„Hof- & Stall-Aufgaben“** (früher „Stall-Aufgaben“). Wer sie nicht hat, sieht weder Balken noch Seite.
 - „Für wen?“ zeigt das Team nur, wenn man auch „Farm & Team“ sehen darf (Admins immer).

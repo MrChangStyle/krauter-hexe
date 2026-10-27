@@ -185,6 +185,13 @@ export function DatenschutzPage() {
             (Art. 6 Abs. 1 lit. f DSGVO, Verbesserung der App).
           </li>
           <li>
+            <strong>Alltagsnotizen:</strong> Deine Einkaufsliste und dein
+            Merkzettel gehören zu deinem Konto. Teilst du sie mit jemandem, sieht
+            diese Person die Liste samt deinem Namen und kann abhaken und
+            ergänzen; das Teilen beendest du jederzeit (Art. 6 Abs. 1 lit. b
+            DSGVO).
+          </li>
+          <li>
             <strong>Technische Daten:</strong> IP-Adresse und Zeitpunkt von
             Anfragen, kurzzeitig zum Schutz vor Missbrauch (z. B. zu viele
             Anmeldeversuche) (Art. 6 Abs. 1 lit. f DSGVO).
@@ -215,7 +222,8 @@ export function DatenschutzPage() {
           <li>
             Google Gemini (KI-Bestimmung und KI-Vorschläge, z. B. im Beet-Architekt und beim Standort-Check der Bienen: deine
             Fotos werden zur Auswertung an Google übermittelt; beim KI-Aufgabenplan der Hof-Aufgaben der gesprochene oder
-            getippte Text sowie die Namen des Teams und der Tiergruppen)
+            getippte Text sowie die Namen des Teams und der Tiergruppen; bei den Alltagsnotizen nur der gesprochene oder
+            getippte Text)
           </li>
           <li>Google (nur bei „Mit Google anmelden“)</li>
           <li>Cloudflare Turnstile (Schutz der Registrierung vor Bots)</li>

@@ -71,18 +71,11 @@ services:
       # (Cloudinary Dashboard → Account Details → API environment variable).
       - key: CLOUDINARY_URL
         sync: false
-      # Optional: gemeinsamer Einladungscode für die Registrierung.
-      # Weglassen, wenn keiner verlangt werden soll – dann zeigt die Anmeldung kein
-      # Feld „Einladungscode“. Solange SITE_PASSWORD gesetzt ist, verlangen neue Konten
-      # ihn ohnehin nicht – das Seitenpasswort ist dann die Einladung.
-      - key: REGISTRATION_CODE
-        sync: false
 
       # --- Öffentliche App -------------------------------------------------
       # "true" = neue Konten sind sofort nutzbar, ohne Freischaltung durch den
       # Inhaber. Erst einschalten, wenn Impressum/Datenschutz vollständig sind
-      # (artifacts/pflanzenscanner/src/lib/legal.ts). Für den öffentlichen
-      # Betrieb außerdem REGISTRATION_CODE entfernen.
+      # (artifacts/pflanzenscanner/src/lib/legal.ts).
       - key: OPEN_REGISTRATION
         sync: false
       # Testphase: die ersten so vielen Konten (ohne Inhaber, bestehende zählen

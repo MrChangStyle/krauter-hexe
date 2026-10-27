@@ -8,15 +8,12 @@ export interface AuthProviders {
   turnstileSiteKey: string | null;
   /** New accounts can use the app right away (no approval by the owner). */
   openRegistration: boolean;
-  /** The server asks for an invitation code (REGISTRATION_CODE) – only then the form shows the field. */
-  registrationCode: boolean;
 }
 
 const NOTHING_EXTRA: AuthProviders = {
   google: false,
   turnstileSiteKey: null,
   openRegistration: false,
-  registrationCode: false,
 };
 
 /**
@@ -44,7 +41,6 @@ export function useAuthProviders(): AuthProviders {
               ? data.turnstileSiteKey
               : null,
           openRegistration: data?.openRegistration === true,
-          registrationCode: data?.registrationCode === true,
         });
       })
       .catch(() => {

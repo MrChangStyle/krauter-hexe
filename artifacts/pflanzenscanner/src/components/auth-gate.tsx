@@ -95,7 +95,6 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
   const [mode, setMode] = useState<"login" | "register">(initialMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [registrationCode, setRegistrationCode] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [turnstileFailed, setTurnstileFailed] = useState(false);
@@ -134,7 +133,6 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
     setMode(next);
     setError(null);
     setPassword("");
-    setRegistrationCode("");
     setAcceptTerms(false);
     setTurnstileToken(null);
   }
@@ -168,7 +166,6 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
       if (isRegister) {
         await register(email, password, {
           acceptTerms,
-          registrationCode: registrationCode.trim() || undefined,
           turnstileToken: turnstileToken ?? undefined,
         });
       } else {
@@ -229,26 +226,6 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
             placeholder={isRegister ? "mindestens 8 Zeichen" : "••••••••"}
           />
         </div>
-
-        {/* Only when the server asks for one – an optional field made testers
-            type the site password there, which then counted as a wrong code. */}
-        {isRegister && providers.registrationCode && (
-          <div className="flex flex-col gap-1.5">
-            <Label htmlFor="auth-code">
-              Einladungscode{" "}
-              <span className="font-normal text-muted-foreground">
-                (vom Betreiber der App)
-              </span>
-            </Label>
-            <Input
-              id="auth-code"
-              type="text"
-              autoComplete="off"
-              value={registrationCode}
-              onChange={(e) => setRegistrationCode(e.target.value)}
-            />
-          </div>
-        )}
 
         {isRegister && (
           <div className="flex items-start gap-2.5">

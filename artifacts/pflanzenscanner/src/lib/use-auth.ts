@@ -8,7 +8,6 @@ export interface RegisterOptions {
   /** The user ticked "Datenschutzerklärung und Nutzungsbedingungen akzeptiert". */
   acceptTerms: boolean;
   /** Shared invitation code, if the server requires one. */
-  registrationCode?: string;
   /** Token from the Cloudflare Turnstile widget, if the server uses it. */
   turnstileToken?: string;
 }
@@ -130,12 +129,11 @@ export function useAuth(): AuthState {
 
   const register = useCallback(
     async (email: string, password: string, options: RegisterOptions) => {
-      const { acceptTerms, registrationCode, turnstileToken } = options;
+      const { acceptTerms, turnstileToken } = options;
       const next = await postCredentials("/auth/register", {
         email,
         password,
         acceptTerms,
-        ...(registrationCode ? { registrationCode } : {}),
         ...(turnstileToken ? { turnstileToken } : {}),
       });
       adopt(next);

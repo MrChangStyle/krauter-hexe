@@ -164,11 +164,8 @@ describe("POST /auth/register", () => {
     expect(state.inserted[0]?.["termsAcceptedAt"]).toBeInstanceOf(Date);
   });
 
-  it("asks a new account for the invitation code – unless the Seitenpasswort already guards the site", async () => {
+  it("asks for no invitation code – a code typed anyway changes nothing", async () => {
     process.env["REGISTRATION_CODE"] = "familie";
-    expect((await register({ acceptTerms: true, registrationCode: "4620" })).status).toBe(403);
-    expect(state.inserted).toHaveLength(0);
-    process.env["SITE_PASSWORD"] = "4620";
     expect((await register({ acceptTerms: true })).status).toBe(201);
     expect((await register({ acceptTerms: true, registrationCode: "4620" })).status).toBe(201);
   });

@@ -18,19 +18,6 @@ import { gte, sql } from 'drizzle-orm';
  */
 export const LEGAL_VERSION = '2026-10-26';
 
-/**
- * The invitation code a brand-new account must type – or null. While the
- * whole site sits behind the Seitenpasswort (SITE_PASSWORD, the Vorschau-
- * Schutz), that password already is the invitation: a second code only
- * stopped invited testers. Claiming an old password-less account still needs
- * REGISTRATION_CODE itself (routes/auth.ts).
- */
-export function invitationCodeForNewAccounts(): string | null {
-  const code = process.env['REGISTRATION_CODE'];
-  if (!code) return null;
-  return process.env['SITE_PASSWORD']?.trim() ? null : code;
-}
-
 /** True when new accounts may use the app without the owner's approval. */
 export function isOpenRegistration(): boolean {
   return process.env['OPEN_REGISTRATION'] === 'true';

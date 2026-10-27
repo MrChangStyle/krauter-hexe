@@ -72,7 +72,8 @@ services:
       - key: CLOUDINARY_URL
         sync: false
       # Optional: gemeinsamer Einladungscode für die Registrierung.
-      # Weglassen, wenn keiner verlangt werden soll.
+      # Weglassen, wenn keiner verlangt werden soll – dann zeigt die Anmeldung kein
+      # Feld „Einladungscode“. Für die Testphase mit SITE_PASSWORD NICHT setzen.
       - key: REGISTRATION_CODE
         sync: false
 

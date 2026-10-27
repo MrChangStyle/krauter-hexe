@@ -94,6 +94,8 @@ router.get('/auth/providers', (_req: Request, res: Response) => {
     // Public: the site key is meant to be embedded in the page.
     turnstileSiteKey: getTurnstileConfig()?.siteKey ?? null,
     openRegistration: isOpenRegistration(),
+    // Only then the registration form asks for an invitation code.
+    registrationCode: Boolean(process.env['REGISTRATION_CODE']),
   });
 });
 

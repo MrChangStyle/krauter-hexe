@@ -192,7 +192,7 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
         {isRegister
           ? providers.openRegistration
             ? "Lege ein kostenloses Konto an und leg direkt los."
-            : "Lege ein Konto an. Der Besitzer der App schaltet dich anschließend frei."
+            : "Lege ein Konto an. Die ersten Tester können sofort loslegen, danach schaltet dich der Betreiber frei."
           : providers.openRegistration
             ? "Melde dich an, um Pflanzen zu scannen und das Archiv zu sehen."
             : "Privater Zugang: Bitte melde dich an, um Pflanzen zu scannen und das Archiv zu sehen."}
@@ -230,13 +230,14 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
           />
         </div>
 
-        {/* Public mode needs no invitation; the field would only confuse. */}
-        {isRegister && !providers.openRegistration && (
+        {/* Only when the server asks for one – an optional field made testers
+            type the site password there, which then counted as a wrong code. */}
+        {isRegister && providers.registrationCode && (
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="auth-code">
               Einladungscode{" "}
               <span className="font-normal text-muted-foreground">
-                (falls vorhanden)
+                (vom Betreiber der App)
               </span>
             </Label>
             <Input

@@ -26,6 +26,7 @@ describe("useAuthProviders", () => {
         google: true,
         turnstileSiteKey: "0xSITE",
         openRegistration: true,
+        registrationCode: false,
       }),
     );
   });
@@ -53,6 +54,7 @@ describe("useAuthProviders", () => {
       google: false,
       turnstileSiteKey: null,
       openRegistration: false,
+      registrationCode: false,
     });
   });
 });

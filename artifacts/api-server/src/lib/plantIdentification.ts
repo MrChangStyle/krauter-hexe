@@ -190,6 +190,24 @@ function parseJsonLoose(raw: string): unknown {
   }
 }
 
+/**
+ * How little a model should think before it answers, newest way first: Gemini
+ * 3 takes a thinking level, Gemini 2.5 a token budget, older models neither.
+ * A model that refuses one (400) gets the next; the one that worked is kept.
+ */
+const QUICK_THINKING: ReadonlyArray<Record<string, unknown> | null> = [
+  { thinkingLevel: "MINIMAL" },
+  { thinkingBudget: 0 },
+  null,
+];
+const quickThinkingFor = new Map<string, number>();
+
+function refusedSetting(err: unknown): boolean {
+  const status = (err as { status?: number } | null)?.status;
+  const message = String((err as { message?: string } | null)?.message ?? "");
+  return status === 400 || /INVALID_ARGUMENT|thinking/i.test(message);
+}
+
 // Runs a model fallback chain with transient-error retries and returns the
 // parsed (but not yet validated) JSON object. Shared by the image scan and the
 // text-only animal backfill.
@@ -200,32 +218,48 @@ export async function runModelChain(
   /**
    * timeoutMs: the whole chain gives up after this long – for answers someone
    * waits for on screen. attemptTimeoutMs: one slow model may use at most this
-   * much, so the next model in the chain still gets its turn.
+   * much, so the next model in the chain still gets its turn. quick: the model
+   * thinks as little as it can – for simple jobs like splitting a list, where
+   * long thinking only costs time (minutes, seen with Flash).
    */
-  opts: { timeoutMs?: number; attemptTimeoutMs?: number } = {},
+  opts: { timeoutMs?: number; attemptTimeoutMs?: number; quick?: boolean } = {},
 ): Promise<unknown> {
   let lastError: unknown;
   const deadline = opts.timeoutMs ? Date.now() + opts.timeoutMs : null;
   for (const model of models) {
+    let thinking = opts.quick ? (quickThinkingFor.get(model.name) ?? 0) : QUICK_THINKING.length - 1;
     for (let attempt = 0; attempt < model.attempts; attempt++) {
       const toDeadline = deadline === null ? null : deadline - Date.now();
       const left =
         opts.attemptTimeoutMs === undefined ? toDeadline : Math.min(toDeadline ?? Infinity, opts.attemptTimeoutMs);
       if (toDeadline !== null && toDeadline <= 0) throw lastError ?? new Error("AI request timed out");
+      const thinkingConfig = QUICK_THINKING[thinking];
       try {
         const response = await ai.models.generateContent({
           model: model.name,
           // The SDK types the contents loosely; our shapes are valid at runtime.
           contents: contents as never,
-          config: left === null ? config : { ...config, abortSignal: AbortSignal.timeout(left) },
+          config: {
+            ...config,
+            ...(thinkingConfig ? { thinkingConfig } : {}),
+            ...(left === null ? {} : { abortSignal: AbortSignal.timeout(left) }),
+          } as never,
         });
         const raw = response.text;
         if (!raw) {
           throw new Error("Empty response from AI model");
         }
+        if (opts.quick) quickThinkingFor.set(model.name, thinking);
         return parseJsonLoose(raw);
       } catch (err) {
         lastError = err;
+        // The model does not know this way of limiting its thinking: same
+        // model, the next way – this does not count as an attempt.
+        if (thinkingConfig && refusedSetting(err)) {
+          thinking++;
+          attempt--;
+          continue;
+        }
         // Back off and retry the same model only for transient overload; for
         // anything else (bad JSON, empty response) move on to the next model.
         if (isTransientError(err) && attempt < model.attempts - 1) {

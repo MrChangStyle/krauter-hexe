@@ -11,6 +11,7 @@ Die Startseite „Hof“ zeigt einen kompakten Überblick über den Hof. Gescann
    - Darunter die erste Warnung des Hofs (Frost, Hitze, Sturm …).
    - Ohne Standort steht hier direkt das Formular (Postleitzahl oder Gerätestandort, nur für Admins des Hofs).
 3. **Pflanzenretter**: eine Zeile mit dem eigenen Platz und den Blättern. Aufgeklappt zeigt sie die ersten vier, dazu den eigenen Platz, falls er nicht darunter ist.
+   - Darunter der Balken **„Hof-Aufgaben heute“** (`docs/hof-aufgaben.md`): offen, erledigt/gesamt mit Fortschritt, die nächsten zwei Aufgaben. Nur mit der Freigabe „Hof- & Stall-Aufgaben“.
 4. **Widgets**, gruppiert nach **Pflanzen** und **Tiere**:
    - Jedes Widget hat ein kleines Symbol, einen Namen, eine Kennzahl und eine Zeile Text.
    - Ein Punkt zeigt an, wenn etwas Aufmerksamkeit braucht.
@@ -26,7 +27,7 @@ Die Startseite „Hof“ zeigt einen kompakten Überblick über den Hof. Gescann
 | Beete | Pflanzen | ja | Säen, Pflanzen und Ernten der nächsten 7 Tage |
 | Saatgut | Pflanzen | – | Samen zum Prüfen oder Aufbrauchen |
 | Grow | Pflanzen | – | Pflanzen im Grow, nächster Schritt (ab 18) |
-| Stall-Aufgaben | Tiere | ja | heute Fälliges |
+| Stall-Aufgaben | Tiere | ja | heute Fälliges im Bereich Tiere |
 | Tiere | Tiere | ja | Bestand nach Tierart |
 | Pflichten | Tiere | ja | offene Meldungen, überschrittene Fristen |
 | Futtervorrat | Tiere | ja | Futter, das bald leer ist |

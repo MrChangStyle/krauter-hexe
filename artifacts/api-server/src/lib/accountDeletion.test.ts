@@ -38,6 +38,11 @@ vi.mock("@workspace/db", async () => {
     update: (table: Parameters<typeof getTableName>[0]) => ({
       set: (values: Record<string, unknown>) => ({
         where: () => {
+          // Hof-Aufgaben stay; only the person is taken off them.
+          if (getTableName(table) === "farm_tasks") {
+            expect([{ assigneeId: null }, { lastCompletedBy: null }]).toContainEqual(values);
+            return Promise.resolve();
+          }
           expect(values).toEqual({ scannedByUserId: null });
           state.unlinked.push(getTableName(table));
           return Promise.resolve();

@@ -6,10 +6,43 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FarmTaskAction } from './farmTaskAction';
+import type { FarmTaskArea } from './farmTaskArea';
+import type { FarmTaskComment } from './farmTaskComment';
 import type { TaskIntervalUnit } from './taskIntervalUnit';
 
 export interface FarmTask {
   id: number;
+  /**
+     * Own wording; null = the action type.
+     * @nullable
+     */
+  title: string | null;
+  area: FarmTaskArea;
+  /**
+     * First due day (YYYY-MM-DD); null = one interval after creation.
+     * @nullable
+     */
+  startsOn: string | null;
+  /** false = once, on startsOn. */
+  repeats: boolean;
+  /**
+     * For this member; null = for everyone.
+     * @nullable
+     */
+  assigneeId: string | null;
+  /** @nullable */
+  assigneeName: string | null;
+  /** @nullable */
+  lastCompletedBy: string | null;
+  /** @nullable */
+  lastCompletedByName: string | null;
+  /** A one-off task that is ticked off. */
+  isDone: boolean;
+  /** Ticked off today (Berlin). */
+  doneToday: boolean;
+  commentCount: number;
+  /** The newest 20, oldest first. */
+  comments: FarmTaskComment[];
   /** @nullable */
   animalId: number | null;
   /** @nullable */

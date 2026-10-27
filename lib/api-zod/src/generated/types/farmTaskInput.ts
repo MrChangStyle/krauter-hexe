@@ -6,10 +6,26 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FarmTaskAction } from './farmTaskAction';
+import type { FarmTaskArea } from './farmTaskArea';
 import type { TaskIntervalUnit } from './taskIntervalUnit';
 
 export interface FarmTaskInput {
-  actionType: FarmTaskAction;
+  /** Without it, the action follows from the title. */
+  actionType?: FarmTaskAction | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  title?: string | null;
+  area?: FarmTaskArea | null;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  startsOn?: string | null;
+  repeats?: boolean;
+  /** @nullable */
+  assigneeId?: string | null;
   /** @nullable */
   animalId?: number | null;
   /** @nullable */

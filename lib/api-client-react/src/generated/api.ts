@@ -21,6 +21,7 @@ import type {
 
 import type {
   AddFarmMemberInput,
+  AddFarmTaskCommentInput,
   AppStatus,
   AppStatusInput,
   ArchiveInput,
@@ -15288,6 +15289,228 @@ export const useCompleteFarmTask = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCompleteFarmTaskMutationOptions(options));
+    }
+
+export const getUncompleteFarmTaskUrl = (farmId: number,
+    taskId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/tasks/${taskId}/uncomplete`
+}
+
+/**
+ * @summary Take back today's tick (caretaker or admin)
+ */
+export const uncompleteFarmTask = async (farmId: number,
+    taskId: number, options?: RequestInit): Promise<FarmTask> => {
+
+  return customFetch<FarmTask>(getUncompleteFarmTaskUrl(farmId,taskId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getUncompleteFarmTaskMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uncompleteFarmTask>>, TError,{farmId: number;taskId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof uncompleteFarmTask>>, TError,{farmId: number;taskId: number}, TContext> => {
+
+const mutationKey = ['uncompleteFarmTask'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof uncompleteFarmTask>>, {farmId: number;taskId: number}> = (props) => {
+          const {farmId,taskId} = props ?? {};
+
+          return  uncompleteFarmTask(farmId,taskId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UncompleteFarmTaskMutationResult = NonNullable<Awaited<ReturnType<typeof uncompleteFarmTask>>>
+
+    export type UncompleteFarmTaskMutationError = ErrorType<void>
+
+    /**
+ * @summary Take back today's tick (caretaker or admin)
+ */
+export const useUncompleteFarmTask = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof uncompleteFarmTask>>, TError,{farmId: number;taskId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof uncompleteFarmTask>>,
+        TError,
+        {farmId: number;taskId: number},
+        TContext
+      > => {
+      return useMutation(getUncompleteFarmTaskMutationOptions(options));
+    }
+
+export const getAddFarmTaskCommentUrl = (farmId: number,
+    taskId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/tasks/${taskId}/comments`
+}
+
+/**
+ * @summary Comment on a task (caretaker or admin); the team gets a push
+ */
+export const addFarmTaskComment = async (farmId: number,
+    taskId: number,
+    addFarmTaskCommentInput: AddFarmTaskCommentInput, options?: RequestInit): Promise<FarmTask> => {
+
+  return customFetch<FarmTask>(getAddFarmTaskCommentUrl(farmId,taskId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(addFarmTaskCommentInput)
+  }
+);}
+
+
+
+
+
+export const getAddFarmTaskCommentMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addFarmTaskComment>>, TError,{farmId: number;taskId: number;data: BodyType<AddFarmTaskCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addFarmTaskComment>>, TError,{farmId: number;taskId: number;data: BodyType<AddFarmTaskCommentInput>}, TContext> => {
+
+const mutationKey = ['addFarmTaskComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addFarmTaskComment>>, {farmId: number;taskId: number;data: BodyType<AddFarmTaskCommentInput>}> = (props) => {
+          const {farmId,taskId,data} = props ?? {};
+
+          return  addFarmTaskComment(farmId,taskId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddFarmTaskCommentMutationResult = NonNullable<Awaited<ReturnType<typeof addFarmTaskComment>>>
+    export type AddFarmTaskCommentMutationBody = BodyType<AddFarmTaskCommentInput>
+    export type AddFarmTaskCommentMutationError = ErrorType<void>
+
+    /**
+ * @summary Comment on a task (caretaker or admin); the team gets a push
+ */
+export const useAddFarmTaskComment = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addFarmTaskComment>>, TError,{farmId: number;taskId: number;data: BodyType<AddFarmTaskCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addFarmTaskComment>>,
+        TError,
+        {farmId: number;taskId: number;data: BodyType<AddFarmTaskCommentInput>},
+        TContext
+      > => {
+      return useMutation(getAddFarmTaskCommentMutationOptions(options));
+    }
+
+export const getDeleteFarmTaskCommentUrl = (farmId: number,
+    taskId: number,
+    commentId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/tasks/${taskId}/comments/${commentId}`
+}
+
+/**
+ * @summary Delete an own comment (admins any)
+ */
+export const deleteFarmTaskComment = async (farmId: number,
+    taskId: number,
+    commentId: number, options?: RequestInit): Promise<FarmTask> => {
+
+  return customFetch<FarmTask>(getDeleteFarmTaskCommentUrl(farmId,taskId,commentId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteFarmTaskCommentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFarmTaskComment>>, TError,{farmId: number;taskId: number;commentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteFarmTaskComment>>, TError,{farmId: number;taskId: number;commentId: number}, TContext> => {
+
+const mutationKey = ['deleteFarmTaskComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteFarmTaskComment>>, {farmId: number;taskId: number;commentId: number}> = (props) => {
+          const {farmId,taskId,commentId} = props ?? {};
+
+          return  deleteFarmTaskComment(farmId,taskId,commentId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteFarmTaskCommentMutationResult = NonNullable<Awaited<ReturnType<typeof deleteFarmTaskComment>>>
+
+    export type DeleteFarmTaskCommentMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete an own comment (admins any)
+ */
+export const useDeleteFarmTaskComment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteFarmTaskComment>>, TError,{farmId: number;taskId: number;commentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteFarmTaskComment>>,
+        TError,
+        {farmId: number;taskId: number;commentId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteFarmTaskCommentMutationOptions(options));
     }
 
 export const getGetFarmExportUrl = (farmId: number,) => {

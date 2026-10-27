@@ -4844,6 +4844,90 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FarmTask"
+  /farms/{farmId}/tasks/{taskId}/uncomplete:
+    post:
+      tags: [farm]
+      operationId: uncompleteFarmTask
+      summary: Take back today's tick (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The task, open again.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmTask"
+        "400":
+          description: Not ticked off today.
+  /farms/{farmId}/tasks/{taskId}/comments:
+    post:
+      tags: [farm]
+      operationId: addFarmTaskComment
+      summary: Comment on a task (caretaker or admin); the team gets a push
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddFarmTaskCommentInput"
+      responses:
+        "201":
+          description: The task with its comments.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmTask"
+        "400":
+          description: Invalid input.
+  /farms/{farmId}/tasks/{taskId}/comments/{commentId}:
+    delete:
+      tags: [farm]
+      operationId: deleteFarmTaskComment
+      summary: Delete an own comment (admins any)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: taskId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The task with its comments.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmTask"
   /farms/{farmId}/export:
     get:
       tags: [farm]
@@ -11728,12 +11812,72 @@ components:
     FarmTaskAction:
       type: string
       enum: [Füttern, Tränken, Ausmisten, Eier sammeln, Entwurmen, Impfen, Klauen-/Hufpflege, Gesundheitskontrolle, Sonstiges]
-    FarmTask:
+    FarmTaskArea:
+      type: string
+      enum: [tiere, garten, hof]
+      description: Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).
+    FarmTaskComment:
       type: object
-      required: [id, animalId, animalName, herdId, herdName, actionType, notes, intervalValue, intervalUnit, reminderTime, isActive, lastCompletedAt, createdAt, dueDate, isDue]
+      required: [id, body, createdAt, authorName, isOwn]
       properties:
         id:
           type: integer
+        body:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        authorName:
+          type: string
+        isOwn:
+          type: boolean
+    AddFarmTaskCommentInput:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+          maxLength: 300
+    FarmTask:
+      type: object
+      required: [id, animalId, animalName, herdId, herdName, actionType, title, area, startsOn, repeats, assigneeId, assigneeName, lastCompletedBy, lastCompletedByName, notes, intervalValue, intervalUnit, reminderTime, isActive, lastCompletedAt, createdAt, dueDate, isDue, isDone, doneToday, commentCount, comments]
+      properties:
+        id:
+          type: integer
+        title:
+          type: [string, 'null']
+          description: Own wording; null = the action type.
+        area:
+          $ref: "#/components/schemas/FarmTaskArea"
+        startsOn:
+          type: [string, 'null']
+          description: First due day (YYYY-MM-DD); null = one interval after creation.
+        repeats:
+          type: boolean
+          description: false = once, on startsOn.
+        assigneeId:
+          type: [string, 'null']
+          description: For this member; null = for everyone.
+        assigneeName:
+          type: [string, 'null']
+        lastCompletedBy:
+          type: [string, 'null']
+        lastCompletedByName:
+          type: [string, 'null']
+        isDone:
+          type: boolean
+          description: A one-off task that is ticked off.
+        doneToday:
+          type: boolean
+          description: Ticked off today (Berlin).
+        commentCount:
+          type: integer
+        comments:
+          type: array
+          description: The newest 20, oldest first.
+          items:
+            $ref: "#/components/schemas/FarmTaskComment"
         animalId:
           type: [integer, 'null']
         animalName:
@@ -11784,10 +11928,27 @@ components:
           type: number
     FarmTaskInput:
       type: object
-      required: [actionType, intervalValue, intervalUnit, reminderTime]
+      required: [intervalValue, intervalUnit, reminderTime]
       properties:
         actionType:
-          $ref: "#/components/schemas/FarmTaskAction"
+          description: Without it, the action follows from the title.
+          oneOf:
+            - $ref: "#/components/schemas/FarmTaskAction"
+            - type: 'null'
+        title:
+          type: [string, 'null']
+          maxLength: 80
+        area:
+          oneOf:
+            - $ref: "#/components/schemas/FarmTaskArea"
+            - type: 'null'
+        startsOn:
+          type: [string, 'null']
+          pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        repeats:
+          type: boolean
+        assigneeId:
+          type: [string, 'null']
         animalId:
           type: [integer, 'null']
         herdId:

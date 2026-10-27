@@ -112,6 +112,12 @@ function TaskDialog({
     setError(null);
     const data: FarmTaskInput = {
       actionType: action,
+      // Hof-Aufgaben fields stay as they are (docs/hof-aufgaben.md).
+      title: task?.title ?? null,
+      area: task?.area ?? "tiere",
+      startsOn: task?.startsOn ?? null,
+      repeats: task?.repeats ?? true,
+      assigneeId: task?.assigneeId ?? null,
       animalId: target.startsWith("a:") ? Number(target.slice(2)) : null,
       herdId: target.startsWith("h:") ? Number(target.slice(2)) : null,
       notes,
@@ -233,13 +239,14 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
     mutation: {
       onSuccess(updated) {
         void queryClient.invalidateQueries({ queryKey: getListFarmTasksQueryKey(farm.id) });
-        toast({ title: `${updated.actionType} erledigt`, description: dueText(updated, todayIso()) });
+        toast({ title: `${updated.title ?? updated.actionType} erledigt`, description: dueText(updated, todayIso()) });
       },
       onError: () => toast({ title: "Nicht gespeichert", variant: "destructive" }),
     },
   });
   const today = todayIso();
-  const all = sortTasks(tasks.data ?? []);
+  // Only the animals' tasks; the rest of the Hof list is on /hof-aufgaben.
+  const all = sortTasks((tasks.data ?? []).filter((t) => t.area === "tiere" && !t.isDone));
   const dueCount = all.filter((t) => t.isActive && t.isDue).length;
 
   return (
@@ -275,7 +282,7 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
             const info = (
               <div className="min-w-0 flex-1">
                 <p className="truncate font-medium">
-                  {t.actionType} <span className="font-normal text-muted-foreground">· {target}</span>
+                  {t.title ?? t.actionType} <span className="font-normal text-muted-foreground">· {target}</span>
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {t.isActive ? (
@@ -283,7 +290,8 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
                   ) : (
                     "pausiert"
                   )}
-                  {` · ${intervalText(t.intervalValue, t.intervalUnit)}, ${t.reminderTime} Uhr`}
+                  {` · ${t.repeats ? intervalText(t.intervalValue, t.intervalUnit) : "einmalig"}, ${t.reminderTime} Uhr`}
+                  {t.assigneeName && ` · für ${t.assigneeName}`}
                 </p>
                 {t.notes && <p className="truncate text-xs text-muted-foreground">{t.notes}</p>}
               </div>
@@ -309,7 +317,7 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
                     size="sm"
                     variant={t.isDue ? "default" : "outline"}
                     className="shrink-0 gap-1"
-                    aria-label={`${t.actionType} (${target}) erledigt`}
+                    aria-label={`${t.title ?? t.actionType} (${target}) erledigt`}
                     disabled={complete.isPending}
                     onClick={() => complete.mutate({ farmId: farm.id, taskId: t.id })}
                   >
@@ -323,6 +331,11 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
         </ul>
       )}
 
+      <p className="text-xs text-muted-foreground">
+        Alle Aufgaben des Hofs – auch Garten, Teich und Haus, mit Kommentaren – stehen in den{" "}
+        <Link href="/hof-aufgaben" className="text-primary underline">Hof-Aufgaben</Link>.
+      </p>
+
       {dialog && <TaskDialog key={dialog.key} farmId={farm.id} task={dialog.task} onClose={() => setDialog(null)} />}
     </section>
   );
@@ -331,7 +344,7 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
 /** The Stall-Aufgaben tile on the Tiere page, with what is due today. */
 export function FarmTasksTile({ farm }: { farm: FarmSummary }) {
   const tasks = useListFarmTasks(farm.id);
-  const due = (tasks.data ?? []).filter((t) => t.isActive && t.isDue).length;
+  const due = (tasks.data ?? []).filter((t) => t.area === "tiere" && t.isActive && t.isDue).length;
   return (
     <HubTile
       href="/farm/aufgaben"

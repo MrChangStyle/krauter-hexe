@@ -16,6 +16,8 @@ import { plantImageUrl } from "@/lib/image";
 import { BackToPflanzen } from "@/components/back-to-pflanzen";
 import { PflegeGuidesSection } from "@/pages/mehr";
 import { GardenTodoSection } from "@/components/garden-overview";
+import { GardenHofTasks } from "@/components/hof-tasks";
+import { useActiveFarm } from "@/hooks/use-active-farm";
 import { CareWeatherCard } from "@/components/care-weather-card";
 import { todayIso } from "@/lib/farm-labels";
 import { Button } from "@/components/ui/button";
@@ -136,6 +138,12 @@ function formFromTask(task: Task): FormState {
 }
 
 // ─── Page component ───────────────────────────────────────────────────────────
+
+/** Garden tasks from the Hof list (docs/hof-aufgaben.md). */
+function GardenHofTasksSection() {
+  const { farm } = useActiveFarm();
+  return farm ? <GardenHofTasks farm={farm} /> : null;
+}
 
 export default function AufgabenPage() {
   const queryClient = useQueryClient();
@@ -352,7 +360,8 @@ export default function AufgabenPage() {
       <div className="px-6 pb-4">
         <PflegeGuidesSection />
       </div>
-      <div className="px-6 pb-4">
+      <div className="space-y-4 px-6 pb-4">
+        <GardenHofTasksSection />
         <GardenTodoSection />
       </div>
 

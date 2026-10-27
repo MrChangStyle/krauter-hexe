@@ -145,7 +145,8 @@ function Tasks({ farm, canWrite }: { farm: FarmSummary; canWrite: boolean }) {
   const pending = pendingFor(farm.id).tasks;
   if (tasks === null) return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
   const list = tasks
-    .filter((t) => t.isActive && (t.isDue || doneToday(t, today) || pending.has(t.id)))
+    // The animals' tasks (docs/hof-aufgaben.md); a cached list from before has no area.
+    .filter((t) => t.isActive && (t.area ?? "tiere") === "tiere" && (t.isDue || doneToday(t, today) || pending.has(t.id)))
     .sort((a, b) => a.reminderTime.localeCompare(b.reminderTime) || a.id - b.id);
   return (
     <section className="space-y-2">
@@ -182,7 +183,7 @@ function Tasks({ farm, canWrite }: { farm: FarmSummary; canWrite: boolean }) {
                     {done && <Check className="h-5 w-5" />}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-base font-semibold">{t.actionType}</span>
+                    <span className="block text-base font-semibold">{t.title ?? t.actionType}</span>
                     <span className="block truncate text-sm text-muted-foreground">
                       {t.herdName ?? t.animalName ?? "Ganzer Hof"}
                       {t.notes ? ` · ${t.notes}` : ""}

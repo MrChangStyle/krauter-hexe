@@ -7818,6 +7818,24 @@ export const ListFarmTasksParams = zod.object({
 
 export const ListFarmTasksResponseItem = zod.object({
   "id": zod.number(),
+  "title": zod.string().nullable().describe('Own wording; null = the action type.'),
+  "area": zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),
+  "startsOn": zod.string().nullable().describe('First due day (YYYY-MM-DD); null = one interval after creation.'),
+  "repeats": zod.boolean().describe('false = once, on startsOn.'),
+  "assigneeId": zod.string().nullable().describe('For this member; null = for everyone.'),
+  "assigneeName": zod.string().nullable(),
+  "lastCompletedBy": zod.string().nullable(),
+  "lastCompletedByName": zod.string().nullable(),
+  "isDone": zod.boolean().describe('A one-off task that is ticked off.'),
+  "doneToday": zod.boolean().describe('Ticked off today (Berlin).'),
+  "commentCount": zod.number(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "authorName": zod.string(),
+  "isOwn": zod.boolean()
+})).describe('The newest 20, oldest first.'),
   "animalId": zod.number().nullable(),
   "animalName": zod.string().nullable(),
   "herdId": zod.number().nullable(),
@@ -7843,6 +7861,9 @@ export const CreateFarmTaskParams = zod.object({
   "farmId": zod.coerce.number()
 })
 
+export const createFarmTaskBodyTitleMax = 80;
+
+export const createFarmTaskBodyStartsOnRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
 export const createFarmTaskBodyNotesMax = 200;
 
 export const createFarmTaskBodyIntervalValueMax = 365;
@@ -7851,7 +7872,12 @@ export const createFarmTaskBodyReminderTimeRegExp = new RegExp('^([01][0-9]|2[0-
 
 
 export const CreateFarmTaskBody = zod.object({
-  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "actionType": zod.union([zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),zod.null()]).optional().describe('Without it, the action follows from the title.'),
+  "title": zod.string().max(createFarmTaskBodyTitleMax).nullish(),
+  "area": zod.union([zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),zod.null()]).optional(),
+  "startsOn": zod.string().regex(createFarmTaskBodyStartsOnRegExp).nullish(),
+  "repeats": zod.boolean().optional(),
+  "assigneeId": zod.string().nullish(),
   "animalId": zod.number().nullish(),
   "herdId": zod.number().nullish(),
   "notes": zod.string().max(createFarmTaskBodyNotesMax).nullish(),
@@ -7863,6 +7889,24 @@ export const CreateFarmTaskBody = zod.object({
 
 export const CreateFarmTaskResponse = zod.object({
   "id": zod.number(),
+  "title": zod.string().nullable().describe('Own wording; null = the action type.'),
+  "area": zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),
+  "startsOn": zod.string().nullable().describe('First due day (YYYY-MM-DD); null = one interval after creation.'),
+  "repeats": zod.boolean().describe('false = once, on startsOn.'),
+  "assigneeId": zod.string().nullable().describe('For this member; null = for everyone.'),
+  "assigneeName": zod.string().nullable(),
+  "lastCompletedBy": zod.string().nullable(),
+  "lastCompletedByName": zod.string().nullable(),
+  "isDone": zod.boolean().describe('A one-off task that is ticked off.'),
+  "doneToday": zod.boolean().describe('Ticked off today (Berlin).'),
+  "commentCount": zod.number(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "authorName": zod.string(),
+  "isOwn": zod.boolean()
+})).describe('The newest 20, oldest first.'),
   "animalId": zod.number().nullable(),
   "animalName": zod.string().nullable(),
   "herdId": zod.number().nullable(),
@@ -7888,6 +7932,9 @@ export const UpdateFarmTaskParams = zod.object({
   "taskId": zod.coerce.number()
 })
 
+export const updateFarmTaskBodyTitleMax = 80;
+
+export const updateFarmTaskBodyStartsOnRegExp = new RegExp('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
 export const updateFarmTaskBodyNotesMax = 200;
 
 export const updateFarmTaskBodyIntervalValueMax = 365;
@@ -7896,7 +7943,12 @@ export const updateFarmTaskBodyReminderTimeRegExp = new RegExp('^([01][0-9]|2[0-
 
 
 export const UpdateFarmTaskBody = zod.object({
-  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "actionType": zod.union([zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),zod.null()]).optional().describe('Without it, the action follows from the title.'),
+  "title": zod.string().max(updateFarmTaskBodyTitleMax).nullish(),
+  "area": zod.union([zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),zod.null()]).optional(),
+  "startsOn": zod.string().regex(updateFarmTaskBodyStartsOnRegExp).nullish(),
+  "repeats": zod.boolean().optional(),
+  "assigneeId": zod.string().nullish(),
   "animalId": zod.number().nullish(),
   "herdId": zod.number().nullish(),
   "notes": zod.string().max(updateFarmTaskBodyNotesMax).nullish(),
@@ -7908,6 +7960,24 @@ export const UpdateFarmTaskBody = zod.object({
 
 export const UpdateFarmTaskResponse = zod.object({
   "id": zod.number(),
+  "title": zod.string().nullable().describe('Own wording; null = the action type.'),
+  "area": zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),
+  "startsOn": zod.string().nullable().describe('First due day (YYYY-MM-DD); null = one interval after creation.'),
+  "repeats": zod.boolean().describe('false = once, on startsOn.'),
+  "assigneeId": zod.string().nullable().describe('For this member; null = for everyone.'),
+  "assigneeName": zod.string().nullable(),
+  "lastCompletedBy": zod.string().nullable(),
+  "lastCompletedByName": zod.string().nullable(),
+  "isDone": zod.boolean().describe('A one-off task that is ticked off.'),
+  "doneToday": zod.boolean().describe('Ticked off today (Berlin).'),
+  "commentCount": zod.number(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "authorName": zod.string(),
+  "isOwn": zod.boolean()
+})).describe('The newest 20, oldest first.'),
   "animalId": zod.number().nullable(),
   "animalName": zod.string().nullable(),
   "herdId": zod.number().nullable(),
@@ -7950,6 +8020,168 @@ export const CompleteFarmTaskBody = zod.object({
 
 export const CompleteFarmTaskResponse = zod.object({
   "id": zod.number(),
+  "title": zod.string().nullable().describe('Own wording; null = the action type.'),
+  "area": zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),
+  "startsOn": zod.string().nullable().describe('First due day (YYYY-MM-DD); null = one interval after creation.'),
+  "repeats": zod.boolean().describe('false = once, on startsOn.'),
+  "assigneeId": zod.string().nullable().describe('For this member; null = for everyone.'),
+  "assigneeName": zod.string().nullable(),
+  "lastCompletedBy": zod.string().nullable(),
+  "lastCompletedByName": zod.string().nullable(),
+  "isDone": zod.boolean().describe('A one-off task that is ticked off.'),
+  "doneToday": zod.boolean().describe('Ticked off today (Berlin).'),
+  "commentCount": zod.number(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "authorName": zod.string(),
+  "isOwn": zod.boolean()
+})).describe('The newest 20, oldest first.'),
+  "animalId": zod.number().nullable(),
+  "animalName": zod.string().nullable(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "notes": zod.string().nullable(),
+  "intervalValue": zod.number(),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().describe('HH:MM, Berlin time'),
+  "isActive": zod.boolean(),
+  "lastCompletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "dueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin)'),
+  "isDue": zod.boolean().describe('Due today or overdue.')
+})
+
+
+/**
+ * @summary Take back today's tick (caretaker or admin)
+ */
+export const UncompleteFarmTaskParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "taskId": zod.coerce.number()
+})
+
+export const UncompleteFarmTaskResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string().nullable().describe('Own wording; null = the action type.'),
+  "area": zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),
+  "startsOn": zod.string().nullable().describe('First due day (YYYY-MM-DD); null = one interval after creation.'),
+  "repeats": zod.boolean().describe('false = once, on startsOn.'),
+  "assigneeId": zod.string().nullable().describe('For this member; null = for everyone.'),
+  "assigneeName": zod.string().nullable(),
+  "lastCompletedBy": zod.string().nullable(),
+  "lastCompletedByName": zod.string().nullable(),
+  "isDone": zod.boolean().describe('A one-off task that is ticked off.'),
+  "doneToday": zod.boolean().describe('Ticked off today (Berlin).'),
+  "commentCount": zod.number(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "authorName": zod.string(),
+  "isOwn": zod.boolean()
+})).describe('The newest 20, oldest first.'),
+  "animalId": zod.number().nullable(),
+  "animalName": zod.string().nullable(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "notes": zod.string().nullable(),
+  "intervalValue": zod.number(),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().describe('HH:MM, Berlin time'),
+  "isActive": zod.boolean(),
+  "lastCompletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "dueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin)'),
+  "isDue": zod.boolean().describe('Due today or overdue.')
+})
+
+
+/**
+ * @summary Comment on a task (caretaker or admin); the team gets a push
+ */
+export const AddFarmTaskCommentParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "taskId": zod.coerce.number()
+})
+
+export const addFarmTaskCommentBodyBodyMax = 300;
+
+
+
+export const AddFarmTaskCommentBody = zod.object({
+  "body": zod.string().min(1).max(addFarmTaskCommentBodyBodyMax)
+})
+
+export const AddFarmTaskCommentResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string().nullable().describe('Own wording; null = the action type.'),
+  "area": zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),
+  "startsOn": zod.string().nullable().describe('First due day (YYYY-MM-DD); null = one interval after creation.'),
+  "repeats": zod.boolean().describe('false = once, on startsOn.'),
+  "assigneeId": zod.string().nullable().describe('For this member; null = for everyone.'),
+  "assigneeName": zod.string().nullable(),
+  "lastCompletedBy": zod.string().nullable(),
+  "lastCompletedByName": zod.string().nullable(),
+  "isDone": zod.boolean().describe('A one-off task that is ticked off.'),
+  "doneToday": zod.boolean().describe('Ticked off today (Berlin).'),
+  "commentCount": zod.number(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "authorName": zod.string(),
+  "isOwn": zod.boolean()
+})).describe('The newest 20, oldest first.'),
+  "animalId": zod.number().nullable(),
+  "animalName": zod.string().nullable(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable(),
+  "actionType": zod.enum(['Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges']),
+  "notes": zod.string().nullable(),
+  "intervalValue": zod.number(),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string().describe('HH:MM, Berlin time'),
+  "isActive": zod.boolean(),
+  "lastCompletedAt": zod.coerce.date().nullable(),
+  "createdAt": zod.coerce.date(),
+  "dueDate": zod.string().describe('Next due day (YYYY-MM-DD, Berlin)'),
+  "isDue": zod.boolean().describe('Due today or overdue.')
+})
+
+
+/**
+ * @summary Delete an own comment (admins any)
+ */
+export const DeleteFarmTaskCommentParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "taskId": zod.coerce.number(),
+  "commentId": zod.coerce.number()
+})
+
+export const DeleteFarmTaskCommentResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string().nullable().describe('Own wording; null = the action type.'),
+  "area": zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),
+  "startsOn": zod.string().nullable().describe('First due day (YYYY-MM-DD); null = one interval after creation.'),
+  "repeats": zod.boolean().describe('false = once, on startsOn.'),
+  "assigneeId": zod.string().nullable().describe('For this member; null = for everyone.'),
+  "assigneeName": zod.string().nullable(),
+  "lastCompletedBy": zod.string().nullable(),
+  "lastCompletedByName": zod.string().nullable(),
+  "isDone": zod.boolean().describe('A one-off task that is ticked off.'),
+  "doneToday": zod.boolean().describe('Ticked off today (Berlin).'),
+  "commentCount": zod.number(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "body": zod.string(),
+  "createdAt": zod.coerce.date(),
+  "authorName": zod.string(),
+  "isOwn": zod.boolean()
+})).describe('The newest 20, oldest first.'),
   "animalId": zod.number().nullable(),
   "animalName": zod.string().nullable(),
   "herdId": zod.number().nullable(),

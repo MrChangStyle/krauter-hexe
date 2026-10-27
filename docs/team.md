@@ -42,7 +42,7 @@ Ein Admin legt für jedes Mitglied fest, welche Farm-Module es sieht: Im Team bz
 
 - **Rolle und Freigabe greifen ineinander:** Die Freigabe bestimmt, *welche* Module jemand sieht. Die Rolle bestimmt, ob er darin nur ansehen (Gast) oder auch bearbeiten (Mitarbeiter) darf.
 - **Admins haben immer alles.**
-- **Freigeben lassen sich:** Stall-Aufgaben, Futterplaner, Zucht, Arzneimittel, Pflichten & Tierseuchen, Ertrag & Bilanz, Wildtier-Radar, Übergabe, Veterinäramt-Export, Farm & Team und Beet-Architekt (mit Saatgut).
+- **Freigeben lassen sich:** Hof- & Stall-Aufgaben (die gemeinsame Liste, `docs/hof-aufgaben.md`), Futterplaner, Zucht, Arzneimittel, Pflichten & Tierseuchen, Ertrag & Bilanz, Wildtier-Radar, Übergabe, Veterinäramt-Export, Farm & Team und Beet-Architekt (mit Saatgut).
 - **Immer offen** für jedes Mitglied:
   - die Tiere selbst (Bestand, Gesundheit), denn die Module bauen darauf auf
   - die wichtigen Kontakte (Notfallnummern)

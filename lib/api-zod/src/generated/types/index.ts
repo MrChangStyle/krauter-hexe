@@ -7,6 +7,7 @@
  */
 
 export * from './addFarmMemberInput';
+export * from './addFarmTaskCommentInput';
 export * from './animalInfo';
 export * from './animalSex';
 export * from './appStatus';
@@ -150,6 +151,8 @@ export * from './farmSpecies';
 export * from './farmSummary';
 export * from './farmTask';
 export * from './farmTaskAction';
+export * from './farmTaskArea';
+export * from './farmTaskComment';
 export * from './farmTaskInput';
 export * from './farmWeather';
 export * from './favoriteIds';

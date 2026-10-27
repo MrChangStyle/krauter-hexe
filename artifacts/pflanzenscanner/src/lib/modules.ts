@@ -32,7 +32,7 @@ export const MODULES: readonly ModuleDef[] = [
   { id: "pantry", area: "pflanzen", label: "Vorratskammer", hint: "Eingekochtes, Eingefrorenes, Honig", tier: "base" },
   { id: "grow", area: "pflanzen", label: "Grow", hint: "Eigenanbau ab 18 · KI-Check mit Premium", tier: "lite" },
   { id: "animals", area: "tiere", label: "Bereich Tiere", hint: "Der Reiter „Tiere“ unten", tier: "base", isArea: true },
-  { id: "farm-tasks", area: "tiere", label: "Stall-Aufgaben", hint: "Füttern, Ausmisten, Erinnerungen", tier: "base" },
+  { id: "farm-tasks", area: "tiere", label: "Hof- & Stall-Aufgaben", hint: "Gemeinsame Liste, Füttern, Erinnerungen", tier: "base" },
   { id: "feed", area: "tiere", label: "Futterplaner", hint: "Rationen, Bedarf, Vorrat", tier: "base" },
   { id: "breeding", area: "tiere", label: "Zucht", hint: "Trächtigkeit, Brut, Jungtiere", tier: "base" },
   { id: "medicines", area: "tiere", label: "Arzneimittel", hint: "Vorrat, Charge, Wartezeit", tier: "base" },

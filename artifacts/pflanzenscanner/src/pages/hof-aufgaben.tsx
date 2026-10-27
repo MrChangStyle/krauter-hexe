@@ -161,7 +161,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
   const [text, setText] = useState("");
   const [assignee, setAssignee] = useState("");
   const [daily, setDaily] = useState(false);
-  const [preview, setPreview] = useState<{ tasks: Planned[]; byAi: boolean } | null>(null);
+  const [preview, setPreview] = useState<{ tasks: Planned[]; byAi: boolean; why?: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const create = useCreateFarmTask();
   const plan = usePlanFarmTasks();
@@ -230,7 +230,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
       // Offline, daily limit or AI not reachable: the app reads it itself.
       const local = planLocally(said, today, team, defaults);
       if (local.length === 0) return void toast({ title: errorText(err, "Daraus wurde keine Aufgabe. Sag es bitte noch einmal anders."), variant: "destructive" });
-      setPreview({ tasks: local, byAi: false });
+      setPreview({ tasks: local, byAi: false, why: errorText(err, "Die KI ist gerade nicht erreichbar.") });
       toast({ title: "Ohne KI erkannt", description: errorText(err, "Die KI ist gerade nicht erreichbar.") + " Bitte prüf die Liste." });
     }
   }
@@ -296,6 +296,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
           <p className="flex items-center gap-1.5 text-sm font-medium">
             {preview.byAi && <Sparkles className="h-4 w-4 text-primary" />}
             {preview.tasks.length} {preview.tasks.length === 1 ? "Aufgabe" : "Aufgaben"} {preview.byAi ? "von der KI erkannt" : "erkannt (ohne KI)"} – bitte prüfen:
+            {!preview.byAi && preview.why && <span className="block text-xs font-normal text-muted-foreground" data-testid="ai-why">Grund: {preview.why}</span>}
           </p>
           <ul className="space-y-1.5">
             {preview.tasks.map((t, i) => (

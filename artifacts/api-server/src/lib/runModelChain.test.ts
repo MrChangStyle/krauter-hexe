@@ -44,3 +44,13 @@ describe("runModelChain with timeoutMs", () => {
     expect(calls).toEqual(["slow", "fast"]);
   });
 });
+
+describe("aiErrorDetail", () => {
+  it("names status and cause, never the key", async () => {
+    const { aiErrorDetail } = await import("../routes/farmRouteHelpers");
+    expect(aiErrorDetail(Object.assign(new Error("models/gemini-x is not found ?key=geheim123"), { status: 404 }))).toBe(
+      "404 · models/gemini-x is not found ?key=…",
+    );
+    expect(aiErrorDetail(Object.assign(new Error("This operation was aborted"), { name: "AbortError" }))).toBe("AbortError · This operation was aborted");
+  });
+});

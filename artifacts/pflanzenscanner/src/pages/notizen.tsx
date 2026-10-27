@@ -217,7 +217,7 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
   const refresh = useRefresh();
   const { toast } = useToast();
   const [text, setText] = useState("");
-  const [preview, setPreview] = useState<{ notes: NoteDraft[]; byAi: boolean } | null>(null);
+  const [preview, setPreview] = useState<{ notes: NoteDraft[]; byAi: boolean; why?: string } | null>(null);
   const [saving, setSaving] = useState(false);
   const create = useCreateNote();
   const plan = usePlanNotes();
@@ -255,7 +255,7 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
       plan.reset();
       const local = splitNotes(said);
       if (local.length === 0) return void toast({ title: errorText(err, "Daraus wurde keine Notiz."), variant: "destructive" });
-      setPreview({ notes: local, byAi: false });
+      setPreview({ notes: local, byAi: false, why: errorText(err, "Die KI ist gerade nicht erreichbar.") });
       toast({ title: "Ohne KI aufgeteilt", description: errorText(err, "Die KI ist gerade nicht erreichbar.") + " Bitte prüf die Liste." });
     }
   }
@@ -305,6 +305,7 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
           <p className="flex items-center gap-1.5 text-sm font-medium">
             {preview.byAi && <Sparkles className="h-4 w-4 text-orange-600" />}
             {preview.notes.length} {preview.notes.length === 1 ? "Notiz" : "Notizen"} {preview.byAi ? "von der KI erkannt" : "erkannt (ohne KI)"} – bitte prüfen:
+            {!preview.byAi && preview.why && <span className="block text-xs font-normal text-muted-foreground" data-testid="ai-why">Grund: {preview.why}</span>}
           </p>
           <ul className="space-y-1.5">
             {preview.notes.map((n, i) => (

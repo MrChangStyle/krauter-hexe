@@ -76,11 +76,14 @@ type Target = "farm" | `a:${number}` | `h:${number}`;
 function TaskDialog({
   farmId,
   task,
+  canDelete,
   onClose,
 }: {
   farmId: number;
   /** null: new task */
   task: FarmTask | null;
+  /** Only admins delete (docs/hof-aufgaben.md). */
+  canDelete: boolean;
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -200,7 +203,7 @@ function TaskDialog({
           )}
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           <DialogFooter className="gap-2">
-            {task && (
+            {task && canDelete && (
               <Button
                 type="button"
                 variant="ghost"
@@ -336,7 +339,7 @@ export function FarmTasksSection({ farm }: { farm: FarmSummary }) {
         <Link href="/hof-aufgaben" className="text-primary underline">Hof-Aufgaben</Link>.
       </p>
 
-      {dialog && <TaskDialog key={dialog.key} farmId={farm.id} task={dialog.task} onClose={() => setDialog(null)} />}
+      {dialog && <TaskDialog key={dialog.key} farmId={farm.id} task={dialog.task} canDelete={farm.role === "admin"} onClose={() => setDialog(null)} />}
     </section>
   );
 }

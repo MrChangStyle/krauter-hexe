@@ -19,7 +19,7 @@ const enabled =
 
 describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", () => {
   const TABLES =
-    "favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, grow_access, grows, grow_push_log, premium, dashboard_layouts, user_settings, move_parcels, feedback, farm_memberships, farms, plants, insects, users";
+    "daily_notes, note_shares, favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, grow_access, grows, grow_push_log, premium, dashboard_layouts, user_settings, move_parcels, feedback, farm_memberships, farms, plants, insects, users";
 
   async function load() {
     const { pool } = await import("@workspace/db");
@@ -98,6 +98,9 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       [own.rows[0].id],
     );
     await pool.query(`INSERT INTO farm_task_comments (farm_id, task_id, user_id, body) VALUES ($1, $2, $3, 'Kartons')`, [own.rows[0].id, task.rows[0].id, userId]);
+    // Alltagsnotizen: one note, and a share of someone else's list.
+    await pool.query(`INSERT INTO daily_notes (user_id, kind, text) VALUES ($1, 'einkauf', 'Zahnbürsten')`, [userId]);
+    await pool.query(`INSERT INTO note_shares (owner_id, user_id) VALUES ('owner', $1)`, [userId]);
   }
 
   beforeEach(async () => {
@@ -133,6 +136,8 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       user_settings: 1,
       move_parcels: 1,
       feedback: 1,
+      daily_notes: 1,
+      note_shares: 1,
       farm_task_comments: 1,
       farm_memberships: 1,
       farms: 1,

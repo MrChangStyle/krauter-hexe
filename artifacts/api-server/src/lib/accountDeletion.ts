@@ -22,6 +22,8 @@ import {
   db,
   farmMembershipsTable,
   farmTaskCommentsTable,
+  dailyNotesTable,
+  noteSharesTable,
   farmTasksTable,
   farmsTable,
   favoritesTable,
@@ -79,6 +81,9 @@ export const PERSONAL_TABLES = [
   { name: 'move_parcels', table: moveParcelsTable, userId: moveParcelsTable.userId },
   // Premium (granted or, later, paid).
   { name: 'premium', table: premiumTable, userId: premiumTable.userId },
+  // Alltagsnotizen: the own list, and the lists shared with this person.
+  { name: 'daily_notes', table: dailyNotesTable, userId: dailyNotesTable.userId },
+  { name: 'note_shares', table: noteSharesTable, userId: noteSharesTable.userId },
   // Comments on Hof-Aufgaben this person wrote.
   { name: 'farm_task_comments', table: farmTaskCommentsTable, userId: farmTaskCommentsTable.userId },
   // Farm memberships – deleteAccount first hands over or removes the farms.
@@ -151,6 +156,11 @@ export async function deleteAccount(userId: string): Promise<boolean> {
     for (const { table, userId: column } of PERSONAL_TABLES) {
       await tx.delete(table).where(eq(column, userId));
     }
+
+    // Alltagsnotizen: the own list is no longer shared; on others' lists the notes stay without the name.
+    await tx.delete(noteSharesTable).where(eq(noteSharesTable.ownerId, userId));
+    await tx.update(dailyNotesTable).set({ addedBy: null }).where(eq(dailyNotesTable.addedBy, userId));
+    await tx.update(dailyNotesTable).set({ doneBy: null }).where(eq(dailyNotesTable.doneBy, userId));
 
     // Hof-Aufgaben stay; they are for everyone again and lose the name.
     await tx.update(farmTasksTable).set({ assigneeId: null }).where(eq(farmTasksTable.assigneeId, userId));

@@ -18,6 +18,8 @@ const pushes = vi.hoisted(() => {
   process.env["GEMINI_API_KEY"] ??= "test-key";
   return [] as Array<{ to: string; title: string; body: string }>;
 });
+const runModelChain = vi.hoisted(() => vi.fn());
+vi.mock("./plantIdentification", async (orig) => ({ ...(await orig<object>()), runModelChain }));
 vi.mock("./webPush", async (orig) => ({
   ...(await orig<typeof import("./webPush")>()),
   sendPushToUser: async (to: string, p: { title: string; body: string }) => {
@@ -59,7 +61,8 @@ describe.skipIf(!enabled)("Hof-Aufgaben (real database)", () => {
   afterAll(() => server?.close());
 
   beforeEach(async () => {
-    await q("TRUNCATE farms, farm_memberships, users RESTART IDENTITY CASCADE");
+    await q("TRUNCATE farms, farm_memberships, users, scan_attempts RESTART IDENTITY CASCADE");
+    runModelChain.mockReset();
     await q(
       `INSERT INTO users (id, email, approved, first_name) VALUES ('stefan', 's@x.de', true, 'Stefan'), ('maria', 'm@x.de', true, 'Maria'), ('gast', 'g@x.de', true, 'Gast'), ('bert', 'b@x.de', true, 'Bert')`,
     );
@@ -193,5 +196,39 @@ describe.skipIf(!enabled)("Hof-Aufgaben (real database)", () => {
     await q("DELETE FROM farm_memberships WHERE user_id = 'maria'");
     const r = await api("GET", T());
     expect(r.data[0]).toMatchObject({ assigneeId: null, assigneeName: null });
+  });
+
+  it("plans tasks from free speech with the AI, saves nothing, and counts against the farm's AI limit", async () => {
+    await q("INSERT INTO herds (farm_id, name, species) VALUES ($1, 'Gänse', 'poultry')", [farmId]);
+    runModelChain.mockResolvedValue({
+      aufgaben: [
+        { titel: "Eier einsammeln", bereich: "tiere", tag: today(), wiederholung: null, uhrzeit: "17:00", fuer: "Maria", gruppe: null },
+        { titel: "Gänse füttern", bereich: "tiere", tag: null, wiederholung: { alle: 1, einheit: "Tage" }, uhrzeit: null, fuer: null, gruppe: "Gänse" },
+        { titel: "Blumen gießen", bereich: "garten", tag: null, wiederholung: null, uhrzeit: null, fuer: "Bert", gruppe: null },
+      ],
+    });
+    const said = "Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und die Blumen gegossen";
+    const r = await api("POST", `${T()}/plan`, { text: said, repeats: false });
+    expect(r.status).toBe(200);
+    expect(r.data.tasks).toHaveLength(3);
+    expect(r.data.tasks[0]).toMatchObject({ title: "Eier einsammeln", assigneeName: "Maria", reminderTime: "17:00", repeats: false });
+    expect(r.data.tasks[1]).toMatchObject({ title: "Gänse füttern", repeats: true, herdName: "Gänse" });
+    // Bert is on another farm; guests are not planned for.
+    expect(r.data.tasks[2]).toMatchObject({ area: "garten", assigneeId: null });
+    const prompt = runModelChain.mock.calls[0]![0][0].parts[0].text as string;
+    expect(prompt).toContain(said);
+    expect(prompt).toContain("Team: Stefan, Maria.");
+    expect(await q("SELECT id FROM farm_tasks")).toEqual([]);
+    expect(await q("SELECT scan_type FROM scan_attempts")).toEqual([{ scan_type: "farm" }]);
+  });
+
+  it("gives the attempt back when the AI finds nothing, and lets guests not plan", async () => {
+    runModelChain.mockResolvedValue({ aufgaben: [] });
+    const r = await api("POST", `${T()}/plan`, { text: "Hallo" });
+    expect(r.status).toBe(422);
+    expect(await q("SELECT id FROM scan_attempts")).toEqual([]);
+    expect((await api("POST", `${T()}/plan`, { text: "" })).status).toBe(400);
+    as = "gast";
+    expect((await api("POST", `${T()}/plan`, { text: "Eier einsammeln" })).status).toBe(403);
   });
 });

@@ -5,6 +5,8 @@ import {
   CompleteFarmTaskBody,
   CompleteFarmTaskResponse,
   DeleteFarmTaskCommentResponse,
+  PlanFarmTasksBody,
+  PlanFarmTasksResponse,
   UncompleteFarmTaskResponse,
   CreateFarmTaskBody,
   CreateFarmTaskResponse,
@@ -24,10 +26,12 @@ import {
   uncompleteFarmTask,
   updateFarmTask,
 } from '../lib/farmTasks';
-import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
+import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
+import { planTasks } from '../lib/hofTaskPlanner';
+import { berlinTodayKey } from '../lib/pushScheduler';
 
 // Stall and Hof tasks of a farm (docs/hof-aufgaben.md). Reading: every member;
-// writing, ticking off and commenting: caretaker or admin.
+// writing, ticking off and commenting: caretaker or admin; deleting: admin.
 
 const router: IRouter = Router();
 
@@ -49,6 +53,20 @@ router.post(
   }),
 );
 
+// KI-Aufgabenplan: free text → proposed tasks, nothing saved (docs/hof-aufgaben.md).
+// Counts against the farm's daily AI limit.
+router.post(
+  '/farms/:farmId/tasks/plan',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = PlanFarmTasksBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    const defaults = { assigneeId: body.data.assigneeId ?? null, repeats: body.data.repeats ?? false };
+    const tasks = await withAiQuota(req, res, 'farm', () => planTasks(req.farm!.farmId, body.data.text, berlinTodayKey(), defaults));
+    if (tasks) res.json(PlanFarmTasksResponse.parse({ tasks }));
+  }),
+);
+
 router.patch(
   '/farms/:farmId/tasks/:taskId',
   requireFarm('caretaker'),
@@ -61,9 +79,11 @@ router.patch(
   }),
 );
 
+// Only the owner of the list – the farm's admins – delete a task;
+// caretakers tick off, add and comment (docs/hof-aufgaben.md).
 router.delete(
   '/farms/:farmId/tasks/:taskId',
-  requireFarm('caretaker'),
+  requireFarm('admin'),
   handle(async (req, res) => {
     const taskId = idParam(req, 'taskId');
     if (taskId === null) return notFound(res);

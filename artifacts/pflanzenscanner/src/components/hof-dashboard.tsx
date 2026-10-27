@@ -44,7 +44,7 @@ import {
 import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useModules } from "@/hooks/use-modules";
 import { WIDGET_MODULE, farmModuleGranted } from "@/lib/modules";
-import { HofTasksStrip } from "@/components/hof-tasks";
+import { HofTools } from "@/components/hof-tasks";
 import { DashboardEditor } from "@/components/dashboard-editor";
 import { ALERT_STYLES, AlertBox, LocationForm } from "@/components/farm-weather-card";
 import { effectiveLayout, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
@@ -566,7 +566,7 @@ export function HofDashboard() {
       <TesterNotice closable />
       {farm ? <WeatherStrip farm={farm} /> : <div className="h-[72px] rounded-2xl border bg-card animate-pulse" />}
       <LeaderboardStrip />
-      {farm && farmModuleGranted(farm, "farm-tasks") && <HofTasksStrip farm={farm} />}
+      <HofTools farm={farm} />
       {farm && !saved.isLoading && (
         <>
           <Area area="pflanzen" farm={farm} layout={layout} />

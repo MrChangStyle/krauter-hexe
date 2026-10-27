@@ -4,13 +4,26 @@ Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Meer
 
 ## Wo
 
-- **Auf dem Hof** direkt unter „Pflanzenretter“ der Balken **„Hof-Aufgaben heute“**. Er zeigt, wie viel offen ist, einen Fortschrittsbalken (erledigt/gesamt) und die nächsten zwei Aufgaben. Ein Tipp öffnet die Liste.
+- **Auf dem Hof** direkt unter „Pflanzenretter“ die quadratische Kachel **„Hof-Aufgaben“** mit orangem Rand, neben der Kachel „Alltagsnotizen“ (`docs/alltagsnotizen.md`). Sie zeigt, wie viel heute offen ist, einen Fortschrittsbalken (erledigt/gesamt) und die nächsten Aufgaben. Ein Tipp öffnet die Liste.
 - **Seite** `/hof-aufgaben`, auch über die Suche („Aufgaben“, „Liste“, „Teich“ …).
 - Die Aufgaben stehen zusätzlich in ihrem Bereich:
   - **Tiere**: Stall-Aufgaben (`/farm/aufgaben`), „Am Stall“, Widget „Stall-Aufgaben“.
   - **Garten**: im Pflegeplan (`/aufgaben`) unter „Garten-Aufgaben vom Hof“.
   - **Hof & Haus**: nur in der Hof-Liste.
   - Die Übergabe für die Vertretung zeigt alles, was heute fällig ist.
+
+## KI-Aufgabenplan: einfach reinsprechen
+
+Oben auf der Seite steht ein Hinweis: **„Einfach reinsprechen – die App macht die Liste.“** Man tippt auf „Sprechen“ und sagt frei, was zu tun ist, z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.
+
+- **Die KI** (Gemini, `api-server/src/lib/hofTaskPlanner.ts`) zerlegt den Text in einzelne Aufgaben mit kurzem Titel („Eier einsammeln“), Bereich, erstem Tag (heute, morgen, übermorgen, Wochentag), Wiederholung (jeden Tag, jeden Montag, alle 2 Wochen, einmalig), Uhrzeit (um 8, morgens 7:00, mittags 12:00, abends 18:00), Person aus dem Team und Tiergruppe. Was für alles gesagt wird („das Ganze ist für morgen“), gilt für jede Aufgabe.
+- **Nichts wird ohne Prüfung gespeichert.** Die Vorschau zeigt jede Aufgabe mit Titel, Bereich, Tag, Wiederholung, Uhrzeit und Person – alles änderbar, einzelne entfernbar –, dann „Alle anlegen“.
+- **Wo der Text nichts sagt**, gelten „Für …“ und „Täglich“ der Eingabe; „für alle“ und „einmalig“ im Gesagten haben Vorrang.
+- **Eine einzelne, einfache Aufgabe** („Eier einsammeln“) geht ohne KI direkt auf die Liste (`needsPlan`): nur, wenn mehrere Aufgaben, ein Tag, eine Wiederholung, eine Uhrzeit, eine Person oder ein längerer Satz drin sind, fragt die App die KI.
+- **Ohne KI** (offline, Tageslimit erreicht, KI nicht erreichbar) erkennt die App einfache Wörter selbst (`planLocally` in `lib/hof-tasks.ts`): Trennung wie bei der Liste, heute/morgen/übermorgen/Wochentag, jeden Tag/jede Woche/jeden Freitag/alle N Tage, um 7 Uhr/morgens/abends, für Maria/für alle; ein einmal gesagter Tag gilt auch für die folgenden Aufgaben. Die Vorschau ist dann als „ohne KI erkannt“ markiert.
+- **Grenzen:** zählt gegen das tägliche KI-Limit „Farm“ (wie Artbestimmung und Futter-Foto); findet die KI nichts, wird der Versuch zurückgegeben. Text höchstens 1500 Zeichen, höchstens 20 Aufgaben. Gäste können nicht planen. Die KI sieht nur den Text, die Vornamen und Nachnamen des Teams und die Namen der Tiergruppen – keine E-Mail-Adressen.
+- **Sicherheit:** Die Antwort der KI wird streng geprüft (`coercePlan`): Titel Pflicht und höchstens 80 Zeichen, doppelte fallen weg, ein Tag in der Vergangenheit oder mehr als ein Jahr voraus wird heute, falsche Uhrzeiten werden 8:00, Personen und Gruppen nur, wenn es sie auf dem Hof gibt.
+- **Technik:** `POST /farms/:farmId/tasks/plan` mit `{ text, assigneeId?, repeats? }` → `{ tasks: PlannedFarmTask[] }`; angelegt wird danach über `POST /farms/:farmId/tasks`.
 
 ## Die Seite
 
@@ -26,14 +39,14 @@ Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Meer
 6. **Alle Aufgaben verwalten:** auch spätere und pausierte, zum Ändern oder Löschen.
 7. **Pflanzenpflege:** die eigenen fälligen Pflegeaufgaben aus dem Pflegeplan, mit „Erledigt“. Sie sind persönlich und nur für einen selbst sichtbar.
 8. **Im Garten:** Säen, Pflanzen, Ernten aus dem Beet-Architekten.
-9. **Liste teilen** (nur Admins): führt zu Farm & Team.
+9. **Liste teilen** (nur Admins): öffnet den Teilen-Dialog – Person aus dem Team oder per E-Mail, „Hof-Aufgaben“, „Alltagsnotizen“ oder beides (`docs/alltagsnotizen.md`).
 
 Jede Aufgabe hat eine **Sprechblase** mit der Zahl der Kommentare. Darin stehen die Kommentare mit Name und Zeit, darunter ein Feld (auch mit „Sprechen“). Eigene Kommentare lassen sich löschen; Admins können jeden löschen.
 
 ## Teilen und Rechte
 
 - Geteilt wird über **Farm & Team** (`docs/team.md`): ein Konto per E-Mail hinzufügen.
-  - **Mitarbeiter** legen an, haken ab und kommentieren.
+  - **Mitarbeiter** legen an, ändern, haken ab und kommentieren – **löschen dürfen nur Admins**, die Besitzer der Liste (`DELETE /farms/:farmId/tasks/:taskId` verlangt Admin; im Formular fehlt „Löschen“ sonst).
   - **Gäste** sehen die Liste nur.
 - Die Liste gehört zur Modul-Freigabe **„Hof- & Stall-Aufgaben“** (früher „Stall-Aufgaben“). Wer sie nicht hat, sieht weder Balken noch Seite.
 - „Für wen?“ zeigt das Team nur, wenn man auch „Farm & Team“ sehen darf (Admins immer).
@@ -67,9 +80,11 @@ Jede Aufgabe hat eine **Sprechblase** mit der Zahl der Kommentare. Darin stehen 
   - `POST …/:taskId/uncomplete`, `POST …/:taskId/comments`, `DELETE …/:taskId/comments/:commentId`.
 - Server: `lib/farmTasks.ts`, `lib/farmTaskRules.ts`, Erinnerung in `lib/pushScheduler.ts`.
 - App: `pages/hof-aufgaben.tsx`, `components/hof-tasks.tsx` (Balken, Zeile, Dialog, Garten-Abschnitt), `lib/hof-tasks.ts` (Liste für heute, Aufteilen einer Liste).
-- Tests: `farmTaskRules.test.ts`, `hofTasks.integration.test.ts`, `lib/hof-tasks.test.ts`.
+- Tests: `farmTaskRules.test.ts`, `hofTaskPlanner.test.ts`, `hofTasks.integration.test.ts` (auch KI-Plan mit ersetzter KI), `lib/hof-tasks.test.ts` (auch Plan ohne KI).
 
 ## Offen
+
+- Der Auftrag an die KI (`planPrompt`) und die Wortlisten der Erkennung ohne KI sind ein erster Wurf; mit echten Sprachaufnahmen der Tester prüfen.
 
 - Die Wortlisten für Bereich und Art sind ein erster Wurf. Fehlt ein Tier oder ein Wort, landet die Aufgabe unter „Hof & Haus“ und lässt sich im Formular umstellen.
 - Wiederkehrende Aufgaben an bestimmten Wochentagen (z. B. „montags und donnerstags“) gibt es noch nicht.

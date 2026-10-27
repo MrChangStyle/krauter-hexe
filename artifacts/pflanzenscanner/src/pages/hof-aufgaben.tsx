@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Leaf, Loader2, Plus, Repeat, Sprout, Users, X } from "lucide-react";
+import { ArrowLeft, Check, Leaf, Loader2, Mic, Plus, Repeat, Sparkles, Sprout, Users, X } from "lucide-react";
 import {
   getListFarmTasksQueryKey,
   getListTasksQueryKey,
@@ -10,19 +10,22 @@ import {
   useListFarmTasks,
   useListPlants,
   useListTasks,
+  usePlanFarmTasks,
   type FarmSummary,
   type FarmTask,
 } from "@workspace/api-client-react";
 import { HofTaskDialog, HofTaskRow, errorText, useTeam } from "@/components/hof-tasks";
 import { GardenTodoSection } from "@/components/garden-overview";
+import { ShareListsDialog } from "@/components/share-lists-dialog";
 import { DictateButton } from "@/components/dictate-button";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { todayIso } from "@/lib/farm-labels";
 import { farmModuleGranted } from "@/lib/modules";
-import { AREA_LABELS, hofToday, splitTaskList, type HofFilter } from "@/lib/hof-tasks";
+import { AREA_LABELS, dayLabel, hofToday, needsPlan, planLocally, splitTaskList, type HofFilter, type Planned } from "@/lib/hof-tasks";
 
 /**
  * /hof-aufgaben – the shared list of the Hof (docs/hof-aufgaben.md): what is
@@ -137,7 +140,7 @@ function HofTasks({ farm }: { farm: FarmSummary }) {
 
       {(filter === "all" || filter === "garten" || filter === "mine") && <PlantCareToday />}
       {(filter === "all" || filter === "garten") && <GardenTodoSection />}
-      <TeamCard farm={farm} count={team.length} />
+      <TeamCard farm={farm} team={team} />
 
       {dialog && <HofTaskDialog key={dialog.key} farm={farm} task={dialog.task} team={team} onClose={() => setDialog(null)} />}
     </div>
@@ -145,8 +148,11 @@ function HofTasks({ farm }: { farm: FarmSummary }) {
 }
 
 /**
- * Type or speak one task – or a whole list ("Eier einsammeln. Gänse füttern.
- * Teichpumpe kontrollieren."): several become a preview to check first.
+ * Speak or type freely ("Heute müssen die Eier eingesammelt werden, die Gänse
+ * jeden Tag gefüttert, und morgen die Blumen gegossen") – the KI-Aufgabenplan
+ * makes single tasks with day, repetition, time and person. A plain single
+ * task goes straight to the list. Without the AI (offline, daily limit) the
+ * app reads simple words itself. Everything is shown to check first.
  */
 function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<typeof useTeam>; onMore: () => void }) {
   const queryClient = useQueryClient();
@@ -154,46 +160,94 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
   const [text, setText] = useState("");
   const [assignee, setAssignee] = useState("");
   const [daily, setDaily] = useState(false);
-  const [preview, setPreview] = useState<string[] | null>(null);
+  const [preview, setPreview] = useState<{ tasks: Planned[]; byAi: boolean } | null>(null);
   const [saving, setSaving] = useState(false);
   const create = useCreateFarmTask();
+  const plan = usePlanFarmTasks();
+  const today = todayIso();
+  const defaults = { assigneeId: assignee || null, repeats: daily };
 
-  async function save(titles: string[]) {
+  const plainTask = (title: string): Planned => ({
+    title,
+    area: "hof",
+    startsOn: today,
+    repeats: daily,
+    intervalValue: 1,
+    intervalUnit: "Tage",
+    reminderTime: "08:00",
+    assigneeId: assignee || null,
+    assigneeName: null,
+    herdId: null,
+    herdName: null,
+  });
+
+  async function save(tasks: Planned[]) {
     setSaving(true);
     let saved = 0;
     try {
-      for (const title of titles) {
+      for (const t of tasks) {
         await create.mutateAsync({
           farmId: farm.id,
-          data: { title, assigneeId: assignee || null, startsOn: todayIso(), repeats: daily, intervalValue: 1, intervalUnit: "Tage", reminderTime: "08:00" },
+          data: {
+            title: t.title,
+            // A single typed task: the server reads the area from the words.
+            area: preview ? t.area : null,
+            startsOn: t.startsOn,
+            repeats: t.repeats,
+            intervalValue: t.intervalValue,
+            intervalUnit: t.intervalUnit,
+            reminderTime: t.reminderTime,
+            assigneeId: t.assigneeId,
+            herdId: t.area === "tiere" ? t.herdId : null,
+          },
         });
         saved++;
       }
       setText("");
       setPreview(null);
-      toast({ title: saved === 1 ? "Aufgabe angelegt" : `${saved} Aufgaben angelegt`, description: daily ? "Jeden Tag, ab heute." : "Für heute." });
+      toast({ title: saved === 1 ? "Aufgabe angelegt" : `${saved} Aufgaben angelegt` });
     } catch (err) {
-      toast({ title: errorText(err, "Nicht gespeichert"), description: saved > 0 ? `${saved} von ${titles.length} sind angelegt.` : undefined, variant: "destructive" });
-      if (saved > 0) setPreview(titles.slice(saved));
+      toast({ title: errorText(err, "Nicht gespeichert"), description: saved > 0 ? `${saved} von ${tasks.length} sind angelegt.` : undefined, variant: "destructive" });
+      if (saved > 0 && preview) setPreview({ ...preview, tasks: tasks.slice(saved) });
     } finally {
       setSaving(false);
       void queryClient.invalidateQueries({ queryKey: getListFarmTasksQueryKey(farm.id) });
     }
   }
 
-  function submit(e: FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
-    const titles = splitTaskList(text);
-    if (titles.length === 0) return;
-    if (titles.length === 1) void save(titles);
-    else setPreview(titles);
+    const said = text.trim();
+    if (!said) return;
+    if (!needsPlan(said)) return void save([plainTask(splitTaskList(said)[0] ?? said)]);
+    try {
+      const result = await plan.mutateAsync({ farmId: farm.id, data: { text: said, assigneeId: assignee || null, repeats: daily } });
+      setPreview({ tasks: result.tasks, byAi: true });
+    } catch (err) {
+      // Offline, daily limit or AI not reachable: the app reads it itself.
+      const local = planLocally(said, today, team, defaults);
+      if (local.length === 0) return void toast({ title: errorText(err, "Daraus wurde keine Aufgabe. Sag es bitte noch einmal anders."), variant: "destructive" });
+      setPreview({ tasks: local, byAi: false });
+      toast({ title: "Ohne KI erkannt", description: errorText(err, "Die KI ist gerade nicht erreichbar.") + " Bitte prüf die Liste." });
+    }
   }
+
+  const change = (i: number, patch: Partial<Planned>) =>
+    preview && setPreview({ ...preview, tasks: preview.tasks.map((t, j) => (j === i ? { ...t, ...patch } : t)) });
 
   return (
     <section className="space-y-2 rounded-2xl border bg-card p-3" aria-label="Neue Aufgabe">
-      <form onSubmit={submit} className="space-y-2">
+      <div className="flex gap-2.5 rounded-xl bg-primary/10 p-2.5 text-sm" data-testid="hof-speak-hint">
+        <Mic className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+        <p>
+          <span className="font-semibold">Einfach reinsprechen – die App macht die Liste.</span> Tipp auf „Sprechen“ und sag frei, was zu tun ist, z. B.:{" "}
+          <span className="italic">„Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“</span>{" "}
+          Die KI erkennt die einzelnen Aufgaben, den Tag, ob es sich wiederholt, die Uhrzeit und für wen. Vor dem Speichern siehst du alles zum Prüfen.
+        </p>
+      </div>
+      <form onSubmit={(e) => void submit(e)} className="space-y-2">
         <div className="flex items-center justify-between">
-          <label htmlFor="hof-quick" className="text-sm font-medium">Neue Aufgabe</label>
+          <label htmlFor="hof-quick" className="text-sm font-medium">Neue Aufgaben</label>
           <DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={1500} label="Aufgaben sprechen" />
         </div>
         <textarea
@@ -208,7 +262,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
               e.currentTarget.form?.requestSubmit();
             }
           }}
-          placeholder="z. B. Eier einsammeln, Gänse füttern"
+          placeholder="Sprechen oder tippen, z. B. Eier einsammeln"
           className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
         />
         <div className="flex flex-wrap items-center gap-2">
@@ -229,30 +283,67 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
             <Repeat className="h-4 w-4" />
             Täglich
           </button>
-          <Button type="submit" size="sm" className="ml-auto h-9 gap-1.5" disabled={saving || !text.trim()}>
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
-            Hinzufügen
+          <Button type="submit" size="sm" className="ml-auto h-9 gap-1.5" disabled={saving || plan.isPending || !text.trim()}>
+            {saving || plan.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : needsPlan(text) ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {plan.isPending ? "KI plant …" : needsPlan(text) ? "Liste erstellen" : "Hinzufügen"}
           </Button>
         </div>
       </form>
       {preview && (
         <div className="space-y-2 rounded-xl bg-muted/60 p-2.5" data-testid="hof-preview">
-          <p className="text-sm font-medium">{preview.length} Aufgaben erkannt:</p>
-          <ul className="space-y-1">
-            {preview.map((t, i) => (
-              <li key={`${t}-${i}`} className="flex items-center gap-2 rounded-lg bg-background px-2.5 py-1.5 text-sm">
-                <span className="flex-1">{t}</span>
-                <button type="button" aria-label={`${t} entfernen`} className="p-1 text-muted-foreground" onClick={() => setPreview(preview.filter((_, j) => j !== i))}>
-                  <X className="h-3.5 w-3.5" />
-                </button>
+          <p className="flex items-center gap-1.5 text-sm font-medium">
+            {preview.byAi && <Sparkles className="h-4 w-4 text-primary" />}
+            {preview.tasks.length} {preview.tasks.length === 1 ? "Aufgabe" : "Aufgaben"} {preview.byAi ? "von der KI erkannt" : "erkannt (ohne KI)"} – bitte prüfen:
+          </p>
+          <ul className="space-y-1.5">
+            {preview.tasks.map((t, i) => (
+              <li key={i} className="space-y-1.5 rounded-lg bg-background p-2" data-testid="hof-planned">
+                <div className="flex items-center gap-1.5">
+                  <Input aria-label={`Aufgabe ${i + 1}`} value={t.title} maxLength={80} onChange={(e) => change(i, { title: e.target.value })} className="h-8 text-sm font-medium" />
+                  <button type="button" aria-label={`${t.title} entfernen`} className="p-1 text-muted-foreground" onClick={() => setPreview({ ...preview, tasks: preview.tasks.filter((_, j) => j !== i) })}>
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                  <span className="rounded bg-muted px-1.5 py-0.5">{AREA_LABELS[t.area]}{t.herdName ? ` · ${t.herdName}` : ""}</span>
+                  <select aria-label={`Tag für ${t.title}`} value={t.startsOn} onChange={(e) => change(i, { startsOn: e.target.value })} className={smallSelect}>
+                    {dayOptions(t.startsOn, today).map((d) => (
+                      <option key={d} value={d}>{t.repeats ? `ab ${dayLabel(d, today)}` : dayLabel(d, today)}</option>
+                    ))}
+                  </select>
+                  <select
+                    aria-label={`Wiederholung für ${t.title}`}
+                    value={repeatKey(t)}
+                    onChange={(e) => change(i, repeatFrom(e.target.value))}
+                    className={smallSelect}
+                  >
+                    {repeatOptions(t).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                  <input aria-label={`Uhrzeit für ${t.title}`} type="time" value={t.reminderTime} onChange={(e) => e.target.value && change(i, { reminderTime: e.target.value })} className={smallSelect} />
+                  {team.length > 1 && (
+                    <select
+                      aria-label={`Für wen: ${t.title}`}
+                      value={t.assigneeId ?? ""}
+                      onChange={(e) => change(i, { assigneeId: e.target.value || null, assigneeName: team.find((m) => m.userId === e.target.value)?.displayName ?? null })}
+                      className={smallSelect}
+                    >
+                      <option value="">für alle</option>
+                      {team.map((m) => (
+                        <option key={m.userId} value={m.userId}>für {m.isMe ? "mich" : m.displayName}</option>
+                      ))}
+                    </select>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
           <div className="flex justify-end gap-2">
-            <Button type="button" size="sm" variant="outline" onClick={() => setPreview(null)} disabled={saving}>Ändern</Button>
-            <Button type="button" size="sm" className="gap-1.5" onClick={() => void save(preview)} disabled={saving || preview.length === 0}>
+            <Button type="button" size="sm" variant="outline" onClick={() => setPreview(null)} disabled={saving}>Verwerfen</Button>
+            <Button type="button" size="sm" className="gap-1.5" onClick={() => void save(preview.tasks.filter((t) => t.title.trim().length >= 2))} disabled={saving || preview.tasks.length === 0}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-              Alle anlegen
+              {preview.tasks.length === 1 ? "Anlegen" : "Alle anlegen"}
             </Button>
           </div>
         </div>
@@ -262,6 +353,45 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
       </button>
     </section>
   );
+}
+
+const smallSelect = "h-8 rounded-md border border-input bg-background px-1.5 text-xs";
+
+function shiftDay(day: string, days: number): string {
+  const d = new Date(`${day}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Today and the next six days, plus the planned day if it is later. */
+function dayOptions(current: string, today: string): string[] {
+  const days = Array.from({ length: 7 }, (_, i) => shiftDay(today, i));
+  return days.includes(current) ? days : [...days, current];
+}
+
+const REPEATS: Array<[string, string]> = [
+  ["once", "einmalig"],
+  ["1-Tage", "jeden Tag"],
+  ["2-Tage", "alle 2 Tage"],
+  ["1-Wochen", "jede Woche"],
+  ["2-Wochen", "alle 2 Wochen"],
+  ["1-Monate", "jeden Monat"],
+];
+
+function repeatKey(t: Planned): string {
+  return t.repeats ? `${t.intervalValue}-${t.intervalUnit}` : "once";
+}
+
+/** The fixed choices, plus what the plan said if it is something else ("alle 3 Tage"). */
+function repeatOptions(t: Planned): Array<[string, string]> {
+  const key = repeatKey(t);
+  return REPEATS.some(([k]) => k === key) ? REPEATS : [...REPEATS, [key, `alle ${t.intervalValue} ${t.intervalUnit}`]];
+}
+
+function repeatFrom(key: string): Partial<Planned> {
+  if (key === "once") return { repeats: false, intervalValue: 1, intervalUnit: "Tage" };
+  const [n, unit] = key.split("-");
+  return { repeats: true, intervalValue: Number(n), intervalUnit: unit as Planned["intervalUnit"] };
 }
 
 /** Every task of the Hof, also later and paused ones – to change or delete. */
@@ -328,18 +458,23 @@ function PlantCareToday() {
   );
 }
 
-/** Sharing the list: who is on the team, and the way to add someone. */
-function TeamCard({ farm, count }: { farm: FarmSummary; count: number }) {
+/** Sharing the list (admins): the Hof-Aufgaben, the own Alltagsnotizen, or both. */
+function TeamCard({ farm, team }: { farm: FarmSummary; team: ReturnType<typeof useTeam> }) {
+  const [open, setOpen] = useState(false);
   if (farm.role !== "admin") return null;
+  const count = team.length;
   return (
-    <Link href="/team" className="flex items-center gap-3 rounded-2xl border bg-card p-4 text-sm">
+    <div className="flex items-center gap-3 rounded-2xl border bg-card p-4 text-sm">
       <Users className="h-5 w-5 shrink-0 text-primary" />
       <span className="flex-1">
         <span className="block font-medium">{count > 1 ? `Geteilt mit ${count - 1} ${count === 2 ? "Person" : "Personen"}` : "Liste teilen"}</span>
         <span className="block text-xs text-muted-foreground">
-          {count > 1 ? "Weitere Teammitglieder unter Farm & Team hinzufügen." : "Füg jemanden mit eigenem Konto zum Team hinzu – dann sieht er die Liste und kann abhaken."}
+          Mitarbeiter haken ab, legen an und kommentieren – löschen kannst nur du.{" "}
+          <Link href="/team" className="underline">Farm & Team</Link>
         </span>
       </span>
-    </Link>
+      <Button size="sm" variant="outline" onClick={() => setOpen(true)}>Teilen</Button>
+      {open && <ShareListsDialog farm={farm} team={team} initial={{ hof: true, notes: false }} onClose={() => setOpen(false)} />}
+    </div>
   );
 }

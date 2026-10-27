@@ -3,7 +3,7 @@
  * open today, what is done, what comes next – and turning a typed or spoken
  * list into single tasks.
  */
-import type { FarmTask, FarmTaskArea } from "@workspace/api-client-react";
+import type { FarmTask, FarmTaskArea, PlannedFarmTask } from "@workspace/api-client-react";
 
 export const AREA_LABELS: Record<FarmTaskArea, string> = {
   tiere: "Tiere",
@@ -83,4 +83,147 @@ export function splitTaskList(text: string): string[] {
     .filter((p) => p.length >= 2)
     .map((p) => (p.charAt(0).toLocaleUpperCase("de-DE") + p.slice(1)).slice(0, 80));
   return [...new Set(parts)].slice(0, MAX_LIST);
+}
+
+// ── KI-Aufgabenplan: without the AI ──────────────────────────────────────────
+
+/** A proposed task, as the AI plan returns it (PlannedFarmTask). */
+export type Planned = PlannedFarmTask;
+
+const WEEKDAY_NAMES = ["sonntag", "montag", "dienstag", "mittwoch", "donnerstag", "freitag", "samstag"];
+const NUMBER_WORDS: Record<string, number> = { zwei: 2, drei: 3, vier: 4, fünf: 5, sechs: 6, sieben: 7, zehn: 10, vierzehn: 14 };
+
+function weekdayFrom(today: string, index: number): string {
+  const d = new Date(`${today}T00:00:00Z`).getUTCDay();
+  return addDays(today, ((index - d + 7) % 7) || 7);
+}
+
+interface Schedule {
+  day?: string;
+  repeat?: { every: number; unit: "Tage" | "Wochen" | "Monate" } | "once";
+  time?: string;
+  person?: string | "all";
+}
+
+// Word boundaries that also hold for ä, ö, ü and ß (\b does not).
+const w = (src: string) => new RegExp(`(?<![\\p{L}\\d])(?:${src})(?![\\p{L}\\d])`, "iu");
+
+/** Day, repetition, time and person said in one piece of text; the words found are taken out. */
+function readSchedule(piece: string, today: string): { schedule: Schedule; rest: string } {
+  const s: Schedule = {};
+  let t = ` ${piece} `;
+  const take = (re: RegExp, fn: (m: RegExpMatchArray) => void) => {
+    const m = t.match(re);
+    if (m) {
+      fn(m);
+      t = t.replace(re, " ");
+    }
+  };
+  take(w(String.raw`(nur heute|einmalig|einmal)`), () => (s.repeat = "once"));
+  take(w(String.raw`(täglich|jeden tag|jeden morgen|jeden abend)`), () => (s.repeat = { every: 1, unit: "Tage" }));
+  take(w(String.raw`(wöchentlich|jede woche|einmal die woche)`), () => (s.repeat = { every: 1, unit: "Wochen" }));
+  take(w(String.raw`(monatlich|jeden monat|einmal im monat)`), () => (s.repeat = { every: 1, unit: "Monate" }));
+  take(w(String.raw`alle (\d{1,3}|zwei|drei|vier|fünf|sechs|sieben|zehn|vierzehn) (tage|wochen|monate)`), (m) => {
+    const n = NUMBER_WORDS[m[1]!.toLowerCase()] ?? Number(m[1]);
+    const unit = m[2]!.toLowerCase();
+    if (n >= 1 && n <= 365) s.repeat = { every: n, unit: unit === "tage" ? "Tage" : unit === "wochen" ? "Wochen" : "Monate" };
+  });
+  take(w(String.raw`(?:jeden (montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)|(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)s)`), (m) => {
+    s.repeat = { every: 1, unit: "Wochen" };
+    s.day = weekdayFrom(today, WEEKDAY_NAMES.indexOf((m[1] ?? m[2])!.toLowerCase()));
+  });
+  take(w(String.raw`(übermorgen)`), () => (s.day = addDays(today, 2)));
+  take(w(String.raw`(morgen)`), () => (s.day = addDays(today, 1)));
+  take(w(String.raw`(heute)`), () => (s.day = today));
+  take(w(String.raw`(?:am |nächsten )?(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)`), (m) => (s.day = weekdayFrom(today, WEEKDAY_NAMES.indexOf(m[1]!.toLowerCase()))));
+  take(w(String.raw`um (\d{1,2})(?:[:.](\d{2}))?(?: uhr)?`), (m) => {
+    const h = Number(m[1]);
+    const min = Number(m[2] ?? 0);
+    if (h <= 23 && min <= 59) s.time = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+  });
+  if (!s.time) take(w(String.raw`(morgens|früh)`), () => (s.time = "07:00"));
+  if (!s.time) take(w(String.raw`(mittags)`), () => (s.time = "12:00"));
+  if (!s.time) take(w(String.raw`(abends)`), () => (s.time = "18:00"));
+  take(w(String.raw`für (alle|uns alle)`), () => (s.person = "all"));
+  take(w(String.raw`für ([\p{L}-]+)`), (m) => (s.person = m[1]!));
+  // Filler of spoken German.
+  const rest = t
+    .replace(/\b(muss|müssen|musst|soll|sollen|sollte|bitte|noch|mal|dann|auch|werden|wird|also|ich|wir|du|ihr|man)\b/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/^(und|oder)\s+/i, "")
+    .replace(/[.!?,]+$/, "");
+  return { schedule: s, rest };
+}
+
+/** "das Ganze ist für morgen", "alles jeden Tag": applies to every task. */
+const FOR_ALL = /^(das ganze|alles|alle aufgaben|die aufgaben|das|alle)?\s*(ist|sind|gilt|gelten)?\s*(für)?\s*$/i;
+
+/**
+ * The plan without the AI – offline, at the AI's daily limit, or when it is
+ * not reachable. Splits like splitTaskList and reads simple words for day,
+ * repetition, time and person; a day said once carries on to the next tasks.
+ */
+export function planLocally(
+  text: string,
+  today: string,
+  team: { userId: string; displayName: string }[],
+  defaults: { assigneeId: string | null; repeats: boolean },
+): Planned[] {
+  const pieces = splitTaskList(text);
+  const parts = pieces.map((p) => readSchedule(p, today));
+  const global: Schedule = {};
+  for (const p of parts) if (FOR_ALL.test(p.rest)) Object.assign(global, p.schedule);
+  let carriedDay: string | undefined;
+  const out: Planned[] = [];
+  for (const { schedule, rest } of parts) {
+    if (FOR_ALL.test(rest) || rest.length < 2) continue;
+    if (schedule.day) carriedDay = schedule.day;
+    const day = schedule.day ?? carriedDay ?? global.day ?? today;
+    const repeat = schedule.repeat ?? global.repeat ?? (defaults.repeats ? { every: 1, unit: "Tage" as const } : "once");
+    const person = schedule.person ?? global.person;
+    const member =
+      person && person !== "all"
+        ? team.find((m) => m.displayName.toLocaleLowerCase("de-DE").split(/\s+/)[0] === person.toLocaleLowerCase("de-DE"))
+        : person === "all"
+          ? undefined
+          : team.find((m) => m.userId === defaults.assigneeId);
+    const title = (rest.charAt(0).toLocaleUpperCase("de-DE") + rest.slice(1)).slice(0, 80);
+    out.push({
+      title,
+      area: guessArea(title),
+      startsOn: day,
+      repeats: repeat !== "once",
+      intervalValue: repeat === "once" ? 1 : repeat.every,
+      intervalUnit: repeat === "once" ? "Tage" : repeat.unit,
+      reminderTime: schedule.time ?? global.time ?? "08:00",
+      assigneeId: member?.userId ?? null,
+      assigneeName: member?.displayName ?? null,
+      herdId: null,
+      herdName: null,
+    });
+  }
+  return out;
+}
+
+// Same words as the server (farmTaskRules.ts), for the preview only; the server decides.
+function guessArea(title: string): FarmTaskArea {
+  const t = title.toLocaleLowerCase("de-DE");
+  if (/(huhn|hühn|hahn|küken|eier|\bei\b|gans|gäns|\benten?\b|meerschwein|kaninchen|ziege|\bschaf|pferd|pony|\bkuh|\bkühe|schwein|alpaka|\bhunde?\b|katze|biene|(?<!in)stall|futter|fütter|tränk|ausmist|einstreu|\bheu\b|weide|\btiere?\b)/.test(t)) return "tiere";
+  if (/(garten|beet|gieß|giess|pflanz|säen|ernte|unkraut|rasen|mähen|hecke|gemüse|tomate|salat|kräuter|obst|kompost|blume|rose|baum|strauch)/.test(t)) return "garten";
+  return "hof";
+}
+
+/** Whether a text is more than one plain task – then it goes through the plan (AI). */
+export function needsPlan(text: string): boolean {
+  if (splitTaskList(text).length > 1) return true;
+  return /\b(heute|morgen|übermorgen|täglich|jeden|jede|wöchentlich|monatlich|alle \S+ (tage|wochen|monate)|einmalig|um \d|für |morgens|mittags|abends|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)/i.test(text) || text.trim().split(/\s+/).length > 8;
+}
+
+/** "heute", "morgen", "Fr 30.10." */
+export function dayLabel(day: string, today: string): string {
+  if (day === today) return "heute";
+  if (day === addDays(today, 1)) return "morgen";
+  if (day === addDays(today, 2)) return "übermorgen";
+  return new Date(`${day}T12:00:00Z`).toLocaleDateString("de-DE", { weekday: "short", day: "numeric", month: "numeric", timeZone: "UTC" });
 }

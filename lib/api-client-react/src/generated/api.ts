@@ -22,6 +22,7 @@ import type {
 import type {
   AddFarmMemberInput,
   AddFarmTaskCommentInput,
+  AddNoteShareInput,
   AppStatus,
   AppStatusInput,
   ArchiveInput,
@@ -64,6 +65,7 @@ import type {
   CategoryCount,
   ChangeFarmRoleInput,
   CleanupOrphanedDataInput,
+  ClearDoneNotesResult,
   ClientErrorInput,
   CompleteFarmTaskInput,
   CornerSuggestion,
@@ -74,6 +76,7 @@ import type {
   CropDraft,
   CropRequestInput,
   CropRequestResult,
+  DailyNote,
   DashboardLayout,
   DeleteAccountInput,
   DeleteFarmInput,
@@ -102,6 +105,7 @@ import type {
   FarmSummary,
   FarmTask,
   FarmTaskInput,
+  FarmTaskPlan,
   FarmWeather,
   FavoriteIds,
   FeedCalendar,
@@ -172,6 +176,10 @@ import type {
   MedicalRecordInput,
   Medicine,
   MedicineInput,
+  NoteInput,
+  NotePlan,
+  NoteShares,
+  NoteUpdate,
   OkResult,
   OrphanedDataReport,
   PantryItemInput,
@@ -181,6 +189,8 @@ import type {
   PastureInput,
   PastureOverview,
   PhotoInput,
+  PlanFarmTasksInput,
+  PlanNotesInput,
   Plant,
   PlantHealthInput,
   PlantHealthResult,
@@ -15289,6 +15299,730 @@ export const useCompleteFarmTask = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCompleteFarmTaskMutationOptions(options));
+    }
+
+export const getListNotesUrl = () => {
+
+
+
+
+  return `/api/notes`
+}
+
+/**
+ * @summary Alltagsnotizen – the own list and the lists shared with me
+ */
+export const listNotes = async ( options?: RequestInit): Promise<DailyNote[]> => {
+
+  return customFetch<DailyNote[]>(getListNotesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListNotesQueryKey = () => {
+    return [
+    `/api/notes`
+    ] as const;
+    }
+
+
+export const getListNotesQueryOptions = <TData = Awaited<ReturnType<typeof listNotes>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListNotesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listNotes>>> = ({ signal }) => listNotes({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNotes>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListNotesQueryResult = NonNullable<Awaited<ReturnType<typeof listNotes>>>
+export type ListNotesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Alltagsnotizen – the own list and the lists shared with me
+ */
+
+export function useListNotes<TData = Awaited<ReturnType<typeof listNotes>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listNotes>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListNotesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateNoteUrl = () => {
+
+
+
+
+  return `/api/notes`
+}
+
+/**
+ * @summary Add a note to the own list or to one shared with me
+ */
+export const createNote = async (noteInput: NoteInput, options?: RequestInit): Promise<DailyNote> => {
+
+  return customFetch<DailyNote>(getCreateNoteUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(noteInput)
+  }
+);}
+
+
+
+
+
+export const getCreateNoteMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createNote>>, TError,{data: BodyType<NoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createNote>>, TError,{data: BodyType<NoteInput>}, TContext> => {
+
+const mutationKey = ['createNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createNote>>, {data: BodyType<NoteInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createNote(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateNoteMutationResult = NonNullable<Awaited<ReturnType<typeof createNote>>>
+    export type CreateNoteMutationBody = BodyType<NoteInput>
+    export type CreateNoteMutationError = ErrorType<void>
+
+    /**
+ * @summary Add a note to the own list or to one shared with me
+ */
+export const useCreateNote = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createNote>>, TError,{data: BodyType<NoteInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createNote>>,
+        TError,
+        {data: BodyType<NoteInput>},
+        TContext
+      > => {
+      return useMutation(getCreateNoteMutationOptions(options));
+    }
+
+export const getPlanNotesUrl = () => {
+
+
+
+
+  return `/api/notes/plan`
+}
+
+/**
+ * @summary Free speech to proposed notes, nothing saved (daily AI limit)
+ */
+export const planNotes = async (planNotesInput: PlanNotesInput, options?: RequestInit): Promise<NotePlan> => {
+
+  return customFetch<NotePlan>(getPlanNotesUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(planNotesInput)
+  }
+);}
+
+
+
+
+
+export const getPlanNotesMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof planNotes>>, TError,{data: BodyType<PlanNotesInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof planNotes>>, TError,{data: BodyType<PlanNotesInput>}, TContext> => {
+
+const mutationKey = ['planNotes'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof planNotes>>, {data: BodyType<PlanNotesInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  planNotes(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PlanNotesMutationResult = NonNullable<Awaited<ReturnType<typeof planNotes>>>
+    export type PlanNotesMutationBody = BodyType<PlanNotesInput>
+    export type PlanNotesMutationError = ErrorType<void>
+
+    /**
+ * @summary Free speech to proposed notes, nothing saved (daily AI limit)
+ */
+export const usePlanNotes = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof planNotes>>, TError,{data: BodyType<PlanNotesInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof planNotes>>,
+        TError,
+        {data: BodyType<PlanNotesInput>},
+        TContext
+      > => {
+      return useMutation(getPlanNotesMutationOptions(options));
+    }
+
+export const getClearDoneNotesUrl = () => {
+
+
+
+
+  return `/api/notes/clear-done`
+}
+
+/**
+ * @summary Remove the done notes of the own list
+ */
+export const clearDoneNotes = async ( options?: RequestInit): Promise<ClearDoneNotesResult> => {
+
+  return customFetch<ClearDoneNotesResult>(getClearDoneNotesUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getClearDoneNotesMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearDoneNotes>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof clearDoneNotes>>, TError,void, TContext> => {
+
+const mutationKey = ['clearDoneNotes'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof clearDoneNotes>>, void> = () => {
+
+
+          return  clearDoneNotes(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ClearDoneNotesMutationResult = NonNullable<Awaited<ReturnType<typeof clearDoneNotes>>>
+
+    export type ClearDoneNotesMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove the done notes of the own list
+ */
+export const useClearDoneNotes = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof clearDoneNotes>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof clearDoneNotes>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getClearDoneNotesMutationOptions(options));
+    }
+
+export const getListNoteSharesUrl = () => {
+
+
+
+
+  return `/api/notes/shares`
+}
+
+/**
+ * @summary Who the own list is shared with, and whose lists are shared with me
+ */
+export const listNoteShares = async ( options?: RequestInit): Promise<NoteShares> => {
+
+  return customFetch<NoteShares>(getListNoteSharesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListNoteSharesQueryKey = () => {
+    return [
+    `/api/notes/shares`
+    ] as const;
+    }
+
+
+export const getListNoteSharesQueryOptions = <TData = Awaited<ReturnType<typeof listNoteShares>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listNoteShares>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListNoteSharesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listNoteShares>>> = ({ signal }) => listNoteShares({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listNoteShares>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListNoteSharesQueryResult = NonNullable<Awaited<ReturnType<typeof listNoteShares>>>
+export type ListNoteSharesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Who the own list is shared with, and whose lists are shared with me
+ */
+
+export function useListNoteShares<TData = Awaited<ReturnType<typeof listNoteShares>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listNoteShares>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListNoteSharesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddNoteShareUrl = () => {
+
+
+
+
+  return `/api/notes/shares`
+}
+
+/**
+ * @summary Share the own list with a team member (userId) or any approved account (email)
+ */
+export const addNoteShare = async (addNoteShareInput: AddNoteShareInput, options?: RequestInit): Promise<NoteShares> => {
+
+  return customFetch<NoteShares>(getAddNoteShareUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(addNoteShareInput)
+  }
+);}
+
+
+
+
+
+export const getAddNoteShareMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addNoteShare>>, TError,{data: BodyType<AddNoteShareInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addNoteShare>>, TError,{data: BodyType<AddNoteShareInput>}, TContext> => {
+
+const mutationKey = ['addNoteShare'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addNoteShare>>, {data: BodyType<AddNoteShareInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  addNoteShare(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddNoteShareMutationResult = NonNullable<Awaited<ReturnType<typeof addNoteShare>>>
+    export type AddNoteShareMutationBody = BodyType<AddNoteShareInput>
+    export type AddNoteShareMutationError = ErrorType<void>
+
+    /**
+ * @summary Share the own list with a team member (userId) or any approved account (email)
+ */
+export const useAddNoteShare = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addNoteShare>>, TError,{data: BodyType<AddNoteShareInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addNoteShare>>,
+        TError,
+        {data: BodyType<AddNoteShareInput>},
+        TContext
+      > => {
+      return useMutation(getAddNoteShareMutationOptions(options));
+    }
+
+export const getRemoveNoteShareUrl = (userId: string,) => {
+
+
+
+
+  return `/api/notes/shares/${userId}`
+}
+
+/**
+ * @summary Stop sharing the own list with someone, or leave a list shared with me
+ */
+export const removeNoteShare = async (userId: string, options?: RequestInit): Promise<NoteShares> => {
+
+  return customFetch<NoteShares>(getRemoveNoteShareUrl(userId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveNoteShareMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeNoteShare>>, TError,{userId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeNoteShare>>, TError,{userId: string}, TContext> => {
+
+const mutationKey = ['removeNoteShare'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeNoteShare>>, {userId: string}> = (props) => {
+          const {userId} = props ?? {};
+
+          return  removeNoteShare(userId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveNoteShareMutationResult = NonNullable<Awaited<ReturnType<typeof removeNoteShare>>>
+
+    export type RemoveNoteShareMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Stop sharing the own list with someone, or leave a list shared with me
+ */
+export const useRemoveNoteShare = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeNoteShare>>, TError,{userId: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeNoteShare>>,
+        TError,
+        {userId: string},
+        TContext
+      > => {
+      return useMutation(getRemoveNoteShareMutationOptions(options));
+    }
+
+export const getUpdateNoteUrl = (noteId: number,) => {
+
+
+
+
+  return `/api/notes/${noteId}`
+}
+
+/**
+ * @summary Tick off (everyone on the list) or change the wording (owner or who wrote it)
+ */
+export const updateNote = async (noteId: number,
+    noteUpdate: NoteUpdate, options?: RequestInit): Promise<DailyNote> => {
+
+  return customFetch<DailyNote>(getUpdateNoteUrl(noteId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(noteUpdate)
+  }
+);}
+
+
+
+
+
+export const getUpdateNoteMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateNote>>, TError,{noteId: number;data: BodyType<NoteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateNote>>, TError,{noteId: number;data: BodyType<NoteUpdate>}, TContext> => {
+
+const mutationKey = ['updateNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateNote>>, {noteId: number;data: BodyType<NoteUpdate>}> = (props) => {
+          const {noteId,data} = props ?? {};
+
+          return  updateNote(noteId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateNoteMutationResult = NonNullable<Awaited<ReturnType<typeof updateNote>>>
+    export type UpdateNoteMutationBody = BodyType<NoteUpdate>
+    export type UpdateNoteMutationError = ErrorType<void>
+
+    /**
+ * @summary Tick off (everyone on the list) or change the wording (owner or who wrote it)
+ */
+export const useUpdateNote = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateNote>>, TError,{noteId: number;data: BodyType<NoteUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateNote>>,
+        TError,
+        {noteId: number;data: BodyType<NoteUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateNoteMutationOptions(options));
+    }
+
+export const getDeleteNoteUrl = (noteId: number,) => {
+
+
+
+
+  return `/api/notes/${noteId}`
+}
+
+/**
+ * @summary Delete a note (only the owner of the list)
+ */
+export const deleteNote = async (noteId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteNoteUrl(noteId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getDeleteNoteMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteNote>>, TError,{noteId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteNote>>, TError,{noteId: number}, TContext> => {
+
+const mutationKey = ['deleteNote'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteNote>>, {noteId: number}> = (props) => {
+          const {noteId} = props ?? {};
+
+          return  deleteNote(noteId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteNoteMutationResult = NonNullable<Awaited<ReturnType<typeof deleteNote>>>
+
+    export type DeleteNoteMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a note (only the owner of the list)
+ */
+export const useDeleteNote = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteNote>>, TError,{noteId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteNote>>,
+        TError,
+        {noteId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteNoteMutationOptions(options));
+    }
+
+export const getPlanFarmTasksUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/tasks/plan`
+}
+
+/**
+ * @summary KI-Aufgabenplan – free text to proposed tasks, nothing saved (caretaker or admin; farm AI limit)
+ */
+export const planFarmTasks = async (farmId: number,
+    planFarmTasksInput: PlanFarmTasksInput, options?: RequestInit): Promise<FarmTaskPlan> => {
+
+  return customFetch<FarmTaskPlan>(getPlanFarmTasksUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(planFarmTasksInput)
+  }
+);}
+
+
+
+
+
+export const getPlanFarmTasksMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof planFarmTasks>>, TError,{farmId: number;data: BodyType<PlanFarmTasksInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof planFarmTasks>>, TError,{farmId: number;data: BodyType<PlanFarmTasksInput>}, TContext> => {
+
+const mutationKey = ['planFarmTasks'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof planFarmTasks>>, {farmId: number;data: BodyType<PlanFarmTasksInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  planFarmTasks(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PlanFarmTasksMutationResult = NonNullable<Awaited<ReturnType<typeof planFarmTasks>>>
+    export type PlanFarmTasksMutationBody = BodyType<PlanFarmTasksInput>
+    export type PlanFarmTasksMutationError = ErrorType<void>
+
+    /**
+ * @summary KI-Aufgabenplan – free text to proposed tasks, nothing saved (caretaker or admin; farm AI limit)
+ */
+export const usePlanFarmTasks = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof planFarmTasks>>, TError,{farmId: number;data: BodyType<PlanFarmTasksInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof planFarmTasks>>,
+        TError,
+        {farmId: number;data: BodyType<PlanFarmTasksInput>},
+        TContext
+      > => {
+      return useMutation(getPlanFarmTasksMutationOptions(options));
     }
 
 export const getUncompleteFarmTaskUrl = (farmId: number,

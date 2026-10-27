@@ -26,6 +26,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Tiere", hint: "Alle Tier-Module", href: "/farm", module: "animals", words: "hof module" },
   { title: "Meine Tiere", hint: "Bestand, Gesundheit, Gewicht", href: "/farm/tiere", module: "animals", words: "hühner ziegen schafe alpakas tierarzt bestand liste gruppen" },
   { title: "Stall-Aufgaben", hint: "Füttern, Ausmisten", href: "/farm/aufgaben", module: "farm-tasks", words: "füttern futter ausmisten eier stall erinnerung" },
+  { title: "Alltagsnotizen", hint: "Einkaufsliste und Merkzettel", href: "/notizen", words: "notiz notizen einkauf einkaufsliste einkaufen kaufen merken merkzettel liste supermarkt drogerie haushalt teilen familie sprechen" },
   { title: "Hof-Aufgaben", hint: "Gemeinsame Liste für heute", href: "/hof-aufgaben", module: "farm-tasks", words: "aufgaben liste heute todo abhaken team teilen kommentar teich garten hof erledigen sprechen" },
   { title: "Futterplaner", hint: "Rationen und Bedarf", href: "/farm/futter", module: "feed", words: "futter ration heu etikett" },
   { title: "Futtervorrat", hint: "Was noch da ist", href: "/farm/futter/vorrat", module: "feed", words: "vorrat nachkaufen säcke" },

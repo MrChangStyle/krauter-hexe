@@ -73,6 +73,8 @@ vi.mock("@workspace/api-zod", () => ({
 vi.mock("../lib/accounts", () => ({
   publicUserColumns: {},
   promoteFirstOwner: () => Promise.resolve(null),
+  approveIfFreeTesterSlot: () => Promise.resolve(null),
+  notifyOwnerOfNewAccount: () => Promise.resolve(),
 }));
 
 // Account deletion is not under test here (see auth.delete.test.ts); its

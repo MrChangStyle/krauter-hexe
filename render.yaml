@@ -83,6 +83,10 @@ services:
       # Betrieb außerdem REGISTRATION_CODE entfernen.
       - key: OPEN_REGISTRATION
         sync: false
+      # Testphase: die ersten so vielen Konten (ohne Inhaber, bestehende zählen
+      # mit) sind ohne Freischaltung sofort nutzbar. "0" schaltet es ab.
+      - key: FREE_TESTER_SLOTS
+        value: "20"
       # Höchstzahl KI-Scans pro Tag für die ganze App (alle Nutzer zusammen,
       # der Inhaber zählt nicht mit). Schützt die Gemini-Rechnung, wenn sich
       # jeder registrieren kann.

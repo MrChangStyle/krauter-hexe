@@ -16,7 +16,7 @@ Unter Mehr → **Benachrichtigungen** schaltet man Push für das Gerät ein. Dar
 | Raubtier-Alarm (`wildlife`) | Kameras, kommt **auch in der Ruhezeit** |
 | Wetterwarnungen (`weather`) | Frost, Hitze, Sturm, Starkregen |
 | Grow (`grow`) | Schritte und Wetter fürs Zelt |
-| Betreiber (`admin`) | neues Feedback, Fehler (nur der Betreiber sieht den Schalter) |
+| Betreiber (`admin`) | neues Feedback, Fehler, neuer Tester angemeldet (mit „kann sofort loslegen“ oder „wartet auf deine Freischaltung“) (nur der Betreiber sieht den Schalter) |
 
 Angezeigt werden nur die Themen von Modulen, die das Konto eingeblendet hat.
 

@@ -22,4 +22,9 @@ export interface FarmSummary {
      * @nullable
      */
   modules: ModuleId[] | null;
+  /**
+     * For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.
+     * @nullable
+     */
+  ownerName?: string | null;
 }

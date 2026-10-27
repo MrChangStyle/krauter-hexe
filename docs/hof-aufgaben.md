@@ -14,21 +14,23 @@ Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Meer
 
 ## KI-Aufgabenplan: einfach reinsprechen
 
-Oben auf der Seite steht eine Zeile mit Info-Symbol: **„Einfach reinsprechen – die App macht die Liste“** und „So geht's“. Sie ist zu Beginn zugeklappt; ein Tipp öffnet die Erklärung mit Beispiel (`components/speak-hint.tsx`). Man hält „Halten & sprechen“ gedrückt, sagt frei, was zu tun ist, z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“, lässt los und tippt „Liste erstellen“.
+Die Eingabekarte ist auf Hof-Aufgaben und Alltagsnotizen gleich aufgebaut (`components/tool-card.tsx`): oben die Überschrift, darunter das Textfeld, dann **„Halten & sprechen“** und **„Speichern“** gleich groß nebeneinander, zuletzt in kleiner Schrift eine Zeile mit Info-Symbol: **„Einfach reinsprechen“** und „So geht's“. Sie ist zu Beginn zugeklappt; ein Tipp öffnet die Erklärung mit Beispiel (`components/speak-hint.tsx`). Man hält „Halten & sprechen“ gedrückt, sagt frei, was zu tun ist, z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“, lässt los und tippt „Liste erstellen“.
 
 - **Die KI** (Gemini, `api-server/src/lib/hofTaskPlanner.ts`) zerlegt den Text in einzelne Aufgaben mit kurzem Titel („Eier einsammeln“), Bereich, erstem Tag (heute, morgen, übermorgen, Wochentag), Wiederholung (jeden Tag, jeden Montag, alle 2 Wochen, einmalig), Uhrzeit (um 8, morgens 7:00, mittags 12:00, abends 18:00), Person aus dem Team und Tiergruppe. Was für alles gesagt wird („das Ganze ist für morgen“), gilt für jede Aufgabe.
 - **Nichts wird ohne Prüfung gespeichert.** Die Vorschau zeigt jede Aufgabe mit Titel, Bereich, Tag, Wiederholung, Uhrzeit und Person – alles änderbar, einzelne entfernbar –, dann „Alle anlegen“.
 - **Wo der Text nichts sagt**, gelten „Für …“ und „Täglich“ der Eingabe; „für alle“ und „einmalig“ im Gesagten haben Vorrang.
 - **Eine einzelne, einfache Aufgabe** („Eier einsammeln“) geht ohne KI direkt auf die Liste (`needsPlan`): nur, wenn mehrere Aufgaben, ein Tag, eine Wiederholung, eine Uhrzeit, eine Person oder ein längerer Satz drin sind, fragt die App die KI.
 - **Ohne KI** (offline, Tageslimit erreicht, KI nicht erreichbar) erkennt die App einfache Wörter selbst (`planLocally` in `lib/hof-tasks.ts`): Trennung wie bei der Liste, heute/morgen/übermorgen/Wochentag, jeden Tag/jede Woche/jeden Freitag/alle N Tage, um 7 Uhr/morgens/abends, für Maria/für alle; ein einmal gesagter Tag gilt auch für die folgenden Aufgaben. Die Vorschau ist dann als „ohne KI erkannt“ markiert.
-- **Grenzen:** zählt gegen das tägliche KI-Limit „Farm“ (wie Artbestimmung und Futter-Foto); findet die KI nichts, wird der Versuch zurückgegeben. Text höchstens 1500 Zeichen, höchstens 20 Aufgaben. Gäste können nicht planen. Die KI sieht nur den Text, die Vornamen und Nachnamen des Teams und die Namen der Tiergruppen – keine E-Mail-Adressen.
+- **Grenzen:** zählt gegen das tägliche KI-Limit „Farm“ (wie Artbestimmung und Futter-Foto); findet die KI nichts, wird der Versuch zurückgegeben. Text höchstens 2000 Zeichen, höchstens 20 Aufgaben. Gäste können nicht planen. Die KI sieht nur den Text, die Vornamen und Nachnamen des Teams und die Namen der Tiergruppen – keine E-Mail-Adressen.
 - **Sicherheit:** Die Antwort der KI wird streng geprüft (`coercePlan`): Titel Pflicht und höchstens 80 Zeichen, doppelte fallen weg, ein Tag in der Vergangenheit oder mehr als ein Jahr voraus wird heute, falsche Uhrzeiten werden 8:00, Personen und Gruppen nur, wenn es sie auf dem Hof gibt.
 - **Technik:** `POST /farms/:farmId/tasks/plan` mit `{ text, assigneeId?, repeats? }` → `{ tasks: PlannedFarmTask[] }`; angelegt wird danach über `POST /farms/:farmId/tasks`.
 
 ## Die Seite
 
+0. **Hof wählen** oben, wenn man zu mehr als einem Hof gehört: eigener Hof und die freigegebenen (`components/farm-switcher.tsx`).
+
 1. **Neue Aufgabe** oben, zum Tippen oder mit **„Halten & sprechen“** (gedrückt halten, zum Beenden loslassen):
-   - Eine Aufgabe: eintippen, Enter oder „Hinzufügen“.
+   - Eine Aufgabe: eintippen, Enter oder „Speichern“.
    - **Mehrere auf einmal:** jede Zeile, jedes Komma und jeder diktierte Satz wird eine Aufgabe. Beim Sprechen trennt eine kurze Pause oder ein Wort wie „dann“, „danach“, „außerdem“ oder „nächste Aufgabe“. Ein einfaches „und“ trennt nicht („Nassfutter und Trockenfutter geben“ bleibt eine Aufgabe). Die erkannte Liste erscheint zum Prüfen; einzelne lassen sich entfernen, dann „Alle anlegen“. Höchstens 20 auf einmal.
    - **„Für …“** wählt eine Person aus dem Team (sonst für alle), **„Täglich“** macht die Aufgaben wiederkehrend ab heute. Ohne „Täglich“ gelten sie einmalig für heute.
    - **„Mit Tag, Wiederholung, Uhrzeit oder Tier anlegen …“** öffnet das ganze Formular: Text (auch gesprochen), Bereich (automatisch, Tiere, Garten, Hof & Haus), bei Tiere welches Tier oder welche Gruppe, für wen, einmalig an einem Tag oder wiederkehrend ab einem Tag (alle N Tage, Wochen, Monate), Uhrzeit der Erinnerung, Notiz (auch gesprochen).

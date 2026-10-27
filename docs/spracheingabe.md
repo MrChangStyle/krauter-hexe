@@ -2,7 +2,7 @@
 
 Wer im Stall steht, hat oft keine Hand frei zum Tippen. Neben den längeren Notizfeldern sitzt deshalb ein kleiner Knopf **„Halten & sprechen“** (`components/dictate-button.tsx`).
 
-**Gedrückt halten zum Sprechen – überall in der App:** Man hält den Knopf gedrückt, solange man spricht, und lässt los, wenn man fertig ist (`hooks/use-push-to-talk.ts`). Während der Aufnahme ist der Knopf rot, pulsiert und zeigt „Loslassen = fertig“ (beim großen orangen Knopf kurz „Loslassen“). Das gilt für alle Spracheingaben: Notizfelder, Hof-Aufgaben, Alltagsnotizen, Kommentare und die Feedback-Blase.
+**Gedrückt halten zum Sprechen – überall in der App:** Man hält den Knopf gedrückt, solange man spricht, und lässt los, wenn man fertig ist (`hooks/use-push-to-talk.ts`). Während der Aufnahme ist der Knopf rot, pulsiert und zeigt „Loslassen = fertig“. Die Aufnahme endet nur durch Loslassen: Browser beenden die Spracherkennung von sich aus nach einer Pause oder nach etwa einer Minute – solange der Knopf gehalten wird, startet sie sofort wieder. Nur wenn das Mikrofon verboten ist oder die Erkennung dreimal hintereinander gleich wieder abbricht, hört sie auf. Das gilt für alle Spracheingaben: Notizfelder, Hof-Aufgaben, Alltagsnotizen, Kommentare und die Feedback-Blase.
 
 ## Wo
 
@@ -13,10 +13,10 @@ Wer im Stall steht, hat oft keine Hand frei zum Tippen. Neben den längeren Noti
 | Notiz | Vorratskammer | 500 |
 | Notiz | Weide (Weidetagebuch) | 500 |
 | Notiz | Stallaufgabe | 200 |
-| Neue Aufgaben, frei gesprochen (KI-Aufgabenplan) | Hof-Aufgaben | 1500 |
+| Neue Aufgaben, frei gesprochen (KI-Aufgabenplan) | Hof-Aufgaben | 2000 |
 | Aufgabe, Notiz | Hof-Aufgabe bearbeiten | 80 / 200 |
 | Kommentar | Hof-Aufgabe | 300 |
-| Neue Notizen, frei gesprochen (KI-Liste) | Alltagsnotizen | 1500 |
+| Neue Notizen, frei gesprochen (KI-Liste) | Alltagsnotizen | 2000 |
 
 ## Wie
 

@@ -19,7 +19,7 @@ import {
 } from "@workspace/api-client-react";
 import { DictateButton } from "@/components/dictate-button";
 import { SpeakHint } from "@/components/speak-hint";
-import { TOOL_BUTTON, TOOL_FRAME, ToolCardHeader } from "@/components/tool-card";
+import { MAX_SAID, TOOL_FRAME, TOOL_SAVE, ToolActions, ToolCardHeader } from "@/components/tool-card";
 import { errorText, useTeam } from "@/components/hof-tasks";
 import { ShareListsDialog } from "@/components/share-lists-dialog";
 import { Button } from "@/components/ui/button";
@@ -266,19 +266,12 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
         icon={<StickyNote className="h-5 w-5" />}
         title={<label htmlFor="notes-quick">{ownerName ? `Auf die Liste von ${ownerName}` : "Neue Notiz"}</label>}
         hint="Einkauf oder Merkzettel – sprechen oder tippen"
-        action={<DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={1500} label="Notizen sprechen" big />}
       />
-      <SpeakHint title="Einfach reinsprechen – die App schreibt die Liste" tone="orange" testId="notes-speak-hint">
-        <p>
-          Halte „Halten & sprechen“ gedrückt, sag frei, was du brauchst, und lass los, wenn du fertig bist, z. B.: <span className="italic">„Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen.“</span> Die KI
-          macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.
-        </p>
-      </SpeakHint>
       <form onSubmit={(e) => void submit(e)} className="space-y-2">
         <textarea
           id="notes-quick"
           rows={text.length > 50 || text.includes("\n") ? 3 : 1}
-          maxLength={1500}
+          maxLength={MAX_SAID}
           value={text}
           onChange={(e) => { setText(e.target.value); setPreview(null); }}
           onKeyDown={(e) => {
@@ -290,13 +283,20 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
           placeholder="Sprechen oder tippen, z. B. Zahnbürsten"
           className="w-full resize-none rounded-xl border border-orange-200 bg-background px-3 py-2.5 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-orange-400 dark:border-orange-900"
         />
-        <div className="flex justify-end">
-          <Button type="submit" size="sm" className={cn("h-9 gap-1.5", TOOL_BUTTON)} disabled={saving || plan.isPending || !text.trim()}>
+        <ToolActions>
+          <DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={MAX_SAID} label="Notizen sprechen" big />
+          <Button type="submit" className={TOOL_SAVE} disabled={saving || plan.isPending || !text.trim()}>
             {saving || plan.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : needsPlan ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {plan.isPending ? "KI sortiert …" : needsPlan ? "Liste erstellen" : "Hinzufügen"}
+            {plan.isPending ? "KI sortiert …" : needsPlan ? "Liste erstellen" : "Speichern"}
           </Button>
-        </div>
+        </ToolActions>
       </form>
+      <SpeakHint title="Einfach reinsprechen" tone="orange" testId="notes-speak-hint">
+        <p>
+          Halte „Halten & sprechen“ gedrückt, sag frei, was du brauchst, und lass los, wenn du fertig bist, z. B.: <span className="italic">„Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen.“</span> Die KI
+          macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.
+        </p>
+      </SpeakHint>
       {preview && (
         <div className="space-y-2 rounded-xl bg-muted/60 p-2.5" data-testid="notes-preview">
           <p className="flex items-center gap-1.5 text-sm font-medium">

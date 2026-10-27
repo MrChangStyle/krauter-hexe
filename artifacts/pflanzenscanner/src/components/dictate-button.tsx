@@ -20,7 +20,7 @@ export function DictateButton({
   onChange: (text: string) => void;
   max: number;
   label?: string;
-  /** The orange pill of the everyday tools (Hof-Aufgaben, Alltagsnotizen). */
+  /** The big orange button of the everyday tools (Hof-Aufgaben, Alltagsnotizen), half of their button row. */
   big?: boolean;
 }) {
   // Several phrases may come before the next render: build on the latest text.
@@ -43,16 +43,16 @@ export function DictateButton({
       {...handlers}
       className={
         big
-          ? `inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 text-sm font-semibold shadow-sm transition ${
-              listening ? "scale-105 animate-pulse bg-red-600 text-white ring-4 ring-red-300" : "bg-orange-500 text-white hover:bg-orange-600"
+          ? `inline-flex h-11 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-2 text-[13px] font-semibold shadow-sm transition ${
+              listening ? "animate-pulse bg-red-600 text-white ring-4 ring-red-300" : "bg-orange-500 text-white hover:bg-orange-600"
             }`
           : `inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs transition ${
               listening ? "animate-pulse bg-red-600 text-white" : "text-muted-foreground hover:bg-muted"
             }`
       }
     >
-      <Mic className={big ? "h-4 w-4" : "h-3.5 w-3.5"} />
-      {listening ? (big ? "Loslassen" : "Loslassen = fertig") : "Halten & sprechen"}
+      <Mic className={big ? "h-4 w-4 shrink-0" : "h-3.5 w-3.5"} />
+      {listening ? "Loslassen = fertig" : "Halten & sprechen"}
     </button>
   );
 }

@@ -17,9 +17,10 @@ import {
 import { HofTaskDialog, HofTaskRow, errorText, useTeam } from "@/components/hof-tasks";
 import { GardenTodoSection } from "@/components/garden-overview";
 import { ShareListsDialog } from "@/components/share-lists-dialog";
+import { FarmSwitcher } from "@/components/farm-switcher";
 import { DictateButton } from "@/components/dictate-button";
 import { SpeakHint } from "@/components/speak-hint";
-import { TOOL_BUTTON, TOOL_FRAME, ToolCardHeader } from "@/components/tool-card";
+import { MAX_SAID, TOOL_FRAME, TOOL_SAVE, ToolActions, ToolCardHeader } from "@/components/tool-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useActiveFarm } from "@/hooks/use-active-farm";
@@ -35,7 +36,7 @@ import { AREA_LABELS, dayLabel, hofToday, needsPlan, planLocally, splitTaskList,
  * New tasks by typing or speaking, several at once.
  */
 export default function HofAufgabenPage() {
-  const { farm, failed } = useActiveFarm();
+  const { farm, farms, failed, select } = useActiveFarm();
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
@@ -49,6 +50,8 @@ export default function HofAufgabenPage() {
           {farm ? ` · ${farm.name}` : ""}
         </p>
       </div>
+      {/* The list of which Hof – the own one or one shared with me. */}
+      <FarmSwitcher farms={farms} active={farm} onSelect={select} />
       {!farm ? (
         failed ? <p className="text-sm text-muted-foreground">Der Hof konnte nicht geladen werden. Bist du online?</p> : <Loader2 className="h-6 w-6 animate-spin text-primary" />
       ) : !farmModuleGranted(farm, "farm-tasks") ? (
@@ -239,24 +242,12 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
 
   return (
     <section className={cn("space-y-3 p-3.5", TOOL_FRAME)} aria-label="Neue Aufgabe" data-testid="hof-quick-card">
-      <ToolCardHeader
-        icon={<NotebookPen className="h-5 w-5" />}
-        title={<label htmlFor="hof-quick">Neue Aufgaben</label>}
-        hint="Sprechen oder tippen – eine oder mehrere"
-        action={<DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={1500} label="Aufgaben sprechen" big />}
-      />
-      <SpeakHint title="Einfach reinsprechen – die App macht die Liste" tone="orange" testId="hof-speak-hint">
-        <p>
-          Halte „Halten & sprechen“ gedrückt, sag frei, was zu tun ist, und lass los, wenn du fertig bist, z. B.:{" "}
-          <span className="italic">„Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“</span>{" "}
-          Die KI erkennt die einzelnen Aufgaben, den Tag, ob es sich wiederholt, die Uhrzeit und für wen. Vor dem Speichern siehst du alles zum Prüfen.
-        </p>
-      </SpeakHint>
+      <ToolCardHeader icon={<NotebookPen className="h-5 w-5" />} title={<label htmlFor="hof-quick">Neue Aufgaben</label>} hint="Sprechen oder tippen – eine oder mehrere" />
       <form onSubmit={(e) => void submit(e)} className="space-y-2">
         <textarea
           id="hof-quick"
           rows={text.length > 60 || text.includes("\n") ? 3 : 1}
-          maxLength={1500}
+          maxLength={MAX_SAID}
           value={text}
           onChange={(e) => { setText(e.target.value); setPreview(null); }}
           onKeyDown={(e) => {
@@ -286,12 +277,22 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
             <Repeat className="h-4 w-4" />
             Täglich
           </button>
-          <Button type="submit" size="sm" className={cn("ml-auto h-9 gap-1.5", TOOL_BUTTON)} disabled={saving || plan.isPending || !text.trim()}>
-            {saving || plan.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : needsPlan(text) ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
-            {plan.isPending ? "KI plant …" : needsPlan(text) ? "Liste erstellen" : "Hinzufügen"}
-          </Button>
         </div>
+        <ToolActions>
+          <DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={MAX_SAID} label="Aufgaben sprechen" big />
+          <Button type="submit" className={TOOL_SAVE} disabled={saving || plan.isPending || !text.trim()}>
+            {saving || plan.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : needsPlan(text) ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+            {plan.isPending ? "KI plant …" : needsPlan(text) ? "Liste erstellen" : "Speichern"}
+          </Button>
+        </ToolActions>
       </form>
+      <SpeakHint title="Einfach reinsprechen" tone="orange" testId="hof-speak-hint">
+        <p>
+          Halte „Halten & sprechen“ gedrückt, sag frei, was zu tun ist, und lass los, wenn du fertig bist, z. B.:{" "}
+          <span className="italic">„Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“</span>{" "}
+          Die KI erkennt die einzelnen Aufgaben, den Tag, ob es sich wiederholt, die Uhrzeit und für wen. Vor dem Speichern siehst du alles zum Prüfen.
+        </p>
+      </SpeakHint>
       {preview && (
         <div className="space-y-2 rounded-xl bg-muted/60 p-2.5" data-testid="hof-preview">
           <p className="flex items-center gap-1.5 text-sm font-medium">

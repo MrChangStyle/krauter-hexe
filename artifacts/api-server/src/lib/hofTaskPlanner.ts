@@ -187,7 +187,7 @@ async function contextFor(farmId: number, today: string, defaults: PlanContext['
 
 /** Asks the AI for the plan of a spoken or typed text; saves nothing. */
 export async function planTasks(farmId: number, rawText: unknown, today: string, defaults: PlanContext['defaults']): Promise<PlannedTask[]> {
-  const said = text(rawText, 1500, 'Der Text', true);
+  const said = text(rawText, 2000, 'Der Text', true);
   const ctx = await contextFor(farmId, today, defaults);
   const { TEXT_MODELS, runModelChain } = await import('./plantIdentification');
   const parsed = await runModelChain([{ role: 'user', parts: [{ text: planPrompt(said, ctx) }] }], TEXT_MODELS, {

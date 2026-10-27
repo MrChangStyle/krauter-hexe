@@ -11,8 +11,11 @@ export const TOOL_FRAME =
 /** The orange primary button of the tools. */
 export const TOOL_BUTTON = "bg-orange-600 text-white shadow-sm hover:bg-orange-700";
 
-/** Head of the input card: a note in an orange square, title, a line, and the action (Sprechen). */
-export function ToolCardHeader({ icon, title, hint, action }: { icon: ReactNode; title: ReactNode; hint: string; action?: ReactNode }) {
+/**
+ * The input card of both tools, built the same way: title on top, the text,
+ * then Halten & sprechen next to Speichern, the explanation last.
+ */
+export function ToolCardHeader({ icon, title, hint }: { icon: ReactNode; title: ReactNode; hint: string }) {
   return (
     <div className="flex items-center gap-3">
       <span className="flex h-11 w-11 shrink-0 -rotate-3 items-center justify-center rounded-xl bg-orange-500 text-white shadow-sm">{icon}</span>
@@ -20,7 +23,17 @@ export function ToolCardHeader({ icon, title, hint, action }: { icon: ReactNode;
         <span className="block font-semibold leading-tight text-orange-950 dark:text-orange-100">{title}</span>
         <span className="block text-xs text-orange-900/70 dark:text-orange-200/70">{hint}</span>
       </span>
-      {action}
     </div>
   );
 }
+
+/** Halten & sprechen and Speichern, side by side and the same size. */
+export function ToolActions({ children }: { children: ReactNode }) {
+  return <div className="flex items-stretch gap-2">{children}</div>;
+}
+
+/** The save button of the tools, as big as Halten & sprechen. */
+export const TOOL_SAVE = `h-11 min-w-0 flex-1 basis-0 gap-1.5 rounded-xl px-2 text-[13px] ${TOOL_BUTTON}`;
+
+/** Longest text spoken or typed at once into a tool (the server takes the same). */
+export const MAX_SAID = 2000;

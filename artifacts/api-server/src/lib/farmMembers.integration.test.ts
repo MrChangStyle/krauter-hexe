@@ -80,7 +80,7 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
     expect(b.status).toBe(200);
     expect(await q("SELECT 1 FROM farms")).toHaveLength(1);
     expect(await json(await api("GET", "/farms"))).toEqual([
-      { id: expect.any(Number), name: "Meine Farm", role: "admin", accessUntil: null, modules: null },
+      { id: expect.any(Number), name: "Meine Farm", role: "admin", accessUntil: null, modules: null, ownerName: null },
     ]);
   });
 

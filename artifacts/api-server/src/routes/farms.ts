@@ -1,6 +1,6 @@
 import { Router, type IRouter, type Response } from 'express';
-import { db, farmMembershipsTable, farmsTable } from '@workspace/db';
-import { and, asc, eq, gte, isNull, or } from 'drizzle-orm';
+import { db, farmMembershipsTable, farmsTable, usersTable } from '@workspace/db';
+import { and, asc, eq, gte, inArray, isNull, or } from 'drizzle-orm';
 import {
   AddFarmMemberBody,
   AddFarmMemberResponse,
@@ -64,7 +64,7 @@ function sendFarmError(res: Response, err: unknown): boolean {
 }
 
 async function myFarms(userId: string) {
-  return db
+  const rows = await db
     .select({ id: farmsTable.id, name: farmsTable.name, role: farmMembershipsTable.role, accessUntil: farmMembershipsTable.accessUntil, modules: farmMembershipsTable.modules })
     .from(farmMembershipsTable)
     .innerJoin(farmsTable, eq(farmsTable.id, farmMembershipsTable.farmId))
@@ -77,6 +77,21 @@ async function myFarms(userId: string) {
     .orderBy(asc(farmMembershipsTable.createdAt), asc(farmMembershipsTable.id))
     // Admins always have every module.
     .then((rows) => rows.map((r) => ({ ...r, modules: r.role === 'admin' ? null : r.modules })));
+  // Shared farms carry the name of whoever runs them – "Meine Farm von Stefan".
+  const shared = rows.filter((r) => r.role !== 'admin').map((r) => r.id);
+  const owners = new Map<number, string>();
+  if (shared.length > 0) {
+    const admins = await db
+      .select({ farmId: farmMembershipsTable.farmId, firstName: usersTable.firstName, lastName: usersTable.lastName, username: usersTable.username, email: usersTable.email })
+      .from(farmMembershipsTable)
+      .innerJoin(usersTable, eq(usersTable.id, farmMembershipsTable.userId))
+      .where(and(inArray(farmMembershipsTable.farmId, shared), eq(farmMembershipsTable.role, 'admin')))
+      .orderBy(asc(farmMembershipsTable.createdAt), asc(farmMembershipsTable.id));
+    for (const a of admins) {
+      if (!owners.has(a.farmId)) owners.set(a.farmId, [a.firstName, a.lastName].filter(Boolean).join(' ') || a.username || a.email?.split('@')[0] || 'Unbekannt');
+    }
+  }
+  return rows.map((r) => ({ ...r, ownerName: r.role === 'admin' ? null : (owners.get(r.id) ?? null) }));
 }
 
 // The farms the signed-in account belongs to, with its role on each.

@@ -11776,6 +11776,9 @@ components:
           description: Modul-Freigaben – the farm modules the viewer may use here; null = all
           items:
             $ref: "#/components/schemas/ModuleId"
+        ownerName:
+          type: [string, 'null']
+          description: For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.
     FarmSpecies:
       type: string
       enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, alpaca, other]
@@ -12094,7 +12097,7 @@ components:
         text:
           type: string
           minLength: 1
-          maxLength: 1500
+          maxLength: 2000
     PlannedNote:
       type: object
       required: [text, kind, category]
@@ -12150,7 +12153,7 @@ components:
         text:
           type: string
           minLength: 1
-          maxLength: 1500
+          maxLength: 2000
         assigneeId:
           type: [string, 'null']
           description: Person chosen in the quick entry; used where the text names nobody.

@@ -4065,6 +4065,11 @@ export interface FarmSummary {
      * @nullable
      */
   modules: ModuleId[] | null;
+  /**
+     * For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.
+     * @nullable
+     */
+  ownerName?: string | null;
 }
 
 export type AnimalSex = typeof AnimalSex[keyof typeof AnimalSex];
@@ -4393,7 +4398,7 @@ export interface ClearDoneNotesResult {
 export interface PlanNotesInput {
   /**
      * @minLength 1
-     * @maxLength 1500
+     * @maxLength 2000
      */
   text: string;
 }
@@ -4431,7 +4436,7 @@ export interface AddNoteShareInput {
 export interface PlanFarmTasksInput {
   /**
      * @minLength 1
-     * @maxLength 1500
+     * @maxLength 2000
      */
   text: string;
   /**

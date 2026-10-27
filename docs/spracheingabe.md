@@ -23,6 +23,7 @@ Wer im Stall steht, hat oft keine Hand frei zum Tippen. Neben den längeren Noti
 - Es ist dieselbe Spracherkennung wie beim Feedback (`lib/speech.ts`, Deutsch, im Browser). Jeder erkannte Satz wird an den Text angehängt; danach lässt sich alles wie gewohnt verbessern.
 - Was über die Länge des Feldes hinausgeht, wird abgeschnitten.
 - Loslassen beendet das Diktat; was bis dahin gesagt wurde, kommt noch an. Es endet auch, wenn das Formular schließt oder der Finger vom Knopf rutscht.
+- **Gesprochene Satzzeichen** werden zu Zeichen (`spokenPunctuation` in `lib/speech.ts`): „Komma“ → „,“, „Punkt“ → „.“, „Doppelpunkt“, „Fragezeichen“, „Ausrufezeichen“, „neue Zeile“/„Absatz“ → Zeilenumbruch. Nur ganze Wörter – „Treffpunkt“ bleibt. Gilt für alle Spracheingaben.
 - Ein kurzer Tipp (unter 0,6 Sekunden, nichts gehört) zeigt nur den Hinweis „Gedrückt halten“.
 - Langes Drücken öffnet auf dem Handy kein Menü und markiert keinen Text (`touch-action`, kein Kontextmenü).
 - Mit der Tastatur: Leertaste oder Enter gedrückt halten.

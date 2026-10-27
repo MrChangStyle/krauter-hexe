@@ -52,8 +52,27 @@ export function startDictation(onText: (text: string) => void, onStop: (error?: 
   return rec;
 }
 
+// Punctuation said aloud ("Nudeln Komma Eier") – most phones write the word.
+const SPOKEN_MARKS: Array<[RegExp, string]> = [
+  [/\s*(?<![\p{L}\d])(?:neue zeile|neuer absatz|absatz)(?![\p{L}\d])\s*/giu, "\n"],
+  [/\s*(?<![\p{L}\d])doppelpunkt(?![\p{L}\d])/giu, ":"],
+  [/\s*(?<![\p{L}\d])fragezeichen(?![\p{L}\d])/giu, "?"],
+  [/\s*(?<![\p{L}\d])ausrufezeichen(?![\p{L}\d])/giu, "!"],
+  [/\s*(?<![\p{L}\d])komma(?![\p{L}\d])/giu, ","],
+  [/\s*(?<![\p{L}\d])punkt(?![\p{L}\d])/giu, "."],
+];
+
+/** "Nudeln Komma Eier Punkt" → "Nudeln, Eier." */
+export function spokenPunctuation(phrase: string): string {
+  let out = phrase;
+  for (const [re, mark] of SPOKEN_MARKS) out = out.replace(re, mark);
+  // "Nudeln,Eier" → "Nudeln, Eier"; no space at the very start.
+  return out.replace(/([,.:?!])(?=[^\s\d,.:?!])/gu, "$1 ").replace(/^[\s,.:]+/, "").trim();
+}
+
 /** Adds a dictated phrase to what is already typed. */
-export function appendPhrase(current: string, phrase: string): string {
+export function appendPhrase(current: string, raw: string): string {
+  const phrase = spokenPunctuation(raw);
   if (!phrase) return current;
   const sentence = phrase.charAt(0).toUpperCase() + phrase.slice(1);
   if (!current.trim()) return sentence;

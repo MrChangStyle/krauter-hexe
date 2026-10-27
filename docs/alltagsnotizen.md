@@ -14,8 +14,9 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
 
 1. **Aufbau wie bei Hof-Aufgaben** (`components/tool-card.tsx`): Überschrift oben, Textfeld, „Halten & sprechen“ und „Speichern“ gleich groß nebeneinander, darunter klein der Hinweis – eine Zeile „Einfach reinsprechen“ mit Info-Symbol und „So geht's“; aufgeklappt die Erklärung mit Beispiel (`components/speak-hint.tsx`, zu Beginn zugeklappt).
 2. **Eingabe** getippt oder mit „Halten & sprechen“ (gedrückt halten, zum Beenden loslassen):
-   - Eine einfache Sache („Zahnbürsten“, „2 kg Hackfleisch“) kommt direkt auf die Liste (`notesNeedPlan`).
+   - Nur eine einfache Sache – ein Wort („Zahnbürsten“) oder eine Menge mit Ding („2 kg Hackfleisch“) – kommt direkt auf die Liste (`notesNeedPlan`). Alles andere geht an die KI, auch „Nudeln Eier“ ohne Komma: Gesprochene Listen kommen oft ohne Satzzeichen.
    - Längeres („Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen“) geht an die KI → **Vorschau** mit jeder Notiz, Art (Einkaufen/Merken) und Bereich im Laden – alles änderbar, einzelne entfernbar –, dann „Alle notieren“.
+   - **Auftrag an die KI** (`notesPrompt`): Der Text kommt meist aus der Spracheingabe – ohne Satzzeichen, klein, mit Füllwörtern. Die KI findet jedes einzelne Ding auch ohne Komma („nudeln eier milch“ → drei), lässt zusammen, was ein Ding beschreibt („Nudeln rot und grün“), erkennt **Läden** (Penny, Aldi, Lidl, Rewe, dm, Fressnapf, Bäcker …) und hängt sie in Klammern an („bei Penny Nudeln kaufen“ → „Nudeln (Penny)“), darf offensichtlich falsch erkannte Wörter verbessern und hat drei Beispiele. Modell wie bei allen Text-Aufgaben: `TEXT_MODELS` (Gemini Flash, dann Flash-Lite).
    - Ohne KI (offline, Tageslimit, KI zu langsam) teilt die App selbst auf (`splitNotes`): Zeilen, Kommas, Sätze und „und“ trennen – außer vor einem einzelnen kleingeschriebenen Wort („Nudeln rot und grün“ bleibt eine Notiz), Füllwörter wie „ich muss … kaufen“ fallen weg; Art und Bereich sortiert der Server nach Wörtern.
    - **Nie hängen:** Der Server gibt die KI nach 20 Sekunden auf (`AI_PLAN_TIMEOUT_MS`, `runModelChain` mit `timeoutMs`), die App wartet höchstens 25 Sekunden (`lib/ai-plan.ts`) und teilt dann selbst auf – mit dem Hinweis „Die KI hat zu lange gebraucht“. Gilt genauso für den KI-Aufgabenplan der Hof-Aufgaben.
 3. **Einkaufsliste** nach Bereichen in der Reihenfolge eines Ladens: Lebensmittel, Getränke, Drogerie & Apotheke, Haushalt, Tierbedarf, Garten & Baumarkt, Sonstiges.
@@ -58,4 +59,5 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
 
 - Push-Nachricht, wenn jemand etwas auf eine geteilte Liste setzt.
 - Mehrere Listen je Person (z. B. „Baumarkt“, „Wochenmarkt“).
-- Wortlisten für Art und Bereich sowie der Auftrag an die KI (`notesPrompt`) sind ein erster Wurf; mit echten Sprachaufnahmen prüfen.
+- Wortlisten für Art und Bereich sowie der Auftrag an die KI (`notesPrompt`, Fassung 2 mit Läden und Beispielen) mit echten Sprachaufnahmen prüfen. Reicht Flash danach nicht, Gemini Pro nur für die Notizen ausprobieren (langsamer, teurer).
+- „Punkt“ als gesprochenes Satzzeichen trifft auch „um Punkt acht“ – bisher selten, beobachten.

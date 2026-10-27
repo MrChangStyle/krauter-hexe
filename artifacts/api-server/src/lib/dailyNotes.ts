@@ -255,20 +255,29 @@ export function coerceNotes(parsed: unknown): PlannedNote[] {
 }
 
 export function notesPrompt(said: string): string {
-  return `Jemand hat frei gesprochen, was er sich notieren will – meist eine Einkaufsliste, manchmal etwas zum Merken oder Erledigen.
+  return `Du schreibst einen Einkaufszettel und Merkzettel für eine Familie auf einem Hof. Der Text kommt meist aus der Spracheingabe am Handy: oft ohne Satzzeichen, klein geschrieben, mit Füllwörtern und manchmal mit falsch erkannten Wörtern.
 
 Gesagt:
 """${said}"""
 
-Mach daraus einzelne Notizen. Regeln:
-- Nur, was gesagt wurde; nichts erfinden. Mehrere Dinge zum Kaufen sind mehrere Notizen ("Zahnbürsten und Fleisch" → zwei).
-- "text": kurz wie auf einem Einkaufszettel, ohne "ich muss", "kaufen", "holen", mit Menge, wenn gesagt: "Zahnbürsten", "2 kg Hackfleisch", "Oma anrufen". Höchstens 120 Zeichen.
-- "art": "einkauf" für alles zum Kaufen oder Besorgen, "merken" für Erledigen und Erinnern (anrufen, Termin, bezahlen, abgeben …).
-- "bereich" nur bei "einkauf": ${Object.entries(CATEGORY_LABELS)
+So gehst du vor:
+1. Finde jedes einzelne Ding, das gekauft, besorgt, erledigt oder gemerkt werden soll – auch wenn die Dinge ohne Komma hintereinander stehen ("nudeln eier milch" → drei Notizen) oder in einem langen Satz stecken.
+2. Mehrere Dinge sind mehrere Notizen ("Zahnbürsten und Fleisch" → zwei). Aber was zusammen EIN Ding beschreibt, bleibt eine Notiz: Sorte, Farbe, Größe, Marke ("Nudeln rot und grün", "Milch laktosefrei", "Brot vom Bäcker").
+3. Läden sind keine Produkte. Penny, Aldi, Lidl, Rewe, Edeka, Netto, Norma, Kaufland, Globus, dm, Rossmann, Müller, Fressnapf, Obi, Bauhaus, Hornbach, Raiffeisen, Landhandel, Bäcker, Metzger, Apotheke, Markt und ähnliche: Häng den Laden in Klammern an jedes Ding, das dort gekauft werden soll ("bei Penny Nudeln und Eier kaufen" → "Nudeln (Penny)", "Eier (Penny)").
+4. "text" kurz wie auf einem Zettel: das Ding mit großem Anfangsbuchstaben, mit Menge, wenn gesagt ("2 kg Hackfleisch", "6 Eier"), ohne "ich muss", "wir brauchen", "kaufen", "holen", "noch", "bitte". Beim Merken das Tun behalten ("Oma anrufen", "Tierarzt Termin machen"). Höchstens 120 Zeichen. Offensichtlich falsch erkannte Wörter darfst du zum gemeinten Produkt verbessern ("Butterbrot Papier" → "Butterbrotpapier"); sonst nichts erfinden.
+5. Gesprochene Satzzeichen ("Komma", "Punkt", "neue Zeile") sind Trennungen, keine Dinge.
+6. "art": "einkauf" für alles zum Kaufen oder Besorgen, "merken" für Erledigen und Erinnern (anrufen, Termin, bezahlen, abgeben, reparieren …).
+7. "bereich" nur bei "einkauf": ${Object.entries(CATEGORY_LABELS)
     .map(([k, v]) => `"${k}" (${v})`)
     .join(', ')}; bei "merken": null.
+
+Beispiele:
+- "bei penny nudeln kaufen" → [{"text": "Nudeln (Penny)", "art": "einkauf", "bereich": "lebensmittel"}]
+- "nudeln eier und zwei liter milch dann noch katzenfutter" → Nudeln, Eier, 2 l Milch (lebensmittel), Katzenfutter (tierbedarf)
+- "ich muss morgen den tierarzt anrufen und zahnpasta holen" → "Tierarzt anrufen" (merken), "Zahnpasta" (drogerie)
+
 Antworte nur mit JSON:
-{"notizen": [{"text": "...", "art": "einkauf", "bereich": "drogerie"}]}`;
+{"notizen": [{"text": "...", "art": "einkauf", "bereich": "lebensmittel"}]}`;
 }
 
 export async function planNotes(rawText: unknown): Promise<PlannedNote[]> {

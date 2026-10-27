@@ -75,8 +75,16 @@ export function splitNotes(text: string): NoteDraft[] {
   return [...new Set(parts)].slice(0, MAX_NOTES).map((t) => ({ text: t, kind: null, category: null }));
 }
 
-/** One plain thing ("Zahnbürsten") goes straight on the list; anything longer goes through the AI. */
+/**
+ * One plain thing goes straight on the list: a single word ("Zahnbürsten") or
+ * a quantity with it ("2 kg Hackfleisch"). Anything else goes through the AI –
+ * spoken lists often come without commas ("Nudeln Eier Milch", "bei Penny
+ * Nudeln kaufen").
+ */
 export function notesNeedPlan(text: string): boolean {
   const t = text.trim();
-  return /[,;\n.!?]|\s(und|sowie|dann)\s/i.test(t) || t.split(/\s+/).length > 4;
+  if (/[,;\n.!?]/.test(t)) return true;
+  const words = t.split(/\s+/).filter(Boolean);
+  if (words.length <= 1) return false;
+  return !(/^\d/.test(words[0]!) && words.length <= 3);
 }

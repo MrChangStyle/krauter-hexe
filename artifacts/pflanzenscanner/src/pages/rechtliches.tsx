@@ -214,7 +214,8 @@ export function DatenschutzPage() {
           <li>Cloudinary (Speicherung und Auslieferung der Fotos)</li>
           <li>
             Google Gemini (KI-Bestimmung und KI-Vorschläge, z. B. im Beet-Architekt und beim Standort-Check der Bienen: deine
-            Fotos werden zur Auswertung an Google übermittelt)
+            Fotos werden zur Auswertung an Google übermittelt; beim KI-Aufgabenplan der Hof-Aufgaben der gesprochene oder
+            getippte Text sowie die Namen des Teams und der Tiergruppen)
           </li>
           <li>Google (nur bei „Mit Google anmelden“)</li>
           <li>Cloudflare Turnstile (Schutz der Registrierung vor Bots)</li>

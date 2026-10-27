@@ -102,6 +102,7 @@ import type {
   FarmSummary,
   FarmTask,
   FarmTaskInput,
+  FarmTaskPlan,
   FarmWeather,
   FavoriteIds,
   FeedCalendar,
@@ -181,6 +182,7 @@ import type {
   PastureInput,
   PastureOverview,
   PhotoInput,
+  PlanFarmTasksInput,
   Plant,
   PlantHealthInput,
   PlantHealthResult,
@@ -15289,6 +15291,78 @@ export const useCompleteFarmTask = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCompleteFarmTaskMutationOptions(options));
+    }
+
+export const getPlanFarmTasksUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/tasks/plan`
+}
+
+/**
+ * @summary KI-Aufgabenplan – free text to proposed tasks, nothing saved (caretaker or admin; farm AI limit)
+ */
+export const planFarmTasks = async (farmId: number,
+    planFarmTasksInput: PlanFarmTasksInput, options?: RequestInit): Promise<FarmTaskPlan> => {
+
+  return customFetch<FarmTaskPlan>(getPlanFarmTasksUrl(farmId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(planFarmTasksInput)
+  }
+);}
+
+
+
+
+
+export const getPlanFarmTasksMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof planFarmTasks>>, TError,{farmId: number;data: BodyType<PlanFarmTasksInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof planFarmTasks>>, TError,{farmId: number;data: BodyType<PlanFarmTasksInput>}, TContext> => {
+
+const mutationKey = ['planFarmTasks'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof planFarmTasks>>, {farmId: number;data: BodyType<PlanFarmTasksInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  planFarmTasks(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PlanFarmTasksMutationResult = NonNullable<Awaited<ReturnType<typeof planFarmTasks>>>
+    export type PlanFarmTasksMutationBody = BodyType<PlanFarmTasksInput>
+    export type PlanFarmTasksMutationError = ErrorType<void>
+
+    /**
+ * @summary KI-Aufgabenplan – free text to proposed tasks, nothing saved (caretaker or admin; farm AI limit)
+ */
+export const usePlanFarmTasks = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof planFarmTasks>>, TError,{farmId: number;data: BodyType<PlanFarmTasksInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof planFarmTasks>>,
+        TError,
+        {farmId: number;data: BodyType<PlanFarmTasksInput>},
+        TContext
+      > => {
+      return useMutation(getPlanFarmTasksMutationOptions(options));
     }
 
 export const getUncompleteFarmTaskUrl = (farmId: number,

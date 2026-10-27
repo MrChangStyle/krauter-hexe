@@ -4322,6 +4322,43 @@ export const FarmTaskArea = {
   hof: 'hof',
 } as const;
 
+export interface PlanFarmTasksInput {
+  /**
+     * @minLength 1
+     * @maxLength 1500
+     */
+  text: string;
+  /**
+     * Person chosen in the quick entry; used where the text names nobody.
+     * @nullable
+     */
+  assigneeId?: string | null;
+  /** The daily switch of the quick entry; used where the text says nothing. */
+  repeats?: boolean;
+}
+
+export interface PlannedFarmTask {
+  title: string;
+  area: FarmTaskArea;
+  startsOn: string;
+  repeats: boolean;
+  intervalValue: number;
+  intervalUnit: TaskIntervalUnit;
+  reminderTime: string;
+  /** @nullable */
+  assigneeId: string | null;
+  /** @nullable */
+  assigneeName: string | null;
+  /** @nullable */
+  herdId: number | null;
+  /** @nullable */
+  herdName: string | null;
+}
+
+export interface FarmTaskPlan {
+  tasks: PlannedFarmTask[];
+}
+
 export interface FarmTaskComment {
   id: number;
   body: string;

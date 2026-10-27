@@ -11,7 +11,7 @@ Wer im Stall steht, hat oft keine Hand frei zum Tippen. Neben den längeren Noti
 | Notiz | Vorratskammer | 500 |
 | Notiz | Weide (Weidetagebuch) | 500 |
 | Notiz | Stallaufgabe | 200 |
-| Neue Aufgabe (auch mehrere auf einmal) | Hof-Aufgaben | 1500 |
+| Neue Aufgaben, frei gesprochen (KI-Aufgabenplan) | Hof-Aufgaben | 1500 |
 | Aufgabe, Notiz | Hof-Aufgabe bearbeiten | 80 / 200 |
 | Kommentar | Hof-Aufgabe | 300 |
 

@@ -4844,6 +4844,38 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FarmTask"
+  /farms/{farmId}/tasks/plan:
+    post:
+      tags: [farm]
+      operationId: planFarmTasks
+      summary: KI-Aufgabenplan – free text to proposed tasks, nothing saved (caretaker or admin; farm AI limit)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlanFarmTasksInput"
+      responses:
+        "200":
+          description: The proposed tasks.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmTaskPlan"
+        "400":
+          description: Invalid input.
+        "422":
+          description: No task found in the text.
+        "429":
+          description: Daily AI limit reached.
+        "502":
+          description: AI not reachable.
   /farms/{farmId}/tasks/{taskId}/uncomplete:
     post:
       tags: [farm]
@@ -11816,6 +11848,54 @@ components:
       type: string
       enum: [tiere, garten, hof]
       description: Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).
+    PlanFarmTasksInput:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          minLength: 1
+          maxLength: 1500
+        assigneeId:
+          type: [string, 'null']
+          description: Person chosen in the quick entry; used where the text names nobody.
+        repeats:
+          type: boolean
+          description: The daily switch of the quick entry; used where the text says nothing.
+    PlannedFarmTask:
+      type: object
+      required: [title, area, startsOn, repeats, intervalValue, intervalUnit, reminderTime, assigneeId, assigneeName, herdId, herdName]
+      properties:
+        title:
+          type: string
+        area:
+          $ref: "#/components/schemas/FarmTaskArea"
+        startsOn:
+          type: string
+        repeats:
+          type: boolean
+        intervalValue:
+          type: integer
+        intervalUnit:
+          $ref: "#/components/schemas/TaskIntervalUnit"
+        reminderTime:
+          type: string
+        assigneeId:
+          type: [string, 'null']
+        assigneeName:
+          type: [string, 'null']
+        herdId:
+          type: [integer, 'null']
+        herdName:
+          type: [string, 'null']
+    FarmTaskPlan:
+      type: object
+      required: [tasks]
+      properties:
+        tasks:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlannedFarmTask"
     FarmTaskComment:
       type: object
       required: [id, body, createdAt, authorName, isOwn]

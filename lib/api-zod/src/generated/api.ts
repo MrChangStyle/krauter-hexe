@@ -8056,6 +8056,40 @@ export const CompleteFarmTaskResponse = zod.object({
 
 
 /**
+ * @summary KI-Aufgabenplan – free text to proposed tasks, nothing saved (caretaker or admin; farm AI limit)
+ */
+export const PlanFarmTasksParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const planFarmTasksBodyTextMax = 1500;
+
+
+
+export const PlanFarmTasksBody = zod.object({
+  "text": zod.string().min(1).max(planFarmTasksBodyTextMax),
+  "assigneeId": zod.string().nullish().describe('Person chosen in the quick entry; used where the text names nobody.'),
+  "repeats": zod.boolean().optional().describe('The daily switch of the quick entry; used where the text says nothing.')
+})
+
+export const PlanFarmTasksResponse = zod.object({
+  "tasks": zod.array(zod.object({
+  "title": zod.string(),
+  "area": zod.enum(['tiere', 'garten', 'hof']).describe('Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).'),
+  "startsOn": zod.string(),
+  "repeats": zod.boolean(),
+  "intervalValue": zod.number(),
+  "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "reminderTime": zod.string(),
+  "assigneeId": zod.string().nullable(),
+  "assigneeName": zod.string().nullable(),
+  "herdId": zod.number().nullable(),
+  "herdName": zod.string().nullable()
+}))
+})
+
+
+/**
  * @summary Take back today's tick (caretaker or admin)
  */
 export const UncompleteFarmTaskParams = zod.object({

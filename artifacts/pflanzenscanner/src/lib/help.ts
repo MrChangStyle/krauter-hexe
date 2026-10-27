@@ -173,15 +173,18 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
   "farm-tasks": {
     title: "Hof- & Stall-Aufgaben",
     href: "/hof-aufgaben",
-    intro: "Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Gänse füttern, Teichpumpe kontrollieren. Alle im Team sehen sie, haken ab und schreiben dazu, wenn etwas fehlt. Den Balken „Hof-Aufgaben heute“ findest du auf dem Hof unter Pflanzenretter.",
+    intro: "Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Gänse füttern, Teichpumpe kontrollieren. Einfach reinsprechen, was zu tun ist – die KI macht daraus die Liste. Alle im Team sehen sie, haken ab und schreiben dazu, wenn etwas fehlt. Den Balken „Hof-Aufgaben heute“ findest du auf dem Hof unter Pflanzenretter.",
     steps: [
-      "Oben eine Aufgabe eintippen oder auf „Sprechen“ tippen. Mehrere auf einmal gehen auch: kurz absetzen oder „dann“ sagen. Die App zeigt die erkannte Liste zum Prüfen.",
-      "„Für“ wählt, wer sie erledigen soll, „Täglich“ macht sie wiederkehrend. Mehr (Tag, Uhrzeit, Tier, alle 2 Wochen …) unter „Mit Tag, Wiederholung, Uhrzeit oder Tier anlegen“.",
+      "Einfach reinsprechen: Auf „Sprechen“ tippen und frei sagen, was zu tun ist – z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.",
+      "Die KI macht daraus einzelne Aufgaben und erkennt Tag (heute, morgen, Freitag …), Wiederholung (jeden Tag, jede Woche, alle 2 Tage …), Uhrzeit und für wen. In der Vorschau lässt sich alles ändern oder entfernen, dann „Alle anlegen“.",
+      "Eine einzelne Aufgabe wie „Eier einsammeln“ kommt ohne KI direkt auf die Liste. „Für“ und „Täglich“ gelten, wo im Gesagten nichts steht. Mehr (Tier, beliebiger Tag) unter „Mit Tag, Wiederholung, Uhrzeit oder Tier anlegen“.",
       "Den Bereich erkennt die App am Text: Tiere-Aufgaben stehen auch bei den Stall-Aufgaben und „Am Stall“, Garten-Aufgaben im Pflegeplan, alles andere unter „Hof & Haus“.",
       "Wer etwas erledigt, tippt auf den Kreis – alle sehen, wer es wann gemacht hat. Ein zweiter Tipp nimmt den Haken zurück.",
       "Über die Sprechblase einen Kommentar schreiben, z. B. „Wir brauchen neue Eierkartons“. Die anderen bekommen eine Push-Nachricht.",
     ],
     faq: [
+      { q: "Muss ich die Aufgaben einzeln eintippen?", a: "Nein. Sprich einfach frei rein, so wie du es jemandem sagen würdest – die KI macht daraus die Liste mit Tagen, Wiederholungen und Personen. Du prüfst sie nur noch und tippst auf „Alle anlegen“." },
+      { q: "Was, wenn die KI nicht erreichbar ist?", a: "Ohne Netz oder wenn das tägliche KI-Limit erreicht ist, erkennt die App einfache Wörter selbst (heute, morgen, jeden Tag, um 7 Uhr, für Maria). Die Liste ist dann als „ohne KI erkannt“ markiert – bitte genauer prüfen." },
       { q: "Wie teile ich die Liste?", a: "Unter „Farm & Team“ jemanden mit eigenem Konto hinzufügen (als Mitarbeiter zum Abhaken, als Gast nur zum Ansehen). Er sieht dann dieselbe Liste." },
       { q: "Wer bekommt die Erinnerung?", a: "Bei einer Aufgabe für eine Person nur diese, sonst alle Admins und Mitarbeiter des Hofs. Gäste nicht. Ruhezeiten stellst du unter „Mehr → Benachrichtigungen“ ein." },
       { q: "Was ist der Unterschied zu den Stall-Aufgaben?", a: "Es ist dieselbe Liste. Die Stall-Aufgaben unter Tiere zeigen nur den Bereich Tiere, die Hof-Aufgaben alles – dazu deine fälligen Pflanzen und den Garten." },

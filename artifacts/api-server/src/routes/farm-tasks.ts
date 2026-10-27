@@ -5,6 +5,8 @@ import {
   CompleteFarmTaskBody,
   CompleteFarmTaskResponse,
   DeleteFarmTaskCommentResponse,
+  PlanFarmTasksBody,
+  PlanFarmTasksResponse,
   UncompleteFarmTaskResponse,
   CreateFarmTaskBody,
   CreateFarmTaskResponse,
@@ -24,7 +26,9 @@ import {
   uncompleteFarmTask,
   updateFarmTask,
 } from '../lib/farmTasks';
-import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
+import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
+import { planTasks } from '../lib/hofTaskPlanner';
+import { berlinTodayKey } from '../lib/pushScheduler';
 
 // Stall and Hof tasks of a farm (docs/hof-aufgaben.md). Reading: every member;
 // writing, ticking off and commenting: caretaker or admin.
@@ -46,6 +50,20 @@ router.post(
     const body = CreateFarmTaskBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
     res.status(201).json(CreateFarmTaskResponse.parse(await createFarmTask(req.farm!.farmId, body.data, req.farm!.userId)));
+  }),
+);
+
+// KI-Aufgabenplan: free text → proposed tasks, nothing saved (docs/hof-aufgaben.md).
+// Counts against the farm's daily AI limit.
+router.post(
+  '/farms/:farmId/tasks/plan',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = PlanFarmTasksBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    const defaults = { assigneeId: body.data.assigneeId ?? null, repeats: body.data.repeats ?? false };
+    const tasks = await withAiQuota(req, res, 'farm', () => planTasks(req.farm!.farmId, body.data.text, berlinTodayKey(), defaults));
+    if (tasks) res.json(PlanFarmTasksResponse.parse({ tasks }));
   }),
 );
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FarmTask } from "@workspace/api-client-react";
-import { hofToday, overdueText, scheduleText, splitTaskList, taskTitle } from "@/lib/hof-tasks";
+import { dayLabel, hofToday, needsPlan, overdueText, planLocally, scheduleText, splitTaskList, taskTitle } from "@/lib/hof-tasks";
 
 const task = (id: number, over: Partial<FarmTask> = {}): FarmTask => ({
   id,
@@ -93,5 +93,49 @@ describe("Hof-Aufgaben – a typed or spoken list", () => {
     expect(splitTaskList("eier sammeln. Eier sammeln")).toEqual(["Eier sammeln"]);
     expect(splitTaskList("  ")).toEqual([]);
     expect(splitTaskList("x".repeat(100))[0]).toHaveLength(80);
+  });
+});
+
+describe("KI-Aufgabenplan – without the AI", () => {
+  const today = "2026-10-27"; // a Tuesday
+  const team = [
+    { userId: "u-stefan", displayName: "Stefan Huber" },
+    { userId: "u-maria", displayName: "Maria Huber" },
+  ];
+  const none = { assigneeId: null, repeats: false };
+
+  it("reads day, repetition, time and person, and carries a day said once", () => {
+    const plan = planLocally("Heute Eier einsammeln. Gänse füttern jeden Tag um 7 Uhr. Morgen für Maria die Blumen gießen", today, team, none);
+    expect(plan.map((p) => [p.title, p.startsOn, p.repeats, p.intervalUnit, p.reminderTime, p.assigneeName, p.area])).toEqual([
+      ["Eier einsammeln", "2026-10-27", false, "Tage", "08:00", null, "tiere"],
+      ["Gänse füttern", "2026-10-27", true, "Tage", "07:00", null, "tiere"],
+      ["Die Blumen gießen", "2026-10-28", false, "Tage", "08:00", "Maria Huber", "garten"],
+    ]);
+  });
+
+  it("applies what is said for everything, and knows weekdays and intervals", () => {
+    const plan = planLocally("Eier einsammeln, Teichpumpe prüfen, das Ganze ist für übermorgen", today, team, none);
+    expect(plan.map((p) => p.startsOn)).toEqual(["2026-10-29", "2026-10-29"]);
+    const [a, b, c] = planLocally("Stall ausmisten jeden Freitag. Rasen mähen alle zwei Wochen. Am Montag abends Holz holen", today, team, none);
+    expect(a).toMatchObject({ title: "Stall ausmisten", startsOn: "2026-10-30", repeats: true, intervalValue: 1, intervalUnit: "Wochen" });
+    expect(b).toMatchObject({ title: "Rasen mähen", repeats: true, intervalValue: 2, intervalUnit: "Wochen" });
+    expect(c).toMatchObject({ title: "Holz holen", startsOn: "2026-11-02", reminderTime: "18:00", repeats: false });
+  });
+
+  it("uses the quick entry's choice where nothing is said; 'für alle' and 'einmalig' win", () => {
+    const [a, b] = planLocally("Eier einsammeln. Einmalig für alle Holz holen", today, team, { assigneeId: "u-maria", repeats: true });
+    expect(a).toMatchObject({ assigneeId: "u-maria", repeats: true });
+    expect(b).toMatchObject({ title: "Holz holen", assigneeId: null, repeats: false });
+  });
+
+  it("sends only plain single tasks straight to the list", () => {
+    expect(needsPlan("Eier einsammeln")).toBe(false);
+    expect(needsPlan("Teichpumpe kontrollieren")).toBe(false);
+    expect(needsPlan("Eier einsammeln, Gänse füttern")).toBe(true);
+    expect(needsPlan("Morgen Eier einsammeln")).toBe(true);
+    expect(needsPlan("Heute müssen die Eier eingesammelt werden und die Gänse gefüttert werden")).toBe(true);
+    expect(dayLabel("2026-10-27", today)).toBe("heute");
+    expect(dayLabel("2026-10-28", today)).toBe("morgen");
+    expect(dayLabel("2026-10-30", today)).toBe("Fr., 30.10.");
   });
 });

@@ -270,7 +270,7 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
       />
       <SpeakHint title="Einfach reinsprechen – die App schreibt die Liste" tone="orange" testId="notes-speak-hint">
         <p>
-          Tipp auf „Sprechen“ und sag frei, was du brauchst, z. B.: <span className="italic">„Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen.“</span> Die KI
+          Halte „Halten & sprechen“ gedrückt, sag frei, was du brauchst, und lass los, wenn du fertig bist, z. B.: <span className="italic">„Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen.“</span> Die KI
           macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.
         </p>
       </SpeakHint>

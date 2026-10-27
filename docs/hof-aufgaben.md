@@ -14,7 +14,7 @@ Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Meer
 
 ## KI-Aufgabenplan: einfach reinsprechen
 
-Oben auf der Seite steht eine Zeile mit Info-Symbol: **„Einfach reinsprechen – die App macht die Liste“** und „So geht's“. Sie ist zu Beginn zugeklappt; ein Tipp öffnet die Erklärung mit Beispiel (`components/speak-hint.tsx`). Man tippt auf „Sprechen“ und sagt frei, was zu tun ist, z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.
+Oben auf der Seite steht eine Zeile mit Info-Symbol: **„Einfach reinsprechen – die App macht die Liste“** und „So geht's“. Sie ist zu Beginn zugeklappt; ein Tipp öffnet die Erklärung mit Beispiel (`components/speak-hint.tsx`). Man hält „Halten & sprechen“ gedrückt, sagt frei, was zu tun ist, z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“, lässt los und tippt „Liste erstellen“.
 
 - **Die KI** (Gemini, `api-server/src/lib/hofTaskPlanner.ts`) zerlegt den Text in einzelne Aufgaben mit kurzem Titel („Eier einsammeln“), Bereich, erstem Tag (heute, morgen, übermorgen, Wochentag), Wiederholung (jeden Tag, jeden Montag, alle 2 Wochen, einmalig), Uhrzeit (um 8, morgens 7:00, mittags 12:00, abends 18:00), Person aus dem Team und Tiergruppe. Was für alles gesagt wird („das Ganze ist für morgen“), gilt für jede Aufgabe.
 - **Nichts wird ohne Prüfung gespeichert.** Die Vorschau zeigt jede Aufgabe mit Titel, Bereich, Tag, Wiederholung, Uhrzeit und Person – alles änderbar, einzelne entfernbar –, dann „Alle anlegen“.
@@ -27,7 +27,7 @@ Oben auf der Seite steht eine Zeile mit Info-Symbol: **„Einfach reinsprechen �
 
 ## Die Seite
 
-1. **Neue Aufgabe** oben, zum Tippen oder mit **„Sprechen“**:
+1. **Neue Aufgabe** oben, zum Tippen oder mit **„Halten & sprechen“** (gedrückt halten, zum Beenden loslassen):
    - Eine Aufgabe: eintippen, Enter oder „Hinzufügen“.
    - **Mehrere auf einmal:** jede Zeile, jedes Komma und jeder diktierte Satz wird eine Aufgabe. Beim Sprechen trennt eine kurze Pause oder ein Wort wie „dann“, „danach“, „außerdem“ oder „nächste Aufgabe“. Ein einfaches „und“ trennt nicht („Nassfutter und Trockenfutter geben“ bleibt eine Aufgabe). Die erkannte Liste erscheint zum Prüfen; einzelne lassen sich entfernen, dann „Alle anlegen“. Höchstens 20 auf einmal.
    - **„Für …“** wählt eine Person aus dem Team (sonst für alle), **„Täglich“** macht die Aufgaben wiederkehrend ab heute. Ohne „Täglich“ gelten sie einmalig für heute.

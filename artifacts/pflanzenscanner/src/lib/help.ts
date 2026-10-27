@@ -175,7 +175,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     href: "/hof-aufgaben",
     intro: "Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Gänse füttern, Teichpumpe kontrollieren. Einfach reinsprechen, was zu tun ist – die KI macht daraus die Liste. Alle im Team sehen sie, haken ab und schreiben dazu, wenn etwas fehlt. Auf dem Hof steht sie unter Pflanzenretter als orange Kachel, neben den Alltagsnotizen für Einkauf und Merkzettel.",
     steps: [
-      "Einfach reinsprechen: Auf „Sprechen“ tippen und frei sagen, was zu tun ist – z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.",
+      "Einfach reinsprechen: „Halten & sprechen“ gedrückt halten, frei sagen, was zu tun ist, und loslassen – z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.",
       "Die KI macht daraus einzelne Aufgaben und erkennt Tag (heute, morgen, Freitag …), Wiederholung (jeden Tag, jede Woche, alle 2 Tage …), Uhrzeit und für wen. In der Vorschau lässt sich alles ändern oder entfernen, dann „Alle anlegen“.",
       "Eine einzelne Aufgabe wie „Eier einsammeln“ kommt ohne KI direkt auf die Liste. „Für“ und „Täglich“ gelten, wo im Gesagten nichts steht. Mehr (Tier, beliebiger Tag) unter „Mit Tag, Wiederholung, Uhrzeit oder Tier anlegen“.",
       "Den Bereich erkennt die App am Text: Tiere-Aufgaben stehen auch bei den Stall-Aufgaben und „Am Stall“, Garten-Aufgaben im Pflegeplan, alles andere unter „Hof & Haus“.",
@@ -395,7 +395,7 @@ export const GENERAL_HELP: HelpTopic[] = [
     faq: [
       {
         q: "Was sind die Alltagsnotizen?",
-        a: "Deine Einkaufsliste und ein Merkzettel – getrennt von den Hof-Aufgaben. Auf dem Hof unter Pflanzenretter stehen beide als orange Kacheln nebeneinander. Einfach auf „Sprechen“ tippen und sagen, z. B. „Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen“: Die KI macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.",
+        a: "Deine Einkaufsliste und ein Merkzettel – getrennt von den Hof-Aufgaben. Auf dem Hof unter Pflanzenretter stehen beide als orange Kacheln nebeneinander. Einfach „Halten & sprechen“ gedrückt halten, sagen, z. B. „Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen“, und loslassen: Die KI macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.",
       },
       {
         q: "Wie teile ich meine Einkaufsliste?",

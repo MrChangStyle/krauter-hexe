@@ -247,7 +247,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
       />
       <SpeakHint title="Einfach reinsprechen – die App macht die Liste" tone="orange" testId="hof-speak-hint">
         <p>
-          Tipp auf „Sprechen“ und sag frei, was zu tun ist, z. B.:{" "}
+          Halte „Halten & sprechen“ gedrückt, sag frei, was zu tun ist, und lass los, wenn du fertig bist, z. B.:{" "}
           <span className="italic">„Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“</span>{" "}
           Die KI erkennt die einzelnen Aufgaben, den Tag, ob es sich wiederholt, die Uhrzeit und für wen. Vor dem Speichern siehst du alles zum Prüfen.
         </p>

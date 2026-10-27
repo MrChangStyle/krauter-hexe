@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { Loader2, MessageCircle, Mic, MicOff, Send } from "lucide-react";
+import { Loader2, MessageCircle, Mic, Send } from "lucide-react";
 import { useSendFeedback } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { appendPhrase, speechSupported, startDictation, type Recognition } from "@/lib/speech";
+import { usePushToTalk } from "@/hooks/use-push-to-talk";
+import { appendPhrase } from "@/lib/speech";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -22,10 +23,12 @@ export function FeedbackBubble() {
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
-  const [listening, setListening] = useState(false);
   const [usedVoice, setUsedVoice] = useState(false);
-  const rec = useRef<Recognition | null>(null);
-  const canDictate = speechSupported();
+  // Hold to speak, let go when done (docs/spracheingabe.md).
+  const { supported: canDictate, listening, stop, handlers } = usePushToTalk((phrase) => {
+    setUsedVoice(true);
+    setText((t) => appendPhrase(t, phrase));
+  });
   const send = useSendFeedback({
     mutation: {
       onSuccess() {
@@ -38,33 +41,10 @@ export function FeedbackBubble() {
     },
   });
 
-  const stop = () => {
-    rec.current?.stop();
-    rec.current = null;
-    setListening(false);
-  };
   useEffect(() => {
     if (!open) stop();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
-
-  function dictate() {
-    if (listening) return stop();
-    const r = startDictation(
-      (phrase) => {
-        setUsedVoice(true);
-        setText((t) => appendPhrase(t, phrase));
-      },
-      (error) => {
-        rec.current = null;
-        setListening(false);
-        if (error === "not-allowed") toast({ title: "Kein Mikrofon", description: "Bitte erlaube den Zugriff aufs Mikrofon – oder tippe einfach.", variant: "destructive" });
-      },
-    );
-    if (r) {
-      rec.current = r;
-      setListening(true);
-    }
-  }
 
   return (
     <>
@@ -97,14 +77,21 @@ export function FeedbackBubble() {
           {listening && (
             <p className="flex items-center gap-2 text-xs text-primary" role="status">
               <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
-              Ich höre zu … tippe auf das Mikrofon, wenn du fertig bist.
+              Ich höre zu … lass los, wenn du fertig bist.
             </p>
           )}
           <div className="flex items-center gap-2">
             {canDictate && (
-              <Button type="button" variant={listening ? "default" : "outline"} className="gap-1.5" onClick={dictate} aria-pressed={listening}>
-                {listening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
-                {listening ? "Stopp" : "Sprechen"}
+              <Button
+                type="button"
+                variant={listening ? "destructive" : "outline"}
+                className={listening ? "animate-pulse gap-1.5" : "gap-1.5"}
+                aria-label="Sprechen – gedrückt halten"
+                aria-pressed={listening}
+                {...handlers}
+              >
+                <Mic className="h-4 w-4" />
+                {listening ? "Loslassen = fertig" : "Halten & sprechen"}
               </Button>
             )}
             <Button

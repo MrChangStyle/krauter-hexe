@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { appBuiltAt, formatBuild } from "@/lib/app-version";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   listUsers,
@@ -1101,6 +1102,12 @@ export default function MehrPage() {
       <div id="konto" className="scroll-mt-4">
         <AccountCard />
       </div>
+
+      {formatBuild(appBuiltAt()) && (
+        <p className="text-center text-xs text-muted-foreground" data-testid="app-version">
+          App-Stand: {formatBuild(appBuiltAt())}
+        </p>
+      )}
     </div>
   );
 }

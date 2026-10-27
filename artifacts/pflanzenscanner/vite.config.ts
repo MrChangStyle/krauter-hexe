@@ -35,6 +35,8 @@ if (!basePath) {
 
 export default defineConfig({
   base: basePath,
+  // Shown under Mehr and after an update (lib/app-version.ts).
+  define: { __APP_BUILT_AT__: JSON.stringify(new Date().toISOString()) },
   plugins: [
     react(),
     tailwindcss(),

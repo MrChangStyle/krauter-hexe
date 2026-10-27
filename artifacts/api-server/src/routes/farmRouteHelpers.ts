@@ -65,6 +65,15 @@ export async function withAiQuota<T>(
     await refundScanAttempt(limit.attemptId);
     if (err instanceof FarmDataError) throw err;
     req.log.error({ err }, 'AI request failed');
-    throw new FarmDataError(502, 'Die KI ist gerade nicht erreichbar. Bitte versuche es gleich noch einmal.');
+    // The owner sees what went wrong, to find the cause without the server logs.
+    const detail = user.isOwner ? ` (technisch: ${aiErrorDetail(err)})` : '';
+    throw new FarmDataError(502, `Die KI ist gerade nicht erreichbar. Bitte versuche es gleich noch einmal.${detail}`);
   }
+}
+
+/** A short, safe line about why the AI failed: status and the start of the message, never a key. */
+export function aiErrorDetail(err: unknown): string {
+  const e = err as { status?: number; name?: string; message?: string } | null;
+  const parts = [e?.status ? String(e.status) : null, e?.name && e.name !== 'Error' ? e.name : null, (e?.message ?? String(err)).replace(/key=[^&\s]+/gi, 'key=…').slice(0, 160)];
+  return parts.filter(Boolean).join(' · ');
 }

@@ -19,6 +19,7 @@ import {
 } from "@workspace/api-client-react";
 import { DictateButton } from "@/components/dictate-button";
 import { SpeakHint } from "@/components/speak-hint";
+import { withPlanTimeout } from "@/lib/ai-plan";
 import { MAX_SAID, TOOL_FRAME, TOOL_SAVE, ToolActions, ToolCardHeader } from "@/components/tool-card";
 import { errorText, useTeam } from "@/components/hof-tasks";
 import { ShareListsDialog } from "@/components/share-lists-dialog";
@@ -247,9 +248,11 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
     if (!said) return;
     if (!notesNeedPlan(said)) return void save([{ text: said.slice(0, 120), kind: null, category: null }]);
     try {
-      const result = await plan.mutateAsync({ data: { text: said } });
+      const result = await withPlanTimeout(plan.mutateAsync({ data: { text: said } }));
       setPreview({ notes: result.notes, byAi: true });
     } catch (err) {
+      // Given up on the AI: the button must not keep saying "KI sortiert …".
+      plan.reset();
       const local = splitNotes(said);
       if (local.length === 0) return void toast({ title: errorText(err, "Daraus wurde keine Notiz."), variant: "destructive" });
       setPreview({ notes: local, byAi: false });

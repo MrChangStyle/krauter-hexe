@@ -20,6 +20,7 @@ import { ShareListsDialog } from "@/components/share-lists-dialog";
 import { FarmSwitcher } from "@/components/farm-switcher";
 import { DictateButton } from "@/components/dictate-button";
 import { SpeakHint } from "@/components/speak-hint";
+import { withPlanTimeout } from "@/lib/ai-plan";
 import { MAX_SAID, TOOL_FRAME, TOOL_SAVE, ToolActions, ToolCardHeader } from "@/components/tool-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -221,9 +222,11 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
     if (!said) return;
     if (!needsPlan(said)) return void save([plainTask(splitTaskList(said)[0] ?? said)]);
     try {
-      const result = await plan.mutateAsync({ farmId: farm.id, data: { text: said, assigneeId: assignee || null, repeats: daily } });
+      const result = await withPlanTimeout(plan.mutateAsync({ farmId: farm.id, data: { text: said, assigneeId: assignee || null, repeats: daily } }));
       setPreview({ tasks: result.tasks, byAi: true });
     } catch (err) {
+      // Given up on the AI: the button must not keep saying "KI plant …".
+      plan.reset();
       // Offline, daily limit or AI not reachable: the app reads it itself.
       const local = planLocally(said, today, team, defaults);
       if (local.length === 0) return void toast({ title: errorText(err, "Daraus wurde keine Aufgabe. Sag es bitte noch einmal anders."), variant: "destructive" });

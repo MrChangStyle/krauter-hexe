@@ -189,11 +189,11 @@ async function contextFor(farmId: number, today: string, defaults: PlanContext['
 export async function planTasks(farmId: number, rawText: unknown, today: string, defaults: PlanContext['defaults']): Promise<PlannedTask[]> {
   const said = text(rawText, 2000, 'Der Text', true);
   const ctx = await contextFor(farmId, today, defaults);
-  const { TEXT_MODELS, runModelChain } = await import('./plantIdentification');
+  const { AI_PLAN_TIMEOUT_MS, TEXT_MODELS, runModelChain } = await import('./plantIdentification');
   const parsed = await runModelChain([{ role: 'user', parts: [{ text: planPrompt(said, ctx) }] }], TEXT_MODELS, {
     maxOutputTokens: 2048,
     responseMimeType: 'application/json',
-  });
+  }, { timeoutMs: AI_PLAN_TIMEOUT_MS });
   const tasks = coercePlan(parsed, ctx);
   if (tasks.length === 0) throw new FarmDataError(422, 'Daraus konnte die KI keine Aufgabe machen. Sag es bitte noch einmal anders.');
   return tasks;

@@ -273,11 +273,11 @@ Antworte nur mit JSON:
 
 export async function planNotes(rawText: unknown): Promise<PlannedNote[]> {
   const said = text(rawText, 2000, 'Der Text', true);
-  const { TEXT_MODELS, runModelChain } = await import('./plantIdentification');
+  const { AI_PLAN_TIMEOUT_MS, TEXT_MODELS, runModelChain } = await import('./plantIdentification');
   const parsed = await runModelChain([{ role: 'user', parts: [{ text: notesPrompt(said) }] }], TEXT_MODELS, {
     maxOutputTokens: 2048,
     responseMimeType: 'application/json',
-  });
+  }, { timeoutMs: AI_PLAN_TIMEOUT_MS });
   const notes = coerceNotes(parsed);
   if (notes.length === 0) throw new FarmDataError(422, 'Daraus konnte die KI keine Notiz machen. Sag es bitte noch einmal anders.');
   return notes;

@@ -16,7 +16,8 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
 2. **Eingabe** getippt oder mit „Halten & sprechen“ (gedrückt halten, zum Beenden loslassen):
    - Eine einfache Sache („Zahnbürsten“, „2 kg Hackfleisch“) kommt direkt auf die Liste (`notesNeedPlan`).
    - Längeres („Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen“) geht an die KI → **Vorschau** mit jeder Notiz, Art (Einkaufen/Merken) und Bereich im Laden – alles änderbar, einzelne entfernbar –, dann „Alle notieren“.
-   - Ohne KI (offline, Tageslimit) teilt die App selbst auf (`splitNotes`): Zeilen, Kommas, Sätze und „und“ trennen, Füllwörter wie „ich muss … kaufen“ fallen weg; Art und Bereich sortiert der Server nach Wörtern.
+   - Ohne KI (offline, Tageslimit, KI zu langsam) teilt die App selbst auf (`splitNotes`): Zeilen, Kommas, Sätze und „und“ trennen – außer vor einem einzelnen kleingeschriebenen Wort („Nudeln rot und grün“ bleibt eine Notiz), Füllwörter wie „ich muss … kaufen“ fallen weg; Art und Bereich sortiert der Server nach Wörtern.
+   - **Nie hängen:** Der Server gibt die KI nach 20 Sekunden auf (`AI_PLAN_TIMEOUT_MS`, `runModelChain` mit `timeoutMs`), die App wartet höchstens 25 Sekunden (`lib/ai-plan.ts`) und teilt dann selbst auf – mit dem Hinweis „Die KI hat zu lange gebraucht“. Gilt genauso für den KI-Aufgabenplan der Hof-Aufgaben.
 3. **Einkaufsliste** nach Bereichen in der Reihenfolge eines Ladens: Lebensmittel, Getränke, Drogerie & Apotheke, Haushalt, Tierbedarf, Garten & Baumarkt, Sonstiges.
 4. **Merken & Erledigen.**
 5. **Erledigt** – durchgestrichen, mit „erledigt von …“; der Besitzer räumt mit „Erledigte entfernen“ auf.

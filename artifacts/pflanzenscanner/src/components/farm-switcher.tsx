@@ -1,47 +1,104 @@
-import { Home, Users } from "lucide-react";
-import type { FarmSummary } from "@workspace/api-client-react";
-import { cn } from "@/lib/utils";
+import { Check, ChevronDown, FlaskConical, Home, Settings2, Users } from "lucide-react";
+import { Link } from "wouter";
+import { useGetDemoStatus, type FarmSummary } from "@workspace/api-client-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FARM_ROLE_LABELS } from "@/lib/active-farm";
 
-/** Own farms (admin) first, then the ones shared with the person. */
-export function sortFarms(farms: FarmSummary[]): FarmSummary[] {
-  return [...farms].sort((a, b) => Number(b.role === "admin") - Number(a.role === "admin"));
+export interface FarmGroups {
+  own: FarmSummary[];
+  demo: FarmSummary[];
+  shared: FarmSummary[];
+}
+
+/** Own farms (admin) first, then the Demo-Hof, then the farms others shared. */
+export function groupFarms(farms: FarmSummary[], demoFarmId: number | null): FarmGroups {
+  const demo = farms.filter((f) => f.id === demoFarmId);
+  const rest = farms.filter((f) => f.id !== demoFarmId);
+  return { own: rest.filter((f) => f.role === "admin"), demo, shared: rest.filter((f) => f.role !== "admin") };
+}
+
+/** The line under a farm's name: whose it is and what the viewer may do. */
+export function farmLine(f: FarmSummary, demoFarmId: number | null): string {
+  if (f.id === demoFarmId) return "Beispieldaten";
+  if (f.role === "admin") return "Mein Hof";
+  return `${f.accessUntil ? "Vertretung" : "Geteilt"}${f.ownerName ? ` von ${f.ownerName}` : ""} · ${FARM_ROLE_LABELS[f.role]}`;
+}
+
+function iconFor(f: FarmSummary, demoFarmId: number | null) {
+  if (f.id === demoFarmId) return FlaskConical;
+  return f.role === "admin" ? Home : Users;
 }
 
 /**
- * On the Hof: the own farm and every farm someone shared – one tap switches
- * the whole Hof (weather, Hof-Aufgaben, widgets). Only with more than one.
+ * On the Hof: one button "Wähle deine Farm" with the farm shown now; it opens
+ * the list – own farms, the Demo-Hof, and the linked farms others shared.
+ * One tap switches the whole Hof. Only with more than one farm.
  */
 export function FarmSwitcher({ farms, active, onSelect }: { farms: FarmSummary[] | null; active: FarmSummary | null; onSelect: (id: number) => void }) {
+  const demo = useGetDemoStatus();
   if (!farms || farms.length < 2 || !active) return null;
-  return (
-    <div className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Hof wählen" data-testid="farm-switcher">
-      {sortFarms(farms).map((f) => {
-        const own = f.role === "admin";
-        const selected = f.id === active.id;
-        const Icon = own ? Home : Users;
-        return (
-          <button
-            key={f.id}
-            type="button"
-            role="tab"
-            aria-selected={selected}
-            onClick={() => onSelect(f.id)}
-            className={cn(
-              "flex shrink-0 items-center gap-2 rounded-2xl border px-3 py-2 text-left text-sm transition",
-              selected ? "border-primary bg-primary text-primary-foreground shadow-sm" : "border-border bg-card",
-            )}
-          >
-            <Icon className="h-4 w-4 shrink-0" />
-            <span className="leading-tight">
-              <span className="block max-w-[11rem] truncate font-medium">{f.name}</span>
-              <span className={cn("block text-[11px]", selected ? "text-primary-foreground/80" : "text-muted-foreground")}>
-                {own ? "Mein Hof" : `${f.accessUntil ? "Vertretung" : "Geteilt"}${f.ownerName ? ` von ${f.ownerName}` : ""} · ${FARM_ROLE_LABELS[f.role]}`}
+  const demoId = demo.data?.farmId ?? null;
+  const groups = groupFarms(farms, demoId);
+  const ActiveIcon = iconFor(active, demoId);
+
+  const section = (label: string, list: FarmSummary[]) =>
+    list.length > 0 && (
+      <>
+        <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">{label}</DropdownMenuLabel>
+        {list.map((f) => {
+          const Icon = iconFor(f, demoId);
+          return (
+            <DropdownMenuItem key={f.id} onSelect={() => onSelect(f.id)} className="gap-2.5 py-2" data-testid="farm-option">
+              <Icon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="min-w-0 flex-1 leading-tight">
+                <span className="block truncate font-medium">{f.name}</span>
+                <span className="block text-[11px] text-muted-foreground">{farmLine(f, demoId)}</span>
               </span>
-            </span>
-          </button>
-        );
-      })}
-    </div>
+              {f.id === active.id && <Check className="h-4 w-4 shrink-0 text-primary" />}
+            </DropdownMenuItem>
+          );
+        })}
+      </>
+    );
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        className="flex w-full items-center gap-3 rounded-2xl border bg-card px-3 py-2.5 text-left shadow-sm"
+        aria-label={`Wähle deine Farm – jetzt: ${active.name}`}
+        data-testid="farm-switcher"
+      >
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <ActiveIcon className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1 leading-tight">
+          <span className="block text-[11px] text-muted-foreground">Wähle deine Farm</span>
+          <span className="block truncate font-semibold">{active.name}</span>
+          <span className="block truncate text-[11px] text-muted-foreground">{farmLine(active, demoId)}</span>
+        </span>
+        <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground" />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)]">
+        {section(groups.own.length > 1 ? "Meine Farmen" : "Meine Farm", groups.own)}
+        {groups.own.length > 0 && groups.shared.length > 0 && <DropdownMenuSeparator />}
+        {section("Verknüpfte Höfe", groups.shared)}
+        {groups.demo.length > 0 && <DropdownMenuSeparator />}
+        {section("Zum Ausprobieren", groups.demo)}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild className="gap-2.5 text-xs text-muted-foreground">
+          <Link href="/farm">
+            <Settings2 className="h-4 w-4" />
+            Farmen verwalten (umbenennen, löschen)
+          </Link>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

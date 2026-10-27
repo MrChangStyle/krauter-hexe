@@ -38,7 +38,7 @@ Unter Mehr → **„Farm & Team“** (`/team`) steht alles über die Menschen au
 
 ## Wo man einen freigegebenen Hof sieht
 
-Ganz oben auf der Hofseite stehen der eigene Hof und alle Höfe, die einem freigegeben wurden (`components/farm-switcher.tsx`). Ein Tipp wechselt den Hof; dieselbe Auswahl gibt es auf der Seite Hof-Aufgaben und als Auswahlfeld unter Tiere und Farm & Team.
+Ganz oben auf der Hofseite steht der Knopf **„Wähle deine Farm“** (`components/farm-switcher.tsx`). Ein Tipp klappt die Liste auf: zuerst die eigenen Farmen, darunter die **verknüpften Höfe**, die einem freigegeben wurden („Geteilt von Stefan · Mitarbeiter“), zuletzt der Demo-Hof. Ein Tipp auf einen Hof wechselt; dieselbe Auswahl gibt es auf der Seite Hof-Aufgaben und als Auswahlfeld unter Tiere und Farm & Team.
 
 ## Listen teilen
 

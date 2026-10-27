@@ -256,7 +256,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
               e.currentTarget.form?.requestSubmit();
             }
           }}
-          placeholder="Sprechen oder tippen, z. B. Eier einsammeln"
+          placeholder="Sprechen oder tippen …"
           className="w-full resize-none rounded-xl border border-orange-200 bg-background px-3 py-2.5 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-orange-400 dark:border-orange-900"
         />
         <div className="flex flex-wrap items-center gap-2">

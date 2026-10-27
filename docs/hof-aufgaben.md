@@ -27,7 +27,7 @@ Die Eingabekarte ist auf Hof-Aufgaben und Alltagsnotizen gleich aufgebaut (`comp
 
 ## Die Seite
 
-0. **Hof wählen** oben, wenn man zu mehr als einem Hof gehört: eigener Hof und die freigegebenen (`components/farm-switcher.tsx`).
+0. **Wähle deine Farm** oben, wenn man zu mehr als einem Hof gehört: ein Knopf, der die Liste aufklappt – eigene Farmen, verknüpfte Höfe, Demo-Hof (`components/farm-switcher.tsx`).
 
 1. **Neue Aufgabe** oben, zum Tippen oder mit **„Halten & sprechen“** (gedrückt halten, zum Beenden loslassen):
    - Eine Aufgabe: eintippen, Enter oder „Speichern“.

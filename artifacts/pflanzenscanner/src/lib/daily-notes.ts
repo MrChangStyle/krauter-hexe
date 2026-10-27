@@ -59,12 +59,16 @@ const FILLER = w("ich|wir|muss|müssen|musst|soll|sollen|noch|mal|bitte|auch|unb
  * ("anrufen") stays whole. The server sorts kind and section.
  */
 export function splitNotes(text: string): NoteDraft[] {
+  // "Nudeln rot und grün": a lone lower-case word after "und" describes the
+  // thing before it (German nouns are capitalised) – one note, not two.
+  const KEEP = "\u0001";
   const parts = text
+    .replace(/(\S)\s+und\s+([a-zäöüß][\p{L}-]*)(?=\s*(?:[,;\n.!?]|$))/gu, `$1${KEEP}und${KEEP}$2`)
     .split(/[\n,;]+|[.!?](?:\s+|$)|\s+und\s+|\s+sowie\s+|\s+außerdem\s+|\s+dann\s+/i)
     .map((p) => {
       const keepsVerb = w("anruf\\w*|termin|bezahl\\w*|überweis\\w*|abholen|abgeben|zurückbringen|melden|schreiben|reparier\\w*", "iu").test(p);
       const cleaned = keepsVerb ? p.replace(w("ich|wir|muss|müssen|noch|mal|bitte|unbedingt"), " ") : p.replace(FILLER, " ");
-      return cleaned.replace(/\s+/g, " ").trim().replace(/^[-•*\d.)\s]+/, "").replace(/[.!?]+$/, "");
+      return cleaned.replaceAll(KEEP, " ").replace(/\s+/g, " ").trim().replace(/^[-•*\d.)\s]+/, "").replace(/[.!?]+$/, "");
     })
     .filter((p) => p.length >= 2)
     .map((p) => (p.charAt(0).toLocaleUpperCase("de-DE") + p.slice(1)).slice(0, 120));

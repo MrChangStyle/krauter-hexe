@@ -53,6 +53,11 @@ describe("Alltagsnotizen – a list without the AI", () => {
     expect(splitNotes("- Brot\n- brot")).toEqual([{ text: "Brot", kind: null, category: null }]);
   });
 
+  it("keeps a lone describing word after 'und' with its thing", () => {
+    expect(splitNotes("Nudeln rot und grün").map((n) => n.text)).toEqual(["Nudeln rot und grün"]);
+    expect(splitNotes("Nudeln rot und grün, Milch und Brot").map((n) => n.text)).toEqual(["Nudeln rot und grün", "Milch", "Brot"]);
+  });
+
   it("puts one plain thing straight on the list", () => {
     expect(notesNeedPlan("Zahnbürsten")).toBe(false);
     expect(notesNeedPlan("2 kg Hackfleisch")).toBe(false);

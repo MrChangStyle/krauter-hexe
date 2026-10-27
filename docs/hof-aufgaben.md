@@ -14,7 +14,7 @@ Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Meer
 
 ## KI-Aufgabenplan: einfach reinsprechen
 
-Oben auf der Seite steht ein Hinweis: **„Einfach reinsprechen – die App macht die Liste.“** Man tippt auf „Sprechen“ und sagt frei, was zu tun ist, z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.
+Oben auf der Seite steht eine Zeile mit Info-Symbol: **„Einfach reinsprechen – die App macht die Liste“** und „So geht's“. Sie ist zu Beginn zugeklappt; ein Tipp öffnet die Erklärung mit Beispiel (`components/speak-hint.tsx`). Man tippt auf „Sprechen“ und sagt frei, was zu tun ist, z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.
 
 - **Die KI** (Gemini, `api-server/src/lib/hofTaskPlanner.ts`) zerlegt den Text in einzelne Aufgaben mit kurzem Titel („Eier einsammeln“), Bereich, erstem Tag (heute, morgen, übermorgen, Wochentag), Wiederholung (jeden Tag, jeden Montag, alle 2 Wochen, einmalig), Uhrzeit (um 8, morgens 7:00, mittags 12:00, abends 18:00), Person aus dem Team und Tiergruppe. Was für alles gesagt wird („das Ganze ist für morgen“), gilt für jede Aufgabe.
 - **Nichts wird ohne Prüfung gespeichert.** Die Vorschau zeigt jede Aufgabe mit Titel, Bereich, Tag, Wiederholung, Uhrzeit und Person – alles änderbar, einzelne entfernbar –, dann „Alle anlegen“.

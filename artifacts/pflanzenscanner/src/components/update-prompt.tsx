@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
-import { RefreshCw, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { appBuiltAt, formatBuild, markUpdating, takeUpdated } from "@/lib/app-version";
 
@@ -8,22 +7,35 @@ import { appBuiltAt, formatBuild, markUpdating, takeUpdated } from "@/lib/app-ve
 // An installed app on a phone is mostly resumed, not reloaded – so it also
 // checks whenever it comes back to the foreground or online.
 const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
+// Right after opening or coming back nobody is typing yet: update at once.
+const FRESH_MS = 10 * 1000;
+// In the background for this long: update there, unseen.
+const HIDDEN_MS = 60 * 1000;
 
 // Read once when the app starts: was this start the reload of an update?
 const JUST_UPDATED = takeUpdated();
 
-// Shows an automatic banner as soon as a new version of the app has been
-// deployed and the service worker has fetched it. The user taps "Jetzt
-// aktualisieren" to activate the new worker and reload onto the fresh build.
-// Uses a plain fixed overlay instead of a Radix AlertDialog so there is no
-// modal-action close-handler complexity that can swallow the button click.
+/** Someone is typing – a reload now would lose the text. */
+function typing(): boolean {
+  const el = document.activeElement;
+  return el instanceof HTMLTextAreaElement || (el instanceof HTMLInputElement && !["checkbox", "radio", "button", "submit"].includes(el.type));
+}
+
+/**
+ * Installs a new app version by itself, without a button
+ * (docs/benachrichtigungen.md): at once if the app was just opened or brought
+ * back and nobody is typing, otherwise after it has been in the background for
+ * a minute – then the reload goes unseen and nothing typed is lost. After the
+ * reload the app says "App aktualisiert" with the new build time.
+ */
 export function UpdatePrompt() {
   const intervalStarted = useRef(false);
-  const [busy, setBusy] = useState(false);
+  const activeSince = useRef(Date.now());
+  const updating = useRef(false);
   const { toast } = useToast();
 
   const {
-    needRefresh: [needRefresh, setNeedRefresh],
+    needRefresh: [needRefresh],
     updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW(_swUrl, registration) {
@@ -40,6 +52,45 @@ export function UpdatePrompt() {
     },
   });
 
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === "visible") activeSince.current = Date.now();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, []);
+
+  useEffect(() => {
+    if (!needRefresh) return;
+    const install = () => {
+      if (updating.current) return;
+      updating.current = true;
+      markUpdating();
+      // The new worker takes over and the page reloads by itself.
+      updateServiceWorker(true).catch((err: unknown) => {
+        updating.current = false;
+        console.error("[UpdatePrompt] updateServiceWorker failed:", err);
+      });
+    };
+    if (document.visibilityState === "visible" && Date.now() - activeSince.current < FRESH_MS && !typing()) {
+      install();
+      return;
+    }
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const onChange = () => {
+      clearTimeout(timer);
+      if (document.visibilityState === "hidden") timer = setTimeout(install, HIDDEN_MS);
+      else if (!typing()) install();
+    };
+    // Already in the background: count from now.
+    if (document.visibilityState === "hidden") timer = setTimeout(install, HIDDEN_MS);
+    document.addEventListener("visibilitychange", onChange);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onChange);
+    };
+  }, [needRefresh, updateServiceWorker]);
+
   // After the reload of an update: say that it worked, and which version runs now.
   useEffect(() => {
     if (!JUST_UPDATED) return;
@@ -49,63 +100,5 @@ export function UpdatePrompt() {
     return () => clearTimeout(timer);
   }, [toast]);
 
-  if (!needRefresh) return null;
-
-  const handleUpdate = () => {
-    if (busy) return;
-    setBusy(true);
-    markUpdating();
-    updateServiceWorker(true)
-      .then(() => {
-        // The SW will skipWaiting and the page reloads automatically.
-        // Show a brief success toast in case the reload takes a moment.
-        toast({ title: "Erfolgreich aktualisiert!" });
-      })
-      .catch((err: unknown) => {
-        console.error("[UpdatePrompt] updateServiceWorker failed:", err);
-        toast({
-          title: "Aktualisierung fehlgeschlagen",
-          description: "Bitte später erneut versuchen.",
-          variant: "destructive",
-        });
-      })
-      .finally(() => {
-        setBusy(false);
-        setNeedRefresh(false);
-      });
-  };
-
-  return (
-    /* Backdrop */
-    <div
-      className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4"
-      // clicking the backdrop does nothing — user must choose "Jetzt aktualisieren"
-    >
-      <div className="w-full max-w-sm rounded-xl border bg-background p-6 shadow-xl space-y-4">
-        <div className="flex items-center gap-3">
-          <RefreshCw className="h-5 w-5 shrink-0 text-primary" />
-          <h2 className="text-base font-semibold">Neue Version verfügbar</h2>
-        </div>
-        <p className="text-sm text-muted-foreground">
-          Eine neue Version ist bereit. Deine gespeicherten Pflanzen und
-          wartenden Fotos bleiben erhalten.
-        </p>
-        <button
-          type="button"
-          disabled={busy}
-          onClick={handleUpdate}
-          className="w-full inline-flex items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 disabled:opacity-60 disabled:cursor-not-allowed"
-        >
-          {busy ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Wird aktualisiert…
-            </>
-          ) : (
-            "Jetzt aktualisieren"
-          )}
-        </button>
-      </div>
-    </div>
-  );
+  return null;
 }

@@ -44,6 +44,7 @@ import {
 import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useModules } from "@/hooks/use-modules";
 import { WIDGET_MODULE, farmModuleGranted } from "@/lib/modules";
+import { HofTasksStrip } from "@/components/hof-tasks";
 import { DashboardEditor } from "@/components/dashboard-editor";
 import { ALERT_STYLES, AlertBox, LocationForm } from "@/components/farm-weather-card";
 import { effectiveLayout, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
@@ -386,7 +387,8 @@ function GrowWidget() {
 
 function FarmTasksWidget({ farm }: { farm: FarmSummary }) {
   const tasks = useListFarmTasks(farm.id);
-  const active = (tasks.data ?? []).filter((t) => t.isActive);
+  // The animals' part of the Hof-Aufgaben; the whole list is the bar above.
+  const active = (tasks.data ?? []).filter((t) => t.isActive && t.area === "tiere" && !t.isDone);
   const due = active.filter((t) => t.isDue);
   return (
     <Widget
@@ -395,7 +397,7 @@ function FarmTasksWidget({ farm }: { farm: FarmSummary }) {
       tone={TONES.emerald}
       title="Stall-Aufgaben"
       value={tasks.data ? (active.length === 0 ? "Keine" : due.length > 0 ? `${due.length} fällig` : "Alles erledigt") : null}
-      line={due[0] ? `${due[0].actionType}${due[0].animalName ? ` · ${due[0].animalName}` : due[0].herdName ? ` · ${due[0].herdName}` : ""}` : active.length === 0 ? "Füttern oder Ausmisten anlegen" : `${active.length} im Plan`}
+      line={due[0] ? `${due[0].title ?? due[0].actionType}${due[0].animalName ? ` · ${due[0].animalName}` : due[0].herdName ? ` · ${due[0].herdName}` : ""}` : active.length === 0 ? "Füttern oder Ausmisten anlegen" : `${active.length} im Plan`}
       alert={due.length > 0}
     />
   );
@@ -548,7 +550,7 @@ function Area({ area, farm, layout }: { area: WidgetArea; farm: FarmSummary; lay
   );
 }
 
-/** The Hof overview: weather, Pflanzenretter, then the widgets of Pflanzen and Tiere. */
+/** The Hof overview: weather, Pflanzenretter, the Hof-Aufgaben of today, then the widgets of Pflanzen and Tiere. */
 
 export function HofDashboard() {
   const { farm } = useActiveFarm();
@@ -564,6 +566,7 @@ export function HofDashboard() {
       <TesterNotice closable />
       {farm ? <WeatherStrip farm={farm} /> : <div className="h-[72px] rounded-2xl border bg-card animate-pulse" />}
       <LeaderboardStrip />
+      {farm && farmModuleGranted(farm, "farm-tasks") && <HofTasksStrip farm={farm} />}
       {farm && !saved.isLoading && (
         <>
           <Area area="pflanzen" farm={farm} layout={layout} />

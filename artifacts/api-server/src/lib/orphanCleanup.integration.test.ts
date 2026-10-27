@@ -92,6 +92,12 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       `INSERT INTO farm_animals (farm_id, name, species, registration_number) VALUES ($1, 'Tier', 'goat', 'R1')`,
       [own.rows[0].id],
     );
+    // A comment on a Hof-Aufgabe.
+    const task = await pool.query(
+      `INSERT INTO farm_tasks (farm_id, action_type, interval_value, interval_unit, reminder_time) VALUES ($1, 'Füttern', 1, 'Tage', '08:00') RETURNING id`,
+      [own.rows[0].id],
+    );
+    await pool.query(`INSERT INTO farm_task_comments (farm_id, task_id, user_id, body) VALUES ($1, $2, $3, 'Kartons')`, [own.rows[0].id, task.rows[0].id, userId]);
   }
 
   beforeEach(async () => {
@@ -127,6 +133,7 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       user_settings: 1,
       move_parcels: 1,
       feedback: 1,
+      farm_task_comments: 1,
       farm_memberships: 1,
       farms: 1,
       plants: 1,

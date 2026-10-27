@@ -121,7 +121,7 @@ function Handover({ farm }: { farm: FarmSummary }) {
               <li key={t.id} className="flex items-start gap-3 rounded-lg border border-border p-2.5">
                 <span className="min-w-0 flex-1">
                   <span className="block font-medium">
-                    {t.reminderTime} · {t.actionType} – {t.animalName ?? t.herdName ?? "ganzer Hof"}
+                    {t.reminderTime} · {t.title ?? t.actionType} – {t.animalName ?? t.herdName ?? "ganzer Hof"}
                   </span>
                   {t.notes && <span className="block text-xs text-muted-foreground">{t.notes}</span>}
                 </span>

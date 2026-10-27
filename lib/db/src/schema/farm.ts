@@ -71,6 +71,12 @@ export const FARM_TASK_ACTIONS = [
 ] as const;
 export type FarmTaskAction = (typeof FARM_TASK_ACTIONS)[number];
 
+// Hof-Aufgaben (docs/hof-aufgaben.md): where a task shows besides the Hof list –
+// "tiere" in Stall-Aufgaben and Am Stall, "garten" in the Pflanzen-Aufgaben,
+// "hof" only in the Hof list.
+export const FARM_TASK_AREAS = ["tiere", "garten", "hof"] as const;
+export type FarmTaskArea = (typeof FARM_TASK_AREAS)[number];
+
 export const farmRoleEnum = pgEnum("farm_role", FARM_ROLES);
 export const farmTaskActionEnum = pgEnum("farm_task_action", FARM_TASK_ACTIONS);
 export const farmSpeciesEnum = pgEnum("farm_species", FARM_SPECIES);
@@ -277,7 +283,19 @@ export const farmTasksTable = pgTable(
     animalId: integer("animal_id").references(() => farmAnimalsTable.id, { onDelete: "cascade" }),
     herdId: integer("herd_id").references(() => herdsTable.id, { onDelete: "cascade" }),
     actionType: farmTaskActionEnum("action_type").notNull(),
+    // Hof-Aufgaben: own wording ("Teichpumpe kontrollieren"); null = the action type.
+    title: text("title"),
+    area: text("area").$type<FarmTaskArea>().notNull().default("tiere"),
     notes: text("notes"),
+    // First due day (Berlin); null = one interval after creation, as before.
+    startsOn: date("starts_on", { mode: "string" }),
+    // false = once: due on startsOn, done for good when ticked off.
+    repeats: boolean("repeats").notNull().default(true),
+    // For one member; null = for everyone on the farm.
+    assigneeId: text("assignee_id"),
+    lastCompletedBy: text("last_completed_by"),
+    // The completion before today's, so a tick of today can be taken back.
+    prevCompletedAt: timestamp("prev_completed_at", { withTimezone: true }),
     // Same schedule model as the plant tasks: every <value> <unit>, reminder
     // at a Berlin wall-clock time (HH:MM), sent by the same cron.
     intervalValue: integer("interval_value").notNull(),
@@ -289,6 +307,24 @@ export const farmTasksTable = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("farm_tasks_farm_idx").on(table.farmId)],
+);
+
+// Comments on a Hof-Aufgabe ("Wir brauchen neue Eierkartons").
+export const farmTaskCommentsTable = pgTable(
+  "farm_task_comments",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    taskId: integer("task_id")
+      .notNull()
+      .references(() => farmTasksTable.id, { onDelete: "cascade" }),
+    userId: text("user_id").notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("farm_task_comments_task_idx").on(table.farmId, table.taskId)],
 );
 
 // "Haltungs-Wiki": general AI husbandry notes per species. Not farm data –

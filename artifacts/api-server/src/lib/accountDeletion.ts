@@ -21,6 +21,8 @@ import {
   dashboardLayoutsTable,
   db,
   farmMembershipsTable,
+  farmTaskCommentsTable,
+  farmTasksTable,
   farmsTable,
   favoritesTable,
   feedbackTable,
@@ -77,6 +79,8 @@ export const PERSONAL_TABLES = [
   { name: 'move_parcels', table: moveParcelsTable, userId: moveParcelsTable.userId },
   // Premium (granted or, later, paid).
   { name: 'premium', table: premiumTable, userId: premiumTable.userId },
+  // Comments on Hof-Aufgaben this person wrote.
+  { name: 'farm_task_comments', table: farmTaskCommentsTable, userId: farmTaskCommentsTable.userId },
   // Farm memberships – deleteAccount first hands over or removes the farms.
   { name: 'farm_memberships', table: farmMembershipsTable, userId: farmMembershipsTable.userId },
 ] as const;
@@ -147,6 +151,10 @@ export async function deleteAccount(userId: string): Promise<boolean> {
     for (const { table, userId: column } of PERSONAL_TABLES) {
       await tx.delete(table).where(eq(column, userId));
     }
+
+    // Hof-Aufgaben stay; they are for everyone again and lose the name.
+    await tx.update(farmTasksTable).set({ assigneeId: null }).where(eq(farmTasksTable.assigneeId, userId));
+    await tx.update(farmTasksTable).set({ lastCompletedBy: null }).where(eq(farmTasksTable.lastCompletedBy, userId));
 
     // Reports ABOUT this person's username have nothing left to moderate.
     await tx

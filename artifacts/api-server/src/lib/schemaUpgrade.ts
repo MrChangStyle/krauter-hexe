@@ -177,6 +177,29 @@ const STATEMENTS = [
   `DO $$ BEGIN
      ALTER TABLE "weather_alert_log" ADD CONSTRAINT "weather_alert_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  // Hof-Aufgaben (docs/hof-aufgaben.md).
+  `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "title" text`,
+  `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "area" text DEFAULT 'tiere' NOT NULL`,
+  `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "starts_on" date`,
+  `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "repeats" boolean DEFAULT true NOT NULL`,
+  `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "assignee_id" text`,
+  `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "last_completed_by" text`,
+  `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "prev_completed_at" timestamp with time zone`,
+  `CREATE TABLE IF NOT EXISTS "farm_task_comments" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"task_id" integer NOT NULL,
+	"user_id" text NOT NULL,
+	"body" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_task_comments" ADD CONSTRAINT "farm_task_comments_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "farm_task_comments" ADD CONSTRAINT "farm_task_comments_task_id_farm_tasks_id_fk" FOREIGN KEY ("task_id") REFERENCES "public"."farm_tasks"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "farm_task_comments_task_idx" ON "farm_task_comments" USING btree ("farm_id","task_id")`,
   `CREATE TABLE IF NOT EXISTS "farm_push_log" (
 	"farm_id" integer NOT NULL,
 	"topic" text NOT NULL,

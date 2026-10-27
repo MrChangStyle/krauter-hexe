@@ -11,7 +11,9 @@ import {
   plantsTable,
   type Task,
   type CareGuide,
+  type FarmTask,
 } from "@workspace/db";
+import { farmTaskDue } from "./farmTaskRules";
 import { logger } from "./logger";
 import { sendGardenDigests } from "./gardenCalendar";
 import { sendFeedDigests } from "./feedStock";
@@ -78,6 +80,18 @@ export function unitToDays(unit: Task["intervalUnit"]): number {
 // since the last completion (or creation), evaluated at the task's reminder
 // time. Plant care tasks add the weather and winter rules (careWeather.ts).
 type Schedule = Pick<Task, "lastCompletedAt" | "createdAt" | "intervalValue" | "intervalUnit">;
+
+/** Hof-Aufgaben: one-off tasks and a first day (farmTaskRules.ts). */
+function farmTaskDueOn(task: FarmTask, todayKey: string): boolean {
+  const { dueDate, done } = farmTaskDue({
+    repeats: task.repeats,
+    startsOn: task.startsOn,
+    createdDay: berlinDayKey(task.createdAt),
+    completedDay: task.lastCompletedAt ? berlinDayKey(task.lastCompletedAt) : null,
+    intervalDays: task.intervalValue * unitToDays(task.intervalUnit),
+  });
+  return !done && dueDate <= todayKey;
+}
 
 export function isTaskDue(task: Schedule, todayKey: string): boolean {
   const ref = task.lastCompletedAt ?? task.createdAt;
@@ -242,7 +256,7 @@ export async function triggerDueNotifications(): Promise<number> {
     const alreadySentToday =
       task.lastNotifiedAt !== null &&
       berlinDayKey(task.lastNotifiedAt) === dateKey;
-    if (alreadySentToday || !isTaskDue(task, dateKey)) continue;
+    if (alreadySentToday || !farmTaskDueOn(task, dateKey)) continue;
 
     const members = await db
       .select({ userId: farmMembershipsTable.userId })
@@ -254,13 +268,16 @@ export async function triggerDueNotifications(): Promise<number> {
           grantedSql("farm-tasks"),
         ),
       );
+    // A task for one person reminds only them – while they are on the team.
+    const assigned = task.assigneeId !== null && members.some((m) => m.userId === task.assigneeId);
     const target = animalName ?? herdName;
     for (const { userId } of members) {
+      if (assigned && userId !== task.assigneeId) continue;
       await sendPushToUser(userId, { topic: "farm-tasks",
-        title: "Stall-Aufgabe fällig",
-        body: `${task.actionType}${target ? ` – ${target}` : ""} (${farmName})`,
+        title: task.area === "tiere" ? "Stall-Aufgabe fällig" : "Hof-Aufgabe fällig",
+        body: `${task.title ?? task.actionType}${target ? ` – ${target}` : ""} (${farmName})`,
         tag: `farm-task-${task.id}`,
-        url: "/farm/aufgaben",
+        url: "/hof-aufgaben",
       });
     }
     await db

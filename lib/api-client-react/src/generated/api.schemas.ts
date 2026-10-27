@@ -4310,8 +4310,67 @@ export const FarmTaskAction = {
   Sonstiges: 'Sonstiges',
 } as const;
 
+/**
+ * Where the task shows besides the Hof list (tiere = Stall-Aufgaben, garten = Pflanzen-Aufgaben, hof = only the Hof list).
+ */
+export type FarmTaskArea = typeof FarmTaskArea[keyof typeof FarmTaskArea];
+
+
+export const FarmTaskArea = {
+  tiere: 'tiere',
+  garten: 'garten',
+  hof: 'hof',
+} as const;
+
+export interface FarmTaskComment {
+  id: number;
+  body: string;
+  createdAt: string;
+  authorName: string;
+  isOwn: boolean;
+}
+
+export interface AddFarmTaskCommentInput {
+  /**
+     * @minLength 1
+     * @maxLength 300
+     */
+  body: string;
+}
+
 export interface FarmTask {
   id: number;
+  /**
+     * Own wording; null = the action type.
+     * @nullable
+     */
+  title: string | null;
+  area: FarmTaskArea;
+  /**
+     * First due day (YYYY-MM-DD); null = one interval after creation.
+     * @nullable
+     */
+  startsOn: string | null;
+  /** false = once, on startsOn. */
+  repeats: boolean;
+  /**
+     * For this member; null = for everyone.
+     * @nullable
+     */
+  assigneeId: string | null;
+  /** @nullable */
+  assigneeName: string | null;
+  /** @nullable */
+  lastCompletedBy: string | null;
+  /** @nullable */
+  lastCompletedByName: string | null;
+  /** A one-off task that is ticked off. */
+  isDone: boolean;
+  /** Ticked off today (Berlin). */
+  doneToday: boolean;
+  commentCount: number;
+  /** The newest 20, oldest first. */
+  comments: FarmTaskComment[];
   /** @nullable */
   animalId: number | null;
   /** @nullable */
@@ -4351,7 +4410,22 @@ export interface EggsToday {
 }
 
 export interface FarmTaskInput {
-  actionType: FarmTaskAction;
+  /** Without it, the action follows from the title. */
+  actionType?: FarmTaskAction | null;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  title?: string | null;
+  area?: FarmTaskArea | null;
+  /**
+     * @nullable
+     * @pattern ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+     */
+  startsOn?: string | null;
+  repeats?: boolean;
+  /** @nullable */
+  assigneeId?: string | null;
   /** @nullable */
   animalId?: number | null;
   /** @nullable */

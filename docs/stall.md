@@ -9,7 +9,7 @@
 ## Was es gibt
 
 - **Eier heute:** „+1 Ei“ zählt hoch, „−“ nimmt ein Ei zurück, solange es noch nicht gesendet ist. Die Zahl ist Server-Stand plus Wartendes. Braucht die Freigabe „Ertrag“.
-- **Heute im Stall:** aktive Stall-Aufgaben, die heute fällig sind oder heute erledigt wurden (Füttern, Tränken, Eier sammeln …). Ein Tipp hakt sie ab. Braucht die Freigabe „Stall-Aufgaben“.
+- **Heute im Stall:** aktive Stall-Aufgaben aus dem Bereich Tiere (`docs/hof-aufgaben.md`), die heute fällig sind oder heute erledigt wurden (Füttern, Tränken, Eier sammeln …). Ein Tipp hakt sie ab. Braucht die Freigabe „Stall-Aufgaben“.
 - Gäste sehen die Seite nur zum Nachsehen.
 
 ## Ohne Netz

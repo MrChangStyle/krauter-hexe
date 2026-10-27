@@ -24,6 +24,7 @@ import { createCamera } from './farmCameras';
 import { createContact } from './farmContacts';
 import { quickStart } from './farmSetup';
 import { addExpense, addYield } from './farmYields';
+import { addFarmTaskComment, completeFarmTask, createFarmTask, type FarmTaskInput } from './farmTasks';
 import { addDays } from './feedSeason';
 import { buyFeed } from './feedStock';
 import { createBed } from './gardenBeds';
@@ -125,6 +126,19 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
     .returning({ id: farmAnimalsTable.id });
   await createBreeding(farmId, { species: 'alpaca', motherId: stute!.id, fatherName: 'Hengst vom Züchter', startedOn: ago(250), notes: 'Demo: Spucktest positiv' });
   for (const [days, kg] of [[90, 64], [30, 66.5]] as const) await createWeightLog(farmId, stute!.id, { date: ago(days), weightKg: kg });
+
+  // Hof-Aufgaben (docs/hof-aufgaben.md): today's list for the team – daily and
+  // one-off, animals, garden and Hof, one ticked off, two comments.
+  const hofTask = (title: string, more: Partial<FarmTaskInput> = {}) =>
+    createFarmTask(farmId, { title, startsOn: today, repeats: true, intervalValue: 1, intervalUnit: 'Tage', reminderTime: '08:00', ...more });
+  const eggTask = await hofTask('Eier von den Hühnern einsammeln', { reminderTime: '17:00' });
+  await hofTask('Ziegen frisches Heu geben');
+  const pump = await hofTask('Teichpumpe kontrollieren', { notes: 'Demo: Filter vorne am Teich' });
+  await hofTask('Mit dem Kescher die Federn aus dem Teich holen', { repeats: false });
+  await hofTask('Hochbeet gießen', { intervalValue: 2 });
+  await completeFarmTask(farmId, pump.id, undefined, new Date(), userId);
+  await addFarmTaskComment(farmId, eggTask.id, userId, 'Demo: Wir brauchen neue Eierkartons.');
+  await addFarmTaskComment(farmId, pump.id, userId, 'Demo: Läuft, Filter ist sauber.');
 
   // Pflichten: the farm's registration number (made up).
   // Thüringen: the demo pastures lie there too.

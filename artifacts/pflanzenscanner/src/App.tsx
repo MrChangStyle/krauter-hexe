@@ -17,6 +17,8 @@ import AuthGate from '@/components/auth-gate';
 import ScanPage from '@/pages/scan';
 import PflanzenPage from '@/pages/pflanzen';
 import AufgabenPage from '@/pages/aufgaben';
+
+import HofAufgabenPage from '@/pages/hof-aufgaben';
 import ArchivePage from '@/pages/archive';
 import CategoriesPage from '@/pages/categories';
 import KraeuterHexePage from '@/pages/kraeuter-hexe';
@@ -166,6 +168,7 @@ function Router() {
         <Route path="/module" component={ModulePage} />
         <Route path="/hilfe" component={HilfePage} />
         <Route path="/aufgaben" component={AufgabenPage} />
+        <Route path="/hof-aufgaben" component={HofAufgabenPage} />
         <Route path="/farm" component={FarmPage} />
         <Route path="/farm/tiere" component={MeineTierePage} />
         <Route path="/farm/kameras" component={FarmCamerasPage} />

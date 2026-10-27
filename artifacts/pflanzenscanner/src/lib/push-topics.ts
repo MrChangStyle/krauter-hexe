@@ -4,7 +4,7 @@ import type { ModuleId, PushTopic } from "@workspace/api-client-react";
 export const PUSH_TOPICS: { topic: PushTopic; label: string; hint: string; module?: ModuleId; ownerOnly?: boolean }[] = [
   { topic: "plant-care", label: "Pflanzenpflege", hint: "Pflegeplan und Pflege-Guides", module: "care-plan" },
   { topic: "garden", label: "Gartenkalender", hint: "Säen, pflanzen, ernten", module: "garden" },
-  { topic: "farm-tasks", label: "Stall-Aufgaben", hint: "Füttern, Ausmisten …", module: "farm-tasks" },
+  { topic: "farm-tasks", label: "Hof- & Stall-Aufgaben", hint: "Fällige Aufgaben, Kommentare im Team", module: "farm-tasks" },
   { topic: "feed", label: "Futtervorrat", hint: "Rechtzeitig nachkaufen", module: "feed" },
   { topic: "medicines", label: "Arzneimittel", hint: "Ablaufdaten", module: "medicines" },
   { topic: "breeding", label: "Zucht", hint: "Geburt, Schlupf, Schritte", module: "breeding" },

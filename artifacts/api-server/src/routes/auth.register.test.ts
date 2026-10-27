@@ -128,6 +128,7 @@ beforeEach(() => {
   resetRegistrationCounters();
   delete process.env["OPEN_REGISTRATION"];
   delete process.env["REGISTRATION_CODE"];
+  delete process.env["SITE_PASSWORD"];
   delete process.env["TURNSTILE_SITE_KEY"];
   delete process.env["TURNSTILE_SECRET_KEY"];
   delete process.env["REGISTRATION_DAILY_CAP"];
@@ -161,6 +162,15 @@ describe("POST /auth/register", () => {
     expect(res.status).toBe(201);
     expect(state.inserted[0]?.["termsVersion"]).toBe(LEGAL_VERSION);
     expect(state.inserted[0]?.["termsAcceptedAt"]).toBeInstanceOf(Date);
+  });
+
+  it("asks a new account for the invitation code – unless the Seitenpasswort already guards the site", async () => {
+    process.env["REGISTRATION_CODE"] = "familie";
+    expect((await register({ acceptTerms: true, registrationCode: "4620" })).status).toBe(403);
+    expect(state.inserted).toHaveLength(0);
+    process.env["SITE_PASSWORD"] = "4620";
+    expect((await register({ acceptTerms: true })).status).toBe(201);
+    expect((await register({ acceptTerms: true, registrationCode: "4620" })).status).toBe(201);
   });
 
   it("keeps new accounts waiting for approval in family mode", async () => {

@@ -73,7 +73,8 @@ services:
         sync: false
       # Optional: gemeinsamer Einladungscode für die Registrierung.
       # Weglassen, wenn keiner verlangt werden soll – dann zeigt die Anmeldung kein
-      # Feld „Einladungscode“. Für die Testphase mit SITE_PASSWORD NICHT setzen.
+      # Feld „Einladungscode“. Solange SITE_PASSWORD gesetzt ist, verlangen neue Konten
+      # ihn ohnehin nicht – das Seitenpasswort ist dann die Einladung.
       - key: REGISTRATION_CODE
         sync: false
 

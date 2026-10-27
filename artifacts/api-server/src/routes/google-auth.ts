@@ -23,6 +23,7 @@ import {
   LEGAL_VERSION,
   addressMayRegister,
   dailyCapAllowsRegistration,
+  invitationCodeForNewAccounts,
   isOpenRegistration,
   recordRegistration,
 } from '../lib/registrationPolicy';
@@ -95,7 +96,7 @@ router.get('/auth/providers', (_req: Request, res: Response) => {
     turnstileSiteKey: getTurnstileConfig()?.siteKey ?? null,
     openRegistration: isOpenRegistration(),
     // Only then the registration form asks for an invitation code.
-    registrationCode: Boolean(process.env['REGISTRATION_CODE']),
+    registrationCode: invitationCodeForNewAccounts() !== null,
   });
 });
 
@@ -298,7 +299,7 @@ async function resolveAccount(
     // A Google redirect has nowhere to type that code, so an unknown address
     // is turned away instead of quietly creating a row – otherwise anyone
     // with a Google account could sign up on a URL that is meant to be closed.
-    if (process.env['REGISTRATION_CODE']) {
+    if (invitationCodeForNewAccounts()) {
       throw new SignInRejected('google-konto-unbekannt', 'unknown email, registration is code-gated');
     }
 

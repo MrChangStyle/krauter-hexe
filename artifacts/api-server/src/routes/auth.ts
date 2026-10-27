@@ -20,6 +20,7 @@ import {
   LEGAL_VERSION,
   addressMayRegister,
   dailyCapAllowsRegistration,
+  invitationCodeForNewAccounts,
   isOpenRegistration,
   recordRegistration,
 } from '../lib/registrationPolicy';
@@ -169,22 +170,25 @@ router.post('/auth/register', async (req: Request, res: Response): Promise<void>
     return;
   }
 
+  const [existing] = await db
+    .select({ id: usersTable.id, passwordHash: usersTable.passwordHash })
+    .from(usersTable)
+    .where(sql`lower(${usersTable.email}) = ${email}`);
+
   // Shared invitation code. Without it, anyone who guesses a family member's
-  // email address could claim their account before they register themselves.
+  // email address could claim their account before they register themselves –
+  // so claiming always needs it. A brand-new account needs it only while the
+  // site is not behind the Seitenpasswort (invitationCodeForNewAccounts).
   const requiredCode = process.env['REGISTRATION_CODE'];
-  if (requiredCode) {
+  const codeNeeded = existing && !existing.passwordHash ? requiredCode : invitationCodeForNewAccounts();
+  if (codeNeeded) {
     const { registrationCode } = req.body as { registrationCode?: unknown };
-    if (registrationCode !== requiredCode) {
+    if (registrationCode !== codeNeeded) {
       recordFailure(key);
       res.status(403).json({ error: 'Der Einladungscode stimmt nicht.' });
       return;
     }
   }
-
-  const [existing] = await db
-    .select({ id: usersTable.id, passwordHash: usersTable.passwordHash })
-    .from(usersTable)
-    .where(sql`lower(${usersTable.email}) = ${email}`);
 
   // Claiming a pre-existing, password-less account inherits everything that
   // row already has – including approval and, for one of them, owner rights.

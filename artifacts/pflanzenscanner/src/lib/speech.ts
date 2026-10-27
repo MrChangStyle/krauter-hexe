@@ -70,10 +70,19 @@ export function spokenPunctuation(phrase: string): string {
   return out.replace(/([,.:?!])(?=[^\s\d,.:?!])/gu, "$1 ").replace(/^[\s,.:]+/, "").trim();
 }
 
-/** Adds a dictated phrase to what is already typed. */
-export function appendPhrase(current: string, raw: string): string {
-  const phrase = spokenPunctuation(raw);
+/**
+ * Adds a dictated phrase to what is already typed: as a new sentence, or –
+ * with `flow` (the lists of Hof-Aufgaben and Alltagsnotizen) – as one running
+ * text. Phones end a phrase wherever the speaker pauses to think; a list must
+ * not be cut into sentences there. Marks said aloud ("Komma") still count.
+ */
+export function appendPhrase(current: string, raw: string, { flow = false }: { flow?: boolean } = {}): string {
+  const phrase = spokenPunctuation(flow ? raw.trim().replace(/[.!?]+$/, "") : raw);
   if (!phrase) return current;
+  if (flow) {
+    if (!current.trim()) return phrase.charAt(0).toUpperCase() + phrase.slice(1);
+    return `${current.replace(/\s+$/, "")} ${phrase}`;
+  }
   const sentence = phrase.charAt(0).toUpperCase() + phrase.slice(1);
   if (!current.trim()) return sentence;
   return `${current.replace(/\s+$/, "")}${/[.!?]$/.test(current.trim()) ? " " : ". "}${sentence}`;

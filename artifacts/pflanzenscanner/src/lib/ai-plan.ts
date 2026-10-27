@@ -1,9 +1,9 @@
 /**
  * The plans from speech (Hof-Aufgaben, Alltagsnotizen) are waited for on
- * screen. The server gives up after 20 s (AI_PLAN_TIMEOUT_MS); the app waits
+ * screen. The server gives up after 25 s (AI_PLAN_TIMEOUT_MS); the app waits
  * a little longer, then splits the text itself – it never hangs.
  */
-export const AI_PLAN_WAIT_MS = 25_000;
+export const AI_PLAN_WAIT_MS = 30_000;
 
 /** What the app says when the AI took too long – the same shape as a server error. */
 export const AI_TOO_SLOW = { data: { error: "Die KI hat zu lange gebraucht." } };

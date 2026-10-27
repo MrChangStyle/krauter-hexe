@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Loader2, LogOut, Mic, Plus, Share2, ShoppingCart, Sparkles, StickyNote, Trash2, X } from "lucide-react";
+import { ArrowLeft, Check, Loader2, LogOut, Plus, Share2, ShoppingCart, Sparkles, StickyNote, Trash2, X } from "lucide-react";
 import {
   getListNoteSharesQueryKey,
   getListNotesQueryKey,
@@ -18,6 +18,8 @@ import {
   type NoteKind,
 } from "@workspace/api-client-react";
 import { DictateButton } from "@/components/dictate-button";
+import { SpeakHint } from "@/components/speak-hint";
+import { TOOL_BUTTON, TOOL_FRAME, ToolCardHeader } from "@/components/tool-card";
 import { errorText, useTeam } from "@/components/hof-tasks";
 import { ShareListsDialog } from "@/components/share-lists-dialog";
 import { Button } from "@/components/ui/button";
@@ -259,19 +261,20 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
   const needsPlan = notesNeedPlan(text);
 
   return (
-    <section className="space-y-2 rounded-2xl border-2 border-orange-300 bg-card p-3 dark:border-orange-800" aria-label="Neue Notiz">
-      <div className="flex gap-2.5 rounded-xl bg-orange-50 p-2.5 text-sm dark:bg-orange-950/40" data-testid="notes-speak-hint">
-        <Mic className="mt-0.5 h-4 w-4 shrink-0 text-orange-600" />
+    <section className={cn("space-y-3 p-3.5", TOOL_FRAME)} aria-label="Neue Notiz" data-testid="notes-quick-card">
+      <ToolCardHeader
+        icon={<StickyNote className="h-5 w-5" />}
+        title={<label htmlFor="notes-quick">{ownerName ? `Auf die Liste von ${ownerName}` : "Neue Notiz"}</label>}
+        hint="Einkauf oder Merkzettel – sprechen oder tippen"
+        action={<DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={1500} label="Notizen sprechen" big />}
+      />
+      <SpeakHint title="Einfach reinsprechen – die App schreibt die Liste" tone="orange" testId="notes-speak-hint">
         <p>
-          <span className="font-semibold">Einfach reinsprechen – die App schreibt die Liste.</span> Tipp auf „Sprechen“ und sag frei, was du brauchst, z. B.:{" "}
-          <span className="italic">„Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen.“</span> Die KI macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.
+          Tipp auf „Sprechen“ und sag frei, was du brauchst, z. B.: <span className="italic">„Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen.“</span> Die KI
+          macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.
         </p>
-      </div>
+      </SpeakHint>
       <form onSubmit={(e) => void submit(e)} className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label htmlFor="notes-quick" className="text-sm font-medium">{ownerName ? `Auf die Liste von ${ownerName}` : "Neue Notiz"}</label>
-          <DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={1500} label="Notizen sprechen" />
-        </div>
         <textarea
           id="notes-quick"
           rows={text.length > 50 || text.includes("\n") ? 3 : 1}
@@ -285,10 +288,10 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
             }
           }}
           placeholder="Sprechen oder tippen, z. B. Zahnbürsten"
-          className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full resize-none rounded-xl border border-orange-200 bg-background px-3 py-2.5 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-orange-400 dark:border-orange-900"
         />
         <div className="flex justify-end">
-          <Button type="submit" size="sm" className="h-9 gap-1.5 bg-orange-600 text-white hover:bg-orange-700" disabled={saving || plan.isPending || !text.trim()}>
+          <Button type="submit" size="sm" className={cn("h-9 gap-1.5", TOOL_BUTTON)} disabled={saving || plan.isPending || !text.trim()}>
             {saving || plan.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : needsPlan ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
             {plan.isPending ? "KI sortiert …" : needsPlan ? "Liste erstellen" : "Hinzufügen"}
           </Button>

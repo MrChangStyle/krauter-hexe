@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Leaf, Loader2, Mic, Plus, Repeat, Sparkles, Sprout, Users, X } from "lucide-react";
+import { ArrowLeft, Check, Leaf, Loader2, NotebookPen, Plus, Repeat, Sparkles, Sprout, Users, X } from "lucide-react";
 import {
   getListFarmTasksQueryKey,
   getListTasksQueryKey,
@@ -18,6 +18,8 @@ import { HofTaskDialog, HofTaskRow, errorText, useTeam } from "@/components/hof-
 import { GardenTodoSection } from "@/components/garden-overview";
 import { ShareListsDialog } from "@/components/share-lists-dialog";
 import { DictateButton } from "@/components/dictate-button";
+import { SpeakHint } from "@/components/speak-hint";
+import { TOOL_BUTTON, TOOL_FRAME, ToolCardHeader } from "@/components/tool-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useActiveFarm } from "@/hooks/use-active-farm";
@@ -236,20 +238,21 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
     preview && setPreview({ ...preview, tasks: preview.tasks.map((t, j) => (j === i ? { ...t, ...patch } : t)) });
 
   return (
-    <section className="space-y-2 rounded-2xl border bg-card p-3" aria-label="Neue Aufgabe">
-      <div className="flex gap-2.5 rounded-xl bg-primary/10 p-2.5 text-sm" data-testid="hof-speak-hint">
-        <Mic className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+    <section className={cn("space-y-3 p-3.5", TOOL_FRAME)} aria-label="Neue Aufgabe" data-testid="hof-quick-card">
+      <ToolCardHeader
+        icon={<NotebookPen className="h-5 w-5" />}
+        title={<label htmlFor="hof-quick">Neue Aufgaben</label>}
+        hint="Sprechen oder tippen – eine oder mehrere"
+        action={<DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={1500} label="Aufgaben sprechen" big />}
+      />
+      <SpeakHint title="Einfach reinsprechen – die App macht die Liste" tone="orange" testId="hof-speak-hint">
         <p>
-          <span className="font-semibold">Einfach reinsprechen – die App macht die Liste.</span> Tipp auf „Sprechen“ und sag frei, was zu tun ist, z. B.:{" "}
+          Tipp auf „Sprechen“ und sag frei, was zu tun ist, z. B.:{" "}
           <span className="italic">„Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“</span>{" "}
           Die KI erkennt die einzelnen Aufgaben, den Tag, ob es sich wiederholt, die Uhrzeit und für wen. Vor dem Speichern siehst du alles zum Prüfen.
         </p>
-      </div>
+      </SpeakHint>
       <form onSubmit={(e) => void submit(e)} className="space-y-2">
-        <div className="flex items-center justify-between">
-          <label htmlFor="hof-quick" className="text-sm font-medium">Neue Aufgaben</label>
-          <DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={1500} label="Aufgaben sprechen" />
-        </div>
         <textarea
           id="hof-quick"
           rows={text.length > 60 || text.includes("\n") ? 3 : 1}
@@ -263,7 +266,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
             }
           }}
           placeholder="Sprechen oder tippen, z. B. Eier einsammeln"
-          className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          className="w-full resize-none rounded-xl border border-orange-200 bg-background px-3 py-2.5 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-orange-400 dark:border-orange-900"
         />
         <div className="flex flex-wrap items-center gap-2">
           {team.length > 1 && (
@@ -278,12 +281,12 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
             type="button"
             aria-pressed={daily}
             onClick={() => setDaily(!daily)}
-            className={cn("inline-flex h-9 items-center gap-1.5 rounded-md border px-2.5 text-sm", daily ? "border-primary bg-primary/10 text-primary" : "border-input")}
+            className={cn("inline-flex h-9 items-center gap-1.5 rounded-md border bg-background px-2.5 text-sm", daily ? "border-orange-500 bg-orange-100 text-orange-800 dark:bg-orange-950" : "border-input")}
           >
             <Repeat className="h-4 w-4" />
             Täglich
           </button>
-          <Button type="submit" size="sm" className="ml-auto h-9 gap-1.5" disabled={saving || plan.isPending || !text.trim()}>
+          <Button type="submit" size="sm" className={cn("ml-auto h-9 gap-1.5", TOOL_BUTTON)} disabled={saving || plan.isPending || !text.trim()}>
             {saving || plan.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : needsPlan(text) ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
             {plan.isPending ? "KI plant …" : needsPlan(text) ? "Liste erstellen" : "Hinzufügen"}
           </Button>

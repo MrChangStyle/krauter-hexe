@@ -8,7 +8,20 @@ import { appendPhrase, speechSupported, startDictation, type Recognition } from 
  * sentence per phrase (lib/speech.ts), cut at the field's length. Not shown where the browser has no
  * speech recognition. Stops when the field goes away.
  */
-export function DictateButton({ value, onChange, max, label = "Notiz sprechen" }: { value: string; onChange: (text: string) => void; max: number; label?: string }) {
+export function DictateButton({
+  value,
+  onChange,
+  max,
+  label = "Notiz sprechen",
+  big = false,
+}: {
+  value: string;
+  onChange: (text: string) => void;
+  max: number;
+  label?: string;
+  /** The orange pill of the everyday tools (Hof-Aufgaben, Alltagsnotizen). */
+  big?: boolean;
+}) {
   const { toast } = useToast();
   const [listening, setListening] = useState(false);
   const rec = useRef<Recognition | null>(null);
@@ -51,11 +64,17 @@ export function DictateButton({ value, onChange, max, label = "Notiz sprechen" }
       aria-label={listening ? "Diktat beenden" : label}
       aria-pressed={listening}
       onClick={toggle}
-      className={`inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs ${
-        listening ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
-      }`}
+      className={
+        big
+          ? `inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold shadow-sm ${
+              listening ? "animate-pulse bg-red-600 text-white" : "bg-orange-500 text-white hover:bg-orange-600"
+            }`
+          : `inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs ${
+              listening ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted"
+            }`
+      }
     >
-      {listening ? <MicOff className="h-3.5 w-3.5" /> : <Mic className="h-3.5 w-3.5" />}
+      {listening ? <MicOff className={big ? "h-4 w-4" : "h-3.5 w-3.5"} /> : <Mic className={big ? "h-4 w-4" : "h-3.5 w-3.5"} />}
       {listening ? "Stopp" : "Sprechen"}
     </button>
   );

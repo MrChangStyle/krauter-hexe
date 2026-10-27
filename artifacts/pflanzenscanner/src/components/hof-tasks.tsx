@@ -25,6 +25,7 @@ import {
   type TaskIntervalUnit,
 } from "@workspace/api-client-react";
 import { DictateButton } from "@/components/dictate-button";
+import { TOOL_FRAME } from "@/components/tool-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,8 +69,7 @@ function useRefresh(farmId: number) {
 // ── The two tools on the Hof ─────────────────────────────────────────────────
 
 /** The look of the two everyday tools: square, orange frame, stands out from the widgets. */
-const TOOL_TILE =
-  "flex aspect-square flex-col rounded-2xl border-2 border-orange-400 bg-gradient-to-br from-orange-50 to-amber-50 p-3 text-left shadow-sm transition active:scale-[0.98] dark:border-orange-700 dark:from-orange-950/50 dark:to-amber-950/30";
+const TOOL_TILE = `flex aspect-square flex-col p-3 text-left transition active:scale-[0.98] ${TOOL_FRAME}`;
 
 function ToolTile({ href, icon, title, value, line, progress, testId }: { href: string; icon: ReactNode; title: string; value: string; line: string; progress?: number | null; testId: string }) {
   return (

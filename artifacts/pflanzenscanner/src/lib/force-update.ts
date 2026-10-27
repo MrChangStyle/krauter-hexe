@@ -1,3 +1,5 @@
+import { markUpdating } from "@/lib/app-version";
+
 // Escape hatch for the "stale installed PWA" trap: an old service worker can
 // keep serving a cached (empty) version of the app and never reach the network
 // to update itself. This forcibly removes the service worker and every Cache
@@ -6,6 +8,7 @@
 // IMPORTANT: This deliberately does NOT touch IndexedDB, so the offline scan
 // queue (photos waiting to be identified) and any other stored data survive.
 export async function forceAppUpdate(): Promise<void> {
+  markUpdating();
   // 1) Unregister every service worker controlling this origin.
   try {
     if ("serviceWorker" in navigator) {

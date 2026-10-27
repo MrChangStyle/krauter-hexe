@@ -1,10 +1,16 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 import { RefreshCw, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { appBuiltAt, formatBuild, markUpdating, takeUpdated } from "@/lib/app-version";
 
 // How often an already-open app re-checks the server for a newer version.
-const UPDATE_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+// An installed app on a phone is mostly resumed, not reloaded – so it also
+// checks whenever it comes back to the foreground or online.
+const UPDATE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
+
+// Read once when the app starts: was this start the reload of an update?
+const JUST_UPDATED = takeUpdated();
 
 // Shows an automatic banner as soon as a new version of the app has been
 // deployed and the service worker has fetched it. The user taps "Jetzt
@@ -23,17 +29,32 @@ export function UpdatePrompt() {
     onRegisteredSW(_swUrl, registration) {
       if (!registration || intervalStarted.current) return;
       intervalStarted.current = true;
-      setInterval(() => {
-        void registration.update();
-      }, UPDATE_CHECK_INTERVAL_MS);
+      const check = () => {
+        if (navigator.onLine) void registration.update().catch(() => undefined);
+      };
+      setInterval(check, UPDATE_CHECK_INTERVAL_MS);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") check();
+      });
+      window.addEventListener("online", check);
     },
   });
+
+  // After the reload of an update: say that it worked, and which version runs now.
+  useEffect(() => {
+    if (!JUST_UPDATED) return;
+    const built = formatBuild(appBuiltAt());
+    // A moment later: the Toaster subscribes in its own effect, after this one.
+    const timer = setTimeout(() => toast({ title: "App aktualisiert", description: built ? `Neuer Stand: ${built}` : undefined }), 600);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   if (!needRefresh) return null;
 
   const handleUpdate = () => {
     if (busy) return;
     setBusy(true);
+    markUpdating();
     updateServiceWorker(true)
       .then(() => {
         // The SW will skipWaiting and the page reloads automatically.

@@ -17,6 +17,7 @@ import {
 import { HofTaskDialog, HofTaskRow, errorText, useTeam } from "@/components/hof-tasks";
 import { GardenTodoSection } from "@/components/garden-overview";
 import { ShareListsDialog } from "@/components/share-lists-dialog";
+import { FarmSwitcher } from "@/components/farm-switcher";
 import { DictateButton } from "@/components/dictate-button";
 import { SpeakHint } from "@/components/speak-hint";
 import { TOOL_BUTTON, TOOL_FRAME, ToolCardHeader } from "@/components/tool-card";
@@ -35,7 +36,7 @@ import { AREA_LABELS, dayLabel, hofToday, needsPlan, planLocally, splitTaskList,
  * New tasks by typing or speaking, several at once.
  */
 export default function HofAufgabenPage() {
-  const { farm, failed } = useActiveFarm();
+  const { farm, farms, failed, select } = useActiveFarm();
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
@@ -49,6 +50,8 @@ export default function HofAufgabenPage() {
           {farm ? ` · ${farm.name}` : ""}
         </p>
       </div>
+      {/* The list of which Hof – the own one or one shared with me. */}
+      <FarmSwitcher farms={farms} active={farm} onSelect={select} />
       {!farm ? (
         failed ? <p className="text-sm text-muted-foreground">Der Hof konnte nicht geladen werden. Bist du online?</p> : <Loader2 className="h-6 w-6 animate-spin text-primary" />
       ) : !farmModuleGranted(farm, "farm-tasks") ? (

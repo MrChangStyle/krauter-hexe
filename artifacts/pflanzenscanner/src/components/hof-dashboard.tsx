@@ -45,6 +45,7 @@ import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useModules } from "@/hooks/use-modules";
 import { WIDGET_MODULE, farmModuleGranted } from "@/lib/modules";
 import { HofTools } from "@/components/hof-tasks";
+import { FarmSwitcher } from "@/components/farm-switcher";
 import { DashboardEditor } from "@/components/dashboard-editor";
 import { ALERT_STYLES, AlertBox, LocationForm } from "@/components/farm-weather-card";
 import { effectiveLayout, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
@@ -550,10 +551,9 @@ function Area({ area, farm, layout }: { area: WidgetArea; farm: FarmSummary; lay
   );
 }
 
-/** The Hof overview: weather, Pflanzenretter, the Hof-Aufgaben of today, then the widgets of Pflanzen and Tiere. */
-
+/** The Hof overview: which Hof (own or shared), weather, Pflanzenretter, the two tools, then the widgets of Pflanzen and Tiere. */
 export function HofDashboard() {
-  const { farm } = useActiveFarm();
+  const { farm, farms, select } = useActiveFarm();
   const saved = useGetDashboard();
   const modules = useModules();
   // Widgets this build offers (Grow only where the module is in) of modules the account uses.
@@ -564,6 +564,7 @@ export function HofDashboard() {
   return (
     <div className="w-full space-y-4">
       <TesterNotice closable />
+      <FarmSwitcher farms={farms} active={farm} onSelect={select} />
       {farm ? <WeatherStrip farm={farm} /> : <div className="h-[72px] rounded-2xl border bg-card animate-pulse" />}
       <LeaderboardStrip />
       <HofTools farm={farm} />

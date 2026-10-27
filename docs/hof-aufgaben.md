@@ -27,6 +27,8 @@ Oben auf der Seite steht eine Zeile mit Info-Symbol: **„Einfach reinsprechen �
 
 ## Die Seite
 
+0. **Hof wählen** oben, wenn man zu mehr als einem Hof gehört: eigener Hof und die freigegebenen (`components/farm-switcher.tsx`).
+
 1. **Neue Aufgabe** oben, zum Tippen oder mit **„Halten & sprechen“** (gedrückt halten, zum Beenden loslassen):
    - Eine Aufgabe: eintippen, Enter oder „Hinzufügen“.
    - **Mehrere auf einmal:** jede Zeile, jedes Komma und jeder diktierte Satz wird eine Aufgabe. Beim Sprechen trennt eine kurze Pause oder ein Wort wie „dann“, „danach“, „außerdem“ oder „nächste Aufgabe“. Ein einfaches „und“ trennt nicht („Nassfutter und Trockenfutter geben“ bleibt eine Aufgabe). Die erkannte Liste erscheint zum Prüfen; einzelne lassen sich entfernen, dann „Alle anlegen“. Höchstens 20 auf einmal.

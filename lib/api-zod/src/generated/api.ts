@@ -7161,7 +7161,8 @@ export const ListMyFarmsResponseItem = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all'),
+  "ownerName": zod.string().nullish().describe('For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.')
 })
 export const ListMyFarmsResponse = zod.array(ListMyFarmsResponseItem)
 
@@ -7182,7 +7183,8 @@ export const CreateFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all'),
+  "ownerName": zod.string().nullish().describe('For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.')
 })
 
 
@@ -7194,7 +7196,8 @@ export const EnsureOwnFarmResponseItem = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all'),
+  "ownerName": zod.string().nullish().describe('For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.')
 })
 export const EnsureOwnFarmResponse = zod.array(EnsureOwnFarmResponseItem)
 
@@ -10033,7 +10036,8 @@ export const RenameFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all'),
+  "ownerName": zod.string().nullish().describe('For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.')
 })
 
 
@@ -10063,7 +10067,8 @@ export const GetFarmResponse = zod.object({
   "name": zod.string(),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – the viewer\'s last day of access (YYYY-MM-DD)'),
-  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all')
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).nullable().describe('Modul-Freigaben – the farm modules the viewer may use here; null = all'),
+  "ownerName": zod.string().nullish().describe('For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.')
 })
 
 

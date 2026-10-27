@@ -36,6 +36,10 @@ Unter Mehr → **„Farm & Team“** (`/team`) steht alles über die Menschen au
 - Die Demo-Daten bringen zwei Kontakte mit.
 - Test: `farmContacts.integration.test.ts`.
 
+## Wo man einen freigegebenen Hof sieht
+
+Ganz oben auf der Hofseite stehen der eigene Hof und alle Höfe, die einem freigegeben wurden (`components/farm-switcher.tsx`). Ein Tipp wechselt den Hof; dieselbe Auswahl gibt es auf der Seite Hof-Aufgaben und als Auswahlfeld unter Tiere und Farm & Team.
+
 ## Listen teilen
 
 Der Dialog „Listen teilen“ (auf den Seiten Hof-Aufgaben und Alltagsnotizen) teilt die Hof-Aufgaben, die eigenen Alltagsnotizen oder beides – mit jemandem aus dem Team oder per E-Mail. Für die Hof-Aufgaben kommt eine neue Person als Mitarbeiter mit der Freigabe „Hof- & Stall-Aufgaben“ ins Team (nur Admins). Wer mitmacht, hakt ab und fügt hinzu, löscht aber nichts (`docs/alltagsnotizen.md`).

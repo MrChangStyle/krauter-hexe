@@ -11776,6 +11776,9 @@ components:
           description: Modul-Freigaben – the farm modules the viewer may use here; null = all
           items:
             $ref: "#/components/schemas/ModuleId"
+        ownerName:
+          type: [string, 'null']
+          description: For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.
     FarmSpecies:
       type: string
       enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, alpaca, other]

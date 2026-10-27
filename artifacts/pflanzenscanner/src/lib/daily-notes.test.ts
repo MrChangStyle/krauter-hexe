@@ -63,5 +63,8 @@ describe("Alltagsnotizen – a list without the AI", () => {
     expect(notesNeedPlan("2 kg Hackfleisch")).toBe(false);
     expect(notesNeedPlan("Zahnbürsten und Fleisch")).toBe(true);
     expect(notesNeedPlan("Ich muss heute noch Zahnbürsten kaufen gehen")).toBe(true);
+    // Spoken lists without commas, and a shop with the thing.
+    expect(notesNeedPlan("Nudeln Eier")).toBe(true);
+    expect(notesNeedPlan("bei Penny Nudeln kaufen")).toBe(true);
   });
 });

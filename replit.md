@@ -25,6 +25,7 @@ Eine mobile-first, deutschsprachige Web-App, mit der Nutzer wilde Pflanzen per F
 - Optional env: `CLOUDINARY_FOLDER` — folder for uploads (default `kraeuterhexe`)
 - Optional env: `OPEN_REGISTRATION` — `true` = new accounts are approved at once (public app); unset = family mode (new accounts wait for the owner)
 - Optional env: `SCAN_DAILY_BUDGET` — max AI scans per Berlin day for the whole app (owner excluded); unset = no app-wide cap. render.yaml sets 300
+- Optional env: `FREE_TESTER_SLOTS` — Testphase: the first N accounts besides the owner (existing ones count) are approved at creation even without `OPEN_REGISTRATION` (default 20, `0` = off; `lib/accounts.ts`)
 - Optional env: `REGISTRATION_DAILY_CAP` — max new accounts per rolling 24 h while `OPEN_REGISTRATION=true` (default 50)
 - Optional secrets: `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` — Cloudflare Turnstile on the registration form; only when **both** are set is a token required
 - Optional env: `LEGACY_ORIGINS` — comma-separated old addresses the canonical address accepts device data from in the move helper (render.yaml: `https://kraeuter-hexe.onrender.com`)

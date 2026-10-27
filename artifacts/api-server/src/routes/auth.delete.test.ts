@@ -47,6 +47,7 @@ vi.mock("@workspace/api-zod", () => ({
 vi.mock("../lib/accounts", () => ({
   publicUserColumns: {},
   promoteFirstOwner: () => Promise.resolve(null),
+  approveIfFreeTesterSlot: () => Promise.resolve(null),
 }));
 
 vi.mock("../lib/accountDeletion", () => {

@@ -14,7 +14,7 @@ import { db, usersTable } from '@workspace/db';
 import { and, eq, sql, ne } from 'drizzle-orm';
 import { Router, type IRouter, type Request, type Response } from 'express';
 
-import { promoteFirstOwner, publicUserColumns } from '../lib/accounts';
+import { approveIfFreeTesterSlot, promoteFirstOwner, publicUserColumns } from '../lib/accounts';
 import { OwnerAccountDeletionError, deleteAccount } from '../lib/accountDeletion';
 import {
   LEGAL_VERSION,
@@ -259,6 +259,11 @@ router.post('/auth/register', async (req: Request, res: Response): Promise<void>
   if (!user.isOwner) {
     const promoted = await promoteFirstOwner(user.id);
     if (promoted) user = promoted;
+  }
+  // Testphase: the first testers start without waiting for approval.
+  if (!existing && !user.approved) {
+    const approved = await approveIfFreeTesterSlot(user.id);
+    if (approved) user = approved;
   }
 
   await signIn(res, user.id);

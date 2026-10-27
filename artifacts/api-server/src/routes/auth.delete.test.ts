@@ -48,6 +48,7 @@ vi.mock("../lib/accounts", () => ({
   publicUserColumns: {},
   promoteFirstOwner: () => Promise.resolve(null),
   approveIfFreeTesterSlot: () => Promise.resolve(null),
+  notifyOwnerOfNewAccount: () => Promise.resolve(),
 }));
 
 vi.mock("../lib/accountDeletion", () => {

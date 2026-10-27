@@ -18,7 +18,7 @@ import { Router, type IRouter, type Request, type Response } from 'express';
 import { OAuth2Client } from 'google-auth-library';
 import { randomBytes, createHash } from 'node:crypto';
 
-import { approveIfFreeTesterSlot, promoteFirstOwner, publicUserColumns } from '../lib/accounts';
+import { approveIfFreeTesterSlot, notifyOwnerOfNewAccount, promoteFirstOwner, publicUserColumns } from '../lib/accounts';
 import {
   LEGAL_VERSION,
   addressMayRegister,
@@ -328,10 +328,10 @@ async function resolveAccount(
     // Same rule as for the email + password registration: the very first
     // account is the owner; everyone after that waits for approval unless
     // registration is open.
-    if (!(await promoteFirstOwner(userId)) && !created.approved) {
-      // Testphase: the first testers start without waiting for approval.
-      await approveIfFreeTesterSlot(userId);
-    }
+    const owner = await promoteFirstOwner(userId);
+    // Testphase: the first testers start without waiting for approval.
+    const approved = !owner && !created.approved ? await approveIfFreeTesterSlot(userId) : null;
+    if (!owner) void notifyOwnerOfNewAccount(approved ?? created);
   }
 
   return userId;

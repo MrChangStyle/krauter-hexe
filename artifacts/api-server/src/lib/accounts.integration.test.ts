@@ -7,8 +7,17 @@
  * with the schema pushed). Truncates tables – never point it at real data.
  */
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { approveIfFreeTesterSlot, freeTesterSlots } from "./accounts";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const { pushes } = vi.hoisted(() => ({ pushes: [] as Array<{ to: string; body: string; url: string }> }));
+vi.mock("./webPush", () => ({
+  sendPushToUser: (to: string, p: { body: string; url: string }) => {
+    pushes.push({ to, body: p.body, url: p.url });
+    return Promise.resolve(1);
+  },
+}));
+
+import { approveIfFreeTesterSlot, freeTesterSlots, notifyOwnerOfNewAccount } from "./accounts";
 
 const testUrl = process.env["TEST_DATABASE_URL"];
 const enabled =
@@ -76,5 +85,15 @@ describe.skipIf(!enabled)("Testphase: die ersten Tester ohne Freigabe (real data
     const [ra, rb] = await Promise.all([approveIfFreeTesterSlot("a"), approveIfFreeTesterSlot("b")]);
     expect([ra?.approved ?? false, rb?.approved ?? false].filter(Boolean)).toHaveLength(1);
     expect(await approved("a")).toBe(true);
+  });
+
+  it("tells the owner who signed up and whether the account starts at once", async () => {
+    pushes.length = 0;
+    await notifyOwnerOfNewAccount({ id: "neu3", email: "neu3@example.org", firstName: "Lena", approved: true });
+    await notifyOwnerOfNewAccount({ id: "neu4", email: "neu4@example.org", firstName: null, approved: false });
+    expect(pushes).toEqual([
+      { to: "chef", body: "Lena hat sich angemeldet und kann sofort loslegen.", url: "/verwaltung#benutzer" },
+      { to: "chef", body: "neu4@example.org hat sich angemeldet und wartet auf deine Freischaltung.", url: "/verwaltung#benutzer" },
+    ]);
   });
 });

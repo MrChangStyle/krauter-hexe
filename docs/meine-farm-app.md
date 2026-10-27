@@ -30,7 +30,7 @@ stetig weiter – die Farm-Funktionen sind der nächste Ausbau, nicht der letzte
   aus A1. Die Kräuterhexe wird dort als Teil der App genannt.
 - **A1 (freie Registrierung) ist umgesetzt.** Entscheidungen:
   - Neue Konten sind sofort nutzbar (Schalter `OPEN_REGISTRATION`).
-  - **Testphase:** Auch ohne `OPEN_REGISTRATION` dürfen die ersten 20 Konten (ohne den Inhaber, die schon bestehenden zählen mit) sofort starten (`FREE_TESTER_SLOTS`, Standard 20, `0` = aus; `approveIfFreeTesterSlot` in `lib/accounts.ts`). Gezählt wird der Platz nach Anlegezeit; geprüft nur beim Anlegen (Passwort und Google), damit ein vom Inhaber gesperrtes Konto gesperrt bleibt. Ab Platz 21 wartet ein neues Konto wie bisher auf die Freischaltung. Gelöschte Konten machen ihren Platz frei. Die Zahl 20 ist eine Entscheidung des Inhabers, keine fachliche Grenze.
+  - **Testphase:** Auch ohne `OPEN_REGISTRATION` dürfen die ersten 20 Konten (ohne den Inhaber, die schon bestehenden zählen mit) sofort starten (`FREE_TESTER_SLOTS`, Standard 20, `0` = aus; `approveIfFreeTesterSlot` in `lib/accounts.ts`). Gezählt wird der Platz nach Anlegezeit; geprüft nur beim Anlegen (Passwort und Google), damit ein vom Inhaber gesperrtes Konto gesperrt bleibt. Ab Platz 21 wartet ein neues Konto wie bisher auf die Freischaltung. Gelöschte Konten machen ihren Platz frei. Die Zahl 20 ist eine Entscheidung des Inhabers, keine fachliche Grenze. Bei jeder neuen Anmeldung bekommt der Inhaber einen Push (Thema „Betreiber“): wer, und ob das Konto sofort startet oder wartet (`notifyOwnerOfNewAccount`).
   - Kein E-Mail-Versand.
   - Cloudflare Turnstile als Bot-Schutz.
 

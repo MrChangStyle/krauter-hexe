@@ -5,6 +5,9 @@
 import { db, usersTable } from '@workspace/db';
 import { and, eq, sql } from 'drizzle-orm';
 
+import { logger } from './logger';
+import { sendPushToUser } from './webPush';
+
 /** Columns that may be sent to the client – never the password hash. */
 export const publicUserColumns = {
   id: usersTable.id,
@@ -86,4 +89,28 @@ export async function approveIfFreeTesterSlot(userId: string) {
     )
     .returning(publicUserColumns);
   return approved ?? null;
+}
+
+/**
+ * Push to the owner when someone new signs up: who, and whether the account
+ * starts at once (free tester place) or waits for approval. Never throws –
+ * a failed push must not fail the sign-up.
+ */
+export async function notifyOwnerOfNewAccount(user: { id: string; email: string | null; firstName: string | null; approved: boolean }): Promise<void> {
+  try {
+    const owners = await db.select({ id: usersTable.id }).from(usersTable).where(eq(usersTable.isOwner, true));
+    const who = user.firstName || user.email || 'Jemand';
+    for (const owner of owners) {
+      if (owner.id === user.id) continue;
+      await sendPushToUser(owner.id, {
+        topic: 'admin',
+        title: 'Neuer Tester',
+        body: user.approved ? `${who} hat sich angemeldet und kann sofort loslegen.` : `${who} hat sich angemeldet und wartet auf deine Freischaltung.`,
+        tag: 'new-account',
+        url: '/verwaltung#benutzer',
+      });
+    }
+  } catch (err) {
+    logger.warn({ err }, 'new account push failed');
+  }
 }

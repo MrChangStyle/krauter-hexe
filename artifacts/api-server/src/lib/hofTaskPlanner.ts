@@ -193,7 +193,7 @@ export async function planTasks(farmId: number, rawText: unknown, today: string,
   const parsed = await runModelChain([{ role: 'user', parts: [{ text: planPrompt(said, ctx) }] }], TEXT_MODELS, {
     maxOutputTokens: AI_PLAN_OUTPUT_TOKENS,
     responseMimeType: 'application/json',
-  }, { timeoutMs: AI_PLAN_TIMEOUT_MS, attemptTimeoutMs: AI_PLAN_ATTEMPT_MS });
+  }, { timeoutMs: AI_PLAN_TIMEOUT_MS, attemptTimeoutMs: AI_PLAN_ATTEMPT_MS, quick: true });
   const tasks = coercePlan(parsed, ctx);
   if (tasks.length === 0) throw new FarmDataError(422, 'Daraus konnte die KI keine Aufgabe machen. Sag es bitte noch einmal anders.');
   return tasks;

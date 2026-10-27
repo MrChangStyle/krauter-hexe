@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Leaf, Loader2, NotebookPen, Plus, Repeat, Sparkles, Sprout, Users, X } from "lucide-react";
+import { ArrowLeft, Check, ChevronDown, Leaf, Loader2, NotebookPen, Plus, Repeat, Sparkles, Sprout, Users, X } from "lucide-react";
 import {
   getListFarmTasksQueryKey,
   getListTasksQueryKey,
@@ -127,12 +127,7 @@ function HofTasks({ farm }: { farm: FarmSummary }) {
               rows(open)
             )}
           </section>
-          {done.length > 0 && (
-            <section className="space-y-2" aria-labelledby="hof-done">
-              <h2 id="hof-done" className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Heute erledigt ({done.length})</h2>
-              {rows(done)}
-            </section>
-          )}
+          {done.length > 0 && <DoneToday count={done.length}>{rows(done)}</DoneToday>}
           {soon.length > 0 && (
             <section className="space-y-2" aria-labelledby="hof-soon">
               <h2 id="hof-soon" className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">In den nächsten Tagen</h2>
@@ -399,6 +394,26 @@ function repeatFrom(key: string): Partial<Planned> {
 }
 
 /** Every task of the Hof, also later and paused ones – to change or delete. */
+/** "Heute erledigt": closed at first – what is done need not be seen; a tap opens it. */
+function DoneToday({ count, children }: { count: number; children: ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <section className="space-y-2" data-testid="hof-done">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen(!open)}
+        className="flex w-full items-center gap-2 rounded-xl border bg-card px-3 py-2 text-left"
+      >
+        <Check className="h-4 w-4 shrink-0 text-primary" />
+        <span className="flex-1 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Heute erledigt ({count})</span>
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} />
+      </button>
+      {open && children}
+    </section>
+  );
+}
+
 function AllTasks({ tasks, onEdit }: { tasks: FarmTask[]; onEdit?: (t: FarmTask) => void }) {
   const [open, setOpen] = useState(false);
   const list = tasks.filter((t) => !t.isDone);

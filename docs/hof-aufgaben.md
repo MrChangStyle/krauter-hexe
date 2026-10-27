@@ -36,7 +36,7 @@ Die Eingabekarte ist auf Hof-Aufgaben und Alltagsnotizen gleich aufgebaut (`comp
    - **„Mit Tag, Wiederholung, Uhrzeit oder Tier anlegen …“** öffnet das ganze Formular: Text (auch gesprochen), Bereich (automatisch, Tiere, Garten, Hof & Haus), bei Tiere welches Tier oder welche Gruppe, für wen, einmalig an einem Tag oder wiederkehrend ab einem Tag (alle N Tage, Wochen, Monate), Uhrzeit der Erinnerung, Notiz (auch gesprochen).
 2. **Filter:** Alle, Für mich (meine und die für alle), Tiere, Garten, Hof & Haus.
 3. **Heute zu tun:** fällig heute oder überfällig („seit gestern“, „seit 3 Tagen“), nach Tag und Uhrzeit.
-4. **Heute erledigt:** mit „erledigt von Maria, 08:12“. Ein Tipp auf den Haken nimmt ihn zurück.
+4. **Heute erledigt:** zugeklappt, nur eine Zeile mit der Zahl („Heute erledigt (3)“); ein Tipp klappt die Liste auf – mit „erledigt von Maria, 08:12“. Ein Tipp auf den Haken nimmt ihn zurück.
 5. **In den nächsten Tagen:** was in den kommenden sieben Tagen fällig wird.
 6. **Alle Aufgaben verwalten:** auch spätere und pausierte, zum Ändern oder Löschen.
 7. **Pflanzenpflege:** die eigenen fälligen Pflegeaufgaben aus dem Pflegeplan, mit „Erledigt“. Sie sind persönlich und nur für einen selbst sichtbar.

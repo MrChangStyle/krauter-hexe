@@ -13,6 +13,7 @@ vi.mock("./geminiClient", () => ({
     models: {
       generateContent: ({ model, config }: { model: string; config: { abortSignal?: AbortSignal } }) => {
         calls.push(model);
+        if (model === "fast") return Promise.resolve({ text: '{"ok": true}' });
         return new Promise((_resolve, reject) => {
           config.abortSignal?.addEventListener("abort", () => reject(Object.assign(new Error("aborted"), { name: "AbortError" })));
         });
@@ -34,5 +35,12 @@ describe("runModelChain with timeoutMs", () => {
     expect(took).toBeLessThan(2000);
     // The first model used up the whole budget; nothing more was tried after it.
     expect(calls).toEqual(["a"]);
+  });
+
+  it("gives the next model its turn when one model is slow", async () => {
+    calls.length = 0;
+    const answer = await runModelChain([], [{ name: "slow", attempts: 1 }, { name: "fast", attempts: 1 }], { maxOutputTokens: 10, responseMimeType: "application/json" }, { timeoutMs: 2000, attemptTimeoutMs: 200 });
+    expect(answer).toEqual({ ok: true });
+    expect(calls).toEqual(["slow", "fast"]);
   });
 });

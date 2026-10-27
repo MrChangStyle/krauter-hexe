@@ -28,7 +28,8 @@ export function DictateButton({
   latest.current = value;
   const { supported, listening, handlers } = usePushToTalk((phrase) => {
     // Never longer than the field allows.
-    latest.current = appendPhrase(latest.current, phrase).slice(0, max);
+    // The big button of the lists writes one running text (appendPhrase flow).
+    latest.current = appendPhrase(latest.current, phrase, { flow: big }).slice(0, max);
     onChange(latest.current);
   });
 

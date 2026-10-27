@@ -137,7 +137,11 @@ export const MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
  * screen: after this long the server gives up and the app splits the text
  * itself. The app waits a little longer (lib/ai-plan.ts in the app).
  */
-export const AI_PLAN_TIMEOUT_MS = 20_000;
+export const AI_PLAN_TIMEOUT_MS = 25_000;
+/** One model may use at most this much of it, so Flash-Lite still gets its turn when Flash is slow. */
+export const AI_PLAN_ATTEMPT_MS = 12_000;
+/** Room for the model's thinking as well as the answer – too few tokens give an empty answer. */
+export const AI_PLAN_OUTPUT_TOKENS = 8192;
 
 export const TEXT_MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
   { name: "gemini-flash-latest", attempts: 2 },
@@ -193,15 +197,21 @@ export async function runModelChain(
   contents: unknown,
   models: ReadonlyArray<{ name: string; attempts: number }>,
   config: { maxOutputTokens: number; responseMimeType: string } = GENERATION_CONFIG,
-  /** timeoutMs: the whole chain gives up after this long – for answers someone waits for on screen. */
-  opts: { timeoutMs?: number } = {},
+  /**
+   * timeoutMs: the whole chain gives up after this long – for answers someone
+   * waits for on screen. attemptTimeoutMs: one slow model may use at most this
+   * much, so the next model in the chain still gets its turn.
+   */
+  opts: { timeoutMs?: number; attemptTimeoutMs?: number } = {},
 ): Promise<unknown> {
   let lastError: unknown;
   const deadline = opts.timeoutMs ? Date.now() + opts.timeoutMs : null;
   for (const model of models) {
     for (let attempt = 0; attempt < model.attempts; attempt++) {
-      const left = deadline === null ? null : deadline - Date.now();
-      if (left !== null && left <= 0) throw lastError ?? new Error("AI request timed out");
+      const toDeadline = deadline === null ? null : deadline - Date.now();
+      const left =
+        opts.attemptTimeoutMs === undefined ? toDeadline : Math.min(toDeadline ?? Infinity, opts.attemptTimeoutMs);
+      if (toDeadline !== null && toDeadline <= 0) throw lastError ?? new Error("AI request timed out");
       try {
         const response = await ai.models.generateContent({
           model: model.name,

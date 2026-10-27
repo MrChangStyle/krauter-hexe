@@ -262,10 +262,10 @@ Gesagt:
 
 So gehst du vor:
 1. Finde jedes einzelne Ding, das gekauft, besorgt, erledigt oder gemerkt werden soll – auch wenn die Dinge ohne Komma hintereinander stehen ("nudeln eier milch" → drei Notizen) oder in einem langen Satz stecken.
-2. Mehrere Dinge sind mehrere Notizen ("Zahnbürsten und Fleisch" → zwei). Aber was zusammen EIN Ding beschreibt, bleibt eine Notiz: Sorte, Farbe, Größe, Marke ("Nudeln rot und grün", "Milch laktosefrei", "Brot vom Bäcker").
+2. Mehrere Dinge sind mehrere Notizen ("Zahnbürsten und Fleisch" → zwei). Auch mehrere Sorten desselben Dings sind mehrere Notizen – dann ergänzt du die ausgelassenen Wörter, damit jede Notiz für sich verständlich ist: "Nudeln mit roter und grüner Soße" → "Nudeln mit roter Soße", "Nudeln mit grüner Soße"; "Joghurt Erdbeer und Vanille" → "Erdbeerjoghurt", "Vanillejoghurt"; "zwei Liter Vollmilch und einen fettarme" → "2 l Vollmilch", "1 l fettarme Milch". Was nur EIN Ding genauer beschreibt, bleibt eine Notiz ("Milch laktosefrei", "Brot vom Bäcker").
 3. Läden sind keine Produkte. Penny, Aldi, Lidl, Rewe, Edeka, Netto, Norma, Kaufland, Globus, dm, Rossmann, Müller, Fressnapf, Obi, Bauhaus, Hornbach, Raiffeisen, Landhandel, Bäcker, Metzger, Apotheke, Markt und ähnliche: Häng den Laden in Klammern an jedes Ding, das dort gekauft werden soll ("bei Penny Nudeln und Eier kaufen" → "Nudeln (Penny)", "Eier (Penny)").
 4. "text" kurz wie auf einem Zettel: das Ding mit großem Anfangsbuchstaben, mit Menge, wenn gesagt ("2 kg Hackfleisch", "6 Eier"), ohne "ich muss", "wir brauchen", "kaufen", "holen", "noch", "bitte". Beim Merken das Tun behalten ("Oma anrufen", "Tierarzt Termin machen"). Höchstens 120 Zeichen. Offensichtlich falsch erkannte Wörter darfst du zum gemeinten Produkt verbessern ("Butterbrot Papier" → "Butterbrotpapier"); sonst nichts erfinden.
-5. Gesprochene Satzzeichen ("Komma", "Punkt", "neue Zeile") sind Trennungen, keine Dinge.
+5. Satzzeichen im Text sagen nichts: Die Spracheingabe setzt Punkte, wo jemand kurz überlegt, und lässt Kommas weg. Lies den Text als einen durchgehenden Satz und entscheide nach dem Sinn, was zusammengehört ("Nudeln mit roter. Und grüner Soße" ist EIN Gedanke). Gesprochene Wörter wie "Komma", "Punkt", "neue Zeile" sind Trennungen, keine Dinge.
 6. "art": "einkauf" für alles zum Kaufen oder Besorgen, "merken" für Erledigen und Erinnern (anrufen, Termin, bezahlen, abgeben, reparieren …).
 7. "bereich" nur bei "einkauf": ${Object.entries(CATEGORY_LABELS)
     .map(([k, v]) => `"${k}" (${v})`)
@@ -274,6 +274,7 @@ So gehst du vor:
 Beispiele:
 - "bei penny nudeln kaufen" → [{"text": "Nudeln (Penny)", "art": "einkauf", "bereich": "lebensmittel"}]
 - "nudeln eier und zwei liter milch dann noch katzenfutter" → Nudeln, Eier, 2 l Milch (lebensmittel), Katzenfutter (tierbedarf)
+- "Nudeln mit roter und mit grüner Soße. Kakis. Orangen" → "Nudeln mit roter Soße", "Nudeln mit grüner Soße", "Kakis", "Orangen" (alle lebensmittel)
 - "ich muss morgen den tierarzt anrufen und zahnpasta holen" → "Tierarzt anrufen" (merken), "Zahnpasta" (drogerie)
 
 Antworte nur mit JSON:
@@ -282,11 +283,11 @@ Antworte nur mit JSON:
 
 export async function planNotes(rawText: unknown): Promise<PlannedNote[]> {
   const said = text(rawText, 2000, 'Der Text', true);
-  const { AI_PLAN_TIMEOUT_MS, TEXT_MODELS, runModelChain } = await import('./plantIdentification');
+  const { AI_PLAN_ATTEMPT_MS, AI_PLAN_OUTPUT_TOKENS, AI_PLAN_TIMEOUT_MS, TEXT_MODELS, runModelChain } = await import('./plantIdentification');
   const parsed = await runModelChain([{ role: 'user', parts: [{ text: notesPrompt(said) }] }], TEXT_MODELS, {
-    maxOutputTokens: 2048,
+    maxOutputTokens: AI_PLAN_OUTPUT_TOKENS,
     responseMimeType: 'application/json',
-  }, { timeoutMs: AI_PLAN_TIMEOUT_MS });
+  }, { timeoutMs: AI_PLAN_TIMEOUT_MS, attemptTimeoutMs: AI_PLAN_ATTEMPT_MS });
   const notes = coerceNotes(parsed);
   if (notes.length === 0) throw new FarmDataError(422, 'Daraus konnte die KI keine Notiz machen. Sag es bitte noch einmal anders.');
   return notes;

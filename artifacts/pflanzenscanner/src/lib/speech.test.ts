@@ -24,4 +24,12 @@ describe("spoken punctuation", () => {
   it("leaves words that only contain them alone", () => {
     expect(spokenPunctuation("Treffpunkt am Kommando")).toBe("Treffpunkt am Kommando");
   });
+
+  it("makes one running text for the lists, without a full stop at each pause", () => {
+    let t = appendPhrase("", "Nudeln mit roter und mit grüner Soße.", { flow: true });
+    t = appendPhrase(t, "Kakis.", { flow: true });
+    t = appendPhrase(t, "Orangen", { flow: true });
+    expect(t).toBe("Nudeln mit roter und mit grüner Soße Kakis Orangen");
+    expect(appendPhrase("Brot", "Butter Komma Milch", { flow: true })).toBe("Brot Butter, Milch");
+  });
 });

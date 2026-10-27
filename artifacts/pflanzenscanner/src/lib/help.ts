@@ -191,7 +191,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Wer darf Aufgaben löschen?", a: "Nur die Admins des Hofs – sie sind die Besitzer der Liste. Mitarbeiter haken ab, legen neue Aufgaben an, ändern und kommentieren, löschen aber nichts." },
       { q: "Wer bekommt die Erinnerung?", a: "Bei einer Aufgabe für eine Person nur diese, sonst alle Admins und Mitarbeiter des Hofs. Gäste nicht. Ruhezeiten stellst du unter „Mehr → Benachrichtigungen“ ein." },
       { q: "Was ist der Unterschied zu den Stall-Aufgaben?", a: "Es ist dieselbe Liste. Die Stall-Aufgaben unter Tiere zeigen nur den Bereich Tiere, die Hof-Aufgaben alles – dazu deine fälligen Pflanzen und den Garten." },
-      { q: "Verschwindet eine einmalige Aufgabe?", a: "Ja, nach dem Abhaken bleibt sie bis zum Abend unter „Heute erledigt“ und fällt dann aus der Liste." },
+      { q: "Verschwindet eine einmalige Aufgabe?", a: "Ja, nach dem Abhaken bleibt sie bis zum Abend unter „Heute erledigt“ (zugeklappt – ein Tipp öffnet die Liste) und fällt dann aus der Liste." },
     ],
   },
   feed: {

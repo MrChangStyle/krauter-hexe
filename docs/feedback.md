@@ -5,7 +5,7 @@ Alle angemeldeten Nutzer können dem Betreiber Verbesserungsvorschläge schicken
 ## In der App
 
 - Unten rechts über der Leiste sitzt eine kleine **Sprechblase** (`components/feedback-bubble.tsx`). Sie ist auf jeder Seite da, aber klein genug, um nicht zu stören.
-- Ein Tipp öffnet „Feedback an das Team“. Man kann tippen oder auf **„Sprechen“** tippen und diktieren.
+- Ein Tipp öffnet „Feedback an das Team“. Man kann tippen oder **„Halten & sprechen“** gedrückt halten und diktieren; Loslassen beendet das Diktat (`docs/spracheingabe.md`).
   - Die Spracherkennung des Browsers arbeitet auf Deutsch (`lib/speech.ts`). Diktierte Sätze werden an den Text angehängt und lassen sich danach verbessern.
   - Wo der Browser keine Spracherkennung hat, fehlt der Knopf einfach.
 - Mitgeschickt wird die Seite, auf der man gerade ist, zum Beispiel `/farm/futter`.

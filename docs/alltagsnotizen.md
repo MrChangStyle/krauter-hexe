@@ -13,7 +13,7 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
 ## Die Seite
 
 1. **Hinweis oben:** eine Zeile „Einfach reinsprechen – die App schreibt die Liste“ mit Info-Symbol und „So geht's“; aufgeklappt die Erklärung mit Beispiel (`components/speak-hint.tsx`, zu Beginn zugeklappt).
-2. **Eingabe** getippt oder mit „Sprechen“:
+2. **Eingabe** getippt oder mit „Halten & sprechen“ (gedrückt halten, zum Beenden loslassen):
    - Eine einfache Sache („Zahnbürsten“, „2 kg Hackfleisch“) kommt direkt auf die Liste (`notesNeedPlan`).
    - Längeres („Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen“) geht an die KI → **Vorschau** mit jeder Notiz, Art (Einkaufen/Merken) und Bereich im Laden – alles änderbar, einzelne entfernbar –, dann „Alle notieren“.
    - Ohne KI (offline, Tageslimit) teilt die App selbst auf (`splitNotes`): Zeilen, Kommas, Sätze und „und“ trennen, Füllwörter wie „ich muss … kaufen“ fallen weg; Art und Bereich sortiert der Server nach Wörtern.

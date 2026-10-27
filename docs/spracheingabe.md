@@ -1,6 +1,8 @@
 # Spracheingabe für Notizen
 
-Wer im Stall steht, hat oft keine Hand frei zum Tippen. Neben den längeren Notizfeldern sitzt deshalb ein kleiner Knopf **„Sprechen“** (`components/dictate-button.tsx`).
+Wer im Stall steht, hat oft keine Hand frei zum Tippen. Neben den längeren Notizfeldern sitzt deshalb ein kleiner Knopf **„Halten & sprechen“** (`components/dictate-button.tsx`).
+
+**Gedrückt halten zum Sprechen – überall in der App:** Man hält den Knopf gedrückt, solange man spricht, und lässt los, wenn man fertig ist (`hooks/use-push-to-talk.ts`). Während der Aufnahme ist der Knopf rot, pulsiert und zeigt „Loslassen = fertig“ (beim großen orangen Knopf kurz „Loslassen“). Das gilt für alle Spracheingaben: Notizfelder, Hof-Aufgaben, Alltagsnotizen, Kommentare und die Feedback-Blase.
 
 ## Wo
 
@@ -20,6 +22,9 @@ Wer im Stall steht, hat oft keine Hand frei zum Tippen. Neben den längeren Noti
 
 - Es ist dieselbe Spracherkennung wie beim Feedback (`lib/speech.ts`, Deutsch, im Browser). Jeder erkannte Satz wird an den Text angehängt; danach lässt sich alles wie gewohnt verbessern.
 - Was über die Länge des Feldes hinausgeht, wird abgeschnitten.
-- Ein zweiter Tipp („Stopp“) beendet das Diktat; es endet auch, wenn das Formular schließt.
+- Loslassen beendet das Diktat; was bis dahin gesagt wurde, kommt noch an. Es endet auch, wenn das Formular schließt oder der Finger vom Knopf rutscht.
+- Ein kurzer Tipp (unter 0,6 Sekunden, nichts gehört) zeigt nur den Hinweis „Gedrückt halten“.
+- Langes Drücken öffnet auf dem Handy kein Menü und markiert keinen Text (`touch-action`, kein Kontextmenü).
+- Mit der Tastatur: Leertaste oder Enter gedrückt halten.
 - Ohne Mikrofonfreigabe erscheint ein Hinweis, dass man auch tippen kann. Wo der Browser keine Spracherkennung hat (z. B. Firefox), fehlt der Knopf.
 - Nichts davon geht an den Server der App; die Erkennung macht der Browser (bei Chrome über den Dienst von Google).

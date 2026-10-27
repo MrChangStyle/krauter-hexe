@@ -1253,7 +1253,6 @@ export const registerAccountBodyTurnstileTokenMax = 2048;
 export const RegisterAccountBody = zod.object({
   "email": zod.string().min(registerAccountBodyEmailMin),
   "password": zod.string().min(registerAccountBodyPasswordMin).max(registerAccountBodyPasswordMax),
-  "registrationCode": zod.string().optional().describe('Shared invitation code. Only required when the server is configured with REGISTRATION_CODE.\n'),
   "acceptTerms": zod.boolean().describe('Must be true: the user agrees to the Datenschutzerklärung and the Nutzungsbedingungen. Time and version are stored with the account.\n'),
   "turnstileToken": zod.string().max(registerAccountBodyTurnstileTokenMax).optional().describe('Token from the Cloudflare Turnstile widget. Only required when the server is configured with TURNSTILE_SITE_KEY and TURNSTILE_SECRET_KEY.\n')
 })

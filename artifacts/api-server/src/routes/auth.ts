@@ -169,33 +169,21 @@ router.post('/auth/register', async (req: Request, res: Response): Promise<void>
     return;
   }
 
-  // Shared invitation code. Without it, anyone who guesses a family member's
-  // email address could claim their account before they register themselves.
-  const requiredCode = process.env['REGISTRATION_CODE'];
-  if (requiredCode) {
-    const { registrationCode } = req.body as { registrationCode?: unknown };
-    if (registrationCode !== requiredCode) {
-      recordFailure(key);
-      res.status(403).json({ error: 'Der Einladungscode stimmt nicht.' });
-      return;
-    }
-  }
-
   const [existing] = await db
     .select({ id: usersTable.id, passwordHash: usersTable.passwordHash })
     .from(usersTable)
     .where(sql`lower(${usersTable.email}) = ${email}`);
 
-  // Claiming a pre-existing, password-less account inherits everything that
-  // row already has – including approval and, for one of them, owner rights.
-  // Proving knowledge of the invitation code is the only thing standing
-  // between a guessed email address and that takeover, so this path is refused
-  // outright while no code is configured.
-  if (existing && !existing.passwordHash && !requiredCode) {
+  // There is no invitation code: the Seitenpasswort lets testers in, the
+  // first FREE_TESTER_SLOTS start at once, the rest wait for the owner.
+  // An old account without a password (from the first sign-in) is never
+  // taken over by registering – it carries approval and maybe owner rights,
+  // and a guessed email address must not be enough for that.
+  if (existing && !existing.passwordHash) {
     res.status(403).json({
       error:
         'Für diese E-Mail-Adresse gibt es bereits ein Konto aus der alten Anmeldung. ' +
-        'Zum Übernehmen wird ein Einladungscode benötigt – bitte beim Besitzer der App melden.',
+        'Bitte melde dich beim Betreiber der App (info@littlefarming.de), damit er es für dich freischaltet.',
     });
     return;
   }

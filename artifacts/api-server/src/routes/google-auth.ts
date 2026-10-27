@@ -292,14 +292,6 @@ async function resolveAccount(
       await db.update(usersTable).set(patch).where(eq(usersTable.id, userId));
     }
   } else {
-    // An invitation code being configured means "no self-service accounts".
-    // A Google redirect has nowhere to type that code, so an unknown address
-    // is turned away instead of quietly creating a row – otherwise anyone
-    // with a Google account could sign up on a URL that is meant to be closed.
-    if (process.env['REGISTRATION_CODE']) {
-      throw new SignInRejected('google-konto-unbekannt', 'unknown email, registration is code-gated');
-    }
-
     // Same brakes as the email + password registration.
     if (!addressMayRegister(address)) {
       throw new SignInRejected('zu-viele-konten', 'too many accounts from this address');

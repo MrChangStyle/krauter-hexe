@@ -10,7 +10,6 @@ import {
 describe('describeSignInError', () => {
   it('has German wording for the codes the server sends', () => {
     expect(describeSignInError('google-abgebrochen')).toMatch(/abgebrochen/i);
-    expect(describeSignInError('google-konto-unbekannt')).toMatch(/Einladungscode/i);
   });
 
   it('falls back to a generic message for an unknown code', () => {

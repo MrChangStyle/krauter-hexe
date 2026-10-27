@@ -13498,11 +13498,6 @@ components:
           type: string
           minLength: 8
           maxLength: 200
-        registrationCode:
-          type: string
-          description: >
-            Shared invitation code. Only required when the server is configured
-            with REGISTRATION_CODE.
         acceptTerms:
           type: boolean
           description: >

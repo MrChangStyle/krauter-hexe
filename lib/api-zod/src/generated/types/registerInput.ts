@@ -14,8 +14,6 @@ export interface RegisterInput {
      * @maxLength 200
      */
   password: string;
-  /** Shared invitation code. Only required when the server is configured with REGISTRATION_CODE. */
-  registrationCode?: string;
   /** Must be true: the user agrees to the Datenschutzerklärung and the Nutzungsbedingungen. Time and version are stored with the account. */
   acceptTerms: boolean;
   /**

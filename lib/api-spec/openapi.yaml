@@ -12097,7 +12097,7 @@ components:
         text:
           type: string
           minLength: 1
-          maxLength: 1500
+          maxLength: 2000
     PlannedNote:
       type: object
       required: [text, kind, category]
@@ -12153,7 +12153,7 @@ components:
         text:
           type: string
           minLength: 1
-          maxLength: 1500
+          maxLength: 2000
         assigneeId:
           type: [string, 'null']
           description: Person chosen in the quick entry; used where the text names nobody.

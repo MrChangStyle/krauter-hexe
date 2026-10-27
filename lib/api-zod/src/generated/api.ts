@@ -8111,7 +8111,7 @@ export const CreateNoteResponse = zod.object({
 /**
  * @summary Free speech to proposed notes, nothing saved (daily AI limit)
  */
-export const planNotesBodyTextMax = 1500;
+export const planNotesBodyTextMax = 2000;
 
 
 
@@ -8245,7 +8245,7 @@ export const PlanFarmTasksParams = zod.object({
   "farmId": zod.coerce.number()
 })
 
-export const planFarmTasksBodyTextMax = 1500;
+export const planFarmTasksBodyTextMax = 2000;
 
 
 

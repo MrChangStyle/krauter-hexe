@@ -4398,7 +4398,7 @@ export interface ClearDoneNotesResult {
 export interface PlanNotesInput {
   /**
      * @minLength 1
-     * @maxLength 1500
+     * @maxLength 2000
      */
   text: string;
 }
@@ -4436,7 +4436,7 @@ export interface AddNoteShareInput {
 export interface PlanFarmTasksInput {
   /**
      * @minLength 1
-     * @maxLength 1500
+     * @maxLength 2000
      */
   text: string;
   /**

@@ -272,7 +272,7 @@ Antworte nur mit JSON:
 }
 
 export async function planNotes(rawText: unknown): Promise<PlannedNote[]> {
-  const said = text(rawText, 1500, 'Der Text', true);
+  const said = text(rawText, 2000, 'Der Text', true);
   const { TEXT_MODELS, runModelChain } = await import('./plantIdentification');
   const parsed = await runModelChain([{ role: 'user', parts: [{ text: notesPrompt(said) }] }], TEXT_MODELS, {
     maxOutputTokens: 2048,

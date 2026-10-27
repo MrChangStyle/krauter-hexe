@@ -68,8 +68,12 @@ function useRefresh(farmId: number) {
 
 // ── The two tools on the Hof ─────────────────────────────────────────────────
 
-/** The look of the two everyday tools: square, orange frame, stands out from the widgets. */
-const TOOL_TILE = `flex aspect-square flex-col p-3 text-left transition active:scale-[0.98] ${TOOL_FRAME}`;
+/**
+ * The look of the two everyday tools: square, orange frame, stands out from
+ * the widgets. Always exactly square – a long line is cut, never makes one
+ * tile taller than the other.
+ */
+const TOOL_TILE = `flex aspect-square min-h-0 min-w-0 flex-col overflow-hidden p-3 text-left transition active:scale-[0.98] ${TOOL_FRAME}`;
 
 function ToolTile({ href, icon, title, value, line, progress, testId }: { href: string; icon: ReactNode; title: string; value: string; line: string; progress?: number | null; testId: string }) {
   return (
@@ -81,8 +85,8 @@ function ToolTile({ href, icon, title, value, line, progress, testId }: { href: 
           Sprechen
         </span>
       </span>
-      <span className="mt-2 block text-sm font-semibold leading-tight text-orange-950 dark:text-orange-100">{title}</span>
-      <span className="mt-auto block text-2xl font-bold leading-tight text-orange-900 dark:text-orange-50">{value}</span>
+      <span className="mt-2 block truncate text-sm font-semibold leading-tight text-orange-950 dark:text-orange-100">{title}</span>
+      <span className="mt-auto block truncate text-2xl font-bold leading-tight text-orange-900 dark:text-orange-50">{value}</span>
       {progress !== undefined && progress !== null && (
         <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-orange-200/70 dark:bg-orange-900/60" aria-hidden>
           <span className="block h-full rounded-full bg-orange-500 transition-all" style={{ width: `${Math.round(progress * 100)}%` }} />
@@ -140,7 +144,7 @@ function NotesTile() {
 export function HofTools({ farm }: { farm: FarmSummary | null }) {
   const tasks = farm !== null && farmModuleGranted(farm, "farm-tasks");
   return (
-    <div className="grid grid-cols-2 gap-3" data-testid="hof-tools">
+    <div className="grid auto-rows-fr grid-cols-2 gap-3" data-testid="hof-tools">
       {tasks && farm && <HofTasksTile farm={farm} />}
       <NotesTile />
     </div>

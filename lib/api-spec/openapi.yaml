@@ -12774,6 +12774,11 @@ components:
         wishes:
           type: [string, 'null']
           maxLength: 300
+        animalShare:
+          type: [integer, 'null']
+          minimum: 0
+          maximum: 100
+          description: Share of the new plantings meant as fodder for the farm's animals (percent); null or 0 = all for the kitchen.
     PlantingProposal:
       type: object
       required: [items, dropped, notes]
@@ -12796,6 +12801,10 @@ components:
                 type: integer
               h:
                 type: integer
+              purpose:
+                type: string
+                enum: [kitchen, fodder]
+                description: Only with animalShare – for the kitchen or as fodder.
         dropped:
           type: array
           items:
@@ -12808,6 +12817,9 @@ components:
                 type: string
         notes:
           type: string
+        fodderShare:
+          type: [integer, 'null']
+          description: Only with animalShare – share of the proposed cells that is fodder (percent).
     CropRequestInput:
       type: object
       properties:

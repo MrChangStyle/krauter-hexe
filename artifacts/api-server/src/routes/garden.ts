@@ -269,7 +269,7 @@ router.post(
     if (!body.success) return badRequest(res);
     const farmId = req.farm!.farmId;
     await getBed(farmId, bedId);
-    const proposal = await withAiQuota(req, res, 'garden', () => suggestPlanting(farmId, bedId, season, body.data.wishes));
+    const proposal = await withAiQuota(req, res, 'garden', () => suggestPlanting(farmId, bedId, season, body.data.wishes, body.data.animalShare ?? null));
     if (proposal) res.json(SuggestPlantingResponse.parse(proposal));
   }),
 );

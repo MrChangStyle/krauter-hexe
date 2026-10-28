@@ -12,4 +12,9 @@ export interface PlantingProposal {
   items: PlantingProposalItemsItem[];
   dropped: PlantingProposalDroppedItem[];
   notes: string;
+  /**
+     * Only with animalShare – share of the proposed cells that is fodder (percent).
+     * @nullable
+     */
+  fodderShare?: number | null;
 }

@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { PlantingProposalItemsItemPurpose } from './plantingProposalItemsItemPurpose';
 
 export type PlantingProposalItemsItem = {
   cropKey: string;
@@ -13,4 +14,6 @@ export type PlantingProposalItemsItem = {
   y: number;
   w: number;
   h: number;
+  /** Only with animalShare – for the kitchen or as fodder. */
+  purpose?: PlantingProposalItemsItemPurpose;
 };

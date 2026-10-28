@@ -78,7 +78,7 @@ export const FODDER_CROPS: Record<FarmSpecies, string[]> = {
   other: [],
 };
 
-const SPECIES_DE: Record<FarmSpecies, string> = {
+export const SPECIES_DE: Record<FarmSpecies, string> = {
   poultry: 'Geflügel',
   rabbit: 'Kaninchen',
   guineaPig: 'Meerschweinchen',

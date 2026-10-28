@@ -65,6 +65,15 @@ Vom Inhaber am 18.10.2026 ergänzt:
    nur: jeder Vorschlag läuft durch dieselben festen Regeln wie ein Tipp ins Raster, was sie
    verletzt, wird aussortiert und benannt. KI-Funktionen und Gartenkalender tragen die
    Markierung „Premium“ (noch ohne Sperre).
+   **Küche und Tierfutter im Beet-Vorschlag:** Im Dialog „KI-Vorschlag“ stellt ein
+   Schieberegler ein, wie viel des Beetes Futter für die Tiere werden soll (0–100 %, in
+   10er-Schritten). Vorgabe: der Anteil aus dem Garten-Assistenten, vom Assistenten
+   verlinkte Futterbeete kommen mit 100 % (`?futter=`). Die KI bekommt den Anteil, die Tiere
+   des Hofs und nur die dafür geeigneten, ungiftigen Pflanzen (`FODDER_CROPS`; ohne
+   erfasste Tiere die für Hühner, Kaninchen und Meerschweinchen) und gibt je Pflanze
+   „futter“ oder „kueche“ an. Als Futter zählt nur, was die KI so nennt **und** für die Tiere
+   geeignet ist (`checkProposal`); der Vorschlag zeigt den erreichten Anteil nach Fläche
+   (`fodderShareOf`, ein 2×2-Feld zählt 4) neben dem gewünschten und markiert Futterpflanzen.
 6. **Garten-Assistent & Hochbeet-Begleiter (UMGESETZT):** Ziele (Selbstversorgung/Tierfutter), Bedarf
    aus dem Tier-Modul, Aufteilung auf die Beete, Schichtaufbau mit Materialmengen,
    Auffüllen, letzte Pflanztermine. Alles nach festen Faustwerten (Fläche pro Person und

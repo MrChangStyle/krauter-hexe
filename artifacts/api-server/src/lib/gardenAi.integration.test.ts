@@ -214,11 +214,40 @@ describe.skipIf(!enabled)("Beet-Architekt – KI (real database)", () => {
       ],
       dropped: [{ label: "Tomate", reason: "verträgt sich nicht mit Kartoffel" }],
       notes: "Bohnen lockern den Boden.",
+      fodderShare: null,
     });
     const prompt = promptOf(runModelChain.mock.calls[0]![0]);
     expect(prompt).toContain("Viel Salat");
     expect(prompt).toContain("Kartoffel (x 0–1, y 0–1)");
     expect((await api("GET", `/farms/${farm.anna}/beds/${bed}/seasons/2026/plantings`)).data).toHaveLength(1);
+  });
+
+  it("splits kitchen and fodder as asked, and only suitable crops count as fodder", async () => {
+    runModelChain.mockResolvedValue({
+      pflanzen: [
+        { cropKey: "mangold", x: 0, y: 0, zweck: "futter" },
+        { cropKey: "salat", x: 1, y: 0, zweck: "futter" },
+        { cropKey: "buschbohne", x: 2, y: 0, zweck: "futter" }, // not fodder for the animals → kitchen
+        { cropKey: "radieschen", x: 3, y: 0, zweck: "kueche" },
+      ],
+      hinweis: "Mangold und Salat für die Hühner.",
+    });
+    const res = await api("POST", `/farms/${farm.anna}/beds/${bed}/seasons/2026/suggestion`, { wishes: null, animalShare: 50 });
+    expect(res.status).toBe(200);
+    expect(res.data.items.map((i: { cropKey: string; purpose: string }) => [i.cropKey, i.purpose])).toEqual([
+      ["mangold", "fodder"],
+      ["salat", "fodder"],
+      ["buschbohne", "kitchen"],
+      ["radieschen", "kitchen"],
+    ]);
+    expect(res.data.fodderShare).toBe(50);
+    const prompt = promptOf(runModelChain.mock.calls.at(-1)![0]);
+    expect(prompt).toContain("Etwa 50 % der neu bepflanzten Felder sollen Tierfutter sein");
+    expect(prompt).toContain("zweck");
+    expect(prompt).not.toContain("Buschbohne (Schlüssel");
+    // Without a share nothing about fodder goes to the AI.
+    await api("POST", `/farms/${farm.anna}/beds/${bed}/seasons/2026/suggestion`, { animalShare: 0 });
+    expect(promptOf(runModelChain.mock.calls.at(-1)![0])).not.toContain("Tierfutter");
   });
 
   it("keeps the garden AI to caretakers of the farm", async () => {

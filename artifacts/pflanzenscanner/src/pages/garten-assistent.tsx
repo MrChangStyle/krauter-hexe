@@ -224,7 +224,7 @@ function Assistant({ farm }: { farm: FarmSummary }) {
                     <p className="text-muted-foreground">{b.crops.map(name).join(", ") || "–"}</p>
                     {canWrite && b.crops.length > 0 && (
                       <Button asChild size="sm" variant="outline" className="gap-1.5">
-                        <Link href={`/beete/${farm.id}/${b.bedId}?ki=${encodeURIComponent(b.wishes)}`}>
+                        <Link href={`/beete/${farm.id}/${b.bedId}?ki=${encodeURIComponent(b.wishes)}&futter=${b.role === "fodder" ? 100 : 0}`}>
                           <Sparkles className="h-4 w-4" />
                           Mit KI bepflanzen
                         </Link>

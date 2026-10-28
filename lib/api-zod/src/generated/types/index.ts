@@ -383,6 +383,7 @@ export * from './plantHealthResult';
 export * from './plantingProposal';
 export * from './plantingProposalDroppedItem';
 export * from './plantingProposalItemsItem';
+export * from './plantingProposalItemsItemPurpose';
 export * from './plantingSuggestionInput';
 export * from './plantScanInput';
 export * from './plantScanResult';

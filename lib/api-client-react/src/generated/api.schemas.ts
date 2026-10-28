@@ -4978,7 +4978,25 @@ export interface PlantingSuggestionInput {
      * @nullable
      */
   wishes?: string | null;
+  /**
+     * Share of the new plantings meant as fodder for the farm's animals (percent); null or 0 = all for the kitchen.
+     * @minimum 0
+     * @maximum 100
+     * @nullable
+     */
+  animalShare?: number | null;
 }
+
+/**
+ * Only with animalShare – for the kitchen or as fodder.
+ */
+export type PlantingProposalItemsItemPurpose = typeof PlantingProposalItemsItemPurpose[keyof typeof PlantingProposalItemsItemPurpose];
+
+
+export const PlantingProposalItemsItemPurpose = {
+  kitchen: 'kitchen',
+  fodder: 'fodder',
+} as const;
 
 export type PlantingProposalItemsItem = {
   cropKey: string;
@@ -4987,6 +5005,8 @@ export type PlantingProposalItemsItem = {
   y: number;
   w: number;
   h: number;
+  /** Only with animalShare – for the kitchen or as fodder. */
+  purpose?: PlantingProposalItemsItemPurpose;
 };
 
 export type PlantingProposalDroppedItem = {
@@ -4998,6 +5018,11 @@ export interface PlantingProposal {
   items: PlantingProposalItemsItem[];
   dropped: PlantingProposalDroppedItem[];
   notes: string;
+  /**
+     * Only with animalShare – share of the proposed cells that is fodder (percent).
+     * @nullable
+     */
+  fodderShare?: number | null;
 }
 
 export interface CropRequestInput {

@@ -14,6 +14,8 @@ import {
   useRemovePlanting,
   useRequestCrop,
   useSuggestPlanting,
+  useGetGardenGoals,
+  getGetGardenGoalsQueryKey,
   type BedPlanting,
   type PlantingProposal,
   type Crop,
@@ -29,6 +31,7 @@ import { HarvestLog } from "@/components/harvest-log";
 import { PremiumBadge } from "@/components/premium-badge";
 import { AutumnCard, RaisedBedCompanion } from "@/components/raised-bed-companion";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { rotationIssues, rotationText, seasonSummary, type RotationIssue } from "@/lib/garden-calendar";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -349,18 +352,25 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
   const [view, setView] = useState<"grid" | "photo">(bed.photoCorners ? "photo" : "grid");
   const [asking, setAsking] = useState(false);
   const [wishes, setWishes] = useState("");
+  // Fodder share for the KI-Vorschlag (%): from the link of the Garten-Assistent, else the garden goals.
+  const [animalShare, setAnimalShare] = useState<number | null>(null);
   const [proposal, setProposal] = useState<PlantingProposal | null>(null);
   const [applying, setApplying] = useState(false);
   // A suggestion belongs to the season it was made for.
   useEffect(() => setProposal(null), [season]);
   // The Garten-Assistent links here with wishes for the KI-Vorschlag.
   useEffect(() => {
-    const wish = new URLSearchParams(window.location.search).get("ki");
+    const params = new URLSearchParams(window.location.search);
+    const wish = params.get("ki");
+    const share = Number(params.get("futter"));
+    if (params.has("futter") && Number.isInteger(share) && share >= 0 && share <= 100) setAnimalShare(share);
     if (wish && canWrite) {
       setWishes(wish.slice(0, 300));
       setAsking(true);
     }
   }, [canWrite]);
+  const goals = useGetGardenGoals(farmId, { query: { queryKey: getGetGardenGoalsQueryKey(farmId), staleTime: 5 * 60 * 1000 } });
+  const share = animalShare ?? goals.data?.animalShare ?? 0;
   const catalog = useGetGardenCatalog({ query: { queryKey: getGetGardenCatalogQueryKey(), staleTime: 5 * 60 * 1000 } });
   const plantingsQuery = useListPlantings(farmId, bed.id, season);
   const historyQuery = useGetBedHistory(farmId, bed.id);
@@ -547,7 +557,15 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
             KI-Vorschlag: {proposal.items.length} {proposal.items.length === 1 ? "Pflanzung" : "Pflanzungen"}
           </p>
           {proposal.notes && <p>{proposal.notes}</p>}
-          {proposal.items.length > 0 && <p className="text-muted-foreground">{proposal.items.map((i) => i.label).join(", ")}</p>}
+          {proposal.fodderShare !== null && proposal.fodderShare !== undefined && (
+            <p className="font-medium" data-testid="proposal-fodder-share">
+              Tierfutter: {proposal.fodderShare} % der Felder · Küche: {100 - proposal.fodderShare} %
+              {share > 0 && <span className="font-normal text-muted-foreground"> (gewünscht {share} %)</span>}
+            </p>
+          )}
+          {proposal.items.length > 0 && (
+            <p className="text-muted-foreground">{proposal.items.map((i) => (i.purpose === "fodder" ? `${i.label} (Futter)` : i.label)).join(", ")}</p>
+          )}
           {proposal.dropped.length > 0 && (
             <div className="text-xs text-muted-foreground">
               <p className="font-medium">Nach den festen Regeln aussortiert:</p>
@@ -625,10 +643,28 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
               placeholder="Wünsche, z. B. viel Salat, Kräuter für die Küche, keine Zucchini"
               aria-label="Wünsche"
             />
+            <div className="space-y-1.5" data-testid="fodder-share">
+              <Label htmlFor="bed-fodder-share">
+                Für die Tiere: <span className="font-semibold">{share} %</span> · für die Küche: <span className="font-semibold">{100 - share} %</span>
+              </Label>
+              <input
+                id="bed-fodder-share"
+                type="range"
+                min={0}
+                max={100}
+                step={10}
+                value={share}
+                onChange={(e) => setAnimalShare(Number(e.target.value))}
+                className="w-full accent-[#2F6B3F]"
+              />
+              <p className="text-xs text-muted-foreground">
+                Wie viel des Beetes Futter für deine Tiere werden soll, z. B. Mangold und Salat für die Hühner – die KI nimmt dafür nur Pflanzen, die für deine Tiere geeignet sind. Vorgabe aus dem Garten-Assistenten.
+              </p>
+            </div>
             <Button
               className="gap-1.5"
               disabled={suggest.isPending}
-              onClick={() => suggest.mutate({ farmId, bedId: bed.id, season, data: { wishes: wishes.trim() || null } })}
+              onClick={() => suggest.mutate({ farmId, bedId: bed.id, season, data: { wishes: wishes.trim() || null, animalShare: share } })}
             >
               {suggest.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               Vorschlag holen

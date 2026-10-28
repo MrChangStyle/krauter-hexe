@@ -4,7 +4,7 @@ vi.hoisted(() => {
   process.env["DATABASE_URL"] ??= "postgres://unused@127.0.0.1:1/unused";
 });
 
-const { checkProposal, coerceAnalysis, coerceCorners, orderCorners } = await import("./gardenAi");
+const { checkProposal, coerceAnalysis, coerceCorners, fodderShareOf, orderCorners } = await import("./gardenAi");
 const { coerceCrop, keyFor } = await import("./gardenCrops");
 const { cropByKey } = await import("./gardenCatalog");
 
@@ -115,5 +115,28 @@ describe("crop drafts from the AI", () => {
     expect(coerceCrop({ ...raw, family: "" }, "x", "X")).toBeNull();
     expect(coerceCrop({ ...raw, feeder: "viel" }, "x", "X")).toBeNull();
     expect(coerceCrop({ ...raw, plantOut: null }, "x", "X")).toBeNull();
+  });
+});
+
+describe("fodder share of a suggestion", () => {
+  it("counts by area – a 2×2 plant counts four cells", () => {
+    expect(fodderShareOf([])).toBe(0);
+    expect(
+      fodderShareOf([
+        { cropKey: "kuerbis", label: "Kürbis", x: 0, y: 0, w: 2, h: 2, purpose: "fodder" },
+        { cropKey: "salat", label: "Kopfsalat", x: 2, y: 0, w: 1, h: 1, purpose: "kitchen" },
+      ]),
+    ).toBe(80);
+  });
+
+  it("marks an item as fodder only when the AI says so and the crop suits the animals", () => {
+    const r = checkProposal({ lengthCm: 300, widthCm: 120, sunHours: 7 }, 2026, [], [], [
+      { cropKey: "mangold", x: 0, y: 0, zweck: "futter" },
+      { cropKey: "buschbohne", x: 2, y: 0, zweck: "futter" },
+      { cropKey: "salat", x: 4, y: 0, zweck: "kueche" },
+    ], new Set(["mangold", "salat"]));
+    expect(r.items.map((i) => i.purpose)).toEqual(["fodder", "kitchen", "kitchen"]);
+    // Without a split nothing is marked.
+    expect(checkProposal({ lengthCm: 300, widthCm: 120, sunHours: 7 }, 2026, [], [], [{ cropKey: "mangold", x: 0, y: 0, zweck: "futter" }]).items[0]!.purpose).toBeUndefined();
   });
 });

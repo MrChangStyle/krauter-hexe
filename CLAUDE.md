@@ -1,6 +1,6 @@
 # Little Farming – Hinweise für die Arbeit am Code
 
-Die App heißt „Little Farming“: Pflanzen (Kräuterhexe) und Tiere (Meine Farm). Architektur und Entscheidungen stehen in `replit.md`, je Modul eine Datei in `docs/`. Texte in der App und in der Doku sind Deutsch, Code-Kommentare Englisch.
+Die App heißt „Little Farming“: Pflanzen (Kräuterhexe) und Tiere (Meine Farm). Den Überblick über das ganze Projekt gibt `docs/PROJEKT.md`; Architektur und Entscheidungen stehen in `replit.md`, je Modul eine Datei in `docs/`. Texte in der App und in der Doku sind Deutsch, Code-Kommentare Englisch.
 
 ## Definition of Done – bei jedem neuen Modul und jedem neuen Feld
 
@@ -8,7 +8,7 @@ Nicht nur der Code, sondern immer auch:
 
 1. **Hilfe & FAQ** (`artifacts/pflanzenscanner/src/lib/help.ts`): Einführung, Schritte „So funktioniert’s“ und häufige Fragen des Moduls ergänzen oder anpassen. Daraus kommen der Kasten oben auf der Modulseite und der Hilfe-Bereich `/hilfe` (`docs/hilfe.md`). Ein neues Modul braucht einen Eintrag – `lib/help.test.ts` prüft das.
 2. **Demo-Daten** (`artifacts/api-server/src/lib/demoData.ts`): Beispiele für das neue Modul bzw. Feld, angelegt über die Funktionen des Moduls selbst; neue Tabellen in `MODULE_TABLES` von `demoData.integration.test.ts`; Liste in `docs/demo.md` aktualisieren.
-3. **Doku**: `docs/<modul>.md` und eine Zeile in `replit.md`.
+3. **Doku**: `docs/<modul>.md`, eine Zeile in `replit.md` und die Projektbeschreibung `docs/PROJEKT.md` (passende Stelle plus Zeile im Änderungsprotokoll) – bei jeder Änderung, die Nutzer sehen oder den Betrieb betrifft, nicht nur bei neuen Modulen.
 4. **Suche** (`lib/search-pages.ts`) und, bei einem neuen Modul, Modul-Liste, Freigaben und Push-Themen wie in `replit.md` beschrieben.
 5. **Schema**: Drizzle-Schema, idempotente DDL in den `*SchemaStatements.ts` bzw. `schemaUpgrade.ts` (auch für bestehende Datenbanken), OpenAPI in `lib/api-spec/openapi.yaml` und Codegen.
 6. **Tests**: Unit-Tests für Regeln, Integrationstests gegen echtes Postgres, Typecheck beider Pakete, Browser-Test in Handybreite.

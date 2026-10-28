@@ -12,4 +12,11 @@ export interface PlantingSuggestionInput {
      * @nullable
      */
   wishes?: string | null;
+  /**
+     * Share of the new plantings meant as fodder for the farm's animals (percent); null or 0 = all for the kitchen.
+     * @minimum 0
+     * @maximum 100
+     * @nullable
+     */
+  animalShare?: number | null;
 }

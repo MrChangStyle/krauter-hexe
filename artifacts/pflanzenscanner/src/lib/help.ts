@@ -128,6 +128,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         q: "Lohnt sich mein Garten?",
         a: "Die Ernte-Auswertung rechnet die Ernte zum Ladenwert, zieht die Gartenausgaben ab (Saatgut, Pflanzen, Erde, Dünger, Wasser, Material) und teilt durch deine Stunden. Ohne eingetragene Stunden schätzt sie etwa 1 Stunde je Woche für 10 m² Beet. Frische und Freude zählen nicht mit.",
       },
+      {
+        q: "Kann die KI einen Teil des Beetes als Tierfutter planen?",
+        a: "Ja. Im „KI-Vorschlag“ stellst du mit dem Schieberegler ein, wie viel für die Tiere und wie viel für die Küche sein soll, z. B. 30 % Futter für die Hühner. Die KI nimmt dafür nur Pflanzen, die für deine Tiere geeignet und nicht giftig sind, und zeigt danach, wie viel Fläche es wirklich geworden ist. Vorgabe ist der Anteil aus dem Garten-Assistenten.",
+      },
       { q: "Zählen Gartenausgaben unter Ertrag & Bilanz doppelt?", a: "Nein. Sie sind ganz normale Ausgaben des Hofs mit dem Zeichen „Garten“ und zählen dort einmal." },
     ],
   },

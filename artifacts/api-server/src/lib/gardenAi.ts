@@ -8,8 +8,8 @@
  * dropped and named.
  */
 
-import { bedPlantingsTable, db, gardenBedsTable, type BedPhotoAnalysis, type GardenBed } from '@workspace/db';
-import { and, eq } from 'drizzle-orm';
+import { bedPlantingsTable, db, farmAnimalsTable, gardenBedsTable, type BedPhotoAnalysis, type FarmSpecies, type GardenBed } from '@workspace/db';
+import { and, count, eq, isNull } from 'drizzle-orm';
 
 import { FarmDataError } from './farmAnimals';
 import { getBed, validCorners } from './gardenBeds';
@@ -147,6 +147,13 @@ Wenn auf dem Foto kein Beet zu erkennen ist, sag das in allen drei Feldern.`;
 
 // ── Planting suggestion ──────────────────────────────────────────────────────
 
+/** Share of the proposed cells meant as fodder (%), by area – a 2×2 plant counts 4. */
+export function fodderShareOf(items: ProposalItem[]): number {
+  const all = items.reduce((n, i) => n + i.w * i.h, 0);
+  if (all === 0) return 0;
+  return Math.round((items.filter((i) => i.purpose === 'fodder').reduce((n, i) => n + i.w * i.h, 0) / all) * 100);
+}
+
 export interface ProposalItem {
   cropKey: string;
   label: string;
@@ -154,12 +161,16 @@ export interface ProposalItem {
   y: number;
   w: number;
   h: number;
+  /** With a fodder share asked for: is it for the kitchen or for the animals? */
+  purpose?: 'kitchen' | 'fodder';
 }
 
 export interface Proposal {
   items: ProposalItem[];
   dropped: { label: string; reason: string }[];
   notes: string;
+  /** With a fodder share asked for: the share of the proposed cells that is fodder (%), to check against the wish. */
+  fodderShare?: number | null;
 }
 
 type Planted = Rect & { cropKey: string | null; label: string };
@@ -187,7 +198,9 @@ export function checkProposal(
   season: number,
   planted: Planted[],
   earlier: Earlier[],
-  wishes: { cropKey: unknown; x: unknown; y: unknown }[],
+  wishes: { cropKey: unknown; x: unknown; y: unknown; zweck?: unknown }[],
+  /** Crops fit as fodder for the farm's animals; null = no fodder share asked for. */
+  fodderKeys: Set<string> | null = null,
 ): Pick<Proposal, 'items' | 'dropped'> {
   const { cols, rows } = gridSize(bed);
   const light = bedLight(bed.sunHours);
@@ -229,7 +242,9 @@ export function checkProposal(
       drop('braucht mehr Sonne');
       continue;
     }
-    const item = { cropKey: crop.key, label: crop.name, ...rect };
+    const item: ProposalItem = { cropKey: crop.key, label: crop.name, ...rect };
+    // Fodder only what suits the animals – anything else the AI calls fodder goes to the kitchen.
+    if (fodderKeys) item.purpose = wish.zweck === 'futter' && fodderKeys.has(crop.key) ? 'fodder' : 'kitchen';
     items.push(item);
     taken.push(item);
   }
@@ -242,7 +257,34 @@ function cropLine(c: Crop): string {
 }
 
 /** A planting plan for the free cells of a bed – checked, not saved. */
-export async function suggestPlanting(farmId: number, bedId: number, season: number, wishes: string | null | undefined): Promise<Proposal> {
+/**
+ * The fodder crops for the farm's animals (FODDER_CROPS, never toxic ones),
+ * and how the animals are named in the prompt. Without animals: what suits
+ * the usual farm animals (Geflügel, Kaninchen, Meerschweinchen).
+ */
+async function fodderFor(farmId: number): Promise<{ keys: Set<string>; animals: string }> {
+  // Loaded on demand: the Garten-Assistent pulls in the AI client, which tests of the rules here run without.
+  const { FODDER_CROPS, SPECIES_DE } = await import('./gardenAssistant');
+  const animals = await db
+    .select({ species: farmAnimalsTable.species, count: count() })
+    .from(farmAnimalsTable)
+    .where(and(eq(farmAnimalsTable.farmId, farmId), isNull(farmAnimalsTable.archivedAt)))
+    .groupBy(farmAnimalsTable.species);
+  const eaters = animals.filter((a) => FODDER_CROPS[a.species].length > 0);
+  const species: FarmSpecies[] = eaters.length > 0 ? eaters.map((a) => a.species) : ['poultry', 'rabbit', 'guineaPig'];
+  const keys = new Set(species.flatMap((s) => FODDER_CROPS[s]));
+  const named =
+    eaters.length > 0 ? eaters.map((a) => `${a.count} ${SPECIES_DE[a.species]}`).join(', ') : 'Hühner, Kaninchen, Meerschweinchen (keine Tiere erfasst)';
+  return { keys, animals: named };
+}
+
+export async function suggestPlanting(
+  farmId: number,
+  bedId: number,
+  season: number,
+  wishes: string | null | undefined,
+  animalShare: number | null = null,
+): Promise<Proposal> {
   validSeason(season);
   await loadApprovedCrops();
   const bed = await getBed(farmId, bedId);
@@ -267,16 +309,24 @@ export async function suggestPlanting(farmId: number, bedId: number, season: num
   const catalog = fullCatalog().filter((c) => !light || LIGHT_RANK[c.light] <= LIGHT_RANK[light]);
   const rect = (p: Rect) => `x ${p.x}–${p.x + p.w - 1}, y ${p.y}–${p.y + p.h - 1}`;
   const wish = text(wishes, 300);
+  const share = animalShare !== null && animalShare > 0 ? Math.min(100, Math.max(0, Math.round(animalShare))) : null;
+  const fodder = share !== null ? await fodderFor(farmId) : null;
+  const split = fodder && share !== null
+    ? `Aufteilung: Etwa ${share} % der neu bepflanzten Felder sollen Tierfutter sein für ${fodder.animals}, der Rest (${100 - share} %) für die Küche der Familie.
+Als Tierfutter nur diese Pflanzen (für diese Tiere geeignet, nicht giftig): ${[...fodder.keys].map((k) => cropByKey(k)?.name ?? k).join(', ')} (Schlüssel ${[...fodder.keys].join(', ')}).
+Gib bei jeder Pflanze "zweck": "futter" oder "kueche" an. Rechne den Anteil nach Feldern (eine Pflanze mit 2×2 Feldern zählt 4).
+`
+    : '';
   const prompt = `Du planst ein Gemüsebeet nach Mischkultur und Fruchtfolge (Saison ${season}).
 Beet: ${bed.lengthCm} × ${bed.widthCm} cm = Raster ${cols} Spalten (x 0–${cols - 1}) × ${rows} Zeilen (y 0–${rows - 1}), ein Feld 30 × 30 cm${light ? `, Licht: ${light}` : ''}${bed.soilTexture ? `, Boden: ${bed.soilTexture}` : ''}.
 Schon gepflanzt (nicht verändern): ${planted.length ? planted.map((p) => `${p.label} (${rect(p)})`).join('; ') : 'nichts'}.
 Früher an dieser Stelle: ${earlier.length ? earlier.map((p) => `${p.season} ${p.label} (${rect(p)})`).join('; ') : 'unbekannt'}.
-${wish ? `Wünsche des Gärtners: ${wish}\n` : ''}Mögliche Pflanzen (Schlüssel: Name, Platzbedarf, Familie, Nährstoffbedarf, Licht, Nachbarn):
+${wish ? `Wünsche des Gärtners: ${wish}\n` : ''}${split}Mögliche Pflanzen (Schlüssel: Name, Platzbedarf, Familie, Nährstoffbedarf, Licht, Nachbarn):
 ${catalog.map(cropLine).join('\n')}
 Regeln: keine Überschneidung, alles im Raster, schlechte Nachbarn nicht nebeneinander (auch nicht diagonal), gleiche Familie nicht dorthin, wo sie in den letzten 3 Jahren stand, Starkzehrer nicht nach Starkzehrern. Fülle die freien Felder sinnvoll, gute Nachbarn zusammen.
 Antworte nur mit einem JSON-Objekt:
 {
-  "pflanzen": [ {"cropKey": "Schlüssel", "x": Spalte der linken oberen Ecke, "y": Zeile der linken oberen Ecke}, … ],
+  "pflanzen": [ {"cropKey": "Schlüssel", "x": Spalte der linken oberen Ecke, "y": Zeile der linken oberen Ecke${fodder ? ', "zweck": "futter" oder "kueche"' : ''}}, … ],
   "hinweis": "2–3 Sätze auf Deutsch: Idee des Plans"
 }`;
   const { TEXT_MODELS, runModelChain } = await ai();
@@ -284,9 +334,11 @@ Antworte nur mit einem JSON-Objekt:
     string,
     unknown
   > | null;
-  const wishesList = Array.isArray(parsed?.['pflanzen']) ? (parsed!['pflanzen'] as { cropKey: unknown; x: unknown; y: unknown }[]) : [];
-  const checked = checkProposal(bed, season, planted, earlier, wishesList.filter((w) => w && typeof w === 'object'));
+  const wishesList = Array.isArray(parsed?.['pflanzen'])
+    ? (parsed!['pflanzen'] as { cropKey: unknown; x: unknown; y: unknown; zweck?: unknown }[])
+    : [];
+  const checked = checkProposal(bed, season, planted, earlier, wishesList.filter((w) => w && typeof w === 'object'), fodder?.keys ?? null);
   if (checked.items.length === 0 && checked.dropped.length === 0) throw new Error('Empty planting suggestion from AI');
-  return { ...checked, notes: text(parsed?.['hinweis'], 600) ?? '' };
+  return { ...checked, notes: text(parsed?.['hinweis'], 600) ?? '', fodderShare: fodder ? fodderShareOf(checked.items) : null };
 }
 

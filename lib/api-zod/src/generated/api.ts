@@ -9392,10 +9392,14 @@ export const SuggestPlantingParams = zod.object({
 
 export const suggestPlantingBodyWishesMax = 300;
 
+export const suggestPlantingBodyAnimalShareMin = 0;
+export const suggestPlantingBodyAnimalShareMax = 100;
+
 
 
 export const SuggestPlantingBody = zod.object({
-  "wishes": zod.string().max(suggestPlantingBodyWishesMax).nullish()
+  "wishes": zod.string().max(suggestPlantingBodyWishesMax).nullish(),
+  "animalShare": zod.number().min(suggestPlantingBodyAnimalShareMin).max(suggestPlantingBodyAnimalShareMax).nullish().describe('Share of the new plantings meant as fodder for the farm\'s animals (percent); null or 0 = all for the kitchen.')
 })
 
 export const SuggestPlantingResponse = zod.object({
@@ -9405,13 +9409,15 @@ export const SuggestPlantingResponse = zod.object({
   "x": zod.number(),
   "y": zod.number(),
   "w": zod.number(),
-  "h": zod.number()
+  "h": zod.number(),
+  "purpose": zod.enum(['kitchen', 'fodder']).optional().describe('Only with animalShare – for the kitchen or as fodder.')
 })),
   "dropped": zod.array(zod.object({
   "label": zod.string(),
   "reason": zod.string()
 })),
-  "notes": zod.string()
+  "notes": zod.string(),
+  "fodderShare": zod.number().nullish().describe('Only with animalShare – share of the proposed cells that is fodder (percent).')
 })
 
 

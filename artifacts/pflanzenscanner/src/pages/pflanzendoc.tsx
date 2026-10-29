@@ -25,6 +25,14 @@ import {
 } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
 
+/** The server's sentence for a reached daily AI limit (docs/kostenschutz.md). */
+export function limitText(err: unknown): string {
+  const message = (err as { data?: { error?: unknown } } | null)?.data?.error;
+  return typeof message === "string" && message.trim()
+    ? message
+    : "Das Tageslimit für KI-Anfragen ist erreicht. Morgen geht es weiter.";
+}
+
 type PageState = "idle" | "preparing" | "analyzing" | "result" | "error";
 
 function HealthScoreBar({ score }: { score: number }) {
@@ -165,7 +173,9 @@ export default function PflanzendocPage() {
           },
           onError: (err: unknown) => {
             const status = (err as { status?: number } | null)?.status;
-            if (status === 503) {
+            if (status === 429) {
+              setErrorMsg(limitText(err));
+            } else if (status === 503) {
               setErrorMsg(
                 "Die KI-Analyse ist gerade nicht verfügbar. Bitte stelle sicher, dass der Gemini-API-Key eingerichtet ist, und versuche es erneut.",
               );
@@ -414,10 +424,12 @@ export default function PflanzendocPage() {
                       setGuideCreating(false);
                       setLocation(`/pflege-guide/${guide.id}`);
                     },
-                    onError: () => {
+                    onError: (err: unknown) => {
                       setGuideCreating(false);
                       setGuideError(
-                        "Pflege-Guide konnte nicht erstellt werden. Bitte versuche es erneut.",
+                        (err as { status?: number } | null)?.status === 429
+                          ? limitText(err)
+                          : "Pflege-Guide konnte nicht erstellt werden. Bitte versuche es erneut.",
                       );
                     },
                   },

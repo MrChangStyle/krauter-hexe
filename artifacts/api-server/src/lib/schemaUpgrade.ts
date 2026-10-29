@@ -232,6 +232,9 @@ const STATEMENTS = [
   `DO $$ BEGIN
      ALTER TABLE "farm_push_log" ADD CONSTRAINT "farm_push_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  // Kostenschutz: daily AI checks per camera (docs/kostenschutz.md).
+  `ALTER TABLE "cameras" ADD COLUMN IF NOT EXISTS "ai_day" date`,
+  `ALTER TABLE "cameras" ADD COLUMN IF NOT EXISTS "ai_count" integer DEFAULT 0 NOT NULL`,
   // Passwort vergessen (docs/konto.md).
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamp with time zone",
   `CREATE TABLE IF NOT EXISTS "password_resets" (

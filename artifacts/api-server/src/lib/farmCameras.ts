@@ -22,10 +22,11 @@ import {
   farmMembershipsTable,
   farmsTable,
 } from '@workspace/db';
-import { and, count, desc, eq, gte, inArray, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, inArray, isNull, lt, lte, ne, or, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { deleteFarmPhotos } from './farmMembers';
+import { berlinDay } from './monitoring';
 import { grantedSql } from './farmModules';
 import { deleteImageByUrl, uploadImage } from './imageStorage';
 import { MODELS, runModelChain } from './plantIdentification';
@@ -38,6 +39,11 @@ export const MAX_CAMERA_IMAGE_BYTES = 5 * 1024 * 1024;
 /** Photos closer together are refused (no AI request) – a camera in a loop costs nothing. */
 export const MIN_SECONDS_BETWEEN_IMAGES = 10;
 export const MAX_IMAGES_PER_CAMERA_PER_DAY = 300;
+/**
+ * AI checks per farm and day across all its cameras (Richtwert, docs/kostenschutz.md):
+ * ten cameras at their own limit would otherwise mean 3,000 paid requests a day.
+ */
+export const MAX_IMAGES_PER_FARM_PER_DAY = 600;
 /** Older events (and their photos) are removed. */
 export const KEEP_EVENTS_PER_CAMERA = 100;
 export const MAX_CAMERAS_PER_FARM = 10;
@@ -340,16 +346,31 @@ export async function handleCameraImage(
   if (last && Date.now() - last.createdAt.getTime() < MIN_SECONDS_BETWEEN_IMAGES * 1000) {
     throw new CameraWebhookError(429, `At most one photo every ${MIN_SECONDS_BETWEEN_IMAGES} seconds`);
   }
-  const [{ n: today }] = (await db
-    .select({ n: count() })
-    .from(cameraEventsTable)
+  // Daily limits per camera and per farm. Counted on the camera row – the
+  // events keep only the newest KEEP_EVENTS_PER_CAMERA photos, so counting
+  // them could never reach the limit. The claim is one atomic UPDATE.
+  const day = berlinDay();
+  const [{ n: farmToday }] = (await db
+    .select({ n: sql<number>`coalesce(sum(${camerasTable.aiCount}), 0)::int` })
+    .from(camerasTable)
+    .where(and(eq(camerasTable.farmId, camera.farmId), eq(camerasTable.aiDay, day)))) as [{ n: number }];
+  if (farmToday >= MAX_IMAGES_PER_FARM_PER_DAY) {
+    throw new CameraWebhookError(429, 'Daily photo limit of this farm reached');
+  }
+  const [claimed] = await db
+    .update(camerasTable)
+    .set({
+      aiCount: sql`CASE WHEN ${camerasTable.aiDay} = ${day} THEN ${camerasTable.aiCount} + 1 ELSE 1 END`,
+      aiDay: day,
+    })
     .where(
       and(
-        eq(cameraEventsTable.cameraId, camera.id),
-        gte(cameraEventsTable.createdAt, sql`now() - interval '1 day'`),
+        eq(camerasTable.id, camera.id),
+        or(isNull(camerasTable.aiDay), ne(camerasTable.aiDay, day), lt(camerasTable.aiCount, MAX_IMAGES_PER_CAMERA_PER_DAY)),
       ),
-    )) as [{ n: number }];
-  if (today >= MAX_IMAGES_PER_CAMERA_PER_DAY) {
+    )
+    .returning({ id: camerasTable.id });
+  if (!claimed) {
     throw new CameraWebhookError(429, 'Daily photo limit of this camera reached');
   }
 

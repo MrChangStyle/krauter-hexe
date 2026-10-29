@@ -17,6 +17,7 @@ Sortiert nach Wichtigkeit für den Start. Alles, was ohne dich geht, ist vorgeba
    - In Render `SITE_PASSWORD` löschen, damit die Seite öffentlich ist.
    - `TEST_PHASE_END` auf den letzten Testtag setzen.
    - Optional `OPEN_REGISTRATION=true`, damit jeder sofort loslegen kann.
+   - Prüfen, ob in Render `SCAN_DAILY_BUDGET` gesetzt ist (Vorschlag 300 KI-Anfragen am Tag für die ganze App). Ohne Wert gibt es keine Obergrenze für die ganze App. Für dich selbst gilt das Budget nicht.
    - `TEST_PHASE` in `lib/site.ts` stelle ich auf `false`, sag mir nur den Tag.
 5. [ ] **Fachliche Prüfungen** (Richtwerte stehen in den Moduldateien unter „Offen“): Pflichten je Bundesland, am besten durch ein Veterinäramt oder eine Tierseuchenkasse. Dazu Zucht-Tage, Weide-Termine, Schädlings-Richtwerte, Saatgut-Jahre.
 

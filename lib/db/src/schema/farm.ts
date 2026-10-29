@@ -349,6 +349,10 @@ export const camerasTable = pgTable(
     relayUrl: text("relay_url"),
     cooldownSeconds: integer("cooldown_seconds").notNull().default(300),
     lastTriggeredAt: timestamp("last_triggered_at", { withTimezone: true }),
+    // AI checks today (Berlin day in ai_day): the daily limits count here,
+    // not in camera_events, which keep only the newest photos.
+    aiDay: date("ai_day", { mode: "string" }),
+    aiCount: integer("ai_count").notNull().default(0),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("cameras_farm_idx").on(table.farmId)],

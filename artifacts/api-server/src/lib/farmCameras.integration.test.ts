@@ -193,6 +193,29 @@ describe.skipIf(!enabled)("Meine Farm – Wildtier-Radar (real database)", () =>
     expect(runModelChain).toHaveBeenCalledTimes(1);
   });
 
+  it("stops at the daily limit per camera and per farm – counted, not taken from the kept events", async () => {
+    const { MAX_IMAGES_PER_CAMERA_PER_DAY, MAX_IMAGES_PER_FARM_PER_DAY } = await import("./farmCameras");
+    const { berlinDay } = await import("./monitoring");
+    runModelChain.mockResolvedValue({ predatorDetected: false, species: null, confidence: 0.1 });
+    const first = await newCamera();
+    // The camera already did its day's work; its old events are long pruned.
+    await q("UPDATE cameras SET ai_day = $1, ai_count = $2 WHERE id = $3", [berlinDay(), MAX_IMAGES_PER_CAMERA_PER_DAY, first.camera.id]);
+    expect(await send(first.secret)).toMatchObject({ status: 429 });
+    expect(runModelChain).not.toHaveBeenCalled();
+
+    // Yesterday's count does not hold today.
+    await q("UPDATE cameras SET ai_day = '2000-01-01' WHERE id = $1", [first.camera.id]);
+    expect((await send(first.secret)).status).toBe(200);
+    expect((await q<{ ai_count: number }>("SELECT ai_count FROM cameras WHERE id = $1", [first.camera.id]))[0]!.ai_count).toBe(1);
+
+    // All cameras of a farm together.
+    const second = await newCamera({ name: "Weide" });
+    await q("UPDATE cameras SET ai_day = $1, ai_count = $2 WHERE id = $3", [berlinDay(), MAX_IMAGES_PER_FARM_PER_DAY, first.camera.id]);
+    runModelChain.mockClear();
+    expect((await send(second.secret)).status).toBe(429);
+    expect(runModelChain).not.toHaveBeenCalled();
+  });
+
   it("takes a raw JPEG body and refuses anything else", async () => {
     const { secret } = await newCamera();
     runModelChain.mockResolvedValue({ predatorDetected: false, species: null, confidence: 0 });

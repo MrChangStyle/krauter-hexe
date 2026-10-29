@@ -29,6 +29,7 @@ function passwordMatches(provided: string, expected: string): boolean {
   return timingSafeEqual(a, b);
 }
 import { requireApproved, requireOwner } from "../middlewares/requireApproved";
+import { checkAndRecordScanAttempt, limitMessage, refundScanAttempt } from "../lib/scanRateLimit";
 import { generateCareGuide } from "../lib/plantIdentification";
 
 const router: IRouter = Router();
@@ -110,6 +111,13 @@ router.post(
       return;
     }
 
+    // A guide is one AI request and counts like a plant scan.
+    const attempt = await checkAndRecordScanAttempt(req.user!.id, "plant", { unlimited: req.user!.isOwner });
+    if (!attempt.allowed) {
+      res.status(429).json({ error: limitMessage(attempt), resetsAt: attempt.resetsAt, limit: attempt.limit });
+      return;
+    }
+
     let generated: Awaited<ReturnType<typeof generateCareGuide>>;
     try {
       generated = await generateCareGuide({
@@ -121,6 +129,7 @@ router.post(
         imageDataUrl: imageDay1 ?? null,
       });
     } catch (err) {
+      await refundScanAttempt(attempt.attemptId);
       console.error("generateCareGuide failed:", err);
       res.status(503).json({ error: "Die KI-Generierung ist gerade nicht verfügbar. Bitte versuche es erneut." });
       return;

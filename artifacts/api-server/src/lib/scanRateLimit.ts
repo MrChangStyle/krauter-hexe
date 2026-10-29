@@ -7,10 +7,11 @@
  * to prevent concurrent requests from overshooting the cap.
  *
  * Limit: 15 attempts per scan type (plants, insects and the farm AI features
- * tracked separately) per Berlin calendar day.
+ * tracked separately) per Berlin calendar day; 45 for the universal scan's
+ * first look at the photo ("classify").
  */
 
-import { gte, and, eq, lt, sql } from "drizzle-orm";
+import { gte, and, eq, lt, ne, sql } from "drizzle-orm";
 import { db, scanAttemptsTable } from "@workspace/db";
 import { bumpUsage } from "./monitoring";
 
@@ -22,6 +23,28 @@ import { bumpUsage } from "./monitoring";
  * showing the old number after this one changes.
  */
 export const DAILY_SCAN_LIMIT = 15;
+
+/**
+ * The universal scan first asks the AI what is on the photo ("classify"),
+ * then runs the plant or insect scan, which counts on its own. Photos without
+ * a plant or insect stop after the first call – without their own counter
+ * they would cost AI without limit. Three times the scan limit leaves room
+ * for retakes.
+ */
+export const DAILY_CLASSIFY_LIMIT = 3 * DAILY_SCAN_LIMIT;
+
+export type ScanType = "plant" | "insect" | "farm" | "garden" | "grow" | "classify";
+
+export function dailyLimitFor(scanType: ScanType): number {
+  return scanType === "classify" ? DAILY_CLASSIFY_LIMIT : DAILY_SCAN_LIMIT;
+}
+
+/** The German answer for a refused AI request (429). */
+export function limitMessage(result: Pick<RateLimitResult, "reason" | "limit">): string {
+  return result.reason === "budget"
+    ? "Die KI ist für heute ausgelastet. Bitte versuche es morgen wieder."
+    : `Du hast heute schon ${result.limit} KI-Anfragen gestellt. Morgen geht es weiter.`;
+}
 
 /**
  * Optional cap on AI scans for the whole app per Berlin day (all users, both
@@ -113,10 +136,11 @@ function getNextBerlinMidnightUTC(): Date {
  */
 export async function checkAndRecordScanAttempt(
   userId: string,
-  scanType: "plant" | "insect" | "farm" | "garden" | "grow",
+  scanType: ScanType,
   options: { unlimited?: boolean } = {},
 ): Promise<RateLimitResult> {
   const resetsAt = getNextBerlinMidnightUTC().toISOString();
+  const limit = dailyLimitFor(scanType);
 
   // Exempt accounts (the owner/admin) scan without any cap. We return before
   // touching the table at all: the daily counter exists purely to enforce the
@@ -124,7 +148,7 @@ export async function checkAndRecordScanAttempt(
   // grow the table. attemptId stays null, which makes a later refund a no-op.
   if (options.unlimited) {
     void bumpUsage("ai_actions");
-    return { allowed: true, resetsAt, limit: DAILY_SCAN_LIMIT, attemptId: null };
+    return { allowed: true, resetsAt, limit, attemptId: null };
   }
 
   const berlinMidnight = getBerlinMidnightUTC(getTodayBerlinDate());
@@ -152,17 +176,19 @@ export async function checkAndRecordScanAttempt(
       );
 
     const count = row?.count ?? 0;
-    if (count >= DAILY_SCAN_LIMIT) {
+    if (count >= limit) {
       return {
         allowed: false,
         resetsAt,
-        limit: DAILY_SCAN_LIMIT,
+        limit,
         reason: "user",
         attemptId: null,
       };
     }
 
-    const budget = scanDailyBudget();
+    // The first look of the universal scan is not a scan of its own: it stays
+    // out of the app-wide budget (the scan after it counts there).
+    const budget = scanType === "classify" ? null : scanDailyBudget();
     if (budget !== null) {
       // One app-wide lock, taken after the per-user one (always in this order,
       // so two transactions can never wait on each other), serializes the
@@ -173,12 +199,12 @@ export async function checkAndRecordScanAttempt(
       const [total] = await tx
         .select({ count: sql<number>`count(*)::int` })
         .from(scanAttemptsTable)
-        .where(gte(scanAttemptsTable.attemptedAt, berlinMidnight));
+        .where(and(gte(scanAttemptsTable.attemptedAt, berlinMidnight), ne(scanAttemptsTable.scanType, "classify")));
       if ((total?.count ?? 0) >= budget) {
         return {
           allowed: false,
           resetsAt,
-          limit: DAILY_SCAN_LIMIT,
+          limit,
           reason: "budget",
           attemptId: null,
         };
@@ -189,7 +215,7 @@ export async function checkAndRecordScanAttempt(
       .insert(scanAttemptsTable)
       .values({ userId, scanType })
       .returning({ id: scanAttemptsTable.id });
-    return { allowed: true, resetsAt, limit: DAILY_SCAN_LIMIT, attemptId: inserted?.id ?? null };
+    return { allowed: true, resetsAt, limit, attemptId: inserted?.id ?? null };
   });
   // Daily total of AI actions for the owner's statistics (no user stored).
   if (result.allowed) void bumpUsage("ai_actions");

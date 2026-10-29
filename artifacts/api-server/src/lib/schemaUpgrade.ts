@@ -59,6 +59,9 @@ const STATEMENTS = [
   `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'duck' BEFORE 'other'`,
   `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'turkey' BEFORE 'other'`,
   `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'quail' BEFORE 'other'`,
+  // Nandus und Esel (docs/nandu-esel.md).
+  `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'rhea' BEFORE 'other'`,
+  `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'donkey' BEFORE 'other'`,
   // Beet-Architekt (generated, see gardenSchemaStatements.ts).
   ...GARDEN_SCHEMA_STATEMENTS,
   // Futterplaner (generated, see feedSchemaStatements.ts).

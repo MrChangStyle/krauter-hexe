@@ -16,6 +16,8 @@ export const BREEDING_DAYS: Partial<Record<FarmSpecies, number>> = {
   duck: 28,
   turkey: 28,
   quail: 17,
+  rhea: 36,
+  donkey: 365,
   cat: 63,
   dog: 63,
 };
@@ -31,6 +33,7 @@ export const BIRDS: { label: string; days: number }[] = [
   { label: "Moschusente (Flugente)", days: 35 },
   { label: "Gans", days: 30 },
   { label: "Wachtel", days: 17 },
+  { label: "Nandu", days: 36 },
 ];
 
 /** The birds to choose from for a brood of this species. */
@@ -45,6 +48,8 @@ export function birdsFor(species: FarmSpecies): { label: string; days: number }[
       return pick("Pute");
     case "quail":
       return pick("Wachtel");
+    case "rhea":
+      return pick("Nandu");
     default:
       return BIRDS;
   }

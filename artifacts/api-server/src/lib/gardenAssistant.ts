@@ -60,6 +60,9 @@ export const FODDER_KG_PER_DAY: Record<FarmSpecies, number> = {
   duck: 0.1,
   turkey: 0.1,
   quail: 0.01,
+  rhea: 0.5,
+  // Donkeys need little; roots only as a treat.
+  donkey: 0.2,
   horse: 0,
   cattle: 0,
   cat: 0,
@@ -80,6 +83,8 @@ export const FODDER_CROPS: Record<FarmSpecies, string[]> = {
   duck: ['salat', 'mangold', 'zucchini', 'kuerbis'],
   turkey: ['mangold', 'salat', 'kuerbis', 'zucchini'],
   quail: ['salat', 'spinat', 'mangold'],
+  rhea: ['salat', 'mangold', 'kuerbis', 'moehre'],
+  donkey: ['moehre', 'pastinake'],
   horse: [],
   cattle: [],
   cat: [],
@@ -103,6 +108,8 @@ export const SPECIES_DE: Record<FarmSpecies, string> = {
   duck: 'Enten',
   turkey: 'Puten',
   quail: 'Wachteln',
+  rhea: 'Nandus',
+  donkey: 'Esel',
   other: 'sonstige Tiere',
 };
 

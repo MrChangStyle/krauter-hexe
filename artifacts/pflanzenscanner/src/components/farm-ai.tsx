@@ -24,8 +24,8 @@ import { deDate } from "@/lib/farm-health";
 
 export const AI_NOTE = "KI-Einschätzung – ersetzt keinen Tierarzt";
 
-/** Farm species the plant archive keeps a toxicity status for (geese, ducks, turkeys and quails as "Geflügel"). */
-export const ARCHIVE_SPECIES: ReadonlySet<FarmSpecies> = new Set(["poultry", "goose", "duck", "turkey", "quail", "rabbit", "guineaPig", "cat", "horse"]);
+/** Farm species the plant archive keeps a toxicity status for (geese, ducks, turkeys, quails and Nandus as "Geflügel", donkeys as "Pferd"). */
+export const ARCHIVE_SPECIES: ReadonlySet<FarmSpecies> = new Set(["poultry", "goose", "duck", "turkey", "quail", "rhea", "rabbit", "guineaPig", "cat", "horse", "donkey"]);
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;

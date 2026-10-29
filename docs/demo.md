@@ -6,7 +6,7 @@ Zum Ausprobieren lädt jedes Konto unter Mehr → **„Meine Module“** (`/modu
 
 Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt danach dorthin. Solange er gewählt ist, zeigt die Tiere-Seite einen Hinweis mit dem Weg zum Löschen.
 
-- **Tiere**: vier Gruppen („Hühner“ mit 2 Hühnern, „Ziegen“ mit 2 Ziegen, „Alpakas“ mit 3 Alpakas, „Laufenten“ mit 3 Enten) über den Schnellstart. Daraus entstehen auch die Rationen (Futterplaner) und die Stall-Aufgaben – bei den Alpakas mit Zehennägeln, Kotprobe und Schur, bei den Enten mit Eiersammeln und Badewasser.
+- **Tiere**: vier Gruppen („Hühner“ mit 2 Hühnern, „Ziegen“ mit 2 Ziegen, „Alpakas“ mit 3 Alpakas, „Laufenten“ mit 3 Enten, „Esel“ mit 2 Eseln) über den Schnellstart. Daraus entstehen auch die Rationen (Futterplaner) und die Stall-Aufgaben – bei den Alpakas mit Zehennägeln, Kotprobe und Schur, bei den Enten mit Eiersammeln und Badewasser, bei den Eseln mit Hufpflege, Kotprobe und Zähnen.
 - **Gesundheitsakte und Gewicht**: eine Entwurmung mit Wartezeit und Erinnerung an die Wiederholung in drei Monaten, drei Wiegungen.
 - **Futtervorrat**: Legehennenfutter (fast leer) und Heu.
 - **Zucht**: eine trächtige Ziege, eine trächtige Alpaka-Stute (Spucktest, zwei Wiegungen), eine Brut unter der Glucke, eine Gänsebrut im Brutapparat; die zweite Ziege mit zwei Brunsten im Brunstkalender und Zwillingen vor sechs Wochen (steht unter „Absetzen“).

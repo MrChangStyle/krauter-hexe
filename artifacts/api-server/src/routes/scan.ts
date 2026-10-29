@@ -53,7 +53,7 @@ router.post("/scan", requireApproved, async (req: Request, res: Response): Promi
     await refundScanAttempt(attempt.attemptId);
     req.log.error({ err }, "Scan subject classification failed");
     // 5xx: the client keeps the photo and retries automatically.
-    res.status(502).json({ error: "AI-Erkennung fehlgeschlagen" });
+    res.status(502).json({ error: "Die KI-Erkennung hat nicht geklappt. Das Foto wird automatisch noch einmal versucht." });
     return;
   }
   req.log.info(

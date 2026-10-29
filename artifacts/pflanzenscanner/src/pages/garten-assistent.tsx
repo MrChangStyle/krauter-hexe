@@ -46,6 +46,8 @@ const SPECIES_DE: Record<string, string> = {
   duck: "Enten",
   turkey: "Puten",
   quail: "Wachteln",
+  rhea: "Nandus",
+  donkey: "Esel",
   other: "Sonstige",
 };
 

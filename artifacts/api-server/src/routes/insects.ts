@@ -152,7 +152,7 @@ export async function handleInsectScan(req: Request, res: Response): Promise<voi
     // Same reasoning as the plant scan: a failed AI call must not consume the
     // user's daily quota, since the client retries automatically.
     await refundScanAttempt(scanAttemptId);
-    res.status(502).json({ error: "AI-Identifizierung fehlgeschlagen" });
+    res.status(502).json({ error: "Die KI-Erkennung hat nicht geklappt. Das Foto wird automatisch noch einmal versucht." });
     return;
   }
 

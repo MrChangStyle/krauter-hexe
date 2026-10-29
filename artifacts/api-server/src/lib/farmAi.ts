@@ -45,6 +45,8 @@ const SPECIES_DE: Record<FarmSpecies, string> = {
   duck: 'Ente',
   turkey: 'Pute',
   quail: 'Wachtel',
+  rhea: 'Nandu',
+  donkey: 'Esel',
   other: 'sonstiges Tier',
 };
 
@@ -56,6 +58,9 @@ const ARCHIVE_KIND: Partial<Record<FarmSpecies, AnimalKind>> = {
   duck: 'poultry',
   turkey: 'poultry',
   quail: 'poultry',
+  rhea: 'poultry',
+  // Donkeys eat like horses.
+  donkey: 'horse',
   rabbit: 'rabbit',
   guineaPig: 'guineaPig',
   cat: 'cat',
@@ -268,6 +273,8 @@ export const DIET: Record<FarmSpecies, Diet> = {
   duck: 'omnivore',
   turkey: 'omnivore',
   quail: 'omnivore',
+  rhea: 'herbivore',
+  donkey: 'herbivore',
   poultry: 'omnivore',
   pig: 'omnivore',
   cat: 'carnivore',

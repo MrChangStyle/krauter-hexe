@@ -66,6 +66,9 @@ export function withdrawalFor(m: Pick<Row, 'withdrawalMeatDays' | 'withdrawalMil
     duck: [m.withdrawalMeatDays, m.withdrawalEggsDays],
     turkey: [m.withdrawalMeatDays, m.withdrawalEggsDays],
     quail: [m.withdrawalMeatDays, m.withdrawalEggsDays],
+    rhea: [m.withdrawalMeatDays, m.withdrawalEggsDays],
+    // Donkeys are food-producing equids unless the passport says otherwise.
+    donkey: [m.withdrawalMeatDays],
     cattle: [m.withdrawalMeatDays, m.withdrawalMilkDays],
     goat: [m.withdrawalMeatDays, m.withdrawalMilkDays],
     sheep: [m.withdrawalMeatDays, m.withdrawalMilkDays],

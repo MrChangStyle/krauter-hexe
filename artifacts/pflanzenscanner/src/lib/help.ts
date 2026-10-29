@@ -33,6 +33,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     ],
     faq: [
       { q: "Wie sicher ist die Bestimmung?", a: "Die KI liegt meist richtig, aber nicht immer. Bei Giftpflanzen und Pilzen gilt: im Zweifel nicht essen und nicht verfüttern – frag eine Fachperson." },
+      { q: "Was passiert, wenn die Erkennung nicht klappt?", a: "Dein Foto geht nicht verloren: Es bleibt in der Warteschlange (Mehr → Warteschlange) und wird automatisch noch einmal versucht – ohne Netz, sobald du wieder online bist. Fehlgeschlagene Versuche zählen nicht gegen dein Tageslimit." },
       { q: "Wie viele Scans habe ich?", a: "Es gibt ein tägliches Kontingent je Konto; um Mitternacht beginnt es neu. Pflanzendoc und Pflege-Guides zählen wie ein Pflanzen-Scan. Die App zeigt, wenn es erreicht ist; schlägt die KI fehl, zählt die Anfrage nicht." },
     ],
   },
@@ -171,6 +172,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       {
         q: "Wo sind Gänse, Enten, Puten und Wachteln?",
         a: "Sie sind eigene Tierarten mit eigenem Futterbedarf, eigener Brutdauer (Gans 30, Ente 28, Pute 28, Wachtel 17 Tage) und eigenen Hinweisen bei Frost. Was du bisher als „Geflügel“ eingetragen hast, heißt jetzt „Huhn“ – führst du darunter Enten oder Gänse, stell die Tierart an der Gruppe oder am Tier um. Eine Tierart fehlt? Unter der Tierart-Auswahl auf „Anfragen“ tippen.",
+      },
+      {
+        q: "Was gilt für Nandus und Esel?",
+        a: "Nandus zählen als Laufvögel zum Geflügel: beim Veterinäramt anmelden, Geflügelpest-Regeln beachten, vor dem Kauf Gehege und Genehmigung klären. Brut etwa 36 Tage – die Eier wiegen statt schieren. Esel brauchen einen Artgenossen, einen Equidenpass und einen trockenen Unterstand (ihr Fell ist nicht wasserdicht); sie fressen wenig Eiweiß, deshalb startet die Ration mit viel Stroh. Alle Zahlen sind Richtwerte.",
       },
       {
         q: "Was gilt für Alpakas?",

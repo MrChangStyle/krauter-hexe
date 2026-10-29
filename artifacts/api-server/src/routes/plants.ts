@@ -488,7 +488,7 @@ export async function handlePlantScan(
     // No identification was produced, so this attempt must not count against
     // the user's daily quota — the queue will retry it automatically.
     await refundScanAttempt(scanAttemptId);
-    res.status(502).json({ error: "AI-Identifizierung fehlgeschlagen" });
+    res.status(502).json({ error: "Die KI-Erkennung hat nicht geklappt. Das Foto wird automatisch noch einmal versucht." });
     return;
   }
 

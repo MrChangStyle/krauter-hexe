@@ -198,7 +198,7 @@ function spell(days: DayForecast[], test: (d: DayForecast) => boolean): DayForec
 
 const temp = (t: number) => `${t < 0 ? '−' : ''}${Math.abs(t).toLocaleString('de-DE')} °C`;
 const SMALL_PETS: FarmSpecies[] = ['rabbit', 'guineaPig'];
-const GRAZERS: FarmSpecies[] = ['goat', 'sheep', 'horse', 'cattle', 'alpaca', 'goose'];
+const GRAZERS: FarmSpecies[] = ['goat', 'sheep', 'horse', 'cattle', 'alpaca', 'goose', 'rhea', 'donkey'];
 const WATERFOWL: FarmSpecies[] = ['goose', 'duck'];
 /** Frost notes for poultry besides chickens (docs/gefluegel.md). */
 function poultryFrost(has: (list: FarmSpecies[]) => boolean): string {
@@ -291,7 +291,9 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
       out.push({
         kind: 'rain',
         date: rain.date,
-        text: `Starkregen, ${rain.precipitationMm.toLocaleString('de-DE')} l/m² (${when(rain)}): trockene Unterstände und Liegeplätze, Ausläufe auf Staunässe prüfen.`,
+        text:
+          `Starkregen, ${rain.precipitationMm.toLocaleString('de-DE')} l/m² (${when(rain)}): trockene Unterstände und Liegeplätze, Ausläufe auf Staunässe prüfen.` +
+          (species.includes('donkey') ? ' Esel haben kein wasserdichtes Fell – sie brauchen jetzt einen trockenen Unterstand.' : ''),
       });
     }
   }

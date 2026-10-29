@@ -16,7 +16,7 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
      CREATE TYPE "public"."farm_role" AS ENUM('admin', 'caretaker', 'guest');
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `DO $$ BEGIN
-     CREATE TYPE "public"."farm_species" AS ENUM('poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other');
+     CREATE TYPE "public"."farm_species" AS ENUM('poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other');
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `DO $$ BEGIN
      CREATE TYPE "public"."farm_task_action" AS ENUM('Füttern', 'Tränken', 'Ausmisten', 'Eier sammeln', 'Entwurmen', 'Impfen', 'Klauen-/Hufpflege', 'Gesundheitskontrolle', 'Sonstiges');

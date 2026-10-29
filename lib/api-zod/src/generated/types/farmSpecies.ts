@@ -25,5 +25,7 @@ export const FarmSpecies = {
   duck: 'duck',
   turkey: 'turkey',
   quail: 'quail',
+  rhea: 'rhea',
+  donkey: 'donkey',
   other: 'other',
 } as const;

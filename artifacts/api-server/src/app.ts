@@ -1,4 +1,5 @@
 import express, { type Express } from "express";
+import compression from "compression";
 import cookieParser from "cookie-parser";
 import pinoHttp from "pino-http";
 import router from "./routes";
@@ -43,6 +44,9 @@ app.use(
 // API (path-based routing in dev and in the published app), so cross-origin
 // access is never needed — and reflecting arbitrary origins with
 // credentials:true would let malicious sites ride on the session cookie.
+// gzip for text (JSON, the app's JavaScript and CSS): the main bundle goes
+// from about 900 kB to about 270 kB (docs/qualitaet.md). Images are left alone.
+app.use(compression());
 app.use(cookieParser());
 // Plant photos are sent as base64 data URLs, so the default JSON limit is too small.
 app.use(

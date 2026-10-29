@@ -872,7 +872,7 @@ export function PflanzenretterCard() {
           Pflanzenretter{rank ? ` · Rang #${rank}` : ""}
         </p>
         {premium.data && (
-          <Link href="/abo" className="mt-0.5 block text-xs opacity-80 underline underline-offset-2" data-testid="mehr-paket">
+          <Link href="/abo" className="mt-0.5 block text-xs opacity-95 underline underline-offset-2" data-testid="mehr-paket">
             {paketLabel(premium.data)} · Paket & Abo
           </Link>
         )}
@@ -882,7 +882,7 @@ export function PflanzenretterCard() {
           <Leaf className="w-5 h-5" />
           {leavesCount}
         </p>
-        <p className="text-xs opacity-80">Blätter</p>
+        <p className="text-xs opacity-95">Blätter</p>
       </div>
     </div>
   );

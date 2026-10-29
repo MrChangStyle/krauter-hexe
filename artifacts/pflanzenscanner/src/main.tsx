@@ -4,6 +4,12 @@ import App from './App.tsx'
 import { installErrorReporter } from './lib/error-reporter'
 import { installSiteLockRedirect } from './lib/site-lock'
 import { applyTheme, watchSystemTheme } from './lib/theme'
+// Fonts from our own server (no request to Google – docs/qualitaet.md).
+import '@fontsource-variable/outfit'
+import '@fontsource/playfair-display/400.css'
+import '@fontsource/playfair-display/600.css'
+import '@fontsource/playfair-display/700.css'
+import '@fontsource/playfair-display/400-italic.css'
 import './index.css'
 
 // Ask the browser to keep our local data (queued photos, own scans) even when

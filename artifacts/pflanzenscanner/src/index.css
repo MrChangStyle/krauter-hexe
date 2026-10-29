@@ -1,6 +1,5 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
@@ -40,7 +39,7 @@
   --color-destructive-foreground: hsl(var(--destructive-foreground));
   --color-destructive-border: var(--destructive-border);
 
-  --font-sans: 'Outfit', sans-serif;
+  --font-sans: 'Outfit Variable', 'Outfit', sans-serif;
   --font-serif: 'Playfair Display', serif;
   --font-mono: Menlo, monospace;
 
@@ -72,7 +71,7 @@
   --secondary-foreground: 142 24% 14%;
 
   --muted: 80 15% 92%;
-  --muted-foreground: 142 10% 45%;
+  --muted-foreground: 142 10% 36%;
 
   --accent: 18 35% 41%; /* #8b5a44 - Terracotta/Earthy */
   --accent-foreground: 0 0% 100%;
@@ -191,4 +190,14 @@
   padding: 1px 5px;
   font-size: 11px;
   font-weight: 600;
+}
+
+/* Zoom is allowed (accessibility). iOS zooms into form fields under 16px on
+   focus – at least 16px there keeps the page still. */
+@supports (-webkit-touch-callout: none) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em);
+  }
 }

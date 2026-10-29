@@ -1,41 +1,42 @@
-import { useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { syncPushSubscription } from '@/lib/push';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import FarmPage from '@/pages/farm';
-import FarmAnimalPage from '@/pages/farm-animal';
-import FarmCamerasPage from '@/pages/farm-cameras';
-import BeetePage from '@/pages/beete';
-import GartenKalenderPage from '@/pages/garten-kalender';
-import GartenAssistentPage from '@/pages/garten-assistent';
-import BeetPage from '@/pages/beet';
+const FarmPage = lazy(() => import('@/pages/farm'));
+const FarmAnimalPage = lazy(() => import('@/pages/farm-animal'));
+const FarmCamerasPage = lazy(() => import('@/pages/farm-cameras'));
+const BeetePage = lazy(() => import('@/pages/beete'));
+const GartenKalenderPage = lazy(() => import('@/pages/garten-kalender'));
+const GartenAssistentPage = lazy(() => import('@/pages/garten-assistent'));
+const BeetPage = lazy(() => import('@/pages/beet'));
 import NotFound from '@/pages/not-found';
 import { Redirect, Route, Switch, Router as WouterRouter, useLocation } from 'wouter';
 import Layout from '@/components/layout';
 import AuthGate from '@/components/auth-gate';
 import ScanPage from '@/pages/scan';
-import PflanzenPage from '@/pages/pflanzen';
-import AufgabenPage from '@/pages/aufgaben';
-import HofAufgabenPage from '@/pages/hof-aufgaben';
-import NotizenPage from '@/pages/notizen';
-import ArchivePage from '@/pages/archive';
-import CategoriesPage from '@/pages/categories';
-import KraeuterHexePage from '@/pages/kraeuter-hexe';
-import PflanzendocPage from '@/pages/pflanzendoc';
-import HilfePage from '@/pages/hilfe';
-import PflanzenHubPage from '@/pages/pflanzen-hub';
-import MeinePflanzenPage from '@/pages/meine-pflanzen';
-import SchaedlingePage from '@/pages/schaedlinge';
-import MeineTierePage from '@/pages/meine-tiere';
-import { BeneficialPage, ProblemPage } from '@/pages/nuetzlinge';
-import PlantDetailPage from '@/pages/plant-detail';
-import InsectScanPage from '@/pages/insect-scan';
-import InsectDetailPage from '@/pages/insect-detail';
+const PflanzenPage = lazy(() => import('@/pages/pflanzen'));
+const AufgabenPage = lazy(() => import('@/pages/aufgaben'));
+const HofAufgabenPage = lazy(() => import('@/pages/hof-aufgaben'));
+const NotizenPage = lazy(() => import('@/pages/notizen'));
+const ArchivePage = lazy(() => import('@/pages/archive'));
+const CategoriesPage = lazy(() => import('@/pages/categories'));
+const KraeuterHexePage = lazy(() => import('@/pages/kraeuter-hexe'));
+const PflanzendocPage = lazy(() => import('@/pages/pflanzendoc'));
+const HilfePage = lazy(() => import('@/pages/hilfe'));
+const PflanzenHubPage = lazy(() => import('@/pages/pflanzen-hub'));
+const MeinePflanzenPage = lazy(() => import('@/pages/meine-pflanzen'));
+const SchaedlingePage = lazy(() => import('@/pages/schaedlinge'));
+const MeineTierePage = lazy(() => import('@/pages/meine-tiere'));
+const BeneficialPage = lazy(() => import('@/pages/nuetzlinge').then((m) => ({ default: m.BeneficialPage })));
+const ProblemPage = lazy(() => import('@/pages/nuetzlinge').then((m) => ({ default: m.ProblemPage })));
+const PlantDetailPage = lazy(() => import('@/pages/plant-detail'));
+const InsectScanPage = lazy(() => import('@/pages/insect-scan'));
+const InsectDetailPage = lazy(() => import('@/pages/insect-detail'));
 import PendingPage from '@/pages/pending';
-import MehrPage from '@/pages/mehr';
-import PflegeGuidesPage from '@/pages/pflege-guides';
-import PflegeGuideDetailPage from '@/pages/pflege-guide-detail';
+const MehrPage = lazy(() => import('@/pages/mehr'));
+const PflegeGuidesPage = lazy(() => import('@/pages/pflege-guides'));
+const PflegeGuideDetailPage = lazy(() => import('@/pages/pflege-guide-detail'));
 import { AuthProvider } from '@/lib/auth-context';
 import { LEGAL_PATHS } from '@/lib/legal';
 import {
@@ -45,7 +46,8 @@ import {
   NutzungsbedingungenPage,
   WiderrufPage,
 } from '@/pages/rechtliches';
-import AboPage, { TestkassePage } from '@/pages/abo';
+const AboPage = lazy(() => import('@/pages/abo'));
+const TestkassePage = lazy(() => import('@/pages/abo').then((m) => ({ default: m.TestkassePage })));
 import { SiteApp } from '@/components/site/site-app';
 import { sitePageOf } from '@/lib/site';
 import UmzugPage from '@/pages/umzug';
@@ -63,34 +65,34 @@ import { useSymptomApplicationsBackfill } from '@/lib/use-symptom-applications-b
 import { useMedicinalReviewBackfill } from '@/lib/use-medicinal-review-backfill';
 import { useEdibleMedicinalBackfill } from '@/lib/use-edible-medicinal-backfill';
 import { ErrorBoundary } from '@/components/error-boundary';
-import FutterplanerPage from '@/pages/futterplaner';
-import FutterVorratPage from '@/pages/futter-vorrat';
-import FutterTippsPage from '@/pages/futter-tipps';
-import ArzneimittelPage from '@/pages/arzneimittel';
-import UebergabePage from '@/pages/uebergabe';
-import PflichtenPage from '@/pages/pflichten';
-import ZuchtPage from '@/pages/zucht';
-import SaatgutPage from '@/pages/saatgut';
-import ErtragPage from '@/pages/ertrag';
-import LegeleistungPage from '@/pages/legeleistung';
-import StallPage from '@/pages/stall';
-import BienenPage from '@/pages/bienen';
-import BienenVolkPage from '@/pages/bienen-volk';
-import VorratPage from '@/pages/vorrat';
-import WeidePage from '@/pages/weide';
-import ErnteAuswertungPage from '@/pages/ernte-auswertung';
-import GrowPage from '@/pages/grow';
-import GrowPlantPage from '@/pages/grow-plant';
-import GrowKostenPage from '@/pages/grow-kosten';
-import VerwaltungPage from '@/pages/verwaltung';
-import ModulePage from '@/pages/module';
-import FarmAufgabenPage from '@/pages/farm-aufgaben';
-import FarmExportPage from '@/pages/farm-export';
-import TeamPage from '@/pages/team';
-import TierNeuPage from '@/pages/tier-neu';
-import SuchePage from '@/pages/suche';
-import GrowWissenPage from '@/pages/grow-wissen';
-import GrowRechtPage from '@/pages/grow-recht';
+const FutterplanerPage = lazy(() => import('@/pages/futterplaner'));
+const FutterVorratPage = lazy(() => import('@/pages/futter-vorrat'));
+const FutterTippsPage = lazy(() => import('@/pages/futter-tipps'));
+const ArzneimittelPage = lazy(() => import('@/pages/arzneimittel'));
+const UebergabePage = lazy(() => import('@/pages/uebergabe'));
+const PflichtenPage = lazy(() => import('@/pages/pflichten'));
+const ZuchtPage = lazy(() => import('@/pages/zucht'));
+const SaatgutPage = lazy(() => import('@/pages/saatgut'));
+const ErtragPage = lazy(() => import('@/pages/ertrag'));
+const LegeleistungPage = lazy(() => import('@/pages/legeleistung'));
+const StallPage = lazy(() => import('@/pages/stall'));
+const BienenPage = lazy(() => import('@/pages/bienen'));
+const BienenVolkPage = lazy(() => import('@/pages/bienen-volk'));
+const VorratPage = lazy(() => import('@/pages/vorrat'));
+const WeidePage = lazy(() => import('@/pages/weide'));
+const ErnteAuswertungPage = lazy(() => import('@/pages/ernte-auswertung'));
+const GrowPage = lazy(() => import('@/pages/grow'));
+const GrowPlantPage = lazy(() => import('@/pages/grow-plant'));
+const GrowKostenPage = lazy(() => import('@/pages/grow-kosten'));
+const VerwaltungPage = lazy(() => import('@/pages/verwaltung'));
+const ModulePage = lazy(() => import('@/pages/module'));
+const FarmAufgabenPage = lazy(() => import('@/pages/farm-aufgaben'));
+const FarmExportPage = lazy(() => import('@/pages/farm-export'));
+const TeamPage = lazy(() => import('@/pages/team'));
+const TierNeuPage = lazy(() => import('@/pages/tier-neu'));
+const SuchePage = lazy(() => import('@/pages/suche'));
+const GrowWissenPage = lazy(() => import('@/pages/grow-wissen'));
+const GrowRechtPage = lazy(() => import('@/pages/grow-recht'));
 import { StatusBanner } from '@/components/status-banner';
 import { resolveEntry } from '@/lib/app-entry';
 
@@ -112,6 +114,15 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+/** While a page's chunk loads (first visit only; offline it comes from the cache). */
+function PageLoading() {
+  return (
+    <div className="flex justify-center py-16" role="status" aria-label="Seite wird geladen">
+      <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+    </div>
+  );
+}
 
 function ScrollToTop() {
   const [location] = useLocation();
@@ -158,6 +169,8 @@ function Router() {
   return (
     <Layout>
       <ScrollToTop />
+      {/* Each page is its own chunk (loaded on first visit, precached for offline). */}
+      <Suspense fallback={<PageLoading />}>
       <Switch>
         <Route path="/" component={ScanPage} />
         <Route path="/pflanzen" component={PflanzenHubPage} />
@@ -227,6 +240,7 @@ function Router() {
         <Route path="/pflege-guide/:id" component={PflegeGuideDetailPage} />
         <Route component={NotFound} />
       </Switch>
+      </Suspense>
     </Layout>
   );
 }

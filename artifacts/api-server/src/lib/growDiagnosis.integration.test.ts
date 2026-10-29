@@ -57,7 +57,11 @@ describe.skipIf(!enabled)("Grow KI-Check (real database, AI replaced)", () => {
     base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
-  afterAll(() => server?.close());
+  afterAll(async () => {
+    // Leave no Paket behind: it would change other files' AI limits (docs/bezahlung.md).
+    await q("TRUNCATE premium");
+    server?.close();
+  });
 
   const api = async (method: string, path: string, body?: unknown) => {
     const res = await fetch(`${base}${path}`, {

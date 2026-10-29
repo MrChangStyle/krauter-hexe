@@ -41,8 +41,10 @@ describe.skipIf(!enabled)("Premium (real database)", () => {
     base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     delete process.env["TEST_PHASE_END"];
+    // Leave no Paket behind: it would change other files' AI limits (docs/bezahlung.md).
+    await q("TRUNCATE premium");
     server?.close();
   });
 

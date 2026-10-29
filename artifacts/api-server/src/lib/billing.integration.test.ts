@@ -52,8 +52,10 @@ describe.skipIf(!enabled)("Bezahlung (real database)", () => {
     base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     for (const k of ["TEST_PHASE_END", "BILLING_PROVIDER", "STRIPE_WEBHOOK_SECRET"]) delete process.env[k];
+    // Leave no Paket behind: it would change other files' AI limits (docs/bezahlung.md).
+    await q("TRUNCATE premium");
     server?.close();
   });
 

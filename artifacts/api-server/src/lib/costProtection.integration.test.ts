@@ -77,7 +77,8 @@ describe.skipIf(!enabled)("Kostenschutz: KI nur innerhalb der Tageslimits (real 
     ai.health.mockReset();
     ai.guide.mockReset();
     ai.classify.mockReset();
-    await q("TRUNCATE users, scan_attempts, care_guides RESTART IDENTITY CASCADE");
+    // premium too: the Paket sets the limit (docs/bezahlung.md), and other files leave grants behind.
+    await q("TRUNCATE users, scan_attempts, care_guides, premium RESTART IDENTITY CASCADE");
     await q(`INSERT INTO users (id, email, approved, is_owner) VALUES ('anna', 'anna@example.org', true, false), ('chef', 'chef@example.org', true, true)`);
   });
 

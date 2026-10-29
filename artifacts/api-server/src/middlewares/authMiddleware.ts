@@ -6,6 +6,7 @@ import { type NextFunction, type Request, type Response } from 'express';
 import { clearAuthCookie, getAuthToken, setAuthCookie } from '../lib/auth';
 import { createAuthToken, verifyAuthToken } from '../lib/token';
 import { markActive } from '../lib/monitoring';
+import { tokenPredatesPasswordChange } from '../lib/passwordReset';
 
 // How often the token is re-issued (once per day of activity is enough - the
 // point is that active users never hit the 30-day expiry).
@@ -58,7 +59,8 @@ export async function authMiddleware(
     .from(usersTable)
     .where(eq(usersTable.id, payload.userId));
 
-  if (!dbUser) {
+  // A password change (or reset) signs out every device that signed in before.
+  if (!dbUser || tokenPredatesPasswordChange(payload.issuedAt, dbUser.passwordChangedAt)) {
     clearAuthCookie(res);
     next();
     return;

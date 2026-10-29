@@ -4026,6 +4026,48 @@ export interface ScanInsectResult {
   imageImproved?: boolean | null;
 }
 
+export interface PasswordResetRequestInput {
+  /** @maxLength 200 */
+  email: string;
+}
+
+export interface PasswordResetRequestResult {
+  /** True when links go out by mail; false when the owner passes them on. */
+  mail: boolean;
+}
+
+export interface PasswordResetTokenInput {
+  token: string;
+}
+
+export interface PasswordResetCheckResult {
+  valid: boolean;
+}
+
+export interface PasswordResetConfirmInput {
+  token: string;
+  /**
+     * @minLength 8
+     * @maxLength 200
+     */
+  password: string;
+}
+
+export interface ChangePasswordInput {
+  /** @maxLength 200 */
+  currentPassword?: string;
+  /**
+     * @minLength 8
+     * @maxLength 200
+     */
+  newPassword: string;
+}
+
+export interface PasswordResetLink {
+  url: string;
+  expiresAt: string;
+}
+
 export interface LoginInput {
   /**
      * Account email address (compared case-insensitively).

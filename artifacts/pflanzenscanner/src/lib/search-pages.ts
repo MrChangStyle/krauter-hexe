@@ -46,7 +46,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Meine Module", hint: "Ein- und ausblenden, Demo-Daten", href: "/module", words: "module demo einrichtung tour" },
   { title: "Hilfe & FAQ", hint: "Alle Module erklärt, häufige Fragen", href: "/hilfe", words: "hilfe faq fragen anleitung erklärung wie geht" },
   { title: "Benachrichtigungen", hint: "Was kommt, Ruhezeit", href: "/mehr#push", words: "push erinnerungen ruhezeit" },
-  { title: "Konto", hint: "Name, Passwort, Daten", href: "/mehr#konto", words: "passwort löschen konto daten" },
+  { title: "Konto", hint: "Name, Passwort, Daten", href: "/mehr#konto", words: "passwort ändern vergessen zurücksetzen löschen konto daten" },
 ];
 
 const norm = (s: string) => s.toLocaleLowerCase("de-DE").normalize("NFC");

@@ -19,7 +19,7 @@ const enabled =
 
 describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", () => {
   const TABLES =
-    "daily_notes, note_shares, favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, grow_access, grows, grow_push_log, premium, dashboard_layouts, user_settings, move_parcels, feedback, farm_memberships, farms, plants, insects, users";
+    "daily_notes, note_shares, password_resets, favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, grow_access, grows, grow_push_log, premium, dashboard_layouts, user_settings, move_parcels, feedback, farm_memberships, farms, plants, insects, users";
 
   async function load() {
     const { pool } = await import("@workspace/db");
@@ -101,6 +101,8 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
     // Alltagsnotizen: one note, and a share of someone else's list.
     await pool.query(`INSERT INTO daily_notes (user_id, kind, text) VALUES ($1, 'einkauf', 'Zahnbürsten')`, [userId]);
     await pool.query(`INSERT INTO note_shares (owner_id, user_id) VALUES ('owner', $1)`, [userId]);
+    // A link for "Passwort vergessen".
+    await pool.query(`INSERT INTO password_resets (user_id, token_hash, via, expires_at) VALUES ($1, $2, 'owner', now() + interval '1 day')`, [userId, `hash-${userId}`]);
   }
 
   beforeEach(async () => {
@@ -138,6 +140,7 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       feedback: 1,
       daily_notes: 1,
       note_shares: 1,
+      password_resets: 1,
       farm_task_comments: 1,
       farm_memberships: 1,
       farms: 1,

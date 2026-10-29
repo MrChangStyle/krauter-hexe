@@ -14,7 +14,6 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
   - Team mit Rollen und Vertretung.
   - Hilfe und Demo-Daten in jedem Modul.
 - **Was den Start blockiert** (🔴):
-  - Es gibt kein „Passwort vergessen“.
   - Es gibt keine Bezahlung.
   - Die Rechtstexte sind nicht geprüft.
   - Die Datentrennung zwischen Höfen ist nicht für **alle** Endpunkte automatisch geprüft. Einzeltests gibt es.
@@ -25,7 +24,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Bereich | Stand | Befund | Schritt |
 |---|---|---|---|
 | Registrierung, Login, Google | ✅ | Seitenpasswort, keine Einladungscodes, die ersten 20 Tester frei, Push an den Betreiber | – |
-| Passwort vergessen, E-Mail-Bestätigung | 🔴 | Kein E-Mail-Versand vorhanden. Wer sein Passwort vergisst, kommt nicht mehr hinein | 2 |
+| Passwort vergessen, E-Mail-Bestätigung | ✅ | Seit Schritt 2: Link per Mail (Resend) oder vom Betreiber, Passwort ändern. E-Mail-Bestätigung folgt mit dem Mailversand | 2 |
 | Konto löschen | ✅ | mit allen persönlichen Daten, Hof geht über oder wird gelöscht | – |
 | Datentrennung | 🟡 | Jeder Hof-Endpunkt prüft die Mitgliedschaft (`requireFarm`), Modul-Freigaben gibt es. Es fehlt ein Test, der **alle** Endpunkte systematisch abdeckt | 3 |
 | KI-Kosten | 🟡 | Tageslimit 15 je Konto und Bereich, App-Budget. Ein höheres Limit für Premium gibt es noch nicht | 4, 16 |

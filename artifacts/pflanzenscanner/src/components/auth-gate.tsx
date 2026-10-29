@@ -17,6 +17,7 @@ import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 import { TurnstileWidget, type TurnstileHandle } from "@/components/turnstile-widget";
 import { SiteApp } from "@/components/site/site-app";
 import { APP_PATH, markInApp, tabIsInApp } from "@/lib/app-entry";
+import { ForgotPasswordForm } from "@/components/password";
 
 /** Google's four-colour "G", the mark their brand guidelines ask for. */
 function GoogleMark() {
@@ -101,6 +102,7 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
   const turnstileRef = useRef<TurnstileHandle>(null);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [forgot, setForgot] = useState(false);
   const providers = useAuthProviders();
   const googleAvailable = providers.google;
   const turnstileSiteKey = providers.turnstileSiteKey;
@@ -182,6 +184,16 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
     }
   }
 
+  if (forgot) {
+    return (
+      <FullScreenCentered>
+        <BrandMark />
+        <ForgotPasswordForm initialEmail={email} onBack={() => setForgot(false)} />
+        <LegalFooter />
+      </FullScreenCentered>
+    );
+  }
+
   return (
     <FullScreenCentered>
       <BrandMark />
@@ -225,6 +237,18 @@ function LoginScreen({ initialMode = "login", onBack }: { initialMode?: "login" 
             onChange={(e) => setPassword(e.target.value)}
             placeholder={isRegister ? "mindestens 8 Zeichen" : "••••••••"}
           />
+          {!isRegister && (
+            <button
+              type="button"
+              className="self-end text-xs text-muted-foreground underline underline-offset-4"
+              onClick={() => {
+                setError(null);
+                setForgot(true);
+              }}
+            >
+              Passwort vergessen?
+            </button>
+          )}
         </div>
 
         {isRegister && (

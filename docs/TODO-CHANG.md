@@ -7,7 +7,7 @@ Sortiert nach Wichtigkeit für den Start. Alles, was ohne dich geht, ist vorgeba
 1. [ ] **Rechtstexte prüfen lassen**: Impressum, Datenschutzerklärung, Nutzungsbedingungen, später AGB und Widerrufsbelehrung.
    - Die Entwürfe liegen in der App unter `/impressum`, `/datenschutz`, `/nutzungsbedingungen`.
    - Am besten über eine Anwältin oder einen Dienst wie eRecht24 oder IT-Recht Kanzlei.
-2. [ ] **E-Mail-Dienst für „Passwort vergessen“** (nach Schritt 2 des Launch-Plans):
+2. [ ] **E-Mail-Dienst für „Passwort vergessen“**. Er ist fertig eingebaut. Bis der Schlüssel da ist, bekommst du bei einer Anfrage einen Push und schickst den „Passwort-Link“ aus Verwaltung → Benutzer:
    1. Konto bei https://resend.com anlegen, Region EU.
    2. Domain `littlefarming.de` hinzufügen und die angezeigten DNS-Einträge (SPF, DKIM) beim Domain-Anbieter eintragen.
    3. Einen API-Key erzeugen und in Render beim Dienst „Little Farming“ → Environment als `RESEND_API_KEY` eintragen.

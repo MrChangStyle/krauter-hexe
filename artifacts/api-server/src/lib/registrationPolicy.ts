@@ -16,7 +16,7 @@ import { gte, sql } from 'drizzle-orm';
  * to. Bump it whenever those texts change materially; the stored value tells
  * which version each account accepted.
  */
-export const LEGAL_VERSION = '2026-10-26';
+export const LEGAL_VERSION = '2026-10-29';
 
 /** True when new accounts may use the app without the owner's approval. */
 export function isOpenRegistration(): boolean {

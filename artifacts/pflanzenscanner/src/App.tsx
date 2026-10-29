@@ -46,6 +46,7 @@ import {
 import { SiteApp } from '@/components/site/site-app';
 import { sitePageOf } from '@/lib/site';
 import UmzugPage from '@/pages/umzug';
+import PasswortNeuPage from '@/pages/passwort-neu';
 import { MoveGate } from '@/components/move-screen';
 import { ScanQueueProvider } from '@/lib/scan-queue-context';
 import { UpdatePrompt } from '@/components/update-prompt';
@@ -228,7 +229,8 @@ function Router() {
 /**
  * Pages that work without an account, picked before the AuthGate: Impressum,
  * Datenschutz and Nutzungsbedingungen (the registration form links to them),
- * /umzug, which receives this device's photos from the old address, and the
+ * /umzug, which receives this device's photos from the old address,
+ * /passwort-neu behind a reset link (docs/konto.md), and the
  * homepage's sub pages (lib/site.ts).
  * Links to them are plain page loads, so reading the path once is enough.
  */
@@ -244,6 +246,8 @@ function publicPageFor(pathname: string) {
       return <NutzungsbedingungenPage />;
     case '/umzug':
       return <UmzugPage />;
+    case '/passwort-neu':
+      return <PasswortNeuPage />;
     default:
       // The homepage's sub pages (Pflanzen, Tiere, Preise …) – for everyone.
       return sitePageOf(path) ? <SiteApp /> : null;

@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   pgTable,
+  serial,
   text,
   timestamp,
   uniqueIndex,
@@ -54,6 +55,9 @@ export const usersTable = pgTable(
     // set to false at the same time). Lets the app say "gesperrt" instead of
     // "warte auf Freigabe". Cleared when the owner approves the account again.
     blockedAt: timestamp('blocked_at', { withTimezone: true }),
+    // Last password change. Sign-in tokens issued before it are no longer
+    // accepted, so a reset signs out every other device.
+    passwordChangedAt: timestamp('password_changed_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -73,6 +77,24 @@ export const usersTable = pgTable(
       .on(table.isOwner)
       .where(sql`${table.isOwner} = true`),
   ],
+);
+
+// One-time links for "Passwort vergessen" (docs/konto.md). Only the SHA-256 of
+// the token is stored, so a leaked database does not hand out working links.
+// A link works once and for a limited time; `via` says whether it went out by
+// mail or the owner created it to pass on by hand.
+export const passwordResetsTable = pgTable(
+  'password_resets',
+  {
+    id: serial('id').primaryKey(),
+    userId: text('user_id').notNull(),
+    tokenHash: text('token_hash').notNull().unique(),
+    via: text('via').notNull(),
+    expiresAt: timestamp('expires_at', { withTimezone: true }).notNull(),
+    usedAt: timestamp('used_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index('password_resets_user_idx').on(table.userId)],
 );
 
 export type UpsertUser = typeof usersTable.$inferInsert;

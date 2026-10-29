@@ -226,6 +226,10 @@ export function DatenschutzPage() {
             getippte Text)
           </li>
           <li>Google (nur bei „Mit Google anmelden“)</li>
+          <li>
+            Resend (Versand von E-Mails, z. B. des Links bei „Passwort vergessen“; übermittelt werden deine
+            E-Mail-Adresse und der Inhalt der Mail, Rechenzentrum in der EU)
+          </li>
           <li>Cloudflare Turnstile (Schutz der Registrierung vor Bots)</li>
           <li>
             OpenStreetMap Nominatim (Beet-Architekt: Postleitzahl eines Beetes

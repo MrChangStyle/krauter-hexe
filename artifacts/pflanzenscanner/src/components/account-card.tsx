@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
+import { ChangePasswordButton } from "@/components/password";
 
 /**
  * Meine Daten herunterladen (docs/datenexport.md): fetches the file and hands
@@ -160,6 +161,8 @@ export function AccountCard() {
           Eine Datei mit allem, was Little Farming zu deinem Konto speichert – auch die Höfe, die du leitest.
         </p>
       </div>
+
+      <ChangePasswordButton />
 
       {!user.isOwner && (
         <AlertDialog open={open} onOpenChange={reset}>

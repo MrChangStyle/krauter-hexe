@@ -16,7 +16,6 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 - **Was den Start blockiert** (🔴):
   - Es gibt keine Bezahlung.
   - Die Rechtstexte sind nicht geprüft.
-  - Die Datentrennung zwischen Höfen ist nicht für **alle** Endpunkte automatisch geprüft. Einzeltests gibt es.
 - **Größte fachliche Lücke:** Geflügel ist nur eine Art. Gänse, Enten und Puten lassen sich nicht getrennt führen.
 
 ## Plattform
@@ -26,7 +25,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Registrierung, Login, Google | ✅ | Seitenpasswort, keine Einladungscodes, die ersten 20 Tester frei, Push an den Betreiber | – |
 | Passwort vergessen, E-Mail-Bestätigung | ✅ | Seit Schritt 2: Link per Mail (Resend) oder vom Betreiber, Passwort ändern. E-Mail-Bestätigung folgt mit dem Mailversand | 2 |
 | Konto löschen | ✅ | mit allen persönlichen Daten, Hof geht über oder wird gelöscht | – |
-| Datentrennung | 🟡 | Jeder Hof-Endpunkt prüft die Mitgliedschaft (`requireFarm`), Modul-Freigaben gibt es. Es fehlt ein Test, der **alle** Endpunkte systematisch abdeckt | 3 |
+| Datentrennung | ✅ | Seit Schritt 3 prüfen Tests jeden Endpunkt (Hof, Konto, Betreiber, ohne Anmeldung); zwei Lücken bei Wartungs-Endpunkten behoben (`docs/datentrennung.md`) | 3 |
 | KI-Kosten | 🟡 | Tageslimit 15 je Konto und Bereich, App-Budget. Ein höheres Limit für Premium gibt es noch nicht | 4, 16 |
 | Bezahlung | 🔴 | Testphase und Tester-Status gebaut, kein Zahlungsanbieter | 16 |
 | PWA, Offline, Updates | ✅ | installierbar, Scan-Warteschlange, Updates ohne Bestätigen, App-Stand | – |

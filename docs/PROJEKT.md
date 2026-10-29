@@ -99,6 +99,11 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
   - Bis dahin bekommt der Betreiber einen Push und gibt einen „Passwort-Link“ aus Verwaltung → Benutzer weiter.
   - Passwort ändern geht unter Mehr → Konto.
   - Ein neues Passwort meldet alle anderen Geräte ab.
+- **Datentrennung** (`docs/datentrennung.md`): Automatische Tests gehen jeden Endpunkt durch und zeigen:
+  - Fremde sehen keinen Hof und kein fremdes Konto.
+  - Gäste ändern nichts.
+  - Ohne Freigabe kommt man an kein Modul.
+  - Ohne Anmeldung antworten nur die öffentlichen Endpunkte.
 - **Konto löschen:** in der App, mit allen persönlichen Daten. Ein Hof geht an ein anderes Mitglied über oder wird gelöscht.
 - **Bremsen:** Konten je Anschluss (5 pro Stunde), Konten je Tag (`REGISTRATION_DAILY_CAP`, nur bei offener Registrierung), optional Cloudflare Turnstile, Login-Sperre nach 10 Fehlversuchen.
 
@@ -175,7 +180,7 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
   - Ob ein Deploy durchlief, zeigt GitHub unter „Deployments“.
 - **Domain:** littlefarming.de, Render-Adresse `kraeuter-hexe.onrender.com`. Alte Adressen leitet der Umzugshelfer weiter (`LEGACY_ORIGINS`).
 - **Sicherung:** GitHub Actions sichert die Datenbank jede Nacht verschlüsselt (`db-backup.yml`, `docs/datensicherung.md`).
-- **CI:** GitHub Actions für Typecheck, Tests (auch gegen echtes Postgres), Build und Codegen-Prüfung (`ci.yml`, `codegen.yml`).
+- **CI:** GitHub Actions für Typecheck, Tests (Integrationstests gegen ein eigenes Postgres im Job, seit #108), Build und Codegen-Prüfung (`ci.yml`, `codegen.yml`).
 
 **Umgebungsvariablen** (Werte nur in Render, nie im Repo):
 
@@ -248,6 +253,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #108 | Datentrennung: Tests über alle Hof- und Konto-Endpunkte; Wartungs-Endpunkte nur noch für den angemeldeten Betreiber, Archiv bearbeiten nur angemeldet; CI startet ein eigenes Postgres, die Integrationstests liefen dort vorher gar nicht |
 | 29.10.2026 | #107 | Passwort vergessen (Mail über Resend oder Link vom Betreiber), Passwort ändern, neues Passwort meldet andere Geräte ab; Resend in der Datenschutzerklärung |
 | 29.10.2026 | #107 | Launch-Plan, Bestandsaufnahme, Entscheidungen und To-do-Liste für den Betreiber |
 | 28.10.2026 | #106 | Beet-Vorschlag: Schieberegler Küche/Tierfutter für die KI; diese Projektbeschreibung angelegt |

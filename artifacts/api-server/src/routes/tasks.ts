@@ -6,7 +6,7 @@ import {
 } from "express";
 import { eq, and, desc, sql, isNotNull, count } from "drizzle-orm";
 import { db, tasksTable, usersTable } from "@workspace/db";
-import { requireApproved } from "../middlewares/requireApproved";
+import { requireApproved, requireOwner } from "../middlewares/requireApproved";
 import { RAIN_MM, careForecast, careLocation, frostAhead, seasonalCareOn, withCare } from "../lib/careWeather";
 import { berlinDay } from "../lib/monitoring";
 import { createHash, timingSafeEqual } from "crypto";
@@ -305,6 +305,8 @@ router.delete(
 // Safe to call only ONCE — running it again would double-count.
 router.post(
   "/tasks/backfill-leaves",
+  // Maintenance: the signed-in owner AND the maintenance password.
+  requireOwner,
   async (req: Request, res: Response): Promise<void> => {
     const deletePassword = process.env.DELETE_PASSWORD;
     if (!deletePassword) {

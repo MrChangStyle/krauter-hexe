@@ -15,7 +15,7 @@ import {
   tasksTable,
 } from "@workspace/db";
 import { desc, eq, sql, count, isNotNull } from "drizzle-orm";
-import { requireApproved } from "../middlewares/requireApproved";
+import { requireApproved, requireOwner } from "../middlewares/requireApproved";
 import { createHash, timingSafeEqual } from "crypto";
 
 function passwordMatches(provided: string, expected: string): boolean {
@@ -82,6 +82,8 @@ router.get(
 // adding on top, so already-performed scans count exactly once.
 router.post(
   "/leaderboard/recount-leaves",
+  // Maintenance: the signed-in owner AND the maintenance password.
+  requireOwner,
   async (req: Request, res: Response): Promise<void> => {
     const deletePassword = process.env.DELETE_PASSWORD;
     if (!deletePassword) {

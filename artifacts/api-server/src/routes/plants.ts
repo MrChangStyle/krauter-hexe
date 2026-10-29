@@ -1553,7 +1553,7 @@ router.put("/plants/:id/image-lock", requireOwner, async (req, res): Promise<voi
 // Deliberately NOT behind requireApproved: this endpoint is called from
 // maintenance scripts outside a browser session and is protected by the
 // server-side archive password instead.
-router.patch("/plants/:id", async (req, res): Promise<void> => {
+router.patch("/plants/:id", requireApproved, async (req, res): Promise<void> => {
   const params = UpdatePlantParams.safeParse(req.params);
   if (!params.success) {
     res.status(400).json({ error: params.error.message });

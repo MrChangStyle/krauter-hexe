@@ -13,7 +13,7 @@ import path from "node:path";
 import type { AddressInfo } from "node:net";
 import type { Server } from "node:http";
 import express from "express";
-import { mountWebClient, shouldServeAppShell } from "./webClient";
+import { mountWebClient, seoPageFor, shouldServeAppShell } from "./webClient";
 
 const HTML_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8";
 const ASSET_ACCEPT = "*/*";
@@ -28,6 +28,8 @@ beforeAll(async () => {
   await writeFile(path.join(clientDir, "index.html"), "<!doctype html><title>Shell</title>");
   await writeFile(path.join(clientDir, "assets", "index-abc123.js"), "export default 1;");
   await writeFile(path.join(clientDir, "sw.js"), "// service worker");
+  await mkdir(path.join(clientDir, "funktionen", "tiere"), { recursive: true });
+  await writeFile(path.join(clientDir, "funktionen", "tiere", "index.html"), "<!doctype html><title>Tiere</title>");
 
   const app = express();
   // Stand-in for the real API router: everything under /api must stay with it.
@@ -52,6 +54,25 @@ describe("serving the app", () => {
     const res = await get("/");
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/html");
+  });
+
+  it("sends a public page's own HTML (SEO), without a trailing-slash redirect", async () => {
+    for (const p of ["/funktionen/tiere", "/funktionen/tiere/"]) {
+      const res = await fetch(`${baseUrl}${p}`, { headers: { accept: HTML_ACCEPT }, redirect: "manual" });
+      expect(res.status, p).toBe(200);
+      expect(await res.text(), p).toContain("<title>Tiere</title>");
+    }
+    // A folder without its own page, or a path that tries to leave the build, gets the shell.
+    for (const p of ["/funktionen", "/app/tiere"]) {
+      const res = await fetch(`${baseUrl}${p}`, { headers: { accept: HTML_ACCEPT }, redirect: "manual" });
+      expect(res.status, p).toBe(200);
+      expect(await res.text(), p).toContain("<title>Shell</title>");
+    }
+  });
+
+  it("never looks for a page outside the build", () => {
+    expect(seoPageFor(clientDir, "/funktionen/tiere")).toBe(path.join(clientDir, "funktionen", "tiere", "index.html"));
+    for (const p of ["/../etc", "/funktionen/..", "/%2e%2e/x", "/", ""]) expect(seoPageFor(clientDir, p), p).toBeNull();
   });
 
   it("returns the app shell for a deep link, so a hard refresh works", async () => {

@@ -42,7 +42,7 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
 
 ### D – Außenauftritt und Rechtliches
 11. [x] **Namensreste** „Kräuterhexe“ auf „Little Farming“ umstellen: Meta-Tags, Manifest, Login, Scan-Seite, PDF. Nur der Heilkräuter-Ratgeber heißt weiter „Kräuter-Hexe“.
-12. [ ] **SEO**: sitemap.xml, Open-Graph-Bilder, strukturierte Daten, Titel und Beschreibungen prüfen.
+12. [x] **SEO**: sitemap.xml, Open-Graph-Bilder, strukturierte Daten, Titel und Beschreibungen prüfen.
 13. [ ] **Rechtstexte als Entwürfe**: Impressum, Datenschutz (Render, Neon, Cloudinary, Google Gemini, Google-Login, Zahlungsanbieter), AGB, Widerrufsbelehrung, jeweils als „rechtlich zu prüfen“ markiert. Haftungshinweise bei Pilzen, Giftpflanzen und Tierarzneimitteln.
 14. [ ] **Homepage und FAQ** an den Endstand angleichen, „Kostenlos starten“.
 15. [ ] **Marketing-Plan** (`docs/MARKETING.md`): Zielgruppen, Botschaften, Kanäle, Startfahrplan, Pressetext, Social-Media-Ideen, Messgrößen.

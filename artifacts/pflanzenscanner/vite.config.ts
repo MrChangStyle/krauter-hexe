@@ -3,6 +3,9 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import { mkdirSync, readFileSync, writeFileSync } from 'fs';
+
+import { SEO_PAGES, pageHtml, sitemapXml } from './src/lib/site-meta';
 
 import runtimeErrorOverlay from '@replit/vite-plugin-runtime-error-modal';
 
@@ -38,6 +41,25 @@ export default defineConfig({
   // Shown under Mehr and after an update (lib/app-version.ts).
   define: { __APP_BUILT_AT__: JSON.stringify(new Date().toISOString()) },
   plugins: [
+    // SEO (docs/seo.md): one HTML file per public page with its own title,
+    // description and link preview, plus sitemap.xml. The server sends these
+    // to whoever opens such a page; everything else gets index.html.
+    {
+      name: 'seo-pages',
+      apply: 'build',
+      // index.html itself (also the app shell) carries the homepage's tags;
+      // done here so the service worker caches the final file.
+      transformIndexHtml: (html) => pageHtml(html, SEO_PAGES[0]!),
+      closeBundle() {
+        const outDir = path.resolve(import.meta.dirname, 'dist/public');
+        const indexHtml = readFileSync(path.join(outDir, 'index.html'), 'utf8');
+        for (const page of SEO_PAGES.slice(1)) {
+          mkdirSync(path.join(outDir, page.path), { recursive: true });
+          writeFileSync(path.join(outDir, page.path, 'index.html'), pageHtml(indexHtml, page));
+        }
+        writeFileSync(path.join(outDir, 'sitemap.xml'), sitemapXml(new Date().toISOString().slice(0, 10)));
+      },
+    },
     react(),
     tailwindcss(),
     runtimeErrorOverlay(),

@@ -33,7 +33,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Sicherung | ✅ | nächtlich verschlüsselt per GitHub Actions | – |
 | Homepage | ✅ | Start, Pflanzen, Tiere, Hof, Preise, Modul-Finder, Szenen | 14 |
 | Rechtstexte | 🟡 | Impressum, Datenschutz und Nutzungsbedingungen vorhanden, aber ungeprüft. AGB für Bezahlung und Widerruf fehlen | 13 |
-| SEO | 🟡 | Titel und Beschreibung je Seite, robots.txt. Es fehlen sitemap.xml, OG-Bilder und strukturierte Daten | 12 |
+| SEO | ✅ | Seit Schritt 12 eine HTML-Datei je öffentlicher Seite mit Titel, Beschreibung, kanonischer Adresse und Link-Vorschau, Vorschaubild, strukturierte Daten, sitemap.xml, robots.txt (`docs/seo.md`). Search Console nach dem Start | 12 |
 | Namensreste „Kräuterhexe“ | ✅ | Seit Schritt 11 heißt die App überall „Little Farming“: Meta-Beschreibung, Manifest, Login-Untertitel („Garten, Hof und Tiere“), Scan-Überschrift („Scannen“), PDF-Fußzeile, Futter-KI-Texte, Nutzungsbedingungen. Nur der Heilkräuter-Ratgeber heißt „Kräuter-Hexe“ | 11 |
 | App-Stores | 🔴 | keine native Hülle | 19 |
 

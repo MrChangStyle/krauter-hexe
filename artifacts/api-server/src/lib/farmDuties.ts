@@ -15,7 +15,7 @@
 import { beeColoniesTable, db, farmAnimalsTable, farmDutyChecksTable, farmMembershipsTable, farmPushLogTable, farmsTable, herdsTable, type FarmSpecies } from '@workspace/db';
 import { and, eq, isNull, lt, sql } from 'drizzle-orm';
 
-import { DEFAULT_DUE_DAY, STATES, STATE_CODES, isStateCode, reportPushDays, type StateCode, type StateRules } from './dutyStates';
+import { DEFAULT_DUE_DAY, STATES, STATE_CODES, dayOfYear, isStateCode, reportPushDays, type StateCode, type StateRules } from './dutyStates';
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { addDays } from './feedSeason';
 import { logger } from './logger';
@@ -349,7 +349,8 @@ export function countOn(animals: AnimalSpan[], species: FarmSpecies[], day: stri
   return species.filter((s) => counts.has(s)).map((s) => ({ species: s, count: counts.get(s)! }));
 }
 
-const jan = (year: string | number, day: number) => `${year}-01-${String(day).padStart(2, '0')}`;
+/** Day `day` counted from 1 January of `year` – past 31 it runs into February. */
+const jan = (year: string | number, day: number) => new Date(Date.UTC(Number(year), 0, day)).toISOString().slice(0, 10);
 
 /** Stock day and deadline of a yearly report: the Land's for the Tierseuchenkasse, else 1 and 15 January. */
 export function reportDays(def: DutyDef, rules: StateRules | null): { stockDay: number; dueDay: number } {
@@ -543,7 +544,7 @@ export function reportMessage(open: DutyItem[]): { title: string; body: string }
   const day = Number(open[0]!.stock!.day.slice(8));
   // One deadline for all: "bis 15.01. an Tierseuchenkasse und HI-Tier"; else each with its own.
   const name = (d: DutyItem) => (d.key === 'hit_report' ? 'HI-Tier' : (d.link?.label ?? 'Tierseuchenkasse'));
-  const by = (d: DutyItem) => `${Number(d.dueOn!.slice(8))}.01.`;
+  const by = (d: DutyItem) => `${Number(d.dueOn!.slice(8))}.${d.dueOn!.slice(5, 7)}.`;
   const to = open.every((d) => d.dueOn === open[0]!.dueOn) ? `bis ${by(open[0]!)} an ${open.map(name).join(' und ')}` : open.map((d) => `bis ${by(d)} an ${name(d)}`).join(' und ');
   return {
     title: 'Bestandsmeldung fällig',
@@ -552,12 +553,13 @@ export function reportMessage(open: DutyItem[]): { title: string; body: string }
 }
 
 /**
- * January: remind the admins of every farm with an open stock report, about
- * two weeks and three days before its deadline (once per farm and day).
+ * January and February: remind the admins of every farm with an open stock
+ * report, about two weeks and three days before its deadline (once per farm
+ * and day). Most deadlines are in January, Rheinland-Pfalz's in February.
  */
 export async function sendDutyDigests(hhmm: string, day: string): Promise<number> {
-  if (hhmm < PUSH_TIME || day.slice(5, 7) !== '01') return 0;
-  const dayOfMonth = Number(day.slice(8));
+  if (hhmm < PUSH_TIME || (day.slice(5, 7) !== '01' && day.slice(5, 7) !== '02')) return 0;
+  const today = dayOfYear(day);
   let sent = 0;
   try {
     await db.delete(farmPushLogTable).where(and(eq(farmPushLogTable.topic, 'duties'), lt(farmPushLogTable.day, addDays(day, -60))));
@@ -570,7 +572,7 @@ export async function sendDutyDigests(hhmm: string, day: string): Promise<number
       try {
         // Each report on its own push days, counted back from its deadline.
         const open = (await farmDuties(farmId, day)).duties.filter(
-          (d) => d.kind === 'yearly' && (d.status === 'due' || d.status === 'overdue') && reportPushDays(Number(d.dueOn!.slice(8))).includes(dayOfMonth),
+          (d) => d.kind === 'yearly' && (d.status === 'due' || d.status === 'overdue') && reportPushDays(dayOfYear(d.dueOn!), dayOfYear(d.stock!.day)).includes(today),
         );
         const message = reportMessage(open);
         if (!message) continue;

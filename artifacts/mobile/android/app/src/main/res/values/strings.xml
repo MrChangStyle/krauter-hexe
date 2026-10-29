@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Little Farming</string>
+    <string name="title_activity_main">Little Farming</string>
+    <string name="package_name">de.littlefarming.app</string>
+    <string name="custom_url_scheme">de.littlefarming.app</string>
+</resources>

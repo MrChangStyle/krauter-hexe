@@ -36,7 +36,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Rechtstexte | 🟡 | Impressum, Datenschutz (seit Schritt 13 mit Hof, Tieren und Wildkameras) und Nutzungsbedingungen (mit Haftungshinweisen) live. AGB, Widerruf und Datenschutz zur Bezahlung als Entwürfe (`docs/rechtstexte.md`). Alles muss vor dem Start rechtlich geprüft werden | 13 |
 | SEO | ✅ | Seit Schritt 12 eine HTML-Datei je öffentlicher Seite mit Titel, Beschreibung, kanonischer Adresse und Link-Vorschau, Vorschaubild, strukturierte Daten, sitemap.xml, robots.txt (`docs/seo.md`). Search Console nach dem Start | 12 |
 | Namensreste „Kräuterhexe“ | ✅ | Seit Schritt 11 heißt die App überall „Little Farming“: Meta-Beschreibung, Manifest, Login-Untertitel („Garten, Hof und Tiere“), Scan-Überschrift („Scannen“), PDF-Fußzeile, Futter-KI-Texte, Nutzungsbedingungen. Nur der Heilkräuter-Ratgeber heißt „Kräuter-Hexe“ | 11 |
-| App-Stores | 🔴 | keine native Hülle | 19 |
+| App-Stores | 🟡 | Seit Schritt 19 Capacitor-Hülle für Android und iOS (`artifacts/mobile`, `docs/app-stores.md`) mit Berechtigungen, Offline-Seite, Icon- und Startbild-Vorlagen. Es fehlen Store-Konten, Bauen auf Geräten, Push in der App | 19 |
 
 ## Pflanzen
 

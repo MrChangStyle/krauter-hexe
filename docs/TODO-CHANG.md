@@ -37,7 +37,7 @@ Sortiert nach Wichtigkeit für den Start. Alles, was ohne dich geht, ist vorgeba
 
 6. [ ] **Domain `little-farming.de`** (falls vorhanden) beim Domain-Anbieter per 301 auf `https://littlefarming.de` weiterleiten.
 7. [ ] **Google-Anmeldung freigeben lassen**: In der Google Cloud Console den OAuth-Zustimmungsbildschirm von „Testing“ auf „In production“ stellen. Sonst können sich nur eingetragene Testnutzer mit Google anmelden.
-8. [ ] **Store-Konten** (für die Apps, Schritt 19): Google Play Console (einmalig 25 $) und Apple Developer Program (99 $ im Jahr).
+8. [ ] **Store-Konten** (für die Apps, Schritt 19, `docs/app-stores.md`): Google Play Console (einmalig 25 $) und Apple Developer Program (99 $ im Jahr). Danach mit Android Studio bzw. Xcode (Mac) bauen; die Schritte stehen in der Doku.
 9. [ ] **Marketing** (`docs/MARKETING.md`):
    - Social-Media-Konten unter „littlefarming“ sichern (Instagram, TikTok, Facebook, Pinterest, YouTube).
    - Das Zitat im Pressetext abstimmen und das Startdatum festlegen.

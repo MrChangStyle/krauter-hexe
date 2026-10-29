@@ -1,0 +1,18 @@
+{
+  "appId": "de.littlefarming.app",
+  "appName": "Little Farming",
+  "webDir": "www",
+  "server": {
+    "url": "https://littlefarming.de/app",
+    "cleartext": false,
+    "allowNavigation": ["littlefarming.de", "*.littlefarming.de", "accounts.google.com"],
+    "errorPath": "offline.html"
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "always",
+    "limitsNavigationsToAppBoundDomains": true
+  }
+}

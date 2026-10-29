@@ -51,7 +51,7 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
 16. [x] **Premium und Bezahlung**: Abo-Status, Upgrade, Kündigung, Webhook. Mit Testdaten und Mock gebaut, es fehlen nur Konto und Schlüssel.
 17. [x] **Qualität**: Lighthouse (Mobil), Bildgrößen, Barrierefreiheit (Kontraste, Beschriftungen, Tastatur), Fehler und Warnungen im Build.
 18. [x] **Analyse**: datenschutzfreundliche Zählung ohne Cookies (eigene Tageszahlen gibt es schon), vorbereitet und abschaltbar.
-19. [ ] **App-Stores**: Capacitor-Hülle für Android und iOS vorbereiten, so weit es ohne Store-Konten geht.
+19. [x] **App-Stores**: Capacitor-Hülle für Android und iOS vorbereiten, so weit es ohne Store-Konten geht.
 
 ### F – Abschluss
 20. [ ] `docs/ABSCHLUSSBERICHT.md`: Ampel, was geprüft, behoben und gebaut wurde, Tests, Restpunkte.

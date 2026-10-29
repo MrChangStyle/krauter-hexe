@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { isNativeApp } from '@/lib/native-app';
 
 /** What the server offers on the login screen, from GET /api/auth/providers. */
 export interface AuthProviders {
@@ -35,7 +36,8 @@ export function useAuthProviders(): AuthProviders {
       .then((data) => {
         if (cancelled) return;
         setProviders({
-          google: data?.google === true,
+          // Google refuses sign-in inside the store apps' web view (lib/native-app.ts).
+          google: data?.google === true && !isNativeApp(),
           turnstileSiteKey:
             typeof data?.turnstileSiteKey === 'string' && data.turnstileSiteKey
               ? data.turnstileSiteKey

@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { INTERVAL_LABELS, aiPerDay, paketLabel, priceLine, untilText } from "@/lib/billing-labels";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
+import { isNativeApp } from "@/lib/native-app";
 import { TEST_PHASE, planById } from "@/lib/site";
 
 function errorText(err: unknown, fallback: string): string {
@@ -203,7 +204,9 @@ export default function AboPage() {
   // Testphase and testers have everything for free – nothing to order.
   const free = p?.source === "test" || p?.source === "tester" || p?.source === "owner";
   // Order unless a subscription runs (a cancelled test-checkout one may be ordered again).
-  const canOrder = !!b && b.enabled && !!p && !free && (!p.subscribed || (p.cancelAtPeriodEnd && p.source === "mock"));
+  // The store apps sell nothing for now (their own billing rules, docs/app-stores.md).
+  const nativeApp = isNativeApp();
+  const canOrder = !nativeApp && !!b && b.enabled && !!p && !free && (!p.subscribed || (p.cancelAtPeriodEnd && p.source === "mock"));
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
@@ -225,6 +228,11 @@ export default function AboPage() {
           <Status billing={b} />
           {p!.subscribed && b.enabled && <Manage billing={b} />}
           {canOrder && <Order billing={b} />}
+          {nativeApp && b.enabled && !free && !p!.subscribed && (
+            <p className="rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground" data-testid="abo-native">
+              In dieser App lassen sich keine Pakete buchen.
+            </p>
+          )}
           {b.enabled && free && p!.source !== "owner" && (
             <section className="rounded-xl border border-border bg-muted/40 p-4 text-sm" data-testid="abo-free">
               <p className="font-semibold">Für dich kostenlos</p>

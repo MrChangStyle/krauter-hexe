@@ -6,7 +6,7 @@ Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit
 
 | Seite | Adresse | Inhalt |
 |---|---|---|
-| Start | `/` | Hof-Illustration oder Foto, vier Stärken, die drei Bereiche, Hof-Startseite mit Screenshot, Pakete, drei Schritte |
+| Start | `/` | Hof-Illustration oder Foto, vier Stärken, die drei Bereiche, Hof-Startseite mit Screenshot, Pakete, Häufige Fragen, drei Schritte |
 | Pflanzen | `/funktionen/pflanzen` | Untermenü mit allen Pflanzen-Modulen; je Modul Text, Punkte, KI-Teil mit Paket, Foto oder Screenshot |
 | Tiere | `/funktionen/tiere` | „Diese Tiere kennt die App“ (alle Tierarten, die neueste markiert, „Tierart wünschen“), dann dasselbe für alle Tiere-Module |
 | Gemeinsam auf dem Hof | `/funktionen/hof` | Hof-Startseite, Team und Rollen, Urlaubsvertretung, Hilfe |
@@ -24,6 +24,21 @@ Wer nicht angemeldet ist, sieht zuerst die Homepage. Sie stellt die App vor, mit
 - **Tierarten** (`SITE_SPECIES` in `lib/site.ts`): Kacheln mit allen Tierarten der App und den Bienen. Die neueste Art (zurzeit Alpakas) trägt „Neu“ und ist daneben gezeichnet.
   - „Deine Tierart fehlt?“: Der Knopf „Tierart wünschen“ öffnet die Feedback-Blase als Idee mit dem Text „Bitte ergänzt die Tierart: “ (`openSiteFeedback`). Der Wunsch landet in Verwaltung → Feedback.
   - Ein Test prüft, dass jede Tierart der App genau einmal vorkommt. Eine neue Art fehlt dort also nicht.
+- **Häufige Fragen** (`SITE_FAQ` in `lib/site-meta.ts`): acht Fragen zum Aufklappen auf der Startseite (`#fragen`). Es geht um:
+  - was die App ist und was sie kostet
+  - Installation und Offline-Betrieb
+  - die Zuverlässigkeit der Erkennung (Pilze nur nach Prüfung essen)
+  - die Tierarten und das Teilen mit Team und Tierarzt
+  - wo die Daten liegen
+  - dass die App Tierarzt, Arzt und Amt nicht ersetzt
+
+  Dieselben Fragen stehen als `FAQPage` in den strukturierten Daten (`docs/seo.md`). Ein Test prüft, dass die Antwort zu den Tierarten jede Art der Tiere-Seite nennt.
+- **Stand der Modultexte (29.10.2026):**
+  - Hof-Aufgaben mit festen Wochentagen und Planen per Sprache
+  - Krankenakte mit Wartezeit ab dem letzten Behandlungstag
+  - Tierarzt auf Zeit einladen
+  - Fristen je Bundesland mit Erinnerung
+  - Garten-Assistent mit Rechnung
 - **Pakete und Preise:** vorläufig, siehe `docs/premium.md`.
 - **Testphase:** Solange `TEST_PHASE` in `lib/site.ts` an ist, steht unter dem Kopf jeder Seite ein Streifen: „Testphase: alles offen und kostenlos …, wer jetzt testet, behält die App auch nach dem Start kostenlos“. Auf `/preise` stehen dieselbe Aussage und eine Frage dazu (siehe `docs/premium.md`).
 

@@ -48,6 +48,21 @@ export const SEO_PAGES: SeoPage[] = [
   { path: "/nutzungsbedingungen", title: "Nutzungsbedingungen – Little Farming", description: "Die Bedingungen für die Nutzung von Little Farming.", priority: 0.2 },
 ];
 
+/**
+ * Häufige Fragen on the homepage, also sent to search engines as FAQPage.
+ * Plain text, no links – the answers must stand on their own.
+ */
+export const SITE_FAQ: { q: string; a: string }[] = [
+  { q: "Was ist Little Farming?", a: "Eine App für Pflanzen, Garten und Tiere: Pflanzen, Pilze und Insekten per Foto bestimmen, Beete planen, Stall-Aufgaben, Futter, Zucht, Krankenakte und Pflichten im Blick behalten – vom Balkon bis zum kleinen Hof." },
+  { q: "Was kostet die App?", a: "Alles, was ohne KI läuft, ist kostenlos. Für Foto-Erkennung und KI-Vorschläge gibt es die Pakete Lite und Premium. In der Testphase ist alles offen, und wer jetzt testet, behält die App auch nach dem Start kostenlos." },
+  { q: "Muss ich etwas aus dem App Store installieren?", a: "Nein. Little Farming läuft im Browser und lässt sich wie eine App auf den Startbildschirm legen – auf Android und iPhone. Sie funktioniert auch bei schlechtem Empfang; Fotos werden gescannt, sobald wieder Netz da ist." },
+  { q: "Wie zuverlässig ist die Pflanzen- und Pilzerkennung?", a: "Die Bestimmung macht eine KI, und die kann sich irren. Pilze erkennt sie nur mit Fotos von oben und unten – und gegessen wird ein Pilz nie allein nach der App, sondern erst nach Prüfung durch eine Pilzsachverständige oder einen Pilzsachverständigen." },
+  { q: "Welche Tiere kennt die App?", a: "Hühner, Enten, Gänse, Puten, Wachteln, Nandus, Ziegen, Schafe, Alpakas, Rinder, Schweine, Pferde, Esel, Kaninchen, Meerschweinchen, Bienen, Hunde und Katzen – jede Art mit eigenem Futterbedarf, Brut- oder Tragzeit und Pflichten." },
+  { q: "Kann ich den Hof mit Familie, Team oder Tierarzt teilen?", a: "Ja. Du lädst Mitglieder mit einer Rolle ein (Admin, Mitarbeiter, Gast) und gibst Module frei. Eine Urlaubsvertretung oder der Tierarzt bekommt Zugang bis zu einem Tag, danach endet er von selbst." },
+  { q: "Wo liegen meine Daten?", a: "App und Datenbank laufen in Rechenzentren in Frankfurt am Main. Fotos liegen beim Bilddienst Cloudinary, Fotos für die KI-Auswertung gehen an Google – alles dazu steht in der Datenschutzerklärung. Du kannst deine Daten jederzeit herunterladen und dein Konto mit allen persönlichen Daten selbst löschen." },
+  { q: "Ersetzt die App Tierarzt, Arzt oder Amt?", a: "Nein. Futterwerte, Wartezeiten, Heilkräuter und Fristen sind Richtwerte und Arbeitshilfen. Maßgeblich bleiben Beipackzettel, Tierarzt, Arzt, Veterinäramt und Tierseuchenkasse." },
+];
+
 /** Picture for link previews (1200 × 630, public/og-image.png). */
 export const OG_IMAGE = `${SITE_ORIGIN}/og-image.png`;
 
@@ -91,6 +106,10 @@ export function structuredData(): string {
         offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
       },
       { "@type": "Organization", name: "Little Farming", url: SITE_ORIGIN, logo: `${SITE_ORIGIN}/icon-512.png`, email: "info@littlefarming.de" },
+      {
+        "@type": "FAQPage",
+        mainEntity: SITE_FAQ.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+      },
     ],
   };
   return `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`;

@@ -31,7 +31,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | PWA, Offline, Updates | ✅ | installierbar, Scan-Warteschlange, Updates ohne Bestätigen, App-Stand | – |
 | Fehlerüberwachung, Betrieb | ✅ | Fehlergruppen, Push an den Betreiber, Tageszahlen, Statusmeldung | – |
 | Sicherung | ✅ | nächtlich verschlüsselt per GitHub Actions | – |
-| Homepage | ✅ | Start, Pflanzen, Tiere, Hof, Preise, Modul-Finder, Szenen | 14 |
+| Homepage | ✅ | Start, Pflanzen, Tiere, Hof, Preise, Modul-Finder, Szenen. Seit Schritt 14 Häufige Fragen auf der Startseite, Modultexte auf dem Endstand | 14 |
 | Rechtstexte | 🟡 | Impressum, Datenschutz (seit Schritt 13 mit Hof, Tieren und Wildkameras) und Nutzungsbedingungen (mit Haftungshinweisen) live. AGB, Widerruf und Datenschutz zur Bezahlung als Entwürfe (`docs/rechtstexte.md`). Alles muss vor dem Start rechtlich geprüft werden | 13 |
 | SEO | ✅ | Seit Schritt 12 eine HTML-Datei je öffentlicher Seite mit Titel, Beschreibung, kanonischer Adresse und Link-Vorschau, Vorschaubild, strukturierte Daten, sitemap.xml, robots.txt (`docs/seo.md`). Search Console nach dem Start | 12 |
 | Namensreste „Kräuterhexe“ | ✅ | Seit Schritt 11 heißt die App überall „Little Farming“: Meta-Beschreibung, Manifest, Login-Untertitel („Garten, Hof und Tiere“), Scan-Überschrift („Scannen“), PDF-Fußzeile, Futter-KI-Texte, Nutzungsbedingungen. Nur der Heilkräuter-Ratgeber heißt „Kräuter-Hexe“ | 11 |

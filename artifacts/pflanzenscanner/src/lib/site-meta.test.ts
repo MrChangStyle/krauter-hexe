@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { SEO_PAGES, SITE_ORIGIN, pageHtml, sitemapXml } from "./site-meta";
+import { SEO_PAGES, SITE_FAQ, SITE_ORIGIN, pageHtml, sitemapXml, structuredData } from "./site-meta";
+import { SITE_SPECIES } from "./site";
 
 const INDEX = `<html><head>\n    <meta name="description" content="App" />\n    <title>Little Farming</title>\n</head><body></body></html>`;
 
@@ -25,6 +26,20 @@ describe("SEO pages", () => {
     expect(prices).toContain("<title>Preise &amp; Pakete – Little Farming</title>");
     expect(prices).not.toContain("ld+json");
     expect(prices).not.toContain('content="App"');
+  });
+
+  it("answers the common questions on the homepage and for search engines", () => {
+    expect(SITE_FAQ.length).toBeGreaterThanOrEqual(6);
+    for (const { q, a } of SITE_FAQ) {
+      expect(q.endsWith("?"), q).toBe(true);
+      expect(a.length, q).toBeLessThanOrEqual(400);
+    }
+    const ld = JSON.parse(structuredData().replace(/^<script[^>]*>|<\/script>$/g, ""));
+    const faq = ld["@graph"].find((g: { "@type": string }) => g["@type"] === "FAQPage");
+    expect(faq.mainEntity).toHaveLength(SITE_FAQ.length);
+    // The species answer names every animal the Tiere page shows.
+    const species = SITE_FAQ.find((f) => f.q.startsWith("Welche Tiere"))!.a;
+    for (const s of SITE_SPECIES) expect(species, s.label).toContain(s.label);
   });
 
   it("writes a sitemap with every page", () => {

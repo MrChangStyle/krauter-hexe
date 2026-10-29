@@ -6,6 +6,7 @@ import {
   BookOpen,
   Bug,
   Camera,
+  ChevronDown,
   CalendarCheck,
   Check,
   ClipboardList,
@@ -43,6 +44,7 @@ import { openSiteFeedback } from "@/components/site/site-feedback";
 import { GROW_ENABLED } from "@/lib/grow-labels";
 import { LANDING_TEXT } from "@/lib/landing";
 import { MODULES, type ModuleArea } from "@/lib/modules";
+import { SITE_FAQ } from "@/lib/site-meta";
 import {
   FINDER_AI_LABELS,
   FINDER_ANIMALS,
@@ -352,6 +354,20 @@ export function StartPage({ actions }: { actions: SiteActions }) {
           <Button variant="outline" asChild>
             <Link href={SITE_PATHS.pricing}>Alle Pakete vergleichen</Link>
           </Button>
+        </div>
+      </Section>
+
+      <Section id="fragen" eyebrow="Fragen" title="Häufige Fragen">
+        <div className="grid gap-3 md:grid-cols-2" data-testid="site-faq">
+          {SITE_FAQ.map(({ q, a }) => (
+            <details key={q} className="group rounded-3xl border bg-card p-5 [&_summary::-webkit-details-marker]:hidden">
+              <summary className="flex cursor-pointer list-none items-start justify-between gap-3 font-semibold">
+                {q}
+                <ChevronDown className="mt-1 h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" />
+              </summary>
+              <p className="mt-2 text-sm text-muted-foreground">{a}</p>
+            </details>
+          ))}
         </div>
       </Section>
 

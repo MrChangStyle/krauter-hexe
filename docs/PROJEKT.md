@@ -256,6 +256,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #118 | Homepage: Häufige Fragen auf der Startseite (auch als FAQPage für Suchmaschinen), Modultexte auf dem Endstand (Wochentage, Krankenakte, Tierarzt einladen, Fristen je Land, Garten-Rechnung) |
 | 29.10.2026 | #117 | Rechtstexte: Datenschutz um Hof, Tiere und Wildkameras ergänzt, Nutzungsbedingungen mit Haftungshinweisen (Pilze, Giftpflanzen, Heilkräuter, Wartezeiten, Pflichten); AGB, Widerruf und Datenschutz zur Bezahlung als Entwürfe (`docs/rechtstexte.md`) |
 | 29.10.2026 | #116 | SEO: eigene HTML-Datei je öffentlicher Seite mit Titel, Beschreibung und Link-Vorschau, Vorschaubild, strukturierte Daten, sitemap.xml, robots.txt |
 | 29.10.2026 | #115 | Namensreste: Die App heißt überall „Little Farming“ (Meta-Beschreibung, Manifest, Login, Scan-Seite, PDF, Futter-KI, Nutzungsbedingungen); nur der Heilkräuter-Ratgeber heißt „Kräuter-Hexe“ |

@@ -33,6 +33,8 @@ const { state } = vi.hoisted(() => ({
 }));
 
 vi.mock("./monitoring", () => ({ bumpUsage: async () => {} }));
+// The Paket's limit (lib/premium.ts) – the 15 of the Testphase here.
+vi.mock("./premium", () => ({ userDailyLimit: async () => 15 }));
 
 vi.mock("@workspace/db", () => {
   const col = (name: string) => ({ __name: name });

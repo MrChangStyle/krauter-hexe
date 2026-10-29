@@ -137,7 +137,11 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 
 - **Testphase:** Alle haben alles. Konten, die bis zum Ende der Testphase angelegt werden, bleiben dauerhaft kostenlos („Tester“).
 - **Ende der Testphase:** Env `TEST_PHASE_END`.
-- **Bezahlung:** noch nicht angebunden.
+- **Pakete:** Basis (kostenlos, 3 KI-Anfragen am Tag je Bereich), Lite (15) und Premium (40, dazu der Grow-KI-Check). Während der Testphase und für Tester bleibt es bei 15.
+- **Bezahlung** (`docs/bezahlung.md`):
+  - Unter „Mehr → Paket & Abo“ wird bestellt und gekündigt, nach §§ 312j und 312k BGB.
+  - Anbieter ist Stripe mit signiertem Webhook. Eine Testkasse funktioniert ohne Geld.
+  - Ohne Stripe-Schlüssel ist die Bezahlung aus.
 
 ## 7. Technik
 
@@ -256,6 +260,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #120 | Bezahlung: Pakete mit KI-Limits (Basis 3, Lite 15, Premium 40; Testphase unverändert 15), „Paket & Abo“ mit Bestellen und Kündigen-Knopf, Stripe mit signiertem Webhook, Testkasse, AGB und Widerruf als Entwürfe |
 | 29.10.2026 | #119 | Marketing-Plan (`docs/MARKETING.md`): Zielgruppen, Botschaften, Kanäle, Startfahrplan, Pressetext, Social-Media-Ideen, Messgrößen |
 | 29.10.2026 | #118 | Homepage: Häufige Fragen auf der Startseite (auch als FAQPage für Suchmaschinen), Modultexte auf dem Endstand (Wochentage, Krankenakte, Tierarzt einladen, Fristen je Land, Garten-Rechnung) |
 | 29.10.2026 | #117 | Rechtstexte: Datenschutz um Hof, Tiere und Wildkameras ergänzt, Nutzungsbedingungen mit Haftungshinweisen (Pilze, Giftpflanzen, Heilkräuter, Wartezeiten, Pflichten); AGB, Widerruf und Datenschutz zur Bezahlung als Entwürfe (`docs/rechtstexte.md`) |

@@ -39,10 +39,13 @@ import PflegeGuideDetailPage from '@/pages/pflege-guide-detail';
 import { AuthProvider } from '@/lib/auth-context';
 import { LEGAL_PATHS } from '@/lib/legal';
 import {
+  AgbPage,
   DatenschutzPage,
   ImpressumPage,
   NutzungsbedingungenPage,
+  WiderrufPage,
 } from '@/pages/rechtliches';
+import AboPage, { TestkassePage } from '@/pages/abo';
 import { SiteApp } from '@/components/site/site-app';
 import { sitePageOf } from '@/lib/site';
 import UmzugPage from '@/pages/umzug';
@@ -165,6 +168,8 @@ function Router() {
         <Route path="/schaedlinge/nuetzling/:id" component={BeneficialPage} />
         <Route path="/tiere"><Redirect to="/farm" replace /></Route>
         <Route path="/mehr" component={MehrPage} />
+        <Route path="/abo" component={AboPage} />
+        <Route path="/abo/testkasse" component={TestkassePage} />
         <Route path="/verwaltung" component={VerwaltungPage} />
         <Route path="/module" component={ModulePage} />
         <Route path="/hilfe" component={HilfePage} />
@@ -244,6 +249,10 @@ function publicPageFor(pathname: string) {
       return <DatenschutzPage />;
     case LEGAL_PATHS.nutzungsbedingungen:
       return <NutzungsbedingungenPage />;
+    case LEGAL_PATHS.agb:
+      return <AgbPage />;
+    case LEGAL_PATHS.widerruf:
+      return <WiderrufPage />;
     case '/umzug':
       return <UmzugPage />;
     case '/passwort-neu':

@@ -10617,7 +10617,83 @@ export const SetDashboardResponse = zod.object({
 export const GetPremiumResponse = zod.object({
   "active": zod.boolean(),
   "until": zod.coerce.date().nullable(),
-  "source": zod.string().nullable()
+  "source": zod.string().nullable().describe('owner | manual | test | tester | stripe | mock'),
+  "tier": zod.union([zod.null(),zod.enum(['lite', 'premium'])]),
+  "plan": zod.union([zod.null(),zod.enum(['monthly', 'yearly'])]),
+  "cancelAtPeriodEnd": zod.boolean().describe('Cancelled – runs until `until`'),
+  "subscribed": zod.boolean().describe('A subscription with the payment provider (cancel and portal work)')
+})
+
+
+/**
+ * @summary Bezahlung – whether it is set up, and the account's Paket
+ */
+export const GetBillingResponse = zod.object({
+  "enabled": zod.boolean(),
+  "provider": zod.union([zod.literal('stripe'),zod.literal('mock'),zod.literal(null)]).nullable(),
+  "premium": zod.object({
+  "active": zod.boolean(),
+  "until": zod.coerce.date().nullable(),
+  "source": zod.string().nullable().describe('owner | manual | test | tester | stripe | mock'),
+  "tier": zod.union([zod.null(),zod.enum(['lite', 'premium'])]),
+  "plan": zod.union([zod.null(),zod.enum(['monthly', 'yearly'])]),
+  "cancelAtPeriodEnd": zod.boolean().describe('Cancelled – runs until `until`'),
+  "subscribed": zod.boolean().describe('A subscription with the payment provider (cancel and portal work)')
+})
+})
+
+
+/**
+ * @summary Start an order – the address of the checkout
+ */
+export const BillingCheckoutBody = zod.object({
+  "tier": zod.enum(['lite', 'premium']),
+  "interval": zod.enum(['monthly', 'yearly'])
+})
+
+export const BillingCheckoutResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
+ * @summary Kündigen – the subscription ends with the paid period (§ 312k BGB)
+ */
+export const CancelBillingResponse = zod.object({
+  "active": zod.boolean(),
+  "until": zod.coerce.date().nullable(),
+  "source": zod.string().nullable().describe('owner | manual | test | tester | stripe | mock'),
+  "tier": zod.union([zod.null(),zod.enum(['lite', 'premium'])]),
+  "plan": zod.union([zod.null(),zod.enum(['monthly', 'yearly'])]),
+  "cancelAtPeriodEnd": zod.boolean().describe('Cancelled – runs until `until`'),
+  "subscribed": zod.boolean().describe('A subscription with the payment provider (cancel and portal work)')
+})
+
+
+/**
+ * @summary Zahlung verwalten – the provider's portal
+ */
+export const BillingPortalResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
+ * @summary Test checkout – what a real payment would write (only with BILLING_PROVIDER=mock, never in production)
+ */
+export const CompleteMockCheckoutBody = zod.object({
+  "tier": zod.enum(['lite', 'premium']),
+  "interval": zod.enum(['monthly', 'yearly'])
+})
+
+export const CompleteMockCheckoutResponse = zod.object({
+  "active": zod.boolean(),
+  "until": zod.coerce.date().nullable(),
+  "source": zod.string().nullable().describe('owner | manual | test | tester | stripe | mock'),
+  "tier": zod.union([zod.null(),zod.enum(['lite', 'premium'])]),
+  "plan": zod.union([zod.null(),zod.enum(['monthly', 'yearly'])]),
+  "cancelAtPeriodEnd": zod.boolean().describe('Cancelled – runs until `until`'),
+  "subscribed": zod.boolean().describe('A subscription with the payment provider (cancel and portal work)')
 })
 
 

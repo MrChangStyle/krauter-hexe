@@ -5,11 +5,22 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { BillingInterval } from './billingInterval';
+import type { BillingTier } from './billingTier';
 
 export interface Premium {
   active: boolean;
   /** @nullable */
   until: Date | null;
-  /** @nullable */
+  /**
+     * owner | manual | test | tester | stripe | mock
+     * @nullable
+     */
   source: string | null;
+  tier: null | BillingTier;
+  plan: null | BillingInterval;
+  /** Cancelled – runs until `until` */
+  cancelAtPeriodEnd: boolean;
+  /** A subscription with the payment provider (cancel and portal work) */
+  subscribed: boolean;
 }

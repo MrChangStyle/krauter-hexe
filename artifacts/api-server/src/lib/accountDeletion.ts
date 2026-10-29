@@ -99,6 +99,9 @@ export const ARCHIVE_TABLES = [
   { name: 'insects', table: insectsTable, userId: insectsTable.scannedByUserId },
 ] as const;
 
+/** A paid subscription could not be ended (lib/billing.ts): the account stays (502). */
+export class SubscriptionStillRunningError extends Error {}
+
 export class OwnerAccountDeletionError extends Error {
   constructor() {
     super('The owner account cannot be deleted');
@@ -114,6 +117,14 @@ export class OwnerAccountDeletionError extends Error {
  * and the next registration would silently become the new owner.
  */
 export async function deleteAccount(userId: string): Promise<boolean> {
+  // A paid subscription ends first (docs/bezahlung.md): without the account
+  // nobody could cancel it, and it would keep being charged.
+  // Imported here: billing pulls in the premium and farm modules.
+  try {
+    await (await import('./billing')).endSubscriptionNow(userId);
+  } catch (err) {
+    throw new SubscriptionStillRunningError((err as Error).message);
+  }
   // Photos of farms that go with this account, removed from Cloudinary only
   // after the transaction committed.
   const photosToDelete: string[] = [];

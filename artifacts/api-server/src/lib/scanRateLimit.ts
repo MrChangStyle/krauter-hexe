@@ -6,9 +6,10 @@
  * the counter. The check and the insert are wrapped in a single transaction
  * to prevent concurrent requests from overshooting the cap.
  *
- * Limit: 15 attempts per scan type (plants, insects and the farm AI features
- * tracked separately) per Berlin calendar day; 45 for the universal scan's
- * first look at the photo ("classify").
+ * Limit per scan type (plants, insects and the farm AI features tracked
+ * separately) per Berlin calendar day, from the account's Paket (Basis 3,
+ * Lite 15, Premium 40, Testphase 15 – lib/premium.ts); three times that for
+ * the universal scan's first look at the photo ("classify").
  */
 
 import { gte, and, eq, lt, ne, sql } from "drizzle-orm";
@@ -35,8 +36,9 @@ export const DAILY_CLASSIFY_LIMIT = 3 * DAILY_SCAN_LIMIT;
 
 export type ScanType = "plant" | "insect" | "farm" | "garden" | "grow" | "classify";
 
-export function dailyLimitFor(scanType: ScanType): number {
-  return scanType === "classify" ? DAILY_CLASSIFY_LIMIT : DAILY_SCAN_LIMIT;
+/** The limit for a kind of AI request from the account's daily limit (its Paket, lib/premium.ts). */
+export function dailyLimitFor(scanType: ScanType, base: number = DAILY_SCAN_LIMIT): number {
+  return scanType === "classify" ? 3 * base : base;
 }
 
 /** The German answer for a refused AI request (429). */
@@ -137,10 +139,10 @@ function getNextBerlinMidnightUTC(): Date {
 export async function checkAndRecordScanAttempt(
   userId: string,
   scanType: ScanType,
-  options: { unlimited?: boolean } = {},
+  options: { unlimited?: boolean; dailyLimit?: number } = {},
 ): Promise<RateLimitResult> {
   const resetsAt = getNextBerlinMidnightUTC().toISOString();
-  const limit = dailyLimitFor(scanType);
+  let limit = dailyLimitFor(scanType);
 
   // Exempt accounts (the owner/admin) scan without any cap. We return before
   // touching the table at all: the daily counter exists purely to enforce the
@@ -151,6 +153,10 @@ export async function checkAndRecordScanAttempt(
     return { allowed: true, resetsAt, limit, attemptId: null };
   }
 
+  // The account's Paket sets the limit (Basis, Lite, Premium, Testphase).
+  // Imported here so this module stays free of the premium tables.
+  const base = options.dailyLimit ?? (await (await import("./premium")).userDailyLimit(userId));
+  limit = dailyLimitFor(scanType, base);
   const berlinMidnight = getBerlinMidnightUTC(getTodayBerlinDate());
 
   const result = await db.transaction(async (tx): Promise<RateLimitResult> => {

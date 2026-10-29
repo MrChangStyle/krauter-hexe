@@ -281,7 +281,9 @@ router.post(
     if (id === null) return notFound(res);
     const body = CheckGrowPlantBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
-    if (!(await premiumOf(me(req), req.user!.isOwner)).active) {
+    // Grow's AI check belongs to Premium, not Lite (docs/bezahlung.md).
+    const premium = await premiumOf(me(req), req.user!.isOwner);
+    if (!premium.active || premium.tier === 'lite') {
       res.status(402).json({ error: 'Der KI-Check gehört zu Premium.', premium: false });
       return;
     }

@@ -64,7 +64,11 @@ Welche KI-Funktion welches Paket braucht, steht je Modul in `MODULE_SITE` (`ai.p
 - Die Kennzeichnung in der App: heute steht „Lite“ an Modulen, die kostenlos gehen und mit Premium mehr können (z. B. Grow), und die Beet-KI trägt „Premium“. Nach dem Konzept gehört die Beet-KI zu Lite.
 - Die Limits je Paket im Server (`withAiQuota`).
 
-## Geplant: Bezahlung
+## Bezahlung
+
+Gebaut in Schritt 16: `docs/bezahlung.md`. Dort stehen die Pakete mit KI-Limits, der Ablauf, Stripe, die Testkasse und die Tests.
+
+## Früher geplant (erledigt mit Schritt 16)
 
 - **Modell**: Monatsabo und Jahresabo. Die Preise stehen noch nicht fest.
 - **Anbieter**: noch offen. Er schreibt dieselbe Tabelle: `source` = Anbieter, `plan`, `active_until` = Ende des bezahlten Zeitraums. Die Prüfung (`premiumOf`) bleibt dieselbe.

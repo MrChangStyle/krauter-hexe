@@ -65,6 +65,7 @@ import { STALE_QUEUE_WARNING_MS, type PendingScan } from "@/lib/scan-queue";
 import { useNow } from "@/hooks/use-now";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
+import { paketLabel } from "@/lib/billing-labels";
 import { useImageBackup } from "@/lib/use-image-backup";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -871,9 +872,9 @@ export function PflanzenretterCard() {
           Pflanzenretter{rank ? ` · Rang #${rank}` : ""}
         </p>
         {premium.data && (
-          <p className="text-xs opacity-80 mt-0.5">
-            {premium.data.source === "test" ? "Testphase – alles kostenlos" : premium.data.source === "tester" ? "Tester – dauerhaft kostenlos" : premium.data.active ? "Premium aktiv" : "Kostenlos"}
-          </p>
+          <Link href="/abo" className="mt-0.5 block text-xs opacity-80 underline underline-offset-2" data-testid="mehr-paket">
+            {paketLabel(premium.data)} · Paket & Abo
+          </Link>
         )}
       </div>
       <div className="text-right shrink-0">

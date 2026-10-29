@@ -47,6 +47,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Hilfe & FAQ", hint: "Alle Module erklärt, häufige Fragen", href: "/hilfe", words: "hilfe faq fragen anleitung erklärung wie geht" },
   { title: "Benachrichtigungen", hint: "Was kommt, Ruhezeit", href: "/mehr#push", words: "push erinnerungen ruhezeit" },
   { title: "Konto", hint: "Name, Passwort, Daten", href: "/mehr#konto", words: "passwort ändern vergessen zurücksetzen löschen konto daten" },
+  { title: "Paket & Abo", hint: "Basis, Lite, Premium, kündigen", href: "/abo", words: "premium lite basis abo bezahlen kündigen preis paket ki limit rechnung" },
 ];
 
 const norm = (s: string) => s.toLocaleLowerCase("de-DE").normalize("NFC");

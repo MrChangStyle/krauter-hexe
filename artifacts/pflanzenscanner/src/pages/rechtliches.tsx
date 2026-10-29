@@ -6,9 +6,11 @@ import {
   OPERATOR,
   OPERATOR_FORM,
   OPERATOR_VAT,
+  PAYMENT_TEXTS_DRAFT,
   legalHref,
   operatorDataIncomplete,
 } from "@/lib/legal";
+import { planById, priceText } from "@/lib/site";
 
 /**
  * Impressum, Datenschutzerklärung und Nutzungsbedingungen.
@@ -389,6 +391,153 @@ export function NutzungsbedingungenPage() {
           „Mehr“ → „Konto“ → „Konto löschen“. Alternativ schreib uns an
           die im Impressum genannte E-Mail-Adresse.
         </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+function DraftNote() {
+  if (!PAYMENT_TEXTS_DRAFT) return null;
+  return (
+    <div role="note" className="flex gap-2 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
+      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+      <span>Entwurf: Dieser Text wird vor dem Start der Bezahlung rechtlich geprüft und kann sich noch ändern.</span>
+    </div>
+  );
+}
+
+function OperatorLine() {
+  return (
+    <>
+      {OPERATOR.business}, Inhaber {OPERATOR.name}, {OPERATOR.street}, {OPERATOR.city}, E-Mail: {OPERATOR.email}
+    </>
+  );
+}
+
+/** AGB for Lite and Premium (draft: docs/recht/agb-entwurf.md). */
+export function AgbPage() {
+  const lite = planById("lite");
+  const premium = planById("premium");
+  return (
+    <LegalShell title="AGB für Lite und Premium">
+      <DraftNote />
+      <section>
+        <h2>1. Geltungsbereich und Anbieter</h2>
+        <p>
+          Diese Bedingungen gelten für die kostenpflichtigen Pakete „Lite“ und „Premium“ von Little Farming. Anbieter: <OperatorLine />. Ergänzend gelten die{" "}
+          <a href={legalHref(LEGAL_PATHS.nutzungsbedingungen)} className="underline underline-offset-4">
+            Nutzungsbedingungen
+          </a>
+          .
+        </p>
+      </section>
+      <section>
+        <h2>2. Leistungen</h2>
+        <ul>
+          <li>Basis ist kostenlos und ohne KI bis auf {planById("basis").aiPerDay} KI-Anfragen am Tag zum Kennenlernen.</li>
+          <li>
+            Lite und Premium schalten mehr KI-Anfragen am Tag frei (Lite {lite.aiPerDay}, Premium {premium.aiPerDay} je Bereich) und die Funktionen, die auf der Seite „Preise & Pakete“ zum Zeitpunkt der
+            Bestellung genannt sind.
+          </li>
+          <li>Die App wird weiterentwickelt; der Kern des gebuchten Pakets bleibt erhalten. Ein Anspruch auf ständige Verfügbarkeit besteht nicht.</li>
+          <li>KI-Ergebnisse können falsch sein. Es gelten die Hinweise der Nutzungsbedingungen zu Pilzen, Giftpflanzen, Tierarzneimitteln und Pflichten.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>3. Vertragsschluss</h2>
+        <p>
+          Der Vertrag kommt zustande, wenn du in der App unter „Paket & Abo“ ein Paket wählst, auf „Zahlungspflichtig bestellen“ tippst und die Zahlung beim Zahlungsanbieter Stripe bestätigst. Du
+          bekommst eine Bestätigung per E-Mail. Vertragssprache ist Deutsch. Diese AGB kannst du jederzeit hier abrufen und speichern.
+        </p>
+      </section>
+      <section>
+        <h2>4. Preise und Zahlung</h2>
+        <p>
+          Lite kostet {priceText(lite.monthly)} im Monat oder {priceText(lite.yearly)} im Jahr, Premium {priceText(premium.monthly)} im Monat oder {priceText(premium.yearly)} im Jahr. Als
+          Kleinunternehmer nach § 19 UStG weisen wir keine Umsatzsteuer aus. Bezahlt wird im Voraus für den gewählten Zeitraum über Stripe; die Rechnung kommt per E-Mail.
+        </p>
+      </section>
+      <section>
+        <h2>5. Laufzeit und Kündigung</h2>
+        <ul>
+          <li>Das Abo verlängert sich nach Ablauf um den gewählten Zeitraum, wenn es nicht vorher gekündigt wird.</li>
+          <li>Kündigen kannst du jederzeit zum Ende des bezahlten Zeitraums: in der App unter „Mehr → Paket & Abo → Abo kündigen“ oder per E-Mail an {OPERATOR.email}.</li>
+          <li>Danach läuft dein Konto als Basis weiter; deine Daten bleiben.</li>
+          <li>Löschst du dein Konto, endet ein laufendes Abo sofort.</li>
+        </ul>
+      </section>
+      <section>
+        <h2>6. Widerrufsrecht</h2>
+        <p>
+          Verbraucherinnen und Verbraucher haben ein Widerrufsrecht, siehe die{" "}
+          <a href={legalHref(LEGAL_PATHS.widerruf)} className="underline underline-offset-4">
+            Widerrufsbelehrung
+          </a>
+          .
+        </p>
+      </section>
+      <section>
+        <h2>7. Testphase</h2>
+        <p>Wer sich in der Testphase registriert hat, behält die App nach dem Start kostenlos, in dem Umfang, der auf der Homepage beschrieben ist.</p>
+      </section>
+      <section>
+        <h2>8. Haftung</h2>
+        <p>
+          Wir haften unbeschränkt bei Vorsatz und grober Fahrlässigkeit, bei Verletzung von Leben, Körper oder Gesundheit und nach dem Produkthaftungsgesetz. Bei leichter Fahrlässigkeit haften wir nur
+          bei Verletzung einer wesentlichen Vertragspflicht, begrenzt auf den vorhersehbaren, vertragstypischen Schaden.
+        </p>
+      </section>
+      <section>
+        <h2>9. Schlussbestimmungen</h2>
+        <p>
+          Es gilt deutsches Recht; bei Verbraucherinnen und Verbrauchern nur, soweit nicht zwingende Schutzvorschriften ihres Aufenthaltsstaates entgegenstehen. Wir nehmen nicht an
+          Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teil.
+        </p>
+      </section>
+    </LegalShell>
+  );
+}
+
+/** Widerrufsbelehrung (draft: docs/recht/widerruf-entwurf.md). */
+export function WiderrufPage() {
+  return (
+    <LegalShell title="Widerrufsbelehrung">
+      <DraftNote />
+      <section>
+        <h2>Widerrufsrecht</h2>
+        <p>
+          Du hast das Recht, binnen vierzehn Tagen ohne Angabe von Gründen diesen Vertrag zu widerrufen. Die Widerrufsfrist beträgt vierzehn Tage ab dem Tag des Vertragsabschlusses. Um dein
+          Widerrufsrecht auszuüben, musst du uns (<OperatorLine />) mit einer eindeutigen Erklärung (z. B. eine E-Mail) über deinen Entschluss informieren, diesen Vertrag zu widerrufen. Du kannst
+          dafür das Muster-Widerrufsformular unten verwenden, das jedoch nicht vorgeschrieben ist. Zur Wahrung der Widerrufsfrist reicht es aus, dass du die Mitteilung vor Ablauf der Frist absendest.
+        </p>
+      </section>
+      <section>
+        <h2>Folgen des Widerrufs</h2>
+        <p>
+          Wenn du diesen Vertrag widerrufst, zahlen wir dir alle Zahlungen, die wir von dir erhalten haben, unverzüglich und spätestens binnen vierzehn Tagen ab dem Tag zurück, an dem die Mitteilung
+          über deinen Widerruf bei uns eingegangen ist. Dafür verwenden wir dasselbe Zahlungsmittel, das du bei der ursprünglichen Zahlung eingesetzt hast, es sei denn, mit dir wurde ausdrücklich
+          etwas anderes vereinbart; in keinem Fall werden dir wegen dieser Rückzahlung Entgelte berechnet.
+        </p>
+        <p className="mt-2">
+          Hast du verlangt, dass die Dienstleistung während der Widerrufsfrist beginnen soll, so hast du uns einen angemessenen Betrag zu zahlen, der dem Anteil der bis zu deinem Widerruf bereits
+          erbrachten Dienstleistungen im Vergleich zum Gesamtumfang der im Vertrag vorgesehenen Dienstleistungen entspricht.
+        </p>
+      </section>
+      <section>
+        <h2>Muster-Widerrufsformular</h2>
+        <p>(Wenn du den Vertrag widerrufen willst, dann fülle bitte dieses Formular aus und sende es zurück.)</p>
+        <ul>
+          <li>
+            An <OperatorLine />
+          </li>
+          <li>Hiermit widerrufe(n) ich/wir (*) den von mir/uns (*) abgeschlossenen Vertrag über die Erbringung der folgenden Dienstleistung (*): Little Farming Lite/Premium (*), Monats-/Jahresabo (*)</li>
+          <li>Bestellt am (*)</li>
+          <li>Name des/der Verbraucher(s)</li>
+          <li>Anschrift des/der Verbraucher(s)</li>
+          <li>Unterschrift des/der Verbraucher(s) (nur bei Mitteilung auf Papier)</li>
+          <li>Datum</li>
+        </ul>
+        <p>(*) Unzutreffendes streichen.</p>
       </section>
     </LegalShell>
   );

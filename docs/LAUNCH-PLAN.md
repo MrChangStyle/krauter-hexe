@@ -48,7 +48,7 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
 15. [x] **Marketing-Plan** (`docs/MARKETING.md`): Zielgruppen, Botschaften, Kanäle, Startfahrplan, Pressetext, Social-Media-Ideen, Messgrößen.
 
 ### E – Technik und Bezahlung
-16. [ ] **Premium und Bezahlung**: Abo-Status, Upgrade, Kündigung, Webhook. Mit Testdaten und Mock gebaut, es fehlen nur Konto und Schlüssel.
+16. [x] **Premium und Bezahlung**: Abo-Status, Upgrade, Kündigung, Webhook. Mit Testdaten und Mock gebaut, es fehlen nur Konto und Schlüssel.
 17. [ ] **Qualität**: Lighthouse (Mobil), Bildgrößen, Barrierefreiheit (Kontraste, Beschriftungen, Tastatur), Fehler und Warnungen im Build.
 18. [ ] **Analyse**: datenschutzfreundliche Zählung ohne Cookies (eigene Tageszahlen gibt es schon), vorbereitet und abschaltbar.
 19. [ ] **App-Stores**: Capacitor-Hülle für Android und iOS vorbereiten, so weit es ohne Store-Konten geht.

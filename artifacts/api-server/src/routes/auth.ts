@@ -15,7 +15,7 @@ import { and, eq, sql, ne } from 'drizzle-orm';
 import { Router, type IRouter, type Request, type Response } from 'express';
 
 import { approveIfFreeTesterSlot, notifyOwnerOfNewAccount, promoteFirstOwner, publicUserColumns } from '../lib/accounts';
-import { OwnerAccountDeletionError, deleteAccount } from '../lib/accountDeletion';
+import { OwnerAccountDeletionError, SubscriptionStillRunningError, deleteAccount } from '../lib/accountDeletion';
 import {
   LEGAL_VERSION,
   addressMayRegister,
@@ -452,6 +452,11 @@ router.delete('/auth/user', async (req: Request, res: Response): Promise<void> =
   } catch (err) {
     if (err instanceof OwnerAccountDeletionError) {
       res.status(400).json({ error: 'Das Inhaber-Konto kann nicht gelöscht werden.' });
+      return;
+    }
+    // The paid subscription could not be ended (lib/billing.ts): the account stays.
+    if (err instanceof SubscriptionStillRunningError) {
+      res.status(502).json({ error: err.message });
       return;
     }
     throw err;

@@ -190,6 +190,9 @@ function parseJsonLoose(raw: string): unknown {
   }
 }
 
+/** No new model is asked with less of the time budget left than this. */
+const MIN_ATTEMPT_MS = 50;
+
 /**
  * How little a model should think before it answers, newest way first: Gemini
  * 3 takes a thinking level, Gemini 2.5 a token budget, older models neither.
@@ -232,7 +235,9 @@ export async function runModelChain(
       const toDeadline = deadline === null ? null : deadline - Date.now();
       const left =
         opts.attemptTimeoutMs === undefined ? toDeadline : Math.min(toDeadline ?? Infinity, opts.attemptTimeoutMs);
-      if (toDeadline !== null && toDeadline <= 0) throw lastError ?? new Error("AI request timed out");
+      // A request with a few milliseconds left can never answer – and the abort
+      // timer may fire a moment before Date.now() reaches the deadline.
+      if (toDeadline !== null && toDeadline <= MIN_ATTEMPT_MS) throw lastError ?? new Error("AI request timed out");
       const thinkingConfig = QUICK_THINKING[thinking];
       try {
         const response = await ai.models.generateContent({

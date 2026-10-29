@@ -39,6 +39,8 @@ Schritt 17 des Launch-Plans (`docs/LAUNCH-PLAN.md`). Gemessen wurde mit Lighthou
    - Die CSS-Warnung zum `@import` ist mit Punkt 3 erledigt.
    - Die Next.js-Anweisung `'use client'` ist aus 14 UI-Bausteinen entfernt; Vite meldete sie als Fehler bei den Source-Maps.
 
+7. **KI-Zeitbudget** (`runModelChain`): Ein neues Modell wird nur gefragt, wenn noch mindestens 50 ms Budget übrig sind. Vorher konnte der Abbruch-Timer eine Millisekunde vor der Frist feuern. Dann startete die Kette noch ein Modell, das nie antworten konnte, und der Test dazu schlug in der CI gelegentlich fehl.
+
 ## Offen
 
 - **Hauptpaket weiter verkleinern:** 894 kB, Vite warnt ab 500 kB.

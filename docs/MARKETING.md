@@ -116,11 +116,11 @@ Schritt 15 des Launch-Plans (`docs/LAUNCH-PLAN.md`). Der Plan richtet sich an ei
 
 ## 8. Messgrößen
 
-Gemessen mit der eigenen Tagesstatistik (Verwaltung → Betrieb) und ab Schritt 18 mit einer cookie-freien Besucherzählung.
+Gemessen mit der eigenen Tagesstatistik und der cookie-freien Besucherzählung der Homepage (beides unter Verwaltung → Betrieb, `docs/analyse.md`). Jeder Kanal bekommt seinen eigenen Link mit `?ref=…`, z. B. `littlefarming.de/?ref=instagram`. So zeigt die Herkunft, welcher Kanal Besucher bringt.
 
 | Kennzahl | Woher | Ziel nach 3 Monaten (Richtwert) |
 |---|---|---|
-| Besucher der Homepage pro Woche | Analytics (Schritt 18) | 2.000 |
+| Besucher der Homepage pro Woche | Verwaltung → Betrieb, Besucher der Homepage (`docs/analyse.md`) | 2.000 |
 | Anteil Besucher → Konto | Analytics + Registrierungen | 5 % |
 | Neue Konten pro Woche | Tagesstatistik | 100 |
 | Aktiv nach 7 Tagen (Konto am 7. Tag noch genutzt) | Tagesstatistik (letzter Besuch) | 40 % |

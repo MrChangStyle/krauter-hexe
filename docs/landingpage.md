@@ -89,6 +89,7 @@ littlefarming.de zeigt im Browser immer die **Homepage**, auch wenn man angemeld
 | `/` in der installierten App (vom Startbildschirm, `display-mode: standalone`) | App – auch bei Installationen von vor der Umstellung |
 | `/` in einem Tab, der schon in der App war (Neuladen) | App (`sessionStorage` `lf-app`) |
 | `/` mit Parametern (`?start=login`, Fehler der Google-Anmeldung …) | App |
+| `/` nur mit Kampagnen-Parametern (`?ref=…`, `utm_…`, `fbclid`, `gclid`, `docs/analyse.md`) | Homepage |
 | jede Seite der App (`/farm`, `/aufgaben` …) | App, wie bisher |
 
 - **Manifest:** `start_url` ist jetzt `/app`, `id` und `scope` bleiben `/` – installierte Apps bleiben dieselbe App.

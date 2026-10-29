@@ -70,6 +70,7 @@ const PUBLIC = new Set([
   "POST /auth/password-reset/confirm",
   "POST /feedback/site",
   "POST /client-errors",
+  "POST /site/visit",
   "POST /cron/trigger-notifications",
 ]);
 

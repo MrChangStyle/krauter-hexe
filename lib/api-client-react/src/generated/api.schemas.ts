@@ -2425,6 +2425,45 @@ export interface Premium {
   subscribed: boolean;
 }
 
+export interface SiteVisitInput {
+  /** @maxLength 100 */
+  path?: string;
+  /**
+     * utm_source or ref from the address
+     * @maxLength 100
+     * @nullable
+     */
+  campaign?: string | null;
+  /**
+     * @maxLength 500
+     * @nullable
+     */
+  referrer?: string | null;
+}
+
+export type SiteVisitReportPerDayItem = {
+  day: string;
+  visits: number;
+};
+
+export type SiteVisitReportPerPathItem = {
+  path: string;
+  visits: number;
+};
+
+export type SiteVisitReportPerSourceItem = {
+  source: string;
+  visits: number;
+};
+
+export interface SiteVisitReport {
+  enabled: boolean;
+  days: number;
+  perDay: SiteVisitReportPerDayItem[];
+  perPath: SiteVisitReportPerPathItem[];
+  perSource: SiteVisitReportPerSourceItem[];
+}
+
 /**
  * @nullable
  */

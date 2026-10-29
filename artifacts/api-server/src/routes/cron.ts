@@ -3,6 +3,7 @@ import { logger } from "../lib/logger";
 import { triggerDueNotifications } from "../lib/pushScheduler";
 import { cleanupOldScanAttempts } from "../lib/scanRateLimit";
 import { cleanupMonitoring } from "../lib/monitoring";
+import { cleanupSiteVisits } from "../lib/siteVisits";
 import { pruneResetTokens } from "../lib/passwordReset";
 
 const router = Router();
@@ -40,6 +41,7 @@ router.post("/cron/trigger-notifications", async (req, res) => {
     if (Date.now() - lastMonitoringCleanup > 24 * 60 * 60 * 1000) {
       lastMonitoringCleanup = Date.now();
       await cleanupMonitoring();
+      await cleanupSiteVisits();
       await pruneResetTokens();
     }
     logger.info({ triggered, removedAttempts }, "Cron: trigger-notifications completed");

@@ -260,6 +260,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #122 | Analyse: Besucherzählung der Homepage ohne Cookies und ohne IP (Tag, Seite, Herkunft aus `?ref=`/`utm_source` oder verweisender Domain), abschaltbar mit `ANALYTICS=off`, Auswertung unter Verwaltung → Betrieb; Datenschutzerklärung ergänzt |
 | 29.10.2026 | #121 | Qualität: gzip, Seiten einzeln geladen (Hauptpaket 2,1 MB → 894 kB), Schriften vom eigenen Server statt Google, Zoomen erlaubt, Kontraste; Lighthouse Startseite 48 → 88, Barrierefreiheit 100, axe ohne Befund |
 | 29.10.2026 | #120 | Bezahlung: Pakete mit KI-Limits (Basis 3, Lite 15, Premium 40; Testphase unverändert 15), „Paket & Abo“ mit Bestellen und Kündigen-Knopf, Stripe mit signiertem Webhook, Testkasse, AGB und Widerruf als Entwürfe |
 | 29.10.2026 | #119 | Marketing-Plan (`docs/MARKETING.md`): Zielgruppen, Botschaften, Kanäle, Startfahrplan, Pressetext, Social-Media-Ideen, Messgrößen |

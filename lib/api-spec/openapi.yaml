@@ -4033,6 +4033,32 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/UsageDay"
+  /site/visit:
+    post:
+      tags: [monitoring]
+      operationId: recordSiteVisit
+      summary: Besucher der Homepage – count one page view (no account, no cookie, no IP stored)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SiteVisitInput"
+      responses:
+        "204":
+          description: Counted, or ignored (bot, unknown page, ANALYTICS=off).
+  /admin/site-visits:
+    get:
+      tags: [monitoring]
+      operationId: getSiteVisits
+      summary: Besucher der Homepage of the last 30 days (app owner)
+      responses:
+        "200":
+          description: The counts.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SiteVisitReport"
   /healthz:
     get:
       operationId: healthCheck
@@ -9717,6 +9743,57 @@ components:
         subscribed:
           type: boolean
           description: A subscription with the payment provider (cancel and portal work)
+    SiteVisitInput:
+      type: object
+      properties:
+        path:
+          type: string
+          maxLength: 100
+        campaign:
+          type: [string, 'null']
+          maxLength: 100
+          description: utm_source or ref from the address
+        referrer:
+          type: [string, 'null']
+          maxLength: 500
+    SiteVisitReport:
+      type: object
+      required: [enabled, days, perDay, perPath, perSource]
+      properties:
+        enabled:
+          type: boolean
+        days:
+          type: integer
+        perDay:
+          type: array
+          items:
+            type: object
+            required: [day, visits]
+            properties:
+              day:
+                type: string
+              visits:
+                type: integer
+        perPath:
+          type: array
+          items:
+            type: object
+            required: [path, visits]
+            properties:
+              path:
+                type: string
+              visits:
+                type: integer
+        perSource:
+          type: array
+          items:
+            type: object
+            required: [source, visits]
+            properties:
+              source:
+                type: string
+              visits:
+                type: integer
     BillingTier:
       type: string
       enum: [lite, premium]

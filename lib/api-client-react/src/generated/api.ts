@@ -234,6 +234,8 @@ import type {
   SeedInput,
   SeedOverview,
   SiteFeedbackInput,
+  SiteVisitInput,
+  SiteVisitReport,
   SpeciesSuggestion,
   Task,
   UpdateCareGuideInput,
@@ -12815,6 +12817,154 @@ export function useGetUsage<TData = Awaited<ReturnType<typeof getUsage>>, TError
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getGetUsageQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRecordSiteVisitUrl = () => {
+
+
+
+
+  return `/api/site/visit`
+}
+
+/**
+ * @summary Besucher der Homepage – count one page view (no account, no cookie, no IP stored)
+ */
+export const recordSiteVisit = async (siteVisitInput: SiteVisitInput, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRecordSiteVisitUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(siteVisitInput)
+  }
+);}
+
+
+
+
+
+export const getRecordSiteVisitMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordSiteVisit>>, TError,{data: BodyType<SiteVisitInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordSiteVisit>>, TError,{data: BodyType<SiteVisitInput>}, TContext> => {
+
+const mutationKey = ['recordSiteVisit'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordSiteVisit>>, {data: BodyType<SiteVisitInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  recordSiteVisit(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecordSiteVisitMutationResult = NonNullable<Awaited<ReturnType<typeof recordSiteVisit>>>
+    export type RecordSiteVisitMutationBody = BodyType<SiteVisitInput>
+    export type RecordSiteVisitMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Besucher der Homepage – count one page view (no account, no cookie, no IP stored)
+ */
+export const useRecordSiteVisit = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordSiteVisit>>, TError,{data: BodyType<SiteVisitInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof recordSiteVisit>>,
+        TError,
+        {data: BodyType<SiteVisitInput>},
+        TContext
+      > => {
+      return useMutation(getRecordSiteVisitMutationOptions(options));
+    }
+
+export const getGetSiteVisitsUrl = () => {
+
+
+
+
+  return `/api/admin/site-visits`
+}
+
+/**
+ * @summary Besucher der Homepage of the last 30 days (app owner)
+ */
+export const getSiteVisits = async ( options?: RequestInit): Promise<SiteVisitReport> => {
+
+  return customFetch<SiteVisitReport>(getGetSiteVisitsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSiteVisitsQueryKey = () => {
+    return [
+    `/api/admin/site-visits`
+    ] as const;
+    }
+
+
+export const getGetSiteVisitsQueryOptions = <TData = Awaited<ReturnType<typeof getSiteVisits>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSiteVisits>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSiteVisitsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSiteVisits>>> = ({ signal }) => getSiteVisits({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSiteVisits>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSiteVisitsQueryResult = NonNullable<Awaited<ReturnType<typeof getSiteVisits>>>
+export type GetSiteVisitsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Besucher der Homepage of the last 30 days (app owner)
+ */
+
+export function useGetSiteVisits<TData = Awaited<ReturnType<typeof getSiteVisits>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSiteVisits>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSiteVisitsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

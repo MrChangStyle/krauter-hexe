@@ -38,3 +38,17 @@ export const usageDailyTable = pgTable(
   },
   (table) => [primaryKey({ columns: [table.day, table.metric] })],
 );
+
+// Besucher der Homepage (docs/analyse.md): page views per day, page and
+// origin (a campaign name or the referring domain). No IP, no cookie, no
+// person – only these three keys and a count.
+export const siteVisitsTable = pgTable(
+  "site_visits",
+  {
+    day: date("day", { mode: "string" }).notNull(),
+    path: text("path").notNull(),
+    source: text("source").notNull(),
+    count: integer("count").notNull().default(0),
+  },
+  (table) => [primaryKey({ columns: [table.day, table.path, table.source] })],
+);

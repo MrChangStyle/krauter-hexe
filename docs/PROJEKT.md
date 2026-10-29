@@ -239,7 +239,7 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 
 ## 10. Offen und als Nächstes
 
-Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.md`. Den Stand je Modul hält `docs/BESTANDSAUFNAHME.md` fest, größere Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`. Was nur der Betreiber erledigen kann, sammelt `docs/TODO-CHANG.md`.
+Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.md`. Den Stand je Modul hält `docs/BESTANDSAUFNAHME.md` fest, größere Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`. Was nur der Betreiber erledigen kann, sammelt `docs/TODO-CHANG.md`. Den Abschluss des Launch-Plans mit Ampel, Tests und Restpunkten fasst `docs/ABSCHLUSSBERICHT.md` zusammen.
 
 - **Öffentlicher Start:**
   - Seitenpasswort löschen.
@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #124 | Abschlussbericht des Launch-Plans (`docs/ABSCHLUSSBERICHT.md`): Ampel je Bereich, was geprüft, behoben und gebaut wurde, Tests, Restpunkte vor und nach dem Start |
 | 29.10.2026 | #123 | Store-Apps vorbereitet: Capacitor-Hülle für Android und iOS (`artifacts/mobile`) mit Berechtigungen, Offline-Seite, Icon- und Startbild-Vorlagen; in der App kein Google-Login und keine Bestellung |
 | 29.10.2026 | #122 | Analyse: Besucherzählung der Homepage ohne Cookies und ohne IP (Tag, Seite, Herkunft aus `?ref=`/`utm_source` oder verweisender Domain), abschaltbar mit `ANALYTICS=off`, Auswertung unter Verwaltung → Betrieb; Datenschutzerklärung ergänzt |
 | 29.10.2026 | #121 | Qualität: gzip, Seiten einzeln geladen (Hauptpaket 2,1 MB → 894 kB), Schriften vom eigenen Server statt Google, Zoomen erlaubt, Kontraste; Lighthouse Startseite 48 → 88, Barrierefreiheit 100, axe ohne Befund |

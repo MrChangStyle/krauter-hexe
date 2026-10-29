@@ -1,5 +1,6 @@
 import type { FarmSpecies, ModuleId } from "@workspace/api-client-react";
 import { MODULES } from "@/lib/modules";
+import { SITE_PATHS, SITE_TITLES, type SitePage } from "@/lib/site-meta";
 
 /**
  * The public homepage (docs/landingpage.md): its pages, the packages with
@@ -10,15 +11,8 @@ import { MODULES } from "@/lib/modules";
 
 // ── Pages ─────────────────────────────────────────────────────────────────────
 
-export const SITE_PATHS = {
-  start: "/",
-  plants: "/funktionen/pflanzen",
-  animals: "/funktionen/tiere",
-  farm: "/funktionen/hof",
-  pricing: "/preise",
-  finder: "/modul-finder",
-} as const;
-export type SitePage = keyof typeof SITE_PATHS;
+// Paths, titles and descriptions live in site-meta.ts (also read by the build).
+export { SITE_PATHS, SITE_TITLES, type SitePage };
 
 export const SITE_NAV: { page: SitePage; label: string }[] = [
   { page: "plants", label: "Pflanzen" },
@@ -27,15 +21,6 @@ export const SITE_NAV: { page: SitePage; label: string }[] = [
   { page: "pricing", label: "Preise & Pakete" },
   { page: "finder", label: "Modul-Finder" },
 ];
-
-export const SITE_TITLES: Record<SitePage, { title: string; description: string }> = {
-  start: { title: "Little Farming – Pflanzen, Garten und Tiere in einer App", description: "Pflanzen erkennen, Beete planen, Tiere versorgen, Pflichten im Blick: die App für Balkon, Garten und kleinen Hof." },
-  plants: { title: "Pflanzen & Garten – Little Farming", description: "Pflanzen-Scan, Pflegeplan, Pflanzendoc, Beet-Architekt, Vorratskammer und mehr." },
-  animals: { title: "Tiere & Hof – Little Farming", description: "Stall-Aufgaben, Futterplaner, Zucht, Arzneimittel, Pflichten, Weide, Bienen und Wildtier-Radar." },
-  farm: { title: "Gemeinsam auf dem Hof – Little Farming", description: "Team, Rollen, Urlaubsvertretung, Erinnerungen und Wetterwarnungen für alle, die mit anpacken." },
-  pricing: { title: "Preise & Pakete – Little Farming", description: "Basis kostenlos, Lite und Premium mit KI. Welches Paket passt zu dir?" },
-  finder: { title: "Modul-Finder – Little Farming", description: "Sag uns, was du hast – Garten, Hühner, Ziegen, Bienen – und wir empfehlen die passenden Module und das Paket." },
-};
 
 /** The site page for a path, or null (the app's own routes). */
 export function sitePageOf(path: string): SitePage | null {

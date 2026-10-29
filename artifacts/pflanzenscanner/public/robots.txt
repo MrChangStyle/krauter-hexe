@@ -1,2 +1,7 @@
 User-agent: *
 Allow: /
+# The app itself (behind the login) and the API have nothing to index.
+Disallow: /app
+Disallow: /api/
+
+Sitemap: https://littlefarming.de/sitemap.xml

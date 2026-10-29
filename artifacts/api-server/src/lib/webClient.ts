@@ -66,6 +66,9 @@ export function mountWebClient(app: Express, clientDir: string): void {
       // index.html is served by the fallback below so it gets the same headers
       // whether the user opened "/" or a deep link.
       index: false,
+      // "/preise" is a folder with its own index.html (SEO pages) – no
+      // redirect to "/preise/"; the fallback below sends that file.
+      redirect: false,
       setHeaders(res, filePath) {
         // Asset filenames contain a content hash, so they can be cached
         // forever. Everything the browser must re-check to discover a new
@@ -86,6 +89,17 @@ export function mountWebClient(app: Express, clientDir: string): void {
       return;
     }
     res.setHeader("Cache-Control", "no-cache");
-    res.sendFile(indexHtml);
+    res.sendFile(seoPageFor(clientDir, req.path) ?? indexHtml);
   });
+}
+
+/**
+ * The page's own HTML when the build wrote one (docs/seo.md: homepage pages
+ * and legal pages with their own title and link preview), else null.
+ */
+export function seoPageFor(clientDir: string, requestPath: string): string | null {
+  const clean = requestPath.replace(/\/+$/, "");
+  if (!clean || !/^\/[a-z0-9\-/]+$/.test(clean)) return null;
+  const file = path.join(clientDir, clean, "index.html");
+  return file.startsWith(clientDir + path.sep) && existsSync(file) ? file : null;
 }

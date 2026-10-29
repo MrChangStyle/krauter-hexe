@@ -3,6 +3,7 @@ import { Route, Router as WouterRouter, Switch, useLocation } from "wouter";
 import { AreaPage, FarmPage, FinderPage, PricingPage, StartPage } from "@/components/site/site-pages";
 import { SiteLayout, type SiteActions } from "@/components/site/site-parts";
 import { SITE_PATHS, SITE_TITLES, sitePageOf } from "@/lib/site";
+import { sendSiteVisit } from "@/lib/site-visit";
 
 /** Title and description per page, for the tab and for search engines. */
 function useMeta() {
@@ -18,6 +19,7 @@ function useMeta() {
       document.head.appendChild(tag);
     }
     tag.content = meta.description;
+    sendSiteVisit(location);
   }, [location]);
 }
 

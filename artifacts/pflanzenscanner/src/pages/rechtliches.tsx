@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { AlertTriangle, ArrowLeft, Leaf } from "lucide-react";
 import {
   LEGAL_PATHS,
@@ -11,6 +11,7 @@ import {
   operatorDataIncomplete,
 } from "@/lib/legal";
 import { planById, priceText } from "@/lib/site";
+import { sendSiteVisit } from "@/lib/site-visit";
 
 /**
  * Impressum, Datenschutzerklärung und Nutzungsbedingungen.
@@ -21,6 +22,7 @@ import { planById, priceText } from "@/lib/site";
  */
 
 function LegalShell({ title, children }: { title: string; children: ReactNode }) {
+  useEffect(() => sendSiteVisit(window.location.pathname), []);
   return (
     <div className="min-h-[100dvh] bg-background">
       <div className="mx-auto max-w-2xl px-4 py-6">
@@ -222,6 +224,16 @@ export function DatenschutzPage() {
             Konten an einem Tag aktiv waren); dafür merken wir uns bei deinem
             Konto allein das Datum deines letzten Besuchs (Art. 6 Abs. 1 lit. f
             DSGVO, stabiler Betrieb).
+          </li>
+          <li>
+            <strong>Besucherzählung der Homepage:</strong> Öffnest du eine
+            Seite der Homepage, zählen wir den Aufruf: Tag, Seite und Herkunft
+            (der Name einer Kampagne aus dem Link oder die Domain der Seite,
+            von der du kommst). Wir setzen dafür kein Cookie, speichern keine
+            IP-Adresse und nichts, was dich wiedererkennt. Sendet dein Browser
+            „nicht verfolgen“ (Global Privacy Control oder Do Not Track),
+            zählen wir gar nicht (Art. 6 Abs. 1 lit. f DSGVO, Verbesserung
+            der Homepage).
           </li>
           <li>
             <strong>Auf deinem Gerät:</strong> Die App speichert Fotos, die noch

@@ -26,9 +26,17 @@ export function entryFor({ path, search, standalone, inApp }: EntryInput): { sho
   const p = path.replace(/\/+$/, "") || "/";
   if (p === APP_PATH) return { show: "app", replacePath: "/" };
   if (p !== "/") return { show: "app" };
-  // Links into the app carry parameters (?start=login, Google sign-in errors, …).
-  if (standalone || inApp || search.replace(/^\?/, "") !== "") return { show: "app" };
+  // Links into the app carry parameters (?start=login, Google sign-in errors, …);
+  // campaign parameters of marketing links (docs/analyse.md) do not.
+  if (standalone || inApp || appParams(search)) return { show: "app" };
   return { show: "site" };
+}
+
+const CAMPAIGN_PARAM = /^(ref|utm_[a-z]+|fbclid|gclid|msclkid)$/;
+
+/** True when the address carries a parameter other than a campaign's. */
+function appParams(search: string): boolean {
+  return [...new URLSearchParams(search).keys()].some((k) => !CAMPAIGN_PARAM.test(k));
 }
 
 export function isStandalone(): boolean {

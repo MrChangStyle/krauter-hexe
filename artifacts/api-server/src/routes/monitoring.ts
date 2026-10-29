@@ -1,6 +1,7 @@
 import { Router, type IRouter, type Request } from 'express';
 import {
   GetAppStatusResponse,
+  GetSiteVisitsResponse,
   GetUsageResponse,
   ListErrorGroupsResponse,
   ReportClientErrorBody,
@@ -8,6 +9,7 @@ import {
   SetAppStatusResponse,
 } from '@workspace/api-zod';
 
+import { recordVisit, visitReport } from '../lib/siteVisits';
 import { requireOwner } from '../middlewares/requireApproved';
 import {
   getStatus,
@@ -92,6 +94,17 @@ router.post('/admin/errors/:fingerprint/resolve', requireOwner, async (req, res)
 
 router.get('/admin/usage', requireOwner, async (_req, res) => {
   res.json(GetUsageResponse.parse(await usageSummary()));
+});
+
+// Besucher der Homepage (docs/analyse.md): counted without account, cookie or IP.
+router.post('/site/visit', async (req, res) => {
+  const body = (req.body ?? {}) as { path?: unknown; campaign?: unknown; referrer?: unknown };
+  await recordVisit(body, req.get('user-agent'), req.get('host') ?? null);
+  res.sendStatus(204);
+});
+
+router.get('/admin/site-visits', requireOwner, async (_req, res) => {
+  res.json(GetSiteVisitsResponse.parse(await visitReport()));
 });
 
 export default router;

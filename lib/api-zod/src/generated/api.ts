@@ -6972,6 +6972,47 @@ export const GetUsageResponse = zod.array(GetUsageResponseItem)
 
 
 /**
+ * @summary Besucher der Homepage – count one page view (no account, no cookie, no IP stored)
+ */
+export const recordSiteVisitBodyPathMax = 100;
+
+export const recordSiteVisitBodyCampaignMax = 100;
+
+export const recordSiteVisitBodyReferrerMax = 500;
+
+
+
+export const RecordSiteVisitBody = zod.object({
+  "path": zod.string().max(recordSiteVisitBodyPathMax).optional(),
+  "campaign": zod.string().max(recordSiteVisitBodyCampaignMax).nullish().describe('utm_source or ref from the address'),
+  "referrer": zod.string().max(recordSiteVisitBodyReferrerMax).nullish()
+})
+
+export const RecordSiteVisitResponse = zod.void()
+
+
+/**
+ * @summary Besucher der Homepage of the last 30 days (app owner)
+ */
+export const GetSiteVisitsResponse = zod.object({
+  "enabled": zod.boolean(),
+  "days": zod.number(),
+  "perDay": zod.array(zod.object({
+  "day": zod.string(),
+  "visits": zod.number()
+})),
+  "perPath": zod.array(zod.object({
+  "path": zod.string(),
+  "visits": zod.number()
+})),
+  "perSource": zod.array(zod.object({
+  "source": zod.string(),
+  "visits": zod.number()
+}))
+})
+
+
+/**
  * Returns server health status
  * @summary Health check
  */

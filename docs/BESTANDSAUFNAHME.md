@@ -30,7 +30,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Bezahlung | 🟡 | Seit Schritt 16 gebaut: Pakete mit KI-Limits, „Paket & Abo“ mit Bestellen und Kündigen-Knopf, Stripe mit Webhook, Testkasse (`docs/bezahlung.md`). Es fehlen das Stripe-Konto, die Schlüssel und die geprüften Rechtstexte | 16 |
 | PWA, Offline, Updates | ✅ | installierbar, Scan-Warteschlange, Updates ohne Bestätigen, App-Stand | – |
 | Ladezeit, Barrierefreiheit | ✅ | Seit Schritt 17: gzip, Seiten einzeln geladen, Schriften vom eigenen Server, Zoomen erlaubt; Lighthouse Startseite 88, Barrierefreiheit 100, axe auf 23 App-Seiten ohne Befund (`docs/qualitaet.md`) | 17 |
-| Fehlerüberwachung, Betrieb | ✅ | Fehlergruppen, Push an den Betreiber, Tageszahlen, Statusmeldung | – |
+| Fehlerüberwachung, Betrieb | ✅ | Fehlergruppen, Push an den Betreiber, Tageszahlen, Statusmeldung. Seit Schritt 18 Besucherzählung der Homepage ohne Cookies (`docs/analyse.md`) | 18 |
 | Sicherung | ✅ | nächtlich verschlüsselt per GitHub Actions | – |
 | Homepage | ✅ | Start, Pflanzen, Tiere, Hof, Preise, Modul-Finder, Szenen. Seit Schritt 14 Häufige Fragen auf der Startseite, Modultexte auf dem Endstand | 14 |
 | Rechtstexte | 🟡 | Impressum, Datenschutz (seit Schritt 13 mit Hof, Tieren und Wildkameras) und Nutzungsbedingungen (mit Haftungshinweisen) live. AGB, Widerruf und Datenschutz zur Bezahlung als Entwürfe (`docs/rechtstexte.md`). Alles muss vor dem Start rechtlich geprüft werden | 13 |

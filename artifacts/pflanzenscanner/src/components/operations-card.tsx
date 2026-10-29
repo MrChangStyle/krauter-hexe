@@ -5,6 +5,7 @@ import {
   getGetAppStatusQueryKey,
   getListErrorGroupsQueryKey,
   useGetAppStatus,
+  useGetSiteVisits,
   useGetUsage,
   useListErrorGroups,
   useResolveErrorGroup,
@@ -102,6 +103,48 @@ function Usage() {
   );
 }
 
+const SOURCE_LABELS: Record<string, string> = { direkt: "direkt / Lesezeichen", intern: "von eigenen Seiten", andere: "andere" };
+
+/** Besucher der Homepage (docs/analyse.md): last 30 days, by page and origin. */
+function Visits() {
+  const visits = useGetSiteVisits();
+  const v = visits.data;
+  if (visits.isLoading) return <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />;
+  if (!v) return null;
+  const total = v.perDay.reduce((sum, d) => sum + d.visits, 0);
+  return (
+    <div className="space-y-2" data-testid="site-visits">
+      <p className="text-sm font-medium">
+        Besucher der Homepage, letzte {v.days} Tage: {total.toLocaleString("de-DE")} Seitenaufrufe
+      </p>
+      {!v.enabled && <p className="text-xs text-amber-700 dark:text-amber-400">Die Zählung ist abgeschaltet (ANALYTICS=off).</p>}
+      {total > 0 && (
+        <div className="grid gap-3 text-xs sm:grid-cols-2">
+          <ul className="space-y-0.5">
+            <li className="text-muted-foreground">Seiten</li>
+            {v.perPath.map((p) => (
+              <li key={p.path} className="flex justify-between gap-2 tabular-nums">
+                <span className="truncate">{p.path}</span>
+                <span>{p.visits}</span>
+              </li>
+            ))}
+          </ul>
+          <ul className="space-y-0.5">
+            <li className="text-muted-foreground">Herkunft</li>
+            {v.perSource.map((s) => (
+              <li key={s.source} className="flex justify-between gap-2 tabular-nums">
+                <span className="truncate">{SOURCE_LABELS[s.source] ?? s.source}</span>
+                <span>{s.visits}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">Ohne Cookies und ohne IP-Adresse – nur Tag, Seite und Herkunft (Kampagne aus ?utm_source= oder ?ref=, sonst die verweisende Seite).</p>
+    </div>
+  );
+}
+
 function Errors() {
   const queryClient = useQueryClient();
   const errors = useListErrorGroups();
@@ -176,6 +219,7 @@ export function OperationsCard() {
       <StatusForm />
       <Errors />
       <Usage />
+      <Visits />
     </section>
   );
 }

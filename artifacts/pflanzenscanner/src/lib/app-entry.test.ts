@@ -23,6 +23,10 @@ describe("Homepage oder App", () => {
     expect(at("/", { search: "?start=login" })).toEqual({ show: "app" });
     expect(at("/", { search: "?google=abgebrochen" })).toEqual({ show: "app" });
     expect(at("/", { search: "?" })).toEqual({ show: "site" });
+    // Marketing links land on the homepage (docs/analyse.md).
+    expect(at("/", { search: "?ref=instagram" })).toEqual({ show: "site" });
+    expect(at("/", { search: "?utm_source=newsletter&utm_medium=email&fbclid=x" })).toEqual({ show: "site" });
+    expect(at("/", { search: "?ref=instagram&start=login" })).toEqual({ show: "app" });
     expect(at("/farm/stall")).toEqual({ show: "app" });
     expect(at("/aufgaben")).toEqual({ show: "app" });
   });

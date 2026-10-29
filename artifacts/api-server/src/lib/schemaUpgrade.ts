@@ -247,6 +247,14 @@ const STATEMENTS = [
   `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "weekdays" jsonb`,
   // Krankenakte: Behandlung über mehrere Tage (docs/gesundheit.md).
   `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "treatment_until" date`,
+  // Besucher der Homepage (docs/analyse.md).
+  `CREATE TABLE IF NOT EXISTS "site_visits" (
+	"day" date NOT NULL,
+	"path" text NOT NULL,
+	"source" text NOT NULL,
+	"count" integer DEFAULT 0 NOT NULL,
+	CONSTRAINT "site_visits_day_path_source_pk" PRIMARY KEY("day","path","source")
+)`,
   // Bezahlung: Paket und Abo beim Zahlungsanbieter (docs/bezahlung.md).
   `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "tier" text DEFAULT 'premium' NOT NULL`,
   `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "customer_id" text`,

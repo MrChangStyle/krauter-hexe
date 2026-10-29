@@ -220,6 +220,8 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 
 ## 10. Offen und als Nächstes
 
+Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.md`. Den Stand je Modul hält `docs/BESTANDSAUFNAHME.md` fest, größere Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`. Was nur der Betreiber erledigen kann, sammelt `docs/TODO-CHANG.md`.
+
 - **Öffentlicher Start:**
   - Seitenpasswort löschen.
   - Testphase beenden (`TEST_PHASE_END`).
@@ -240,6 +242,7 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #107 | Launch-Plan, Bestandsaufnahme, Entscheidungen und To-do-Liste für den Betreiber |
 | 28.10.2026 | #106 | Beet-Vorschlag: Schieberegler Küche/Tierfutter für die KI; diese Projektbeschreibung angelegt |
 | 27.10.2026 | #105 | Kein Einladungscode mehr, Seitenpasswort reicht |
 | 27.10.2026 | #101–#104 | App-Updates von selbst, App-Stand; KI-Listen mit Zeitgrenzen und minimalem Nachdenken, Grund für „ohne KI“ sichtbar |

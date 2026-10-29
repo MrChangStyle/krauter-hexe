@@ -7,6 +7,8 @@ Sortiert nach Wichtigkeit für den Start. Alles, was ohne dich geht, ist vorgeba
 1. [ ] **Rechtstexte prüfen lassen**: Impressum, Datenschutzerklärung, Nutzungsbedingungen, später AGB und Widerrufsbelehrung.
    - Die Entwürfe liegen in der App unter `/impressum`, `/datenschutz`, `/nutzungsbedingungen`.
    - Am besten über eine Anwältin oder einen Dienst wie eRecht24 oder IT-Recht Kanzlei.
+   - Was geprüft werden muss, steht in `docs/rechtstexte.md`. Die Entwürfe für AGB, Widerruf und Datenschutz zur Bezahlung liegen in `docs/recht/`.
+   - Dazu gehören die Verträge zur Auftragsverarbeitung (Art. 28 DSGVO) mit Render, Neon, Cloudinary, Google, Resend und Cloudflare: in deren Konten annehmen bzw. herunterladen und ablegen.
 2. [ ] **E-Mail-Dienst für „Passwort vergessen“**. Er ist fertig eingebaut. Bis der Schlüssel da ist, bekommst du bei einer Anfrage einen Push und schickst den „Passwort-Link“ aus Verwaltung → Benutzer:
    1. Konto bei https://resend.com anlegen, Region EU.
    2. Domain `littlefarming.de` hinzufügen und die angezeigten DNS-Einträge (SPF, DKIM) beim Domain-Anbieter eintragen.
@@ -26,4 +28,8 @@ Sortiert nach Wichtigkeit für den Start. Alles, was ohne dich geht, ist vorgeba
 6. [ ] **Domain `little-farming.de`** (falls vorhanden) beim Domain-Anbieter per 301 auf `https://littlefarming.de` weiterleiten.
 7. [ ] **Google-Anmeldung freigeben lassen**: In der Google Cloud Console den OAuth-Zustimmungsbildschirm von „Testing“ auf „In production“ stellen. Sonst können sich nur eingetragene Testnutzer mit Google anmelden.
 8. [ ] **Store-Konten** (für die Apps, Schritt 19): Google Play Console (einmalig 25 $) und Apple Developer Program (99 $ im Jahr).
-9. [ ] **Marketing**: Social-Media-Konten unter „littlefarming“ sichern (Instagram, TikTok, Facebook, Pinterest, YouTube). Den Plan schreibe ich in `docs/MARKETING.md`.
+9. [ ] **Marketing** (`docs/MARKETING.md`):
+   - Social-Media-Konten unter „littlefarming“ sichern (Instagram, TikTok, Facebook, Pinterest, YouTube).
+   - Das Zitat im Pressetext abstimmen und das Startdatum festlegen.
+   - Entscheiden, ob „Tester bleiben kostenlos“ ohne Obergrenze gilt.
+10. [ ] **Suchmaschinen** (`docs/seo.md`): Nach dem Start `littlefarming.de` in der Google Search Console und in den Bing Webmaster Tools anmelden und `https://littlefarming.de/sitemap.xml` einreichen.

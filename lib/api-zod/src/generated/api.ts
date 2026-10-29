@@ -7323,12 +7323,15 @@ export const AddFarmMemberParams = zod.object({
 
 export const addFarmMemberBodyEmailMax = 254;
 
+export const addFarmMemberBodyModulesMax = 40;
+
 
 
 export const AddFarmMemberBody = zod.object({
   "email": zod.string().max(addFarmMemberBodyEmailMax),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
-  "accessUntil": zod.string().nullish().describe('Vertretung – last day of access; not for admins')
+  "accessUntil": zod.string().nullish().describe('Vertretung – last day of access; not for admins'),
+  "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).max(addFarmMemberBodyModulesMax).nullish().describe('Modul-Freigaben right away (e.g. Tierarzt-Zugang); null or omitted = all; ignored for admins')
 })
 
 export const AddFarmMemberResponseItem = zod.object({
@@ -7706,7 +7709,8 @@ export const ListMedicalRecordsResponseItem = zod.object({
   "diagnosis": zod.string(),
   "treatment": zod.string().nullable(),
   "medication": zod.string().nullable(),
-  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
+  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the last day of the treatment (treatmentUntil, else date).'),
+  "treatmentUntil": zod.string().nullable().describe('YYYY-MM-DD, last day of a treatment over several days; null = a single day'),
   "vet": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "medicineId": zod.number().nullable().describe('From the Arzneimittel-Vorrat'),
@@ -7749,6 +7753,7 @@ export const CreateMedicalRecordBody = zod.object({
   "treatment": zod.string().max(createMedicalRecordBodyTreatmentMax).nullish(),
   "medication": zod.string().max(createMedicalRecordBodyMedicationMax).nullish(),
   "withdrawalPeriodDays": zod.number().min(createMedicalRecordBodyWithdrawalPeriodDaysMin).max(createMedicalRecordBodyWithdrawalPeriodDaysMax).nullish(),
+  "treatmentUntil": zod.string().nullish().describe('YYYY-MM-DD, last day of a treatment over several days (from date up to 90 days later); the Wartezeit counts from it'),
   "vet": zod.string().max(createMedicalRecordBodyVetMax).nullish(),
   "notes": zod.string().max(createMedicalRecordBodyNotesMax).nullish(),
   "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
@@ -7767,7 +7772,8 @@ export const CreateMedicalRecordResponse = zod.object({
   "diagnosis": zod.string(),
   "treatment": zod.string().nullable(),
   "medication": zod.string().nullable(),
-  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
+  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the last day of the treatment (treatmentUntil, else date).'),
+  "treatmentUntil": zod.string().nullable().describe('YYYY-MM-DD, last day of a treatment over several days; null = a single day'),
   "vet": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "medicineId": zod.number().nullable().describe('From the Arzneimittel-Vorrat'),
@@ -7809,6 +7815,7 @@ export const UpdateMedicalRecordBody = zod.object({
   "treatment": zod.string().max(updateMedicalRecordBodyTreatmentMax).nullish(),
   "medication": zod.string().max(updateMedicalRecordBodyMedicationMax).nullish(),
   "withdrawalPeriodDays": zod.number().min(updateMedicalRecordBodyWithdrawalPeriodDaysMin).max(updateMedicalRecordBodyWithdrawalPeriodDaysMax).nullish(),
+  "treatmentUntil": zod.string().nullish().describe('YYYY-MM-DD, last day of a treatment over several days (from date up to 90 days later); the Wartezeit counts from it'),
   "vet": zod.string().max(updateMedicalRecordBodyVetMax).nullish(),
   "notes": zod.string().max(updateMedicalRecordBodyNotesMax).nullish(),
   "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
@@ -7827,7 +7834,8 @@ export const UpdateMedicalRecordResponse = zod.object({
   "diagnosis": zod.string(),
   "treatment": zod.string().nullable(),
   "medication": zod.string().nullable(),
-  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
+  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the last day of the treatment (treatmentUntil, else date).'),
+  "treatmentUntil": zod.string().nullable().describe('YYYY-MM-DD, last day of a treatment over several days; null = a single day'),
   "vet": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "medicineId": zod.number().nullable().describe('From the Arzneimittel-Vorrat'),
@@ -8587,7 +8595,8 @@ export const GetFarmExportResponse = zod.object({
   "diagnosis": zod.string(),
   "treatment": zod.string().nullable(),
   "medication": zod.string().nullable(),
-  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the treatment date.'),
+  "withdrawalPeriodDays": zod.number().nullable().describe('Wartezeit in days after the last day of the treatment (treatmentUntil, else date).'),
+  "treatmentUntil": zod.string().nullable().describe('YYYY-MM-DD, last day of a treatment over several days; null = a single day'),
   "vet": zod.string().nullable(),
   "notes": zod.string().nullable(),
   "medicineId": zod.number().nullable().describe('From the Arzneimittel-Vorrat'),

@@ -12073,7 +12073,7 @@ components:
           description: JPEG/PNG/WebP data URL, already downscaled by the app.
     MedicalRecord:
       type: object
-      required: [id, animalId, date, diagnosis, treatment, medication, withdrawalPeriodDays, vet, notes, medicineId, dose, batch, doseUnit, createdAt]
+      required: [id, animalId, date, diagnosis, treatment, medication, withdrawalPeriodDays, treatmentUntil, vet, notes, medicineId, dose, batch, doseUnit, createdAt]
       properties:
         id:
           type: integer
@@ -12090,7 +12090,10 @@ components:
           type: [string, 'null']
         withdrawalPeriodDays:
           type: [integer, 'null']
-          description: Wartezeit in days after the treatment date.
+          description: Wartezeit in days after the last day of the treatment (treatmentUntil, else date).
+        treatmentUntil:
+          type: [string, 'null']
+          description: YYYY-MM-DD, last day of a treatment over several days; null = a single day
         vet:
           type: [string, 'null']
         notes:
@@ -12131,6 +12134,9 @@ components:
           type: [integer, 'null']
           minimum: 0
           maximum: 999
+        treatmentUntil:
+          type: [string, 'null']
+          description: YYYY-MM-DD, last day of a treatment over several days (from date up to 90 days later); the Wartezeit counts from it
         vet:
           type: [string, 'null']
           maxLength: 100
@@ -13543,6 +13549,12 @@ components:
         accessUntil:
           type: [string, 'null']
           description: Vertretung – last day of access; not for admins
+        modules:
+          type: [array, 'null']
+          description: Modul-Freigaben right away (e.g. Tierarzt-Zugang); null or omitted = all; ignored for admins
+          maxItems: 40
+          items:
+            $ref: "#/components/schemas/ModuleId"
     ChangeFarmRoleInput:
       type: object
       required: [role]

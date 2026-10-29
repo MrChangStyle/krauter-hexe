@@ -171,7 +171,14 @@ router.post('/farms/:farmId/members', requireFarm('admin'), async (req, res): Pr
     return;
   }
   try {
-    await addMember(req.farm!.farmId, req.farm!.userId, body.data.email, body.data.role, body.data.accessUntil);
+    await addMember(
+      req.farm!.farmId,
+      req.farm!.userId,
+      body.data.email,
+      body.data.role,
+      body.data.accessUntil,
+      body.data.modules === undefined ? null : cleanFarmModules(body.data.modules),
+    );
     res.json(AddFarmMemberResponse.parse(await listMembers(req.farm!.farmId, req.farm!)));
   } catch (err) {
     if (!sendFarmError(res, err)) throw err;

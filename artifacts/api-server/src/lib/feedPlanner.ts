@@ -22,6 +22,7 @@ import {
 import { and, asc, eq, inArray, isNotNull, isNull, like, or, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
+import { withdrawalUntil } from './farmHealth';
 import { archiveKindFor, statusFor } from './farmAi';
 import { ionophoresIn } from './feedLabel';
 import { FEED_CATALOG, feedByKey, type FeedCategory, type FeedValues } from './feedCatalog';
@@ -339,7 +340,8 @@ async function withdrawals(farmId: number, animalIds: number[], today: string): 
       animalId: medicalRecordsTable.animalId,
       date: medicalRecordsTable.date,
       medication: medicalRecordsTable.medication,
-      days: medicalRecordsTable.withdrawalPeriodDays,
+      withdrawalPeriodDays: medicalRecordsTable.withdrawalPeriodDays,
+      treatmentUntil: medicalRecordsTable.treatmentUntil,
       name: farmAnimalsTable.name,
     })
     .from(medicalRecordsTable)
@@ -347,10 +349,8 @@ async function withdrawals(farmId: number, animalIds: number[], today: string): 
     .where(and(eq(medicalRecordsTable.farmId, farmId), inArray(medicalRecordsTable.animalId, animalIds), isNotNull(medicalRecordsTable.withdrawalPeriodDays)));
   const out: Warning[] = [];
   for (const r of rows) {
-    const end = new Date(`${r.date}T00:00:00Z`);
-    end.setUTCDate(end.getUTCDate() + (r.days ?? 0));
-    const until = end.toISOString().slice(0, 10);
-    if (until >= today) {
+    const until = withdrawalUntil(r);
+    if (until && until >= today) {
       const [y, m, d] = until.split('-');
       out.push({
         kind: 'withdrawal',

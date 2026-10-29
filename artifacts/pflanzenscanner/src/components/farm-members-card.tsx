@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Handshake, Loader2, LogOut, UserPlus, Users, X } from "lucide-react";
+import { Handshake, Loader2, LogOut, Stethoscope, UserPlus, Users, X } from "lucide-react";
 import {
+  getListFarmContactsQueryKey,
   getListFarmMembersQueryKey,
   useAddFarmMember,
   useChangeFarmMemberRole,
+  useListFarmContacts,
   useListFarmMembers,
   useRemoveFarmMember,
   type FarmMember,
@@ -19,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { FARM_ROLE_HINTS, FARM_ROLE_LABELS } from "@/lib/active-farm";
 import { deDay } from "@/lib/medicine-labels";
 import { grantSummary } from "@/lib/modules";
+import { VET_MODULES, isVetGrant, vetInviteDefaults } from "@/lib/vet-access";
 import { berlinToday } from "@/lib/weather-labels";
 
 const ROLES: FarmRole[] = ["admin", "caretaker", "guest"];
@@ -47,6 +50,18 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
   const [until, setUntil] = useState("");
   const [addError, setAddError] = useState<string | null>(null);
   const [grants, setGrants] = useState<FarmMember | null>(null);
+  // Tierarzt-Zugang: the Vertretung form preset for the vet (docs/team.md).
+  const [vet, setVet] = useState(false);
+  const contacts = useListFarmContacts(farm.id, { query: { queryKey: getListFarmContactsQueryKey(farm.id), enabled: substitute && isAdmin } });
+
+  function startVet() {
+    const preset = vetInviteDefaults(berlinToday(), contacts.data);
+    setVet(true);
+    setRole("guest");
+    setUntil(preset.until);
+    if (!email.trim()) setEmail(preset.email);
+    setAddError(null);
+  }
 
   const setList = (list: FarmMember[]) =>
     queryClient.setQueryData(getListFarmMembersQueryKey(farm.id), list);
@@ -58,7 +73,8 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
         setEmail("");
         setUntil("");
         setAddError(null);
-        toast({ title: "Mitglied hinzugefügt" });
+        toast({ title: vet ? "Tierarzt eingeladen" : "Mitglied hinzugefügt" });
+        setVet(false);
       },
       onError: (err) => setAddError(errorText(err, "Das hat nicht geklappt.")),
     },
@@ -93,7 +109,10 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
       setAddError("Bis wann vertritt die Person? Bitte das Datum angeben.");
       return;
     }
-    add.mutate({ farmId: farm.id, data: { email: email.trim(), role, accessUntil: substitute ? until : null } });
+    add.mutate({
+      farmId: farm.id,
+      data: { email: email.trim(), role, accessUntil: substitute ? until : null, ...(vet && { modules: VET_MODULES }) },
+    });
   }
 
   const me = members.data?.find((m) => m.isMe);
@@ -128,7 +147,7 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
                 {m.email && <p className="truncate text-xs text-muted-foreground">{m.email}</p>}
                 {isAdmin && m.role !== "admin" && (
                   <button type="button" className="text-xs text-primary underline underline-offset-4" onClick={() => setGrants(m)}>
-                    Freigaben: {grantSummary(m.modules)}
+                    Freigaben: {isVetGrant(m.modules) ? "Tierarzt-Zugang" : grantSummary(m.modules)}
                   </button>
                 )}
                 {m.accessUntil && (
@@ -192,10 +211,17 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
         </ul>
       )}
 
+      {isAdmin && substitute && !vet && (
+        <Button type="button" variant="outline" size="sm" className="gap-1.5" onClick={startVet}>
+          <Stethoscope className="h-4 w-4" />
+          Tierarzt einladen
+        </Button>
+      )}
+
       {isAdmin && (
-        <form onSubmit={submitAdd} className="min-w-0 space-y-2 rounded-lg bg-muted/40 p-3">
+        <form onSubmit={submitAdd} className="min-w-0 space-y-2 rounded-lg bg-muted/40 p-3" data-testid={vet ? "vet-invite" : undefined}>
           <Label htmlFor={`member-email-${kind}`} className="text-xs">
-            {substitute ? "Vertretung eintragen" : "Ins Team holen"} (die Person braucht ein Little-Farming-Konto)
+            {vet ? "Tierarzt einladen" : substitute ? "Vertretung eintragen" : "Ins Team holen"} (die Person braucht ein Little-Farming-Konto)
           </Label>
           <Input
             id={`member-email-${kind}`}
@@ -235,6 +261,15 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
             {FARM_ROLE_LABELS[role]}: {FARM_ROLE_HINTS[role]}
             {substitute && until && ` Der Zugang endet nach dem ${deDay(until)} von selbst.`}
           </p>
+          {vet && (
+            <p className="text-xs text-muted-foreground">
+              Der Tierarzt sieht die Tiere mit Krankenakte, den Arzneimittel-Vorrat und die Bestandsliste, sonst nichts. Als Gast kann er nur lesen; als
+              Mitarbeiter kann er Behandlungen selbst eintragen.{" "}
+              <button type="button" className="underline underline-offset-4" onClick={() => setVet(false)}>
+                Abbrechen
+              </button>
+            </p>
+          )}
           {addError && (
             <p role="alert" className="text-xs text-destructive">
               {addError}

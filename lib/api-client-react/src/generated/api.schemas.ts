@@ -4236,10 +4236,15 @@ export interface MedicalRecord {
   /** @nullable */
   medication: string | null;
   /**
-     * Wartezeit in days after the treatment date.
+     * Wartezeit in days after the last day of the treatment (treatmentUntil, else date).
      * @nullable
      */
   withdrawalPeriodDays: number | null;
+  /**
+     * YYYY-MM-DD, last day of a treatment over several days; null = a single day
+     * @nullable
+     */
+  treatmentUntil: string | null;
   /** @nullable */
   vet: string | null;
   /** @nullable */
@@ -4309,6 +4314,11 @@ export interface MedicalRecordInput {
      * @nullable
      */
   withdrawalPeriodDays?: number | null;
+  /**
+     * YYYY-MM-DD, last day of a treatment over several days (from date up to 90 days later); the Wartezeit counts from it
+     * @nullable
+     */
+  treatmentUntil?: string | null;
   /**
      * @maxLength 100
      * @nullable
@@ -5553,6 +5563,12 @@ export interface AddFarmMemberInput {
      * @nullable
      */
   accessUntil?: string | null;
+  /**
+     * Modul-Freigaben right away (e.g. Tierarzt-Zugang); null or omitted = all; ignored for admins
+     * @maxItems 40
+     * @nullable
+     */
+  modules?: ModuleId[] | null;
 }
 
 export interface ChangeFarmRoleInput {

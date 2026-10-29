@@ -154,6 +154,19 @@ describe.skipIf(!enabled)("Meine Farm – health, weights, tasks, export (real d
     expect(t).toMatchObject({ notes: "Myxomatose", intervalValue: 6, dueDate: "2026-11-28" });
   });
 
+  it("keeps a treatment over several days and counts the Wartezeit from its last day", async () => {
+    const path = `/farms/${farm.anna}/animals/${lotte}/medical`;
+    const created = await api("POST", path, record({ treatmentUntil: "2026-05-06" }));
+    expect(created.data).toMatchObject({ date: "2026-05-02", treatmentUntil: "2026-05-06", withdrawalPeriodDays: 7 });
+    // The same day as the date is a single day.
+    const edited = await api("PATCH", `/farms/${farm.anna}/medical/${created.data.id}`, record({ treatmentUntil: "2026-05-02" }));
+    expect(edited.data.treatmentUntil).toBeNull();
+    // Before the date or more than 90 days later: refused.
+    for (const treatmentUntil of ["2026-05-01", "2026-08-01", "6.5.2026"]) {
+      expect((await api("POST", path, record({ treatmentUntil }))).status).toBe(400);
+    }
+  });
+
   it("validates health records", async () => {
     const path = `/farms/${farm.anna}/animals/${lotte}/medical`;
     expect((await api("POST", path, record({ date: "2999-01-01" }))).data.error).toMatch(/Zukunft/);

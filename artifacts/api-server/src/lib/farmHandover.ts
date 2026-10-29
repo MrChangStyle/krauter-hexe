@@ -9,6 +9,7 @@ import { db, farmAnimalsTable, farmMembershipsTable, farmsTable, medicalRecordsT
 import { and, desc, eq, gte } from 'drizzle-orm';
 
 import { notFound, text } from './farmAnimals';
+import { withdrawalUntil } from './farmHealth';
 import { addDays } from './feedSeason';
 import { berlinDay } from './monitoring';
 
@@ -44,6 +45,7 @@ export async function handover(farmId: number, viewerId: string): Promise<Handov
       treatment: medicalRecordsTable.treatment,
       medication: medicalRecordsTable.medication,
       withdrawalPeriodDays: medicalRecordsTable.withdrawalPeriodDays,
+      treatmentUntil: medicalRecordsTable.treatmentUntil,
     })
     .from(medicalRecordsTable)
     .innerJoin(farmAnimalsTable, and(eq(farmAnimalsTable.id, medicalRecordsTable.animalId), eq(farmAnimalsTable.farmId, medicalRecordsTable.farmId)))
@@ -51,7 +53,7 @@ export async function handover(farmId: number, viewerId: string): Promise<Handov
     .orderBy(desc(medicalRecordsTable.date), desc(medicalRecordsTable.id));
   const withdrawals = records
     .filter((r) => r.withdrawalPeriodDays)
-    .map((r) => ({ animalName: r.animalName, medication: r.medication, until: addDays(r.date, r.withdrawalPeriodDays!) }))
+    .map((r) => ({ animalName: r.animalName, medication: r.medication, until: withdrawalUntil(r)! }))
     .filter((w) => w.until >= today)
     .sort((a, b) => b.until.localeCompare(a.until));
   return {
@@ -61,7 +63,7 @@ export async function handover(farmId: number, viewerId: string): Promise<Handov
     withdrawals,
     recentHealth: records
       .filter((r) => r.date >= addDays(today, -RECENT_DAYS))
-      .map(({ withdrawalPeriodDays: _w, ...r }) => r),
+      .map(({ withdrawalPeriodDays: _w, treatmentUntil: _t, ...r }) => r),
   };
 }
 

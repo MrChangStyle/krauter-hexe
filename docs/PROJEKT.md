@@ -56,7 +56,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 
 | Modul | Zweck | Doku |
 |---|---|---|
-| Meine Tiere | Bestand, Tiergruppen, Gesundheitsakte, Gewicht | `docs/meine-farm-app.md`, `docs/gesundheit-erinnerung.md` |
+| Meine Tiere | Bestand, Tiergruppen, Krankenakte mit Wartezeit ab dem letzten Behandlungstag, Gewicht | `docs/meine-farm-app.md`, `docs/krankenakte.md`, `docs/gesundheit-erinnerung.md` |
 | Hof- & Stall-Aufgaben | gemeinsame Aufgabenliste, wiederkehrend, Kommentare, KI-Aufgabenplan aus Sprache | `docs/hof-aufgaben.md`, `docs/stall.md` |
 | Futterplaner | Rationen, Bedarf, Futtervorrat, Futter-Tipps | `docs/futterplaner.md` |
 | Zucht | Trächtigkeit, Brut, Brunstzyklus, Jungtiere | `docs/zucht.md` |
@@ -95,7 +95,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 - **Registrierung:** E-Mail und Passwort oder Google, dazu die Zustimmung zu Datenschutz und Nutzungsbedingungen. **Es gibt keinen Einladungscode.**
 - **Freischaltung:** Die ersten `FREE_TESTER_SLOTS` Konten (Standard 20, der Betreiber zählt nicht, bestehende Konten zählen mit) starten sofort. Danach wartet ein neues Konto auf die Freischaltung unter Verwaltung → Benutzer. Der Betreiber bekommt bei jeder Anmeldung einen Push.
 - **Betreiber:** Das erste Konto wird Betreiber (Owner). Es sieht die Verwaltung (Betrieb, Feedback, Moderation, Entwürfe, Premium, Benutzer, Aufräumen) und hat kein KI-Limit.
-- **Höfe und Rollen:** Jedes Konto bekommt einen eigenen Hof („Meine Farm“) und kann weitere anlegen. Auf einem Hof gibt es die Rollen Admin, Mitarbeiter (caretaker) und Gast, dazu Modul-Freigaben und Vertretungen mit Enddatum (`docs/team.md`). Geteilte Höfe stehen unter „Wähle deine Farm“.
+- **Höfe und Rollen:** Jedes Konto bekommt einen eigenen Hof („Meine Farm“) und kann weitere anlegen. Auf einem Hof gibt es die Rollen Admin, Mitarbeiter (caretaker) und Gast, dazu Modul-Freigaben und Vertretungen mit Enddatum (`docs/team.md`). Der Tierarzt bekommt per „Tierarzt einladen“ einen Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export (`docs/krankenakte.md`). Geteilte Höfe stehen unter „Wähle deine Farm“.
 - **Passwort vergessen und ändern** (`docs/konto.md`):
   - „Passwort vergessen?“ auf der Anmeldeseite schickt einen Einmal-Link per Mail, sobald `RESEND_API_KEY` gesetzt ist.
   - Bis dahin bekommt der Betreiber einen Push und gibt einen „Passwort-Link“ aus Verwaltung → Benutzer weiter.
@@ -256,6 +256,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #113 | Krankenakte: „Behandlung bis“ für Behandlungen über mehrere Tage, die Wartezeit zählt ab dem letzten Tag (Akte, Übergabe, Futterplaner, Export); „Tierarzt einladen“ mit Enddatum und nur Arzneimitteln und Export |
 | 29.10.2026 | #112 | Hof-Aufgaben an festen Wochentagen („montags und donnerstags“, auch gesprochen); Push bei Einträgen auf geteilten Notizlisten (Thema „Alltagsnotizen“); Garten-Assistent zeigt seine Rechnung („So rechnet der Assistent“) |
 | 29.10.2026 | #111 | Nandus und Esel als Tierarten in allen Tier-Modulen; Scannen: bei einem KI-Fehler sofort ein Hinweis statt minutenlanger Ladeanzeige, Fehlerfälle in `docs/scannen.md` |
 | 29.10.2026 | #110 | Gänse, Enten, Puten und Wachteln als eigene Tierarten in allen Tier-Modulen; „Geflügel“ heißt jetzt „Huhn“; „Tierart anfragen“ unter der Tierart-Auswahl |

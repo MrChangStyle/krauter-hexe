@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FarmRole } from './farmRole';
+import type { ModuleId } from './moduleId';
 
 export interface AddFarmMemberInput {
   /** @maxLength 254 */
@@ -16,4 +17,10 @@ export interface AddFarmMemberInput {
      * @nullable
      */
   accessUntil?: string | null;
+  /**
+     * Modul-Freigaben right away (e.g. Tierarzt-Zugang); null or omitted = all; ignored for admins
+     * @maxItems 40
+     * @nullable
+     */
+  modules?: ModuleId[] | null;
 }

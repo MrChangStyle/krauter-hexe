@@ -232,6 +232,9 @@ export const medicalRecordsTable = pgTable(
     // Wartezeit for food-producing animals (days until milk/eggs/meat are
     // usable again).
     withdrawalPeriodDays: integer("withdrawal_period_days"),
+    // Last day of a treatment over several days; the Wartezeit counts from
+    // it (null: a single day, counted from date).
+    treatmentUntil: date("treatment_until", { mode: "string" }),
     vet: text("vet"),
     notes: text("notes"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

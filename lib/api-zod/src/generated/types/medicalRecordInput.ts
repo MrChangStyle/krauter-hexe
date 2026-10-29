@@ -32,6 +32,11 @@ export interface MedicalRecordInput {
      */
   withdrawalPeriodDays?: number | null;
   /**
+     * YYYY-MM-DD, last day of a treatment over several days (from date up to 90 days later); the Wartezeit counts from it
+     * @nullable
+     */
+  treatmentUntil?: string | null;
+  /**
      * @maxLength 100
      * @nullable
      */

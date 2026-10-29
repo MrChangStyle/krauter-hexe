@@ -1,0 +1,17 @@
+{
+  "name": "@workspace/mobile",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Little Farming als App für Android und iOS (Capacitor-Hülle um littlefarming.de) – docs/app-stores.md",
+  "scripts": {
+    "sync": "cap sync",
+    "android": "cap open android",
+    "ios": "cap open ios"
+  },
+  "devDependencies": {
+    "@capacitor/android": "7.4.4",
+    "@capacitor/cli": "7.4.4",
+    "@capacitor/core": "7.4.4",
+    "@capacitor/ios": "7.4.4"
+  }
+}

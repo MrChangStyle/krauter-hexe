@@ -54,4 +54,4 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
 19. [x] **App-Stores**: Capacitor-Hülle für Android und iOS vorbereiten, so weit es ohne Store-Konten geht.
 
 ### F – Abschluss
-20. [ ] `docs/ABSCHLUSSBERICHT.md`: Ampel, was geprüft, behoben und gebaut wurde, Tests, Restpunkte.
+20. [x] `docs/ABSCHLUSSBERICHT.md`: Ampel, was geprüft, behoben und gebaut wurde, Tests, Restpunkte.

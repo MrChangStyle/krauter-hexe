@@ -297,8 +297,8 @@ export function NutzungsbedingungenPage() {
           Little Farming wird angeboten von {OPERATOR.business}, Inhaber{" "}
           {OPERATOR.name}, {OPERATOR.street}, {OPERATOR.city} (siehe
           Impressum). Little Farming ist eine App rund um Garten, Hof und
-          Tiere. Ihr Teil
-          „Kräuterhexe“ hilft beim Bestimmen von Pflanzen, Pilzen und Insekten
+          Tiere. Ihr Scanner
+          hilft beim Bestimmen von Pflanzen, Pilzen und Insekten
           per Foto und sammelt die Ergebnisse in einem gemeinsamen Archiv. Die
           Nutzung ist kostenlos. Es besteht kein Anspruch auf
           ständige Verfügbarkeit; die Anzahl der Scans pro Tag ist begrenzt.

@@ -59,7 +59,7 @@ function BrandMark() {
       </div>
       <h1 className="text-2xl font-bold tracking-tight">Little Farming</h1>
       <p className="-mt-2 text-xs uppercase tracking-widest text-muted-foreground">
-        mit der Kräuterhexe
+        Garten, Hof und Tiere
       </p>
     </div>
   );

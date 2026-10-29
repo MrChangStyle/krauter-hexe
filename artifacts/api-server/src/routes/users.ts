@@ -12,7 +12,7 @@ import {
   CleanupOrphanedDataResponse,
 } from '@workspace/api-zod';
 import { requireOwner } from '../middlewares/requireApproved';
-import { OwnerAccountDeletionError, deleteAccount } from '../lib/accountDeletion';
+import { OwnerAccountDeletionError, SubscriptionStillRunningError, deleteAccount } from '../lib/accountDeletion';
 import {
   cleanupOrphanedData,
   findOrphanedData,
@@ -133,6 +133,10 @@ router.delete('/users/:id', requireOwner, async (req, res): Promise<void> => {
       res
         .status(400)
         .json({ error: 'Das Besitzer-Konto kann nicht entfernt werden.' });
+      return;
+    }
+    if (err instanceof SubscriptionStillRunningError) {
+      res.status(502).json({ error: err.message });
       return;
     }
     throw err;

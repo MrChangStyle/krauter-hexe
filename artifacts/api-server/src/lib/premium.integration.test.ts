@@ -41,8 +41,10 @@ describe.skipIf(!enabled)("Premium (real database)", () => {
     base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
-  afterAll(() => {
+  afterAll(async () => {
     delete process.env["TEST_PHASE_END"];
+    // Leave no Paket behind: it would change other files' AI limits (docs/bezahlung.md).
+    await q("TRUNCATE premium");
     server?.close();
   });
 
@@ -65,11 +67,11 @@ describe.skipIf(!enabled)("Premium (real database)", () => {
   };
 
   it("is granted and taken back by the owner only", async () => {
-    expect((await api("GET", "/premium")).data).toEqual({ active: false, until: null, source: null });
+    expect((await api("GET", "/premium")).data).toMatchObject({ active: false, until: null, source: null });
     expect((await api("PUT", "/admin/premium", { email: "anna@x.de", active: true })).status).toBe(403);
     expect((await api("GET", "/admin/premium")).status).toBe(403);
     as = "owner";
-    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: null, source: "owner" });
+    expect((await api("GET", "/premium")).data).toMatchObject({ active: true, until: null, source: "owner" });
     let r = await api("PUT", "/admin/premium", { email: " ANNA@x.de ", active: true });
     expect(r.data).toEqual([{ email: "anna@x.de", username: "anna", source: "manual", until: null, active: true, grantedAt: expect.any(String) }]);
     r = await api("PUT", "/admin/premium", { email: "bert@x.de", active: true, until: "2099-12-31" });
@@ -79,9 +81,9 @@ describe.skipIf(!enabled)("Premium (real database)", () => {
     expect((await api("PUT", "/admin/premium", { email: "nobody@x.de", active: true })).status).toBe(404);
     expect((await api("PUT", "/admin/premium", { email: "o@x.de", active: true })).status).toBe(409);
     as = "anna";
-    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: null, source: "manual" });
+    expect((await api("GET", "/premium")).data).toMatchObject({ active: true, until: null, source: "manual" });
     as = "bert";
-    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: "2099-12-31T22:59:59.000Z", source: "manual" });
+    expect((await api("GET", "/premium")).data).toMatchObject({ active: true, until: "2099-12-31T22:59:59.000Z", source: "manual" });
     // Run out: listed, but no longer active.
     await q("UPDATE premium SET active_until = now() - interval '1 minute' WHERE user_id = 'bert'");
     expect((await api("GET", "/premium")).data.active).toBe(false);
@@ -94,16 +96,16 @@ describe.skipIf(!enabled)("Premium (real database)", () => {
 
   it("is open for everyone in the Testphase, and stays for the testers after it", async () => {
     delete process.env["TEST_PHASE_END"];
-    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: null, source: "test" });
+    expect((await api("GET", "/premium")).data).toMatchObject({ active: true, until: null, source: "test" });
     process.env["TEST_PHASE_END"] = "2099-12-31";
-    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: null, source: "test" });
+    expect((await api("GET", "/premium")).data).toMatchObject({ active: true, until: null, source: "test" });
     // Over: anna signed up before the end (tester), bert after it.
     process.env["TEST_PHASE_END"] = "2024-06-30";
     await q("UPDATE users SET created_at = '2024-06-30 20:00:00+02' WHERE id = 'anna'");
     await q("UPDATE users SET created_at = '2024-07-01 12:00:00+02' WHERE id = 'bert'");
-    expect((await api("GET", "/premium")).data).toEqual({ active: true, until: null, source: "tester" });
+    expect((await api("GET", "/premium")).data).toMatchObject({ active: true, until: null, source: "tester" });
     as = "bert";
-    expect((await api("GET", "/premium")).data).toEqual({ active: false, until: null, source: null });
+    expect((await api("GET", "/premium")).data).toMatchObject({ active: false, until: null, source: null });
     // A grant still wins over nothing.
     await q("INSERT INTO premium (user_id) VALUES ('bert')");
     expect((await api("GET", "/premium")).data.source).toBe("manual");

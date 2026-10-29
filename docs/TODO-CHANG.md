@@ -14,7 +14,17 @@ Sortiert nach Wichtigkeit für den Start. Alles, was ohne dich geht, ist vorgeba
    2. Domain `littlefarming.de` hinzufügen und die angezeigten DNS-Einträge (SPF, DKIM) beim Domain-Anbieter eintragen.
    3. Einen API-Key erzeugen und in Render beim Dienst „Little Farming“ → Environment als `RESEND_API_KEY` eintragen.
    4. Absender: `MAIL_FROM` = `Little Farming <hallo@littlefarming.de>`.
-3. [ ] **Zahlungsanbieter** (nach Schritt 16): Konto anlegen und Schlüssel in Render eintragen. Die genaue Anleitung kommt mit dem Schritt.
+3. [ ] **Stripe einrichten** (`docs/bezahlung.md`). Erst nach der Prüfung der Rechtstexte:
+   1. Konto bei https://stripe.com anlegen, Land Deutschland, Kleinunternehmer angeben. Unternehmensdaten wie im Impressum.
+   2. Produkte anlegen: „Little Farming Lite“ mit zwei Preisen (2,99 € monatlich, 29,90 € jährlich, wiederkehrend) und „Little Farming Premium“ (5,99 € monatlich, 59,90 € jährlich). Die vier Preis-IDs (`price_…`) notieren.
+   3. Unter Einstellungen → Billing → Kundenportal das Portal einschalten: Zahlungsart ändern, Rechnungen, Kündigen, Paket wechseln zwischen den vier Preisen.
+   4. Unter Entwickler → Webhooks einen Endpunkt anlegen: `https://littlefarming.de/api/webhooks/stripe`. Ereignisse: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`. Das Signatur-Secret (`whsec_…`) notieren.
+   5. In Render beim Dienst „Little Farming“ → Environment eintragen:
+      - `BILLING_PROVIDER=stripe`
+      - `STRIPE_SECRET_KEY` (`sk_live_…`, zum Testen erst `sk_test_…`)
+      - `STRIPE_WEBHOOK_SECRET`
+      - `STRIPE_PRICE_LITE_MONTHLY`, `STRIPE_PRICE_LITE_YEARLY`, `STRIPE_PRICE_PREMIUM_MONTHLY`, `STRIPE_PRICE_PREMIUM_YEARLY`
+   6. Erst im Testmodus mit den Testkarten von Stripe einmal bestellen, kündigen und das Konto löschen. Dann auf die echten Schlüssel umstellen.
 4. [ ] **Start-Schalter** am Starttag:
    - In Render `SITE_PASSWORD` löschen, damit die Seite öffentlich ist.
    - `TEST_PHASE_END` auf den letzten Testtag setzen.

@@ -6868,6 +6868,88 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Premium"
+  /billing:
+    get:
+      tags: [premium]
+      operationId: getBilling
+      summary: Bezahlung – whether it is set up, and the account's Paket
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Billing"
+  /billing/checkout:
+    post:
+      tags: [premium]
+      operationId: billingCheckout
+      summary: Start an order – the address of the checkout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingOrderInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingUrl"
+        "409":
+          description: Already subscribed, or the owner.
+        "503":
+          description: Billing is not set up.
+  /billing/cancel:
+    post:
+      tags: [premium]
+      operationId: cancelBilling
+      summary: Kündigen – the subscription ends with the paid period (§ 312k BGB)
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Premium"
+        "404":
+          description: No running subscription.
+  /billing/portal:
+    post:
+      tags: [premium]
+      operationId: billingPortal
+      summary: Zahlung verwalten – the provider's portal
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingUrl"
+        "404":
+          description: No payment details yet.
+  /billing/mock/complete:
+    post:
+      tags: [premium]
+      operationId: completeMockCheckout
+      summary: Test checkout – what a real payment would write (only with BILLING_PROVIDER=mock, never in production)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingOrderInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Premium"
+        "404":
+          description: The test checkout is off.
   /admin/premium:
     get:
       tags: [premium]
@@ -9611,7 +9693,7 @@ components:
             $ref: "#/components/schemas/DashboardWidgetId"
     Premium:
       type: object
-      required: [active, until, source]
+      required: [active, until, source, tier, plan, cancelAtPeriodEnd, subscribed]
       properties:
         active:
           type: boolean
@@ -9620,6 +9702,52 @@ components:
           format: date-time
         source:
           type: [string, 'null']
+          description: owner | manual | test | tester | stripe | mock
+        tier:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/BillingTier"
+        plan:
+          oneOf:
+            - type: 'null'
+            - $ref: "#/components/schemas/BillingInterval"
+        cancelAtPeriodEnd:
+          type: boolean
+          description: Cancelled – runs until `until`
+        subscribed:
+          type: boolean
+          description: A subscription with the payment provider (cancel and portal work)
+    BillingTier:
+      type: string
+      enum: [lite, premium]
+    BillingInterval:
+      type: string
+      enum: [monthly, yearly]
+    Billing:
+      type: object
+      required: [enabled, provider, premium]
+      properties:
+        enabled:
+          type: boolean
+        provider:
+          type: [string, 'null']
+          enum: [stripe, mock, null]
+        premium:
+          $ref: "#/components/schemas/Premium"
+    BillingOrderInput:
+      type: object
+      required: [tier, interval]
+      properties:
+        tier:
+          $ref: "#/components/schemas/BillingTier"
+        interval:
+          $ref: "#/components/schemas/BillingInterval"
+    BillingUrl:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
     PremiumEntry:
       type: object
       required: [email, username, source, until, active, grantedAt]

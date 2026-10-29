@@ -178,7 +178,8 @@ async function contextFor(farmId: number, today: string, defaults: PlanContext['
     .from(farmMembershipsTable)
     .innerJoin(usersTable, eq(usersTable.id, farmMembershipsTable.userId))
     .where(eq(farmMembershipsTable.farmId, farmId))
-    .orderBy(asc(farmMembershipsTable.createdAt));
+    // Members added together share a timestamp: the id keeps the order fixed.
+    .orderBy(asc(farmMembershipsTable.createdAt), asc(farmMembershipsTable.id));
   const herds = await db.select({ id: herdsTable.id, name: herdsTable.name }).from(herdsTable).where(eq(herdsTable.farmId, farmId)).orderBy(asc(herdsTable.id));
   return {
     today,

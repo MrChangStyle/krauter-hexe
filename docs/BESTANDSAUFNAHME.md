@@ -27,7 +27,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Konto löschen | ✅ | mit allen persönlichen Daten, Hof geht über oder wird gelöscht | – |
 | Datentrennung | ✅ | Seit Schritt 3 prüfen Tests jeden Endpunkt (Hof, Konto, Betreiber, ohne Anmeldung); zwei Lücken bei Wartungs-Endpunkten behoben (`docs/datentrennung.md`) | 3 |
 | KI-Kosten | ✅ | Seit Schritt 4 zählt jede KI-Funktion (vorher liefen Pflanzendoc, Pflege-Guide und der erste Scan-Blick ohne Limit), Kameras mit echten Tagesgrenzen. Ein Premium-Limit kommt mit Schritt 16 | 4, 16 |
-| Bezahlung | 🔴 | Testphase und Tester-Status gebaut, kein Zahlungsanbieter | 16 |
+| Bezahlung | 🟡 | Seit Schritt 16 gebaut: Pakete mit KI-Limits, „Paket & Abo“ mit Bestellen und Kündigen-Knopf, Stripe mit Webhook, Testkasse (`docs/bezahlung.md`). Es fehlen das Stripe-Konto, die Schlüssel und die geprüften Rechtstexte | 16 |
 | PWA, Offline, Updates | ✅ | installierbar, Scan-Warteschlange, Updates ohne Bestätigen, App-Stand | – |
 | Fehlerüberwachung, Betrieb | ✅ | Fehlergruppen, Push an den Betreiber, Tageszahlen, Statusmeldung | – |
 | Sicherung | ✅ | nächtlich verschlüsselt per GitHub Actions | – |

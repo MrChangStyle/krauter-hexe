@@ -42,7 +42,15 @@ export const LEGAL_PATHS = {
   impressum: "/impressum",
   datenschutz: "/datenschutz",
   nutzungsbedingungen: "/nutzungsbedingungen",
+  agb: "/agb",
+  widerruf: "/widerruf",
 } as const;
+
+/**
+ * AGB and Widerrufsbelehrung for Lite and Premium (docs/rechtstexte.md) are
+ * drafts until a lawyer has checked them: while true their pages say so.
+ */
+export const PAYMENT_TEXTS_DRAFT = true;
 
 /** Absolute URL of a legal page, respecting the app's base path. */
 export function legalHref(path: string): string {

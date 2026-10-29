@@ -1,4 +1,5 @@
 import { Crown, Sparkles } from "lucide-react";
+import { Link } from "wouter";
 import { useGetPremium } from "@workspace/api-client-react";
 
 const dayText = (iso: string) => new Date(iso).toLocaleDateString("de-DE", { timeZone: "Europe/Berlin" });
@@ -26,7 +27,13 @@ export function GrowPremiumCard() {
           </p>
           <p className="flex items-start gap-2 rounded-lg bg-muted/60 p-2 text-xs">
             <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
-            Premium gibt es bald als Monats- oder Jahresabo. Bis dahin schaltet der Betreiber es auf Anfrage frei.
+            <span>
+              Premium gibt es als Monats- oder Jahresabo unter{" "}
+              <Link href="/abo" className="underline underline-offset-2">
+                Paket & Abo
+              </Link>
+              .
+            </span>
           </p>
         </>
       )}

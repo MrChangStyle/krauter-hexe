@@ -57,7 +57,11 @@ describe.skipIf(!enabled)("Grow KI-Check (real database, AI replaced)", () => {
     base = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
 
-  afterAll(() => server?.close());
+  afterAll(async () => {
+    // Leave no Paket behind: it would change other files' AI limits (docs/bezahlung.md).
+    await q("TRUNCATE premium");
+    server?.close();
+  });
 
   const api = async (method: string, path: string, body?: unknown) => {
     const res = await fetch(`${base}${path}`, {
@@ -165,10 +169,11 @@ describe.skipIf(!enabled)("Grow KI-Check (real database, AI replaced)", () => {
   });
 
   it("keeps to the daily limit and to the account", async () => {
-    await q(`INSERT INTO scan_attempts (user_id, scan_type) SELECT 'anna', 'grow' FROM generate_series(1, 15)`);
+    // Premium (here granted by hand): 40 a day (docs/bezahlung.md).
+    await q(`INSERT INTO scan_attempts (user_id, scan_type) SELECT 'anna', 'grow' FROM generate_series(1, 40)`);
     const r = await api("POST", `/grow/plants/${plantId}/checks`, { kind: "health", imageData: PHOTO });
     expect(r.status).toBe(429);
-    expect(r.data.error).toBe("Du hast heute schon 15 KI-Anfragen für den Grow gestellt. Morgen geht es weiter.");
+    expect(r.data.error).toBe("Du hast heute schon 40 KI-Anfragen für den Grow gestellt. Morgen geht es weiter.");
     expect(runModelChain).not.toHaveBeenCalled();
     // Bert neither checks nor deletes Anna's.
     await q("DELETE FROM scan_attempts");

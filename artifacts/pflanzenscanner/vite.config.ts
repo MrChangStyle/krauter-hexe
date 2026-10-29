@@ -124,6 +124,10 @@ export default defineConfig({
         // so server-sent reminders arrive even when the app is closed.
         importScripts: ['push-sw.js'],
         navigateFallbackDenylist: [/^\/api\//],
+        // The app is one bundle of a little over 2 MiB (Workbox's default
+        // limit); it must be precached or the app does not start offline.
+        // Splitting it per page is part of the quality step (docs/LAUNCH-PLAN.md, 17).
+        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
         // Order matters: the first matching rule wins.
         runtimeCaching: [
           {

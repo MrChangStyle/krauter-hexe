@@ -51,6 +51,9 @@ import type {
   BeeSiteCheck,
   BeeSiteCheckInput,
   BeeTreatmentInput,
+  Billing,
+  BillingOrderInput,
+  BillingUrl,
   BreedingCycles,
   BreedingEndInput,
   BreedingEndResult,
@@ -22170,6 +22173,367 @@ export function useGetPremium<TData = Awaited<ReturnType<typeof getPremium>>, TE
 
 
 
+
+export const getGetBillingUrl = () => {
+
+
+
+
+  return `/api/billing`
+}
+
+/**
+ * @summary Bezahlung – whether it is set up, and the account's Paket
+ */
+export const getBilling = async ( options?: RequestInit): Promise<Billing> => {
+
+  return customFetch<Billing>(getGetBillingUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetBillingQueryKey = () => {
+    return [
+    `/api/billing`
+    ] as const;
+    }
+
+
+export const getGetBillingQueryOptions = <TData = Awaited<ReturnType<typeof getBilling>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBilling>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetBillingQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getBilling>>> = ({ signal }) => getBilling({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getBilling>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetBillingQueryResult = NonNullable<Awaited<ReturnType<typeof getBilling>>>
+export type GetBillingQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Bezahlung – whether it is set up, and the account's Paket
+ */
+
+export function useGetBilling<TData = Awaited<ReturnType<typeof getBilling>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getBilling>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetBillingQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getBillingCheckoutUrl = () => {
+
+
+
+
+  return `/api/billing/checkout`
+}
+
+/**
+ * @summary Start an order – the address of the checkout
+ */
+export const billingCheckout = async (billingOrderInput: BillingOrderInput, options?: RequestInit): Promise<BillingUrl> => {
+
+  return customFetch<BillingUrl>(getBillingCheckoutUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(billingOrderInput)
+  }
+);}
+
+
+
+
+
+export const getBillingCheckoutMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingCheckout>>, TError,{data: BodyType<BillingOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof billingCheckout>>, TError,{data: BodyType<BillingOrderInput>}, TContext> => {
+
+const mutationKey = ['billingCheckout'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingCheckout>>, {data: BodyType<BillingOrderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  billingCheckout(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BillingCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof billingCheckout>>>
+    export type BillingCheckoutMutationBody = BodyType<BillingOrderInput>
+    export type BillingCheckoutMutationError = ErrorType<void>
+
+    /**
+ * @summary Start an order – the address of the checkout
+ */
+export const useBillingCheckout = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingCheckout>>, TError,{data: BodyType<BillingOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof billingCheckout>>,
+        TError,
+        {data: BodyType<BillingOrderInput>},
+        TContext
+      > => {
+      return useMutation(getBillingCheckoutMutationOptions(options));
+    }
+
+export const getCancelBillingUrl = () => {
+
+
+
+
+  return `/api/billing/cancel`
+}
+
+/**
+ * @summary Kündigen – the subscription ends with the paid period (§ 312k BGB)
+ */
+export const cancelBilling = async ( options?: RequestInit): Promise<Premium> => {
+
+  return customFetch<Premium>(getCancelBillingUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getCancelBillingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelBilling>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof cancelBilling>>, TError,void, TContext> => {
+
+const mutationKey = ['cancelBilling'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof cancelBilling>>, void> = () => {
+
+
+          return  cancelBilling(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CancelBillingMutationResult = NonNullable<Awaited<ReturnType<typeof cancelBilling>>>
+
+    export type CancelBillingMutationError = ErrorType<void>
+
+    /**
+ * @summary Kündigen – the subscription ends with the paid period (§ 312k BGB)
+ */
+export const useCancelBilling = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelBilling>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof cancelBilling>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getCancelBillingMutationOptions(options));
+    }
+
+export const getBillingPortalUrl = () => {
+
+
+
+
+  return `/api/billing/portal`
+}
+
+/**
+ * @summary Zahlung verwalten – the provider's portal
+ */
+export const billingPortal = async ( options?: RequestInit): Promise<BillingUrl> => {
+
+  return customFetch<BillingUrl>(getBillingPortalUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+
+export const getBillingPortalMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingPortal>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof billingPortal>>, TError,void, TContext> => {
+
+const mutationKey = ['billingPortal'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof billingPortal>>, void> = () => {
+
+
+          return  billingPortal(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BillingPortalMutationResult = NonNullable<Awaited<ReturnType<typeof billingPortal>>>
+
+    export type BillingPortalMutationError = ErrorType<void>
+
+    /**
+ * @summary Zahlung verwalten – the provider's portal
+ */
+export const useBillingPortal = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof billingPortal>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof billingPortal>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getBillingPortalMutationOptions(options));
+    }
+
+export const getCompleteMockCheckoutUrl = () => {
+
+
+
+
+  return `/api/billing/mock/complete`
+}
+
+/**
+ * @summary Test checkout – what a real payment would write (only with BILLING_PROVIDER=mock, never in production)
+ */
+export const completeMockCheckout = async (billingOrderInput: BillingOrderInput, options?: RequestInit): Promise<Premium> => {
+
+  return customFetch<Premium>(getCompleteMockCheckoutUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(billingOrderInput)
+  }
+);}
+
+
+
+
+
+export const getCompleteMockCheckoutMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeMockCheckout>>, TError,{data: BodyType<BillingOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof completeMockCheckout>>, TError,{data: BodyType<BillingOrderInput>}, TContext> => {
+
+const mutationKey = ['completeMockCheckout'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof completeMockCheckout>>, {data: BodyType<BillingOrderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  completeMockCheckout(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CompleteMockCheckoutMutationResult = NonNullable<Awaited<ReturnType<typeof completeMockCheckout>>>
+    export type CompleteMockCheckoutMutationBody = BodyType<BillingOrderInput>
+    export type CompleteMockCheckoutMutationError = ErrorType<void>
+
+    /**
+ * @summary Test checkout – what a real payment would write (only with BILLING_PROVIDER=mock, never in production)
+ */
+export const useCompleteMockCheckout = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof completeMockCheckout>>, TError,{data: BodyType<BillingOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof completeMockCheckout>>,
+        TError,
+        {data: BodyType<BillingOrderInput>},
+        TContext
+      > => {
+      return useMutation(getCompleteMockCheckoutMutationOptions(options));
+    }
 
 export const getListPremiumUrl = () => {
 

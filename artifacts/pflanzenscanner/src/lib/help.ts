@@ -417,12 +417,16 @@ export const GENERAL_HELP: HelpTopic[] = [
   },
   {
     id: "premium",
-    title: "Premium",
+    title: "Paket & Abo",
     faq: [
-      { q: "Was kostet etwas?", a: "Fast alles ist kostenlos. Premium betrifft nur Funktionen, deren KI Geld kostet, etwa den KI-Check im Grow." },
+      { q: "Was kostet etwas?", a: "Alles ohne KI ist kostenlos. KI kostet bei jeder Anfrage Geld – deshalb gibt es Pakete mit mehr KI-Anfragen am Tag: Basis 3, Lite 15, Premium 40 (je Bereich, z. B. Pflanzen-Scan oder Hof-KI). Der KI-Check im Grow gehört zu Premium." },
       {
-        q: "Welche Pakete wird es geben?",
-        a: "Geplant sind Basis (alles ohne KI, kostenlos), Lite (KI für Pflanzen und Garten) und Premium (alle KI-Funktionen). Die vorläufigen Preise und einen Modul-Finder gibt es auf der Homepage unter „Preise & Pakete“. Bezahlen lässt sich noch nicht.",
+        q: "Wo sehe ich mein Paket?",
+        a: "Unter „Mehr“ oben im grünen Kasten oder direkt unter „Paket & Abo“. Dort stehen dein Paket, dein Tageslimit und – mit Abo – bis wann es bezahlt ist. In der Testphase ist alles offen; wer jetzt testet, behält die App auch nach dem Start kostenlos.",
+      },
+      {
+        q: "Wie kündige ich?",
+        a: "Unter „Mehr → Paket & Abo → Abo kündigen“ und dann „Jetzt kündigen“. Das Paket läuft bis zum Ende des bezahlten Zeitraums, danach geht es als Basis weiter – deine Daten bleiben. Löschst du dein Konto, endet ein Abo sofort.",
       },
     ],
   },

@@ -247,6 +247,11 @@ const STATEMENTS = [
   `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "weekdays" jsonb`,
   // Krankenakte: Behandlung über mehrere Tage (docs/gesundheit.md).
   `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "treatment_until" date`,
+  // Bezahlung: Paket und Abo beim Zahlungsanbieter (docs/bezahlung.md).
+  `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "tier" text DEFAULT 'premium' NOT NULL`,
+  `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "customer_id" text`,
+  `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "subscription_id" text`,
+  `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "cancel_at_period_end" boolean DEFAULT false NOT NULL`,
   // Passwort vergessen (docs/konto.md).
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamp with time zone",
   `CREATE TABLE IF NOT EXISTS "password_resets" (

@@ -2392,12 +2392,64 @@ export interface DashboardLayout {
   widgets: DashboardWidgetId[] | null;
 }
 
+export type BillingTier = typeof BillingTier[keyof typeof BillingTier];
+
+
+export const BillingTier = {
+  lite: 'lite',
+  premium: 'premium',
+} as const;
+
+export type BillingInterval = typeof BillingInterval[keyof typeof BillingInterval];
+
+
+export const BillingInterval = {
+  monthly: 'monthly',
+  yearly: 'yearly',
+} as const;
+
 export interface Premium {
   active: boolean;
   /** @nullable */
   until: string | null;
-  /** @nullable */
+  /**
+     * owner | manual | test | tester | stripe | mock
+     * @nullable
+     */
   source: string | null;
+  tier: null | BillingTier;
+  plan: null | BillingInterval;
+  /** Cancelled – runs until `until` */
+  cancelAtPeriodEnd: boolean;
+  /** A subscription with the payment provider (cancel and portal work) */
+  subscribed: boolean;
+}
+
+/**
+ * @nullable
+ */
+export type BillingProvider = typeof BillingProvider[keyof typeof BillingProvider] | null;
+
+
+export const BillingProvider = {
+  stripe: 'stripe',
+  mock: 'mock',
+} as const;
+
+export interface Billing {
+  enabled: boolean;
+  /** @nullable */
+  provider: BillingProvider;
+  premium: Premium;
+}
+
+export interface BillingOrderInput {
+  tier: BillingTier;
+  interval: BillingInterval;
+}
+
+export interface BillingUrl {
+  url: string;
 }
 
 export interface PremiumEntry {

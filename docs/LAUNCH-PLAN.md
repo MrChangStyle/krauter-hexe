@@ -28,7 +28,7 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
 ### B – Konten und Sicherheit (vor dem Start Pflicht)
 2. [x] **Passwort vergessen**: Link per E-Mail. Vorbereitet für einen E-Mail-Dienst (Resend), solange kein Schlüssel da ist, setzt der Betreiber das Passwort in der Verwaltung zurück. Dazu Passwort ändern. Die E-Mail-Bestätigung folgt, sobald der Mailversand läuft (`docs/konto.md`).
 3. [x] **Datentrennung prüfen**: Ein Test geht automatisch über alle Hof-Endpunkte und zeigt, dass Nicht-Mitglieder nichts sehen, Gäste nichts ändern und Mitarbeiter nur freigegebene Module nutzen. Persönliche Daten (Scans, Notizen, Einstellungen) bleiben beim Konto. Gefundene Lücken werden behoben.
-4. [ ] **Kostenschutz**: KI-Limits je Paket (Free/Premium) serverseitig, App-Budget, Limits für Uploads und Konten.
+4. [x] **Kostenschutz**: Jede KI-Funktion zählt gegen ein Limit, die Kameras haben echte Tagesgrenzen (`docs/kostenschutz.md`). Ein höheres Premium-Limit kommt mit der Bezahlung (Schritt 16).
 
 ### C – Module vervollständigen
 5. [ ] **Tierarten**: Gänse, Enten, Puten, Wachteln als eigene Geflügelarten; Nandus, Esel. Dazu „Tierart anfragen“ mit Eingang in der Verwaltung.

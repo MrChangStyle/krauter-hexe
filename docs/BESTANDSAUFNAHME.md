@@ -26,7 +26,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Passwort vergessen, E-Mail-Bestätigung | ✅ | Seit Schritt 2: Link per Mail (Resend) oder vom Betreiber, Passwort ändern. E-Mail-Bestätigung folgt mit dem Mailversand | 2 |
 | Konto löschen | ✅ | mit allen persönlichen Daten, Hof geht über oder wird gelöscht | – |
 | Datentrennung | ✅ | Seit Schritt 3 prüfen Tests jeden Endpunkt (Hof, Konto, Betreiber, ohne Anmeldung); zwei Lücken bei Wartungs-Endpunkten behoben (`docs/datentrennung.md`) | 3 |
-| KI-Kosten | 🟡 | Tageslimit 15 je Konto und Bereich, App-Budget. Ein höheres Limit für Premium gibt es noch nicht | 4, 16 |
+| KI-Kosten | ✅ | Seit Schritt 4 zählt jede KI-Funktion (vorher liefen Pflanzendoc, Pflege-Guide und der erste Scan-Blick ohne Limit), Kameras mit echten Tagesgrenzen. Ein Premium-Limit kommt mit Schritt 16 | 4, 16 |
 | Bezahlung | 🔴 | Testphase und Tester-Status gebaut, kein Zahlungsanbieter | 16 |
 | PWA, Offline, Updates | ✅ | installierbar, Scan-Warteschlange, Updates ohne Bestätigen, App-Stand | – |
 | Fehlerüberwachung, Betrieb | ✅ | Fehlergruppen, Push an den Betreiber, Tageszahlen, Statusmeldung | – |

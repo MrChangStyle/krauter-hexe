@@ -2,6 +2,8 @@
 
 Project overview in German, kept current with every change: `docs/PROJEKT.md`.
 
+Kostenschutz (`docs/kostenschutz.md`): every AI call counts – Pflanzendoc and Pflege-Guide as `plant`, the universal scan's first look as `classify` (45/day, outside the app budget); cameras count their AI checks on the camera row (`ai_day`, `ai_count`; 300 per camera, 600 per farm and Berlin day) because `camera_events` keep only the newest 100.
+
 Datentrennung (`docs/datentrennung.md`): `lib/farmIsolation.integration.test.ts` and `lib/accountIsolation.integration.test.ts` walk the real router – every farm route (stranger 404, foreign record ids, guest writes 403, caretaker without modules 403, farm A's rows unchanged), every route without sign-in (401 unless in `PUBLIC`), every `requireOwner` route, and personal records. A new route is covered automatically; a new public route must be added to `PUBLIC` with a reason.
 
 Launch plan (step by step to the public start, one PR per step): `docs/LAUNCH-PLAN.md`; status per module `docs/BESTANDSAUFNAHME.md`, decisions `docs/ENTSCHEIDUNGEN.md`, owner to-dos `docs/TODO-CHANG.md`.

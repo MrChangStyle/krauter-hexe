@@ -67,7 +67,7 @@ import {
   UNKNOWN_BOTANICAL_NAME,
 } from "../lib/plantIdentification";
 import { requireApproved, requireOwner } from "../middlewares/requireApproved";
-import { checkAndRecordScanAttempt, refundScanAttempt } from "../lib/scanRateLimit";
+import { checkAndRecordScanAttempt, limitMessage, refundScanAttempt } from "../lib/scanRateLimit";
 import {
   checkScanBrake,
   photoFingerprint,
@@ -174,10 +174,18 @@ router.post("/plants/health-check", requireApproved, async (req, res): Promise<v
     return;
   }
 
+  // Pflanzendoc counts like a plant scan.
+  const attempt = await checkAndRecordScanAttempt(req.user!.id, "plant", { unlimited: req.user!.isOwner });
+  if (!attempt.allowed) {
+    res.status(429).json({ error: limitMessage(attempt), resetsAt: attempt.resetsAt, limit: attempt.limit });
+    return;
+  }
+
   let result;
   try {
     result = await checkPlantHealth(parsed.data.image);
   } catch (err) {
+    await refundScanAttempt(attempt.attemptId);
     req.log.error({ err }, "Plant health check failed");
     res.status(503).json({ error: "KI-Analyse fehlgeschlagen. Bitte versuche es erneut." });
     return;

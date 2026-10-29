@@ -1,6 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
 import { ScanInsectBody } from "@workspace/api-zod";
 import { classifyScanSubject } from "../lib/plantIdentification";
+import { checkAndRecordScanAttempt, refundScanAttempt } from "../lib/scanRateLimit";
 import { requireApproved } from "../middlewares/requireApproved";
 import { handlePlantScan } from "./plants";
 import { handleInsectScan } from "./insects";
@@ -31,11 +32,25 @@ router.post("/scan", requireApproved, async (req: Request, res: Response): Promi
     return;
   }
 
+  // The first look counts on its own (DAILY_CLASSIFY_LIMIT): photos without
+  // a plant or insect end here and would otherwise cost AI without limit.
+  const attempt = await checkAndRecordScanAttempt(req.user!.id, "classify", { unlimited: req.user!.isOwner });
+  if (!attempt.allowed) {
+    // Same answer as the plant scan, so the offline queue pauses until midnight.
+    res.status(429).json({
+      error: attempt.reason === "budget" ? "SCAN_BUDGET_REACHED" : "SCAN_LIMIT_REACHED",
+      resetsAt: attempt.resetsAt,
+      limit: attempt.limit,
+    });
+    return;
+  }
+
   const startedAt = Date.now();
   let classification;
   try {
     classification = await classifyScanSubject(parsed.data.image);
   } catch (err) {
+    await refundScanAttempt(attempt.attemptId);
     req.log.error({ err }, "Scan subject classification failed");
     // 5xx: the client keeps the photo and retries automatically.
     res.status(502).json({ error: "AI-Erkennung fehlgeschlagen" });

@@ -125,6 +125,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 - **Kosten:**
   - Tageslimit je Konto (15 Scans; Farm, Garten und Grow mit eigenen Zählern).
   - App-weites Tagesbudget (`SCAN_DAILY_BUDGET`).
+  - Pflanzendoc, Pflege-Guide und der erste Blick des Universal-Scans zählen mit. Wildkameras haben Tagesgrenzen je Kamera und je Hof (`docs/kostenschutz.md`).
   - Ein fehlgeschlagener Versuch wird zurückgebucht.
   - Für den Betreiber zeigt die App bei einem KI-Fehler die technische Ursache.
 
@@ -253,6 +254,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #109 | Kostenschutz: Pflanzendoc, Pflege-Guide und erster Blick des Universal-Scans zählen gegen das Tageslimit; Kamera-Tagesgrenze zählt jetzt wirklich (vorher nie erreicht), dazu eine Grenze je Hof |
 | 29.10.2026 | #108 | Datentrennung: Tests über alle Hof- und Konto-Endpunkte; Wartungs-Endpunkte nur noch für den angemeldeten Betreiber, Archiv bearbeiten nur angemeldet; CI startet ein eigenes Postgres, die Integrationstests liefen dort vorher gar nicht |
 | 29.10.2026 | #107 | Passwort vergessen (Mail über Resend oder Link vom Betreiber), Passwort ändern, neues Passwort meldet andere Geräte ab; Resend in der Datenschutzerklärung |
 | 29.10.2026 | #107 | Launch-Plan, Bestandsaufnahme, Entscheidungen und To-do-Liste für den Betreiber |

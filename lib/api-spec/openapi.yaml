@@ -101,6 +101,8 @@ paths:
                 $ref: "#/components/schemas/PlantHealthResult"
         "400":
           description: Invalid input (missing or non-image data URL)
+        "429":
+          description: Daily AI limit reached (counts like a plant scan) or the app-wide budget is used up.
         "503":
           description: AI unavailable (missing API key or model overloaded)
   /plants/scan:
@@ -686,6 +688,8 @@ paths:
           description: Invalid input
         "401":
           description: Not signed in
+        "429":
+          description: Daily AI limit reached (counts like a plant scan) or the app-wide budget is used up.
         "503":
           description: AI generation unavailable
   /care-guides/{id}:
@@ -4105,7 +4109,7 @@ paths:
             animal module will handle later (code TIER_ERKANNT), or the same
             codes as the plant and insect scans.
         "429":
-          description: Daily scan limit reached
+          description: Daily scan limit reached – the first look at the photo has its own limit (3× the scan limit), the plant or insect scan after it counts as usual
         "502":
           description: AI identification failed
   /insects:

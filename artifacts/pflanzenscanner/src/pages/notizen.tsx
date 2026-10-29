@@ -72,7 +72,7 @@ export default function NotizenPage() {
               role="tab"
               aria-selected={current === p.userId}
               onClick={() => setList(p.userId)}
-              className={cn("shrink-0 rounded-full border px-3 py-1 text-sm", current === p.userId ? "border-orange-500 bg-orange-500 text-white" : "border-border bg-card")}
+              className={cn("shrink-0 rounded-full border px-3 py-1 text-sm", current === p.userId ? "border-orange-700 bg-orange-700 text-white" : "border-border bg-card")}
             >
               {p.name}
             </button>

@@ -45,7 +45,7 @@ export function DictateButton({
       className={
         big
           ? `inline-flex h-11 min-w-0 flex-1 basis-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl px-2 text-[13px] font-semibold shadow-sm transition ${
-              listening ? "animate-pulse bg-red-600 text-white ring-4 ring-red-300" : "bg-orange-500 text-white hover:bg-orange-600"
+              listening ? "animate-pulse bg-red-600 text-white ring-4 ring-red-300" : "bg-orange-700 text-white hover:bg-orange-800"
             }`
           : `inline-flex h-7 items-center gap-1 rounded-full px-2 text-xs transition ${
               listening ? "animate-pulse bg-red-600 text-white" : "text-muted-foreground hover:bg-muted"

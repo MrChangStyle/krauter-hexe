@@ -29,6 +29,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | KI-Kosten | ✅ | Seit Schritt 4 zählt jede KI-Funktion (vorher liefen Pflanzendoc, Pflege-Guide und der erste Scan-Blick ohne Limit), Kameras mit echten Tagesgrenzen. Ein Premium-Limit kommt mit Schritt 16 | 4, 16 |
 | Bezahlung | 🟡 | Seit Schritt 16 gebaut: Pakete mit KI-Limits, „Paket & Abo“ mit Bestellen und Kündigen-Knopf, Stripe mit Webhook, Testkasse (`docs/bezahlung.md`). Es fehlen das Stripe-Konto, die Schlüssel und die geprüften Rechtstexte | 16 |
 | PWA, Offline, Updates | ✅ | installierbar, Scan-Warteschlange, Updates ohne Bestätigen, App-Stand | – |
+| Ladezeit, Barrierefreiheit | ✅ | Seit Schritt 17: gzip, Seiten einzeln geladen, Schriften vom eigenen Server, Zoomen erlaubt; Lighthouse Startseite 88, Barrierefreiheit 100, axe auf 23 App-Seiten ohne Befund (`docs/qualitaet.md`) | 17 |
 | Fehlerüberwachung, Betrieb | ✅ | Fehlergruppen, Push an den Betreiber, Tageszahlen, Statusmeldung | – |
 | Sicherung | ✅ | nächtlich verschlüsselt per GitHub Actions | – |
 | Homepage | ✅ | Start, Pflanzen, Tiere, Hof, Preise, Modul-Finder, Szenen. Seit Schritt 14 Häufige Fragen auf der Startseite, Modultexte auf dem Endstand | 14 |

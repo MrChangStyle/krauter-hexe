@@ -193,7 +193,7 @@ export default function CategoriesPage({
             {([null, "intolerant", "poisonous", "lethal"] as const).map((level) => {
               const label = level === null ? "Alle" : level === "intolerant" ? "Unverträglich" : level === "poisonous" ? "Giftig" : "Tödlich";
               const isActive = toxicityFilter === level;
-              const activeColor = level === null ? "bg-primary text-primary-foreground" : level === "intolerant" ? "bg-yellow-500 text-white" : level === "poisonous" ? "bg-orange-500 text-white" : "bg-red-500 text-white";
+              const activeColor = level === null ? "bg-primary text-primary-foreground" : level === "intolerant" ? "bg-yellow-700 text-white" : level === "poisonous" ? "bg-orange-700 text-white" : "bg-red-700 text-white";
               const inactiveColor = level === null ? "bg-muted text-muted-foreground" : level === "intolerant" ? "bg-yellow-100 text-yellow-700 border border-yellow-300" : level === "poisonous" ? "bg-orange-100 text-orange-700 border border-orange-300" : "bg-red-100 text-red-700 border border-red-300";
               return (
                 <button key={String(level)} onClick={() => { setToxicityFilter(isActive ? null : level); setLetter(null); }}

@@ -1,6 +1,6 @@
 /** Hof-Aufgaben (docs/hof-aufgaben.md): due days, area and action from the text. */
 import { describe, expect, it } from "vitest";
-import { farmTaskDue, guessFarmTaskAction, guessFarmTaskArea } from "./farmTaskRules";
+import { farmTaskDue, guessFarmTaskAction, guessFarmTaskArea, normalizeWeekdays, weekdaysText } from "./farmTaskRules";
 
 const base = { repeats: true, startsOn: null, createdDay: "2026-10-20", completedDay: null, intervalDays: 1 };
 
@@ -21,6 +21,37 @@ describe("Hof-Aufgaben – due day", () => {
     const once = { ...base, repeats: false, startsOn: "2026-10-27" };
     expect(farmTaskDue(once)).toEqual({ dueDate: "2026-10-27", done: false });
     expect(farmTaskDue({ ...once, completedDay: "2026-10-27" })).toEqual({ dueDate: "2026-10-27", done: true });
+  });
+});
+
+describe("Hof-Aufgaben – fixed weekdays", () => {
+  // 2026-10-26 is a Monday, 2026-10-29 a Thursday.
+  const days = { ...base, weekdays: [1, 4], intervalDays: 7 };
+
+  it("is due on the next of its weekdays, from the first day on", () => {
+    expect(farmTaskDue({ ...days, startsOn: "2026-10-27" }).dueDate).toBe("2026-10-29");
+    expect(farmTaskDue({ ...days, startsOn: "2026-10-26" }).dueDate).toBe("2026-10-26");
+    // Without a first day: from the day it was made on.
+    expect(farmTaskDue({ ...days, createdDay: "2026-10-30" }).dueDate).toBe("2026-11-02");
+  });
+
+  it("after a tick, the next of its weekdays – a missed day stays due", () => {
+    expect(farmTaskDue({ ...days, startsOn: "2026-10-26", completedDay: "2026-10-26" }).dueDate).toBe("2026-10-29");
+    expect(farmTaskDue({ ...days, startsOn: "2026-10-26", completedDay: "2026-10-29" }).dueDate).toBe("2026-11-02");
+    // Monday not ticked: on Wednesday it is still Monday's, i.e. overdue.
+    expect(farmTaskDue({ ...days, startsOn: "2026-10-26" }).dueDate).toBe("2026-10-26");
+  });
+
+  it("checks and words the weekdays", () => {
+    expect(normalizeWeekdays([4, 1, 4])).toEqual([1, 4]);
+    expect(normalizeWeekdays([])).toBeNull();
+    expect(normalizeWeekdays(null)).toBeNull();
+    expect(normalizeWeekdays([0])).toBe("invalid");
+    expect(normalizeWeekdays("1,4")).toBe("invalid");
+    expect(weekdaysText([1, 4])).toBe("montags und donnerstags");
+    expect(weekdaysText([1, 3, 5])).toBe("montags, mittwochs und freitags");
+    expect(weekdaysText([1, 2, 3, 4, 5])).toBe("werktags");
+    expect(weekdaysText([6, 7])).toBe("am Wochenende");
   });
 });
 

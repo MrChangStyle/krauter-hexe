@@ -53,6 +53,14 @@ Jede Aufgabe hat eine **Sprechblase** mit der Zahl der Kommentare. Darin stehen 
 - Die Liste gehört zur Modul-Freigabe **„Hof- & Stall-Aufgaben“** (früher „Stall-Aufgaben“). Wer sie nicht hat, sieht weder Balken noch Seite.
 - „Für wen?“ zeigt das Team nur, wenn man auch „Farm & Team“ sehen darf (Admins immer).
 
+## Wochentage
+
+- Eine Aufgabe kann an festen Wochentagen kommen statt alle X Tage: im Formular unter „Wann?“ → „Wochentage“ und dann Mo bis So antippen.
+- Gesprochen oder getippt versteht die Liste „montags und donnerstags“, „jeden Dienstag und Freitag“, „werktags“ und „am Wochenende“. Das geht mit der KI (Feld `wochentage`) und ohne KI (`planLocally`).
+- Fällig ist die Aufgabe am nächsten dieser Tage nach dem letzten Erledigen. Ein verpasster Tag bleibt fällig (überfällig), bis er abgehakt ist. Danach kommt der nächste Wochentag.
+- Angezeigt wird zum Beispiel „montags und donnerstags“ oder „werktags“.
+- Technik: `farm_tasks.weekdays` (jsonb, 1 = Montag … 7 = Sonntag, null = Abstand), `farmTaskDue` und `normalizeWeekdays` in `farmTaskRules.ts`.
+
 ## Erinnerungen
 
 - Zur eingestellten Uhrzeit am fälligen Tag, einmal je Tag (wie bisher bei den Stall-Aufgaben).
@@ -89,5 +97,4 @@ Jede Aufgabe hat eine **Sprechblase** mit der Zahl der Kommentare. Darin stehen 
 - Der Auftrag an die KI (`planPrompt`) und die Wortlisten der Erkennung ohne KI sind ein erster Wurf; mit echten Sprachaufnahmen der Tester prüfen.
 
 - Die Wortlisten für Bereich und Art sind ein erster Wurf. Fehlt ein Tier oder ein Wort, landet die Aufgabe unter „Hof & Haus“ und lässt sich im Formular umstellen.
-- Wiederkehrende Aufgaben an bestimmten Wochentagen (z. B. „montags und donnerstags“) gibt es noch nicht.
 - Fotos an Kommentaren gibt es noch nicht.

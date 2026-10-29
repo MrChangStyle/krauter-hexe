@@ -133,6 +133,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         q: "Kann die KI einen Teil des Beetes als Tierfutter planen?",
         a: "Ja. Im „KI-Vorschlag“ stellst du mit dem Schieberegler ein, wie viel für die Tiere und wie viel für die Küche sein soll, z. B. 30 % Futter für die Hühner. Die KI nimmt dafür nur Pflanzen, die für deine Tiere geeignet und nicht giftig sind, und zeigt danach, wie viel Fläche es wirklich geworden ist. Vorgabe ist der Anteil aus dem Garten-Assistenten.",
       },
+      { q: "Wie kommt der Garten-Assistent auf seine Zahlen?", a: "Unter der Aufteilung „So rechnet der Assistent“ aufklappen: Dort steht die Rechnung mit deinen Zahlen – Personen mal Fläche je Richtung, Grünfutter je Tier und Tag, Saison und Winter in m² und welche Beete den Futteranteil ergeben. Hast du schon Ernten eingetragen, rechnet er mit deinen eigenen Erträgen." },
       { q: "Zählen Gartenausgaben unter Ertrag & Bilanz doppelt?", a: "Nein. Sie sind ganz normale Ausgaben des Hofs mit dem Zeichen „Garten“ und zählen dort einmal." },
     ],
   },
@@ -200,6 +201,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Was, wenn die KI nicht erreichbar ist?", a: "Ohne Netz oder wenn das tägliche KI-Limit erreicht ist, erkennt die App einfache Wörter selbst (heute, morgen, jeden Tag, um 7 Uhr, für Maria). Die Liste ist dann als „ohne KI erkannt“ markiert – bitte genauer prüfen." },
       { q: "Wo sehe ich einen Hof, der mit mir geteilt wurde?", a: "Ganz oben auf der Hofseite unter „Wähle deine Farm“: Ein Tipp klappt die Liste auf – oben deine eigenen Farmen, darunter die verknüpften Höfe, die dir freigegeben wurden („Geteilt von …“), und der Demo-Hof. Ein Tipp auf einen Hof wechselt – Wetter, Hof-Aufgaben und Widgets zeigen dann diesen Hof. Die Auswahl erscheint, sobald du zu mehr als einem Hof gehörst, auch auf der Seite Hof-Aufgaben." },
       { q: "Ich sehe eine Farm zu viel – wie werde ich sie los?", a: "„Meine Farm“ legt die App automatisch an, wenn du zum ersten Mal auf den Hof kommst. Hast du danach eine weitere Farm angelegt, z. B. mit eigenem Namen, und brauchst die erste nicht: Wähle sie oben aus, tippe auf „Farmen verwalten“ und unten auf „Farm löschen“. Achtung: Alles auf dieser Farm wird mit gelöscht – schau vorher nach, ob dort Tiere oder Aufgaben stehen. Oder benenne sie einfach um und nutze sie weiter." },
+      { q: "Geht „montags und donnerstags“?", a: "Ja. Sag oder schreib es so („Müll rausbringen montags und donnerstags“, „werktags“, „am Wochenende“), oder wähl im Formular unter „Wann?“ die Wochentage. Die Aufgabe ist dann an jedem dieser Tage fällig; ein verpasster Tag bleibt stehen, bis er abgehakt ist." },
       { q: "Wie teile ich die Liste?", a: "Unten auf der Seite auf „Teilen“ tippen (nur Admins): jemanden aus dem Team wählen oder eine E-Mail-Adresse eingeben und „Hof-Aufgaben“, „Alltagsnotizen“ oder beides ankreuzen. Neue Personen kommen als Mitarbeiter ins Team und sehen nur die Hof-Aufgaben (und die Tiere); mehr gibst du unter „Farm & Team“ frei." },
       { q: "Wer darf Aufgaben löschen?", a: "Nur die Admins des Hofs – sie sind die Besitzer der Liste. Mitarbeiter haken ab, legen neue Aufgaben an, ändern und kommentieren, löschen aber nichts." },
       { q: "Wer bekommt die Erinnerung?", a: "Bei einer Aufgabe für eine Person nur diese, sonst alle Admins und Mitarbeiter des Hofs. Gäste nicht. Ruhezeiten stellst du unter „Mehr → Benachrichtigungen“ ein." },
@@ -419,7 +421,7 @@ export const GENERAL_HELP: HelpTopic[] = [
       },
       {
         q: "Wie teile ich meine Einkaufsliste?",
-        a: "Auf der Seite der Alltagsnotizen unten auf „Teilen“ tippen und jemanden aus dem Team wählen oder eine E-Mail-Adresse eingeben – zum Beispiel jemanden aus der Familie mit eigenem Konto. Im selben Dialog lassen sich auch die Hof-Aufgaben mitteilen.",
+        a: "Auf der Seite der Alltagsnotizen unten auf „Teilen“ tippen und jemanden aus dem Team wählen oder eine E-Mail-Adresse eingeben – zum Beispiel jemanden aus der Familie mit eigenem Konto. Im selben Dialog lassen sich auch die Hof-Aufgaben mitteilen. Setzt jemand etwas auf die geteilte Liste, bekommen die anderen eine Push-Nachricht (abschaltbar unter Mehr → Benachrichtigungen).",
       },
       {
         q: "Was darf, wer mitmacht?",

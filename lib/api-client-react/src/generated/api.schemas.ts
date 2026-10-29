@@ -2189,6 +2189,7 @@ export type PushTopic = typeof PushTopic[keyof typeof PushTopic];
 export const PushTopic = {
   'plant-care': 'plant-care',
   'farm-tasks': 'farm-tasks',
+  notes: 'notes',
   feed: 'feed',
   medicines: 'medicines',
   breeding: 'breeding',
@@ -4503,6 +4504,13 @@ export interface PlannedFarmTask {
   repeats: boolean;
   intervalValue: number;
   intervalUnit: TaskIntervalUnit;
+  /**
+     * Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.
+     * @nullable
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[] | null;
   reminderTime: string;
   /** @nullable */
   assigneeId: string | null;
@@ -4580,6 +4588,13 @@ export interface FarmTask {
   notes: string | null;
   intervalValue: number;
   intervalUnit: TaskIntervalUnit;
+  /**
+     * Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.
+     * @nullable
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[] | null;
   /** HH:MM, Berlin time */
   reminderTime: string;
   isActive: boolean;
@@ -4637,6 +4652,13 @@ export interface FarmTaskInput {
      */
   intervalValue: number;
   intervalUnit: TaskIntervalUnit;
+  /**
+     * Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.
+     * @nullable
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays?: number[] | null;
   /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
   reminderTime: string;
   isActive?: boolean;
@@ -5316,6 +5338,8 @@ export interface GardenPlan {
   learned: GardenPlanLearned;
   beds: GardenPlanBedsItem[];
   tips: string[];
+  /** The arithmetic behind the numbers, one line each ("So rechnet der Assistent"). */
+  calculation: string[];
 }
 
 export interface GardenBedInput {

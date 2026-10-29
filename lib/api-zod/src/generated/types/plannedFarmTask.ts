@@ -15,6 +15,13 @@ export interface PlannedFarmTask {
   repeats: boolean;
   intervalValue: number;
   intervalUnit: TaskIntervalUnit;
+  /**
+     * Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.
+     * @nullable
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays: number[] | null;
   reminderTime: string;
   /** @nullable */
   assigneeId: string | null;

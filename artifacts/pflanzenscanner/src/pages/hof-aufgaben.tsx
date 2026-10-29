@@ -29,7 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { todayIso } from "@/lib/farm-labels";
 import { farmModuleGranted } from "@/lib/modules";
-import { AREA_LABELS, dayLabel, hofToday, needsPlan, planLocally, splitTaskList, type HofFilter, type Planned } from "@/lib/hof-tasks";
+import { AREA_LABELS, dayLabel, hofToday, needsPlan, planLocally, splitTaskList, type HofFilter, type Planned, weekdaysText } from "@/lib/hof-tasks";
 
 /**
  * /hof-aufgaben – the shared list of the Hof (docs/hof-aufgaben.md): what is
@@ -175,6 +175,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
     repeats: daily,
     intervalValue: 1,
     intervalUnit: "Tage",
+    weekdays: null,
     reminderTime: "08:00",
     assigneeId: assignee || null,
     assigneeName: null,
@@ -197,6 +198,7 @@ function QuickAdd({ farm, team, onMore }: { farm: FarmSummary; team: ReturnType<
             repeats: t.repeats,
             intervalValue: t.intervalValue,
             intervalUnit: t.intervalUnit,
+            weekdays: t.weekdays,
             reminderTime: t.reminderTime,
             assigneeId: t.assigneeId,
             herdId: t.area === "tiere" ? t.herdId : null,
@@ -382,19 +384,22 @@ const REPEATS: Array<[string, string]> = [
 ];
 
 function repeatKey(t: Planned): string {
+  if (t.repeats && t.weekdays?.length) return `days-${t.weekdays.join(",")}`;
   return t.repeats ? `${t.intervalValue}-${t.intervalUnit}` : "once";
 }
 
 /** The fixed choices, plus what the plan said if it is something else ("alle 3 Tage"). */
 function repeatOptions(t: Planned): Array<[string, string]> {
   const key = repeatKey(t);
-  return REPEATS.some(([k]) => k === key) ? REPEATS : [...REPEATS, [key, `alle ${t.intervalValue} ${t.intervalUnit}`]];
+  if (REPEATS.some(([k]) => k === key)) return REPEATS;
+  return [...REPEATS, [key, t.repeats && t.weekdays?.length ? weekdaysText(t.weekdays) : `alle ${t.intervalValue} ${t.intervalUnit}`]];
 }
 
 function repeatFrom(key: string): Partial<Planned> {
-  if (key === "once") return { repeats: false, intervalValue: 1, intervalUnit: "Tage" };
+  if (key === "once") return { repeats: false, intervalValue: 1, intervalUnit: "Tage", weekdays: null };
+  if (key.startsWith("days-")) return { repeats: true, intervalValue: 1, intervalUnit: "Wochen", weekdays: key.slice(5).split(",").map(Number) };
   const [n, unit] = key.split("-");
-  return { repeats: true, intervalValue: Number(n), intervalUnit: unit as Planned["intervalUnit"] };
+  return { repeats: true, intervalValue: Number(n), intervalUnit: unit as Planned["intervalUnit"], weekdays: null };
 }
 
 /** Every task of the Hof, also later and paused ones – to change or delete. */

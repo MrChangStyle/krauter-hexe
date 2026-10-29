@@ -129,6 +129,22 @@ describe.skipIf(!enabled)("Hof-Aufgaben (real database)", () => {
     expect((await api("POST", T(), daily("x".repeat(81)))).status).toBe(400);
   });
 
+  it("repeats on fixed weekdays: due on the next of them, ticked off until the next one", async () => {
+    const iso = (day: string) => new Date(`${day}T00:00:00Z`).getUTCDay() || 7;
+    const t = today();
+    const other = (iso(t) % 7) + 1; // tomorrow's weekday
+    let r = await api("POST", T(), daily("Müll rausbringen", { weekdays: [iso(t), other] }));
+    expect(r.status).toBe(201);
+    expect(r.data).toMatchObject({ weekdays: [iso(t), other].sort((a, b) => a - b), repeats: true, isDue: true, dueDate: t });
+    r = await api("POST", `${T()}/${r.data.id}/complete`, {});
+    const tomorrow = new Date(Date.parse(`${t}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
+    expect(r.data).toMatchObject({ isDue: false, doneToday: true, dueDate: tomorrow });
+    // Weekdays only for repeating tasks; nonsense is refused.
+    r = await api("POST", T(), { ...daily("Teich"), repeats: false, weekdays: [1] });
+    expect(r.data.weekdays).toBeNull();
+    expect((await api("POST", T(), daily("Teich", { weekdays: [0] }))).status).toBe(400);
+  });
+
   it("shows who ticked it off, and today's tick can be taken back", async () => {
     const { data: task } = await api("POST", T(), daily("Meerschweinchen Gras geben"));
     as = "maria";

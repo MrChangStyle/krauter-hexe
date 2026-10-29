@@ -7912,6 +7912,10 @@ export const ListFarmTasksParams = zod.object({
   "farmId": zod.coerce.number()
 })
 
+export const listFarmTasksResponseWeekdaysItemMax = 7;
+
+
+
 export const ListFarmTasksResponseItem = zod.object({
   "id": zod.number(),
   "title": zod.string().nullable().describe('Own wording; null = the action type.'),
@@ -7940,6 +7944,7 @@ export const ListFarmTasksResponseItem = zod.object({
   "notes": zod.string().nullable(),
   "intervalValue": zod.number(),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(listFarmTasksResponseWeekdaysItemMax)).nullable().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().describe('HH:MM, Berlin time'),
   "isActive": zod.boolean(),
   "lastCompletedAt": zod.coerce.date().nullable(),
@@ -7964,6 +7969,8 @@ export const createFarmTaskBodyNotesMax = 200;
 
 export const createFarmTaskBodyIntervalValueMax = 365;
 
+export const createFarmTaskBodyWeekdaysItemMax = 7;
+
 export const createFarmTaskBodyReminderTimeRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
 
 
@@ -7979,9 +7986,14 @@ export const CreateFarmTaskBody = zod.object({
   "notes": zod.string().max(createFarmTaskBodyNotesMax).nullish(),
   "intervalValue": zod.number().min(1).max(createFarmTaskBodyIntervalValueMax),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(createFarmTaskBodyWeekdaysItemMax)).nullish().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().regex(createFarmTaskBodyReminderTimeRegExp),
   "isActive": zod.boolean().optional()
 })
+
+export const createFarmTaskResponseWeekdaysItemMax = 7;
+
+
 
 export const CreateFarmTaskResponse = zod.object({
   "id": zod.number(),
@@ -8011,6 +8023,7 @@ export const CreateFarmTaskResponse = zod.object({
   "notes": zod.string().nullable(),
   "intervalValue": zod.number(),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(createFarmTaskResponseWeekdaysItemMax)).nullable().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().describe('HH:MM, Berlin time'),
   "isActive": zod.boolean(),
   "lastCompletedAt": zod.coerce.date().nullable(),
@@ -8035,6 +8048,8 @@ export const updateFarmTaskBodyNotesMax = 200;
 
 export const updateFarmTaskBodyIntervalValueMax = 365;
 
+export const updateFarmTaskBodyWeekdaysItemMax = 7;
+
 export const updateFarmTaskBodyReminderTimeRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
 
 
@@ -8050,9 +8065,14 @@ export const UpdateFarmTaskBody = zod.object({
   "notes": zod.string().max(updateFarmTaskBodyNotesMax).nullish(),
   "intervalValue": zod.number().min(1).max(updateFarmTaskBodyIntervalValueMax),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(updateFarmTaskBodyWeekdaysItemMax)).nullish().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().regex(updateFarmTaskBodyReminderTimeRegExp),
   "isActive": zod.boolean().optional()
 })
+
+export const updateFarmTaskResponseWeekdaysItemMax = 7;
+
+
 
 export const UpdateFarmTaskResponse = zod.object({
   "id": zod.number(),
@@ -8082,6 +8102,7 @@ export const UpdateFarmTaskResponse = zod.object({
   "notes": zod.string().nullable(),
   "intervalValue": zod.number(),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(updateFarmTaskResponseWeekdaysItemMax)).nullable().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().describe('HH:MM, Berlin time'),
   "isActive": zod.boolean(),
   "lastCompletedAt": zod.coerce.date().nullable(),
@@ -8114,6 +8135,10 @@ export const CompleteFarmTaskBody = zod.object({
   "doneAt": zod.coerce.date().nullish().describe('When it was done, for taps sent later from the offline queue. At most 7 days back; default now.')
 })
 
+export const completeFarmTaskResponseWeekdaysItemMax = 7;
+
+
+
 export const CompleteFarmTaskResponse = zod.object({
   "id": zod.number(),
   "title": zod.string().nullable().describe('Own wording; null = the action type.'),
@@ -8142,6 +8167,7 @@ export const CompleteFarmTaskResponse = zod.object({
   "notes": zod.string().nullable(),
   "intervalValue": zod.number(),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(completeFarmTaskResponseWeekdaysItemMax)).nullable().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().describe('HH:MM, Berlin time'),
   "isActive": zod.boolean(),
   "lastCompletedAt": zod.coerce.date().nullable(),
@@ -8348,6 +8374,10 @@ export const PlanFarmTasksBody = zod.object({
   "repeats": zod.boolean().optional().describe('The daily switch of the quick entry; used where the text says nothing.')
 })
 
+export const planFarmTasksResponseTasksItemWeekdaysItemMax = 7;
+
+
+
 export const PlanFarmTasksResponse = zod.object({
   "tasks": zod.array(zod.object({
   "title": zod.string(),
@@ -8356,6 +8386,7 @@ export const PlanFarmTasksResponse = zod.object({
   "repeats": zod.boolean(),
   "intervalValue": zod.number(),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(planFarmTasksResponseTasksItemWeekdaysItemMax)).nullable().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string(),
   "assigneeId": zod.string().nullable(),
   "assigneeName": zod.string().nullable(),
@@ -8372,6 +8403,10 @@ export const UncompleteFarmTaskParams = zod.object({
   "farmId": zod.coerce.number(),
   "taskId": zod.coerce.number()
 })
+
+export const uncompleteFarmTaskResponseWeekdaysItemMax = 7;
+
+
 
 export const UncompleteFarmTaskResponse = zod.object({
   "id": zod.number(),
@@ -8401,6 +8436,7 @@ export const UncompleteFarmTaskResponse = zod.object({
   "notes": zod.string().nullable(),
   "intervalValue": zod.number(),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(uncompleteFarmTaskResponseWeekdaysItemMax)).nullable().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().describe('HH:MM, Berlin time'),
   "isActive": zod.boolean(),
   "lastCompletedAt": zod.coerce.date().nullable(),
@@ -8425,6 +8461,10 @@ export const addFarmTaskCommentBodyBodyMax = 300;
 export const AddFarmTaskCommentBody = zod.object({
   "body": zod.string().min(1).max(addFarmTaskCommentBodyBodyMax)
 })
+
+export const addFarmTaskCommentResponseWeekdaysItemMax = 7;
+
+
 
 export const AddFarmTaskCommentResponse = zod.object({
   "id": zod.number(),
@@ -8454,6 +8494,7 @@ export const AddFarmTaskCommentResponse = zod.object({
   "notes": zod.string().nullable(),
   "intervalValue": zod.number(),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(addFarmTaskCommentResponseWeekdaysItemMax)).nullable().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().describe('HH:MM, Berlin time'),
   "isActive": zod.boolean(),
   "lastCompletedAt": zod.coerce.date().nullable(),
@@ -8471,6 +8512,10 @@ export const DeleteFarmTaskCommentParams = zod.object({
   "taskId": zod.coerce.number(),
   "commentId": zod.coerce.number()
 })
+
+export const deleteFarmTaskCommentResponseWeekdaysItemMax = 7;
+
+
 
 export const DeleteFarmTaskCommentResponse = zod.object({
   "id": zod.number(),
@@ -8500,6 +8545,7 @@ export const DeleteFarmTaskCommentResponse = zod.object({
   "notes": zod.string().nullable(),
   "intervalValue": zod.number(),
   "intervalUnit": zod.enum(['Tage', 'Wochen', 'Monate']).describe('The unit of the reminder interval.'),
+  "weekdays": zod.array(zod.number().min(1).max(deleteFarmTaskCommentResponseWeekdaysItemMax)).nullable().describe('Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.'),
   "reminderTime": zod.string().describe('HH:MM, Berlin time'),
   "isActive": zod.boolean(),
   "lastCompletedAt": zod.coerce.date().nullable(),
@@ -9840,7 +9886,8 @@ export const GetGardenPlanResponse = zod.object({
   "crops": zod.array(zod.string()),
   "wishes": zod.string().describe('Wishes for the KI planting suggestion of this bed')
 })),
-  "tips": zod.array(zod.string())
+  "tips": zod.array(zod.string()),
+  "calculation": zod.array(zod.string()).describe('The arithmetic behind the numbers, one line each (\"So rechnet der Assistent\").')
 })
 
 
@@ -10311,7 +10358,7 @@ export const GetSettingsResponse = zod.object({
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])),
   "onboarded": zod.boolean(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'notes', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(getSettingsResponseQuietHoursOneFromRegExp),
   "to": zod.string().regex(getSettingsResponseQuietHoursOneToRegExp)
@@ -10333,7 +10380,7 @@ export const setSettingsBodyQuietHoursOneToRegExp = new RegExp('^([01][0-9]|2[0-
 export const SetSettingsBody = zod.object({
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).max(setSettingsBodyHiddenModulesMax).optional(),
   "onboarded": zod.boolean().optional(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).max(setSettingsBodyPushOffMax).optional(),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'notes', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).max(setSettingsBodyPushOffMax).optional(),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(setSettingsBodyQuietHoursOneFromRegExp),
   "to": zod.string().regex(setSettingsBodyQuietHoursOneToRegExp)
@@ -10349,7 +10396,7 @@ export const SetSettingsResponse = zod.object({
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])),
   "onboarded": zod.boolean(),
-  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
+  "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'notes', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
   "quietHours": zod.union([zod.object({
   "from": zod.string().regex(setSettingsResponseQuietHoursOneFromRegExp),
   "to": zod.string().regex(setSettingsResponseQuietHoursOneToRegExp)

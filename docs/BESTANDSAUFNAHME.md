@@ -48,7 +48,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Schädlinge & Nützlinge | 🟡 | bio und chemisch. Richtwerte noch fachlich zu prüfen, seltene Arten werden nicht erkannt | 10 |
 | Lexikon | ✅ | alle Arten mit Pilzen | – |
 | Kräuter-Hexe | 🟡 | Ratgeber vorhanden, Zuordnungen fachlich zu prüfen | 10 |
-| Beet-Architekt | ✅ | Raster, Mischkultur, Fruchtfolge, Kalender, Frost, KI-Vorschlag mit Küche/Futter, Assistent, Hochbeet. Die Rechnung des Planers soll nachvollziehbarer werden | 8 |
+| Beet-Architekt | ✅ | Raster, Mischkultur, Fruchtfolge, Kalender, Frost, KI-Vorschlag mit Küche/Futter, Assistent, Hochbeet. Seit Schritt 8 zeigt der Garten-Assistent seine Rechnung | 8 |
 | Saatgut | ✅ | Vorrat, Keimfähigkeit. Tauschbörse offen (später) | – |
 | Ernte & Wirtschaftlichkeit | ✅ | Ladenwert, Kosten, Stundenlohn. Kosten je Kultur fehlen (später) | – |
 | Vorratskammer | ✅ | Haltbarkeit, aus der Ernte übernehmen | – |
@@ -60,7 +60,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 |---|---|---|---|
 | Meine Tiere | ✅ | Tiergruppen, Einzeltiere, Gewicht, Gesundheitsakte. Seit Schritt 5a sind Gänse, Enten, Puten und Wachteln eigene Arten, und „Tierart anfragen“ steht unter jeder Tierart-Auswahl. Seit 5b gibt es auch Nandus und Esel | 5 |
 | Gesundheitsakte | 🟡 | Einträge, Erinnerungen, Arzneimittel mit Wartezeit. Zu prüfen ist, ob Diagnose, Verordnung, Dosis und Zeitraum vollständig sind, dazu eine Freigabe an den Tierarzt | 9 |
-| Hof- & Stall-Aufgaben | 🟡 | gemeinsame Liste, KI-Plan aus Sprache. Es fehlen Wochentage („montags und donnerstags“) und Fotos an Kommentaren | 7 |
+| Hof- & Stall-Aufgaben | ✅ | gemeinsame Liste, KI-Plan aus Sprache, seit Schritt 7 auch an festen Wochentagen. Fotos an Kommentaren später | 7 |
 | Futterplaner | ✅ | Rationen, Bedarf, Vorrat, Wetter | – |
 | Zucht | ✅ | Trächtigkeit, Brut, Brunst. Tage fachlich zu prüfen | 10 |
 | Arzneimittel | ✅ | Charge, Wartezeit, Ablauf | – |
@@ -77,7 +77,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Funktion | Stand | Befund | Schritt |
 |---|---|---|---|
 | Hof-Dashboard | ✅ | Wetter, Kacheln, Widgets, Hof wählen | – |
-| Alltagsnotizen | 🟡 | KI-Liste jetzt mit Zeitgrenze und minimalem Nachdenken, im Betrieb zu bestätigen. Es fehlen ein Push bei geteilten Listen und mehrere Listen | 7 |
+| Alltagsnotizen | ✅ | KI-Liste mit Zeitgrenze und minimalem Nachdenken; seit Schritt 7 Push bei geteilten Listen. Mehrere Listen nach dem Start | 7 |
 | Spracheingabe | ✅ | Halten zum Sprechen, Fließtext, gesprochene Satzzeichen | – |
 | Benachrichtigungen | ✅ | Themen, Ruhezeit | – |
 | Suche, Hilfe, Demo, Onboarding, Feedback | ✅ | – | – |

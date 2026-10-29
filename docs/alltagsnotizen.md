@@ -37,6 +37,14 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
   - Hof-Aufgaben teilen dürfen nur Admins des Hofs: eine neue Person kommt als Mitarbeiter ins Team und bekommt nur die Freigabe „Hof- & Stall-Aufgaben“ (die Tiere sind für Mitglieder immer sichtbar, `docs/team.md`); ein Mitglied mit eingeschränkten Freigaben bekommt sie dazu.
   - Dieselbe Regel gilt dort: Mitarbeiter haken ab, legen an und kommentieren – löschen dürfen nur Admins (`docs/hof-aufgaben.md`).
 
+## Push bei geteilten Listen
+
+- Setzt jemand etwas auf eine geteilte Liste, bekommen alle anderen auf der Liste eine Push-Nachricht, zum Beispiel „Maria hat „Hafer“ und „Milch“ auf deine Liste gesetzt“. Wer schreibt, bekommt nichts.
+- Was eine Person innerhalb einer Minute auf eine Liste setzt (etwa eine diktierte Einkaufsliste), kommt als **eine** Nachricht.
+- Eine Liste, die mit niemandem geteilt ist, schickt nichts.
+- Abschaltbar unter Mehr → Benachrichtigungen → „Alltagsnotizen“ (Thema `notes`). Die Ruhezeit gilt.
+- Technik: `lib/notesPush.ts`. Gesammelt wird im Speicher, ein Neustart in dieser Minute verliert höchstens diese eine Nachricht.
+
 ## Regeln (`api-server/src/lib/noteRules.ts`)
 
 - **Art:** Einkaufen, außer die Wörter sagen Erledigen oder Erinnern (anrufen, Termin, bezahlen, überweisen, abgeben …); „kaufen“, „holen“, „besorgen“ gehen immer auf die Einkaufsliste.
@@ -59,7 +67,6 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
 
 ## Offen
 
-- Push-Nachricht, wenn jemand etwas auf eine geteilte Liste setzt.
-- Mehrere Listen je Person (z. B. „Baumarkt“, „Wochenmarkt“).
+- Mehrere Listen je Person (z. B. „Baumarkt“, „Wochenmarkt“). Bewusst nach dem Start: Kategorien und Läden ordnen die Liste schon (`docs/BESTANDSAUFNAHME.md`).
 - Wortlisten für Art und Bereich sowie der Auftrag an die KI (`notesPrompt`, Fassung 2 mit Läden und Beispielen) mit echten Sprachaufnahmen prüfen. Reicht Flash danach nicht, Gemini Pro nur für die Notizen ausprobieren (langsamer, teurer).
 - „Punkt“ als gesprochenes Satzzeichen trifft auch „um Punkt acht“ – bisher selten, beobachten.

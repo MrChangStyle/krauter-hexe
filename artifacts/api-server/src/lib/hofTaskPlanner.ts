@@ -13,7 +13,7 @@ import { db, farmMembershipsTable, herdsTable, usersTable, FARM_TASK_AREAS, type
 import { asc, eq } from 'drizzle-orm';
 
 import { FarmDataError, text } from './farmAnimals';
-import { guessFarmTaskArea } from './farmTaskRules';
+import { guessFarmTaskArea, normalizeWeekdays } from './farmTaskRules';
 
 type Unit = 'Tage' | 'Wochen' | 'Monate';
 const UNITS: readonly Unit[] = ['Tage', 'Wochen', 'Monate'];
@@ -34,6 +34,8 @@ export interface PlannedTask {
   repeats: boolean;
   intervalValue: number;
   intervalUnit: Unit;
+  /** 1 = Montag … 7 = Sonntag ("montags und donnerstags"); null = the interval. */
+  weekdays: number[] | null;
   reminderTime: string;
   assigneeId: string | null;
   assigneeName: string | null;
@@ -111,6 +113,11 @@ export function coercePlan(parsed: unknown, ctx: PlanContext): PlannedTask[] {
       }
     }
 
+    // "montags und donnerstags": fixed weekdays, repeating.
+    const days = normalizeWeekdays(r['wochentage']);
+    const weekdays = Array.isArray(days) ? days : null;
+    if (weekdays) repeats = true;
+
     const time = typeof r['uhrzeit'] === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(r['uhrzeit']) ? r['uhrzeit'] : DEFAULT_TIME;
 
     const said = r['fuer'];
@@ -128,6 +135,7 @@ export function coercePlan(parsed: unknown, ctx: PlanContext): PlannedTask[] {
       repeats,
       intervalValue,
       intervalUnit,
+      weekdays,
       reminderTime: time,
       assigneeId: assignee?.userId ?? null,
       assigneeName: assignee?.name ?? null,
@@ -154,13 +162,14 @@ Zerlege das in einzelne Aufgaben. Regeln:
 - "titel": kurz und klar wie auf einem Zettel, ohne "heute", "muss", "bitte", ohne Zeit und Person, z. B. "Eier einsammeln", "Gänse füttern", "Blumen gießen". Höchstens 80 Zeichen.
 - "bereich": "tiere" (Tiere, Stall, Füttern, Eier), "garten" (Beet, Pflanzen, Blumen, gießen, ernten) oder "hof" (alles andere: Teich, Haus, Holz, Technik).
 - "tag": der erste Tag als JSON-Datum. "heute" = ${ctx.today}, "morgen", "übermorgen", ein Wochentag = der nächste solche Tag (heute zählt nicht, wenn der Wochentag heute ist und "nächsten" gesagt wurde). Nichts gesagt: null.
-- "wiederholung": {"alle": Zahl, "einheit": "Tage" | "Wochen" | "Monate"} bei "jeden Tag", "täglich", "jeden Montag" (alle 1 Wochen ab dem nächsten Montag), "alle zwei Tage", "einmal im Monat" …; "einmalig" bei "nur heute", "einmal", "einmalig"; nichts gesagt: null.
+- "wiederholung": {"alle": Zahl, "einheit": "Tage" | "Wochen" | "Monate"} bei "jeden Tag", "täglich", "jede Woche", "alle zwei Tage", "einmal im Monat" …; "einmalig" bei "nur heute", "einmal", "einmalig"; nichts gesagt: null.
+- "wochentage": Liste der Wochentage als Zahlen (1 = Montag … 7 = Sonntag) bei festen Tagen: "montags und donnerstags" [1, 4], "jeden Dienstag" [2], "werktags" [1, 2, 3, 4, 5], "am Wochenende" [6, 7]; sonst null. Dann ist "wiederholung" egal.
 - "uhrzeit": "HH:MM" bei "um 8", "um halb sechs abends" (17:30), "morgens" (07:00), "mittags" (12:00), "abends" (18:00); sonst null.
 - "fuer": Name aus dem Team, wenn gesagt ("für Maria", "Maria soll …"), "alle" bei "für alle"; sonst null.
 - "gruppe": Name einer Tiergruppe, wenn sie gemeint ist; sonst null.
 - Gilt etwas für alles ("das Ganze ist für morgen", "alles jeden Tag"), trage es bei jeder Aufgabe ein.
 Antworte nur mit JSON:
-{"aufgaben": [{"titel": "...", "bereich": "...", "tag": null, "wiederholung": null, "uhrzeit": null, "fuer": null, "gruppe": null}]}`;
+{"aufgaben": [{"titel": "...", "bereich": "...", "tag": null, "wiederholung": null, "wochentage": null, "uhrzeit": null, "fuer": null, "gruppe": null}]}`;
 }
 
 async function contextFor(farmId: number, today: string, defaults: PlanContext['defaults']): Promise<PlanContext> {

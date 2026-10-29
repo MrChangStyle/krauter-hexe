@@ -15,6 +15,7 @@ export type PushTopic = typeof PushTopic[keyof typeof PushTopic];
 export const PushTopic = {
   'plant-care': 'plant-care',
   'farm-tasks': 'farm-tasks',
+  notes: 'notes',
   feed: 'feed',
   medicines: 'medicines',
   breeding: 'breeding',

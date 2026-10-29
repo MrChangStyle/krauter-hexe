@@ -2,6 +2,10 @@
 
 Project overview in German, kept current with every change: `docs/PROJEKT.md`.
 
+Garden assistant: `planGarden` also returns `calculation` – its arithmetic line by line, shown as "So rechnet der Assistent".
+
+Hof-Aufgaben weekdays and notes push (docs/hof-aufgaben.md, docs/alltagsnotizen.md): `farm_tasks.weekdays` (jsonb 1–7) makes a repeating task due on the next of those days after the last tick (`farmTaskDue`); the AI plan has a `wochentage` field and `planLocally` reads "montags und donnerstags", "werktags", "am Wochenende". New notes on a shared list are gathered for a minute per writer and list and pushed to the others under topic `notes` (`lib/notesPush.ts`).
+
 Scannen (`docs/scannen.md`): when the scan the page waits for fails, the page hands over to the queue at once – a toast for an auto-retry, the server's reason otherwise (it used to keep "95 %" for minutes while the queue backed off).
 
 Geflügelarten (`docs/gefluegel.md`): `goose`, `duck`, `turkey`, `quail` are species of their own beside `poultry` (= Huhn), and `rhea` (Nandu, a Laufvogel – poultry by law) and `donkey` (Esel; `EQUIDS` with the horse for the Equidenpass, worms and TSK; archive kind "horse"), docs/nandu-esel.md; `POULTRY_SPECIES`/`isPoultry` (server `lib/species.ts`, app `lib/farm-labels.ts`) cover eggs, brood, laying, avian flu and the stock register; per-species values in breeding, feed needs/catalog, setup, duties, weather, garden, medicines; the archive maps them to "Geflügel". "Deine Tierart fehlt? Anfragen" opens the feedback (`openFeedback`).

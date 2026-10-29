@@ -30,10 +30,10 @@ describe("KI-Aufgabenplan – coercing the answer", () => {
       ctx,
     );
     expect(tasks).toEqual([
-      { title: "Eier einsammeln", area: "tiere", startsOn: "2026-10-27", repeats: false, intervalValue: 1, intervalUnit: "Tage", reminderTime: "17:00", assigneeId: "u-maria", assigneeName: "Maria Huber", herdId: null, herdName: null },
-      { title: "Gänse füttern", area: "tiere", startsOn: "2026-10-28", repeats: true, intervalValue: 1, intervalUnit: "Tage", reminderTime: "08:00", assigneeId: null, assigneeName: null, herdId: 7, herdName: "Gänse" },
+      { title: "Eier einsammeln", area: "tiere", startsOn: "2026-10-27", repeats: false, intervalValue: 1, intervalUnit: "Tage", weekdays: null, reminderTime: "17:00", assigneeId: "u-maria", assigneeName: "Maria Huber", herdId: null, herdName: null },
+      { title: "Gänse füttern", area: "tiere", startsOn: "2026-10-28", repeats: true, intervalValue: 1, intervalUnit: "Tage", weekdays: null, reminderTime: "08:00", assigneeId: null, assigneeName: null, herdId: 7, herdName: "Gänse" },
       // A group only for animals; the dot goes.
-      { title: "Blumen gießen", area: "garten", startsOn: "2026-10-27", repeats: false, intervalValue: 1, intervalUnit: "Tage", reminderTime: "08:00", assigneeId: "u-stefan", assigneeName: "Stefan Huber", herdId: null, herdName: null },
+      { title: "Blumen gießen", area: "garten", startsOn: "2026-10-27", repeats: false, intervalValue: 1, intervalUnit: "Tage", weekdays: null, reminderTime: "08:00", assigneeId: "u-stefan", assigneeName: "Stefan Huber", herdId: null, herdName: null },
     ]);
   });
 
@@ -90,5 +90,21 @@ describe("KI-Aufgabenplan – coercing the answer", () => {
     expect(prompt).toContain("Team: Stefan Huber, Maria Huber.");
     expect(prompt).toContain("Tiergruppen auf dem Hof: Gänse.");
     expect(prompt).toContain('"""Heute Eier einsammeln"""');
+  });
+
+  it("reads fixed weekdays – 'montags und donnerstags' repeats on those days", () => {
+    const [task, odd] = coercePlan(
+      {
+        aufgaben: [
+          { titel: "Müll rausbringen", bereich: "hof", tag: null, wiederholung: null, wochentage: [4, 1, 4], uhrzeit: "19:00", fuer: null, gruppe: null },
+          { titel: "Holz holen", bereich: "hof", tag: null, wiederholung: null, wochentage: [0, 8], uhrzeit: null, fuer: null, gruppe: null },
+        ],
+      },
+      ctx,
+    );
+    expect(task).toMatchObject({ repeats: true, weekdays: [1, 4], reminderTime: "19:00" });
+    // Days outside Montag–Sonntag are no weekdays.
+    expect(odd!.weekdays).toBeNull();
+    expect(planPrompt("Montags Müll", ctx)).toMatch(/"wochentage"/);
   });
 });

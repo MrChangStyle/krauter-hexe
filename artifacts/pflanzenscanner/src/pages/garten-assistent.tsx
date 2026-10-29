@@ -241,6 +241,16 @@ function Assistant({ farm }: { farm: FarmSummary }) {
               </ul>
             )}
           </section>
+          {p.calculation.length > 0 && (
+            <details className="rounded-xl border border-border bg-card p-3 text-sm" data-testid="garden-calculation">
+              <summary className="cursor-pointer font-medium">So rechnet der Assistent</summary>
+              <ul className="mt-2 space-y-1.5 text-muted-foreground">
+                {p.calculation.map((line) => (
+                  <li key={line} className="tabular-nums">{line}</li>
+                ))}
+              </ul>
+            </details>
+          )}
           <p className="text-xs text-muted-foreground">
             Faustwerte: 40 m² Gemüse, 20 m² Lagergemüse, 2 m² Kräuter und 5 m² Obst pro Person und Jahr; Grünfutter 3 kg/m², Lagerfutter 4 kg/m²; etwa 1 Stunde pro Woche
             für 10 m². Die KI füllt nur die Beete – die festen Regeln prüfen jeden Vorschlag.

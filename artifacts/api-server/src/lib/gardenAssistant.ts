@@ -160,7 +160,12 @@ export interface GardenPlan {
   learned: { season: number; kitchenKgPerM2: number | null; fodderKgPerM2: number | null } | null;
   beds: { bedId: number; name: string; areaM2: number; role: 'kitchen' | 'fodder'; crops: string[]; wishes: string }[];
   tips: string[];
+  /** The arithmetic behind the numbers, line by line ("So rechnet der Assistent"). */
+  calculation: string[];
 }
+
+const DIRECTION_DE: Record<GardenDirection, string> = { vegetables: 'Gemüse', storage: 'Lagergemüse', herbs: 'Kräuter', fruit: 'Obst' };
+const num = (n: number) => n.toLocaleString('de-DE');
 
 const names = (keys: string[]) => keys.flatMap((k) => (cropByKey(k) ? [cropByKey(k)!.name] : []));
 
@@ -269,6 +274,37 @@ export function planGarden(
   const noGreens = fed.filter((a) => FODDER_KG_PER_DAY[a.species] === 0).map((a) => SPECIES_DE[a.species]);
   if (noGreens.length > 0 && goals.animalShare > 0) tips.push(`${noGreens.join(', ')}: Futter kommt von Weide, Heu oder aus dem Napf, nicht aus dem Beet.`);
 
+  const calculation: string[] = [];
+  if (goals.people > 0 && goals.directions.length > 0) {
+    const perPerson = goals.directions.reduce((s, d) => s + KITCHEN_M2[d], 0);
+    const parts = goals.directions.map((d) => `${DIRECTION_DE[d]} ${KITCHEN_M2[d]}`).join(' + ');
+    calculation.push(
+      `Küche: ${goals.people} ${goals.people === 1 ? 'Person' : 'Personen'} × ${perPerson} m² (${parts})` +
+        (kitchenFactor !== 1 ? ` × ${num(round(kitchenFactor, 0.01))} (eure Ernten)` : '') +
+        ` = ${num(kitchenNeedM2)} m²`,
+    );
+  }
+  if (perDayKg > 0) {
+    const each = fed.filter((a) => a.perDayKg > 0).map((a) => `${a.count} ${SPECIES_DE[a.species]} × ${num(FODDER_KG_PER_DAY[a.species])} kg`);
+    calculation.push(`Grünfutter am Tag: ${each.join(' + ')} = ${num(perDayKg)} kg`);
+    calculation.push(`Saison: ${num(perDayKg)} kg × ${SEASON_DAYS} Tage = ${num(summerKg)} kg ÷ ${num(greensKgM2)} kg/m² = ${num(round(summerKg / greensKgM2, 0.1))} m²`);
+    calculation.push(
+      rationWinter
+        ? `Winter: ${num(winterKg)} kg aus den Winterrationen ÷ ${ROOTS_KG_M2} kg/m² = ${num(round(winterKg / ROOTS_KG_M2, 0.1))} m²`
+        : `Winter: ${num(perDayKg)} kg × ½ × ${WINTER_DAYS} Tage = ${num(winterKg)} kg Lagerfutter ÷ ${ROOTS_KG_M2} kg/m² = ${num(round(winterKg / ROOTS_KG_M2, 0.1))} m²`,
+    );
+  }
+  if (fodderTarget > 0) {
+    const chosen = areas.filter((b) => fodderIds.has(b.id)).map((b) => b.name);
+    calculation.push(
+      `Aufteilung: ${goals.animalShare} % von ${num(availableM2)} m² = ${num(round((availableM2 * goals.animalShare) / 100, 0.1))} m² für Futter` +
+        (fodderTarget < (availableM2 * goals.animalShare) / 100 ? ` (gebraucht werden nur ${num(round(fodderTarget, 0.1))} m²)` : '') +
+        (chosen.length > 0
+          ? ` → ganze Beete: ${chosen.join(', ')} = ${num(fodderM2)} m²`
+          : ' → kein ganzes Beet passt dafür, alle Beete bleiben für die Küche (mit einem zweiten, kleineren Beet wird es ein Futterbeet)'),
+    );
+  }
+
   return {
     goals,
     kitchenNeedM2,
@@ -282,6 +318,7 @@ export function planGarden(
     learned: learned ? { season: learned.season, kitchenKgPerM2: learned.kitchenKgPerM2, fodderKgPerM2: learned.fodderKgPerM2 } : null,
     beds: plannedBeds,
     tips,
+    calculation,
   };
 }
 

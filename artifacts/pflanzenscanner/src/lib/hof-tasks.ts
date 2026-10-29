@@ -48,12 +48,25 @@ export function hofToday(tasks: FarmTask[], today: string, filter: HofFilter = "
   return { open, done, soon };
 }
 
-/** "jeden Tag", "alle 2 Wochen", "einmalig am 27.10." */
-export function scheduleText(t: Pick<FarmTask, "repeats" | "intervalValue" | "intervalUnit" | "startsOn" | "dueDate">): string {
+const DAY_ADVERBS = ["montags", "dienstags", "mittwochs", "donnerstags", "freitags", "samstags", "sonntags"];
+
+/** "montags und donnerstags", "werktags", "jeden Tag" (as on the server, farmTaskRules.ts). */
+export function weekdaysText(days: number[]): string {
+  const key = days.join(",");
+  if (key === "1,2,3,4,5,6,7") return "jeden Tag";
+  if (key === "1,2,3,4,5") return "werktags";
+  if (key === "6,7") return "am Wochenende";
+  const words = days.map((d) => DAY_ADVERBS[d - 1]!);
+  return words.length === 1 ? words[0]! : `${words.slice(0, -1).join(", ")} und ${words.at(-1)}`;
+}
+
+/** "jeden Tag", "alle 2 Wochen", "montags und donnerstags", "einmalig am 27.10." */
+export function scheduleText(t: Pick<FarmTask, "repeats" | "intervalValue" | "intervalUnit" | "startsOn" | "dueDate"> & { weekdays?: number[] | null }): string {
   if (!t.repeats) {
     const [, m, d] = (t.startsOn ?? t.dueDate).split("-");
     return `einmalig am ${Number(d)}.${Number(m)}.`;
   }
+  if (t.weekdays && t.weekdays.length > 0) return weekdaysText(t.weekdays);
   if (t.intervalValue === 1) return t.intervalUnit === "Tage" ? "jeden Tag" : t.intervalUnit === "Wochen" ? "jede Woche" : "jeden Monat";
   return `alle ${t.intervalValue} ${t.intervalUnit}`;
 }
@@ -101,6 +114,8 @@ function weekdayFrom(today: string, index: number): string {
 interface Schedule {
   day?: string;
   repeat?: { every: number; unit: "Tage" | "Wochen" | "Monate" } | "once";
+  /** 1 = Montag … 7 = Sonntag ("montags und donnerstags"). */
+  weekdays?: number[];
   time?: string;
   person?: string | "all";
 }
@@ -128,9 +143,13 @@ function readSchedule(piece: string, today: string): { schedule: Schedule; rest:
     const unit = m[2]!.toLowerCase();
     if (n >= 1 && n <= 365) s.repeat = { every: n, unit: unit === "tage" ? "Tage" : unit === "wochen" ? "Wochen" : "Monate" };
   });
-  take(w(String.raw`(?:jeden (montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)|(montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)s)`), (m) => {
-    s.repeat = { every: 1, unit: "Wochen" };
-    s.day = weekdayFrom(today, WEEKDAY_NAMES.indexOf((m[1] ?? m[2])!.toLowerCase()));
+  take(w(String.raw`werktags|montags bis freitags|von montag bis freitag`), () => (s.weekdays = [1, 2, 3, 4, 5]));
+  take(w(String.raw`(?:am|jedes) wochenende|samstags und sonntags`), () => (s.weekdays = [6, 7]));
+  // "montags und donnerstags", "jeden Dienstag und Freitag", "montags, mittwochs und freitags".
+  const DAY = String.raw`(?:montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)`;
+  take(w(String.raw`jeden ${DAY}(?:(?:, | und | sowie )${DAY})*|${DAY}s(?:(?:, | und | sowie )${DAY}s)*`), (m) => {
+    const days = [...m[0].toLowerCase().matchAll(/montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag/g)].map((d) => WEEKDAY_NAMES.indexOf(d[0]) || 7);
+    s.weekdays = [...new Set(days)].sort((a, b) => a - b);
   });
   take(w(String.raw`(übermorgen)`), () => (s.day = addDays(today, 2)));
   take(w(String.raw`(morgen)`), () => (s.day = addDays(today, 1)));
@@ -180,7 +199,8 @@ export function planLocally(
     if (FOR_ALL.test(rest) || rest.length < 2) continue;
     if (schedule.day) carriedDay = schedule.day;
     const day = schedule.day ?? carriedDay ?? global.day ?? today;
-    const repeat = schedule.repeat ?? global.repeat ?? (defaults.repeats ? { every: 1, unit: "Tage" as const } : "once");
+    const weekdays = schedule.weekdays ?? global.weekdays ?? null;
+    const repeat = weekdays ? { every: 1, unit: "Wochen" as const } : (schedule.repeat ?? global.repeat ?? (defaults.repeats ? { every: 1, unit: "Tage" as const } : "once"));
     const person = schedule.person ?? global.person;
     const member =
       person && person !== "all"
@@ -196,6 +216,7 @@ export function planLocally(
       repeats: repeat !== "once",
       intervalValue: repeat === "once" ? 1 : repeat.every,
       intervalUnit: repeat === "once" ? "Tage" : repeat.unit,
+      weekdays,
       reminderTime: schedule.time ?? global.time ?? "08:00",
       assigneeId: member?.userId ?? null,
       assigneeName: member?.displayName ?? null,
@@ -217,7 +238,7 @@ function guessArea(title: string): FarmTaskArea {
 /** Whether a text is more than one plain task – then it goes through the plan (AI). */
 export function needsPlan(text: string): boolean {
   if (splitTaskList(text).length > 1) return true;
-  return /\b(heute|morgen|übermorgen|täglich|jeden|jede|wöchentlich|monatlich|alle \S+ (tage|wochen|monate)|einmalig|um \d|für |morgens|mittags|abends|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag)/i.test(text) || text.trim().split(/\s+/).length > 8;
+  return /\b(heute|morgen|übermorgen|täglich|jeden|jede|wöchentlich|monatlich|alle \S+ (tage|wochen|monate)|einmalig|um \d|für |morgens|mittags|abends|montag|dienstag|mittwoch|donnerstag|freitag|samstag|sonntag|werktags|wochenende)/i.test(text) || text.trim().split(/\s+/).length > 8;
 }
 
 /** "heute", "morgen", "Fr 30.10." */

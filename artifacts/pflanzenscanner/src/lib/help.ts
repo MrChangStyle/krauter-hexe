@@ -269,7 +269,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     faq: [
       {
         q: "Gilt das in jedem Bundesland gleich?",
-        a: "Die Grundlagen sind bundesweit. Stichtag und Frist der Bestandsmeldung legt jede Tierseuchenkasse selbst fest – z. B. Bayern bis 20. Januar, NRW bis 31. Januar, Niedersachsen und Thüringen mit Stichtag 3. Januar. Mit eingetragenem Bundesland rechnet die App damit. Maßgeblich bleibt der Meldebogen der Kasse. Keine Rechtsberatung.",
+        a: "Die Grundlagen sind bundesweit. Stichtag und Frist der Bestandsmeldung legt jede Tierseuchenkasse selbst fest – z. B. Bayern bis 20. Januar, NRW bis 31. Januar, Rheinland-Pfalz bis 15. Februar, Brandenburg, Niedersachsen und Thüringen mit Stichtag 3. Januar. Mit eingetragenem Bundesland rechnet die App damit. Maßgeblich bleibt der Meldebogen der Kasse. Keine Rechtsberatung.",
       },
       { q: "Wann erinnert mich die App?", a: "Etwa zwei Wochen und drei Tage vor der Frist, je Meldung: an HI-Tier also am 2. und 12. Januar, an die Kasse je nach Bundesland." },
     ],

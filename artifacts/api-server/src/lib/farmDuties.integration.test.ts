@@ -181,6 +181,11 @@ describe.skipIf(!enabled)("Pflichten (real database)", () => {
     expect(await sendDutyDigests("08:00", "2027-01-18")).toBe(1);
     expect(sendPushToUser.mock.calls[1]![1]).toMatchObject({ body: "Stand 1. Januar laut App: Ziegen 1. Bitte bis 31.01. an Tierseuchenkasse NRW (Landwirtschaftskammer) melden und in der App abhaken." });
     expect(await sendDutyDigests("08:00", "2027-01-20")).toBe(0);
+    // Rheinland-Pfalz: the Kasse's deadline is 15 February, pushed on 2 and 12 February.
+    await api("PUT", `/farms/${farmId}/duties`, { state: "RP" });
+    expect(await sendDutyDigests("08:00", "2027-02-02")).toBe(1);
+    expect(sendPushToUser.mock.calls[2]![1]).toMatchObject({ body: "Stand 1. Januar laut App: Ziegen 1. Bitte bis 15.02. an Tierseuchenkasse Rheinland-Pfalz melden und in der App abhaken." });
+    expect(await sendDutyDigests("08:00", "2027-02-20")).toBe(0);
     r = await api("PUT", `/farms/${farmId}/duties`, { state: null });
     expect(r.data.state).toBeNull();
   });

@@ -256,6 +256,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #114 | Pflichten: Fristen der Tierseuchenkasse für Brandenburg, Hessen, Mecklenburg-Vorpommern, Rheinland-Pfalz (15. Februar), Saarland und Sachsen-Anhalt ergänzt, Stichtag in Brandenburg und Sachsen-Anhalt auf den 3. Januar korrigiert; Fristen im Februar möglich |
 | 29.10.2026 | #113 | Krankenakte: „Behandlung bis“ für Behandlungen über mehrere Tage, die Wartezeit zählt ab dem letzten Tag (Akte, Übergabe, Futterplaner, Export); „Tierarzt einladen“ mit Enddatum und nur Arzneimitteln und Export |
 | 29.10.2026 | #112 | Hof-Aufgaben an festen Wochentagen („montags und donnerstags“, auch gesprochen); Push bei Einträgen auf geteilten Notizlisten (Thema „Alltagsnotizen“); Garten-Assistent zeigt seine Rechnung („So rechnet der Assistent“) |
 | 29.10.2026 | #111 | Nandus und Esel als Tierarten in allen Tier-Modulen; Scannen: bei einem KI-Fehler sofort ein Hinweis statt minutenlanger Ladeanzeige, Fehlerfälle in `docs/scannen.md` |

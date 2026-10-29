@@ -38,7 +38,7 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
 7. [x] **Hof-Aufgaben und Notizen**: Wochentage („montags und donnerstags“) und Push bei Einträgen auf geteilten Listen sind gebaut. Mehrere Listen kommen bewusst nach dem Start.
 8. [x] **Beet-Architekt**: Ergebnis der Planer nachvollziehbar („So rechnet der Assistent“). Boden, Düngung und Hochbeet-Aufbau sind feste Regeln mit Tests, ihre Werte stehen zur fachlichen Prüfung unter „Offen“.
 9. [x] **Tiere**: Krankenakte nach Standard (Diagnose, Behandlung, Tierarzt, Wartezeit), Freigabe an den Tierarzt als Gast-Rolle mit Ablaufdatum.
-10. [ ] Restliche Module nach der Bestandsaufnahme (Lücken aus den „Offen“-Abschnitten, die Nutzer wirklich brauchen).
+10. [x] Restliche Module nach der Bestandsaufnahme (Lücken aus den „Offen“-Abschnitten, die Nutzer wirklich brauchen). Erledigt: Fristen der Tierseuchenkassen in 6 weiteren Ländern. Was bleibt, ist fachliche Prüfung (Richtwerte in Zucht, Schädlingen, Kräuter-Hexe, Pflichten) und steht in den „Offen“-Abschnitten.
 
 ### D – Außenauftritt und Rechtliches
 11. [ ] **Namensreste** „Kräuterhexe“ auf „Little Farming“ umstellen: Meta-Tags, Manifest, Login, Scan-Seite, PDF. Nur der Heilkräuter-Ratgeber heißt weiter „Kräuter-Hexe“.

@@ -59,12 +59,12 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Modul | Stand | Befund | Schritt |
 |---|---|---|---|
 | Meine Tiere | ✅ | Tiergruppen, Einzeltiere, Gewicht, Gesundheitsakte. Seit Schritt 5a sind Gänse, Enten, Puten und Wachteln eigene Arten, und „Tierart anfragen“ steht unter jeder Tierart-Auswahl. Seit 5b gibt es auch Nandus und Esel | 5 |
-| Gesundheitsakte | 🟡 | Einträge, Erinnerungen, Arzneimittel mit Wartezeit. Zu prüfen ist, ob Diagnose, Verordnung, Dosis und Zeitraum vollständig sind, dazu eine Freigabe an den Tierarzt | 9 |
+| Gesundheitsakte | ✅ | Einträge, Erinnerungen, Arzneimittel mit Wartezeit. Seit Schritt 9 mit „Behandlung bis“ (Wartezeit ab dem letzten Tag) und „Tierarzt einladen“ (`docs/krankenakte.md`) | 9 |
 | Hof- & Stall-Aufgaben | ✅ | gemeinsame Liste, KI-Plan aus Sprache, seit Schritt 7 auch an festen Wochentagen. Fotos an Kommentaren später | 7 |
 | Futterplaner | ✅ | Rationen, Bedarf, Vorrat, Wetter | – |
 | Zucht | ✅ | Trächtigkeit, Brut, Brunst. Tage fachlich zu prüfen | 10 |
 | Arzneimittel | ✅ | Charge, Wartezeit, Ablauf | – |
-| Pflichten | 🟡 | je Bundesland. Fehlende Fristen in 7 Ländern, fachliche Prüfung durch ein Veterinäramt empfohlen | 10 |
+| Pflichten | 🟡 | je Bundesland. Seit Schritt 10 haben 12 von 16 Ländern eine geprüfte Frist, Rheinland-Pfalz mit Frist im Februar. Es fehlen Berlin, Bremen, Hamburg und Schleswig-Holstein. Fachliche Prüfung durch ein Veterinäramt empfohlen | 10 |
 | Ertrag & Legeleistung | ✅ | Eier, Milch, Kosten, Preise | – |
 | Weide | ✅ | Karte, Tagebuch, Ruhezeit, Mähtermine | – |
 | Bienen | ✅ | Stockkarte, Varroa, Honig, Standort-Check | – |

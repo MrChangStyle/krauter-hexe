@@ -50,17 +50,17 @@ Tabelle in `lib/dutyStates.ts` (`STATES`), recherchiert im Oktober 2026 auf den 
 | Baden-Württemberg | Tierseuchenkasse Baden-Württemberg | 1. 1. | 15. 1. | |
 | Bayern | Bayerische Tierseuchenkasse | 1. 1. | 20. 1. | Post, Tierhalter-Login oder QR-Code |
 | Berlin | Tierseuchenkasse Berlin (LAGeSo) | 1. 1. | – | |
-| Brandenburg | Tierseuchenkasse Brandenburg | 1. 1. | – | |
+| Brandenburg | Tierseuchenkasse Brandenburg | 3. 1. | 15. 1. | seit 2026 zusätzlich geschätzter Jahreshöchstbestand bei Geflügel, Schwein, Schaf, Ziege, Gehegewild |
 | Bremen | Tierseuchenkasse Bremen (LMTVet) | 1. 1. | – | |
 | Hamburg | Tierseuchenkasse Hamburg (ohne Link) | 1. 1. | – | |
-| Hessen | Hessische Tierseuchenkasse | 1. 1. | – | |
-| Mecklenburg-Vorpommern | Tierseuchenkasse M-V | 3. 1. | – | Kasse und Veterinäramt tauschen keine Daten aus |
+| Hessen | Hessische Tierseuchenkasse | 1. 1. | 15. 1. | ohne Meldung bis 15. 2. zählt der Bestand des Vorjahres |
+| Mecklenburg-Vorpommern | Tierseuchenkasse M-V | 3. 1. | 17. 1. | Kasse und Veterinäramt tauschen keine Daten aus |
 | Niedersachsen | Niedersächsische Tierseuchenkasse | 3. 1. | 17. 1. | |
 | Nordrhein-Westfalen | Tierseuchenkasse NRW (Landwirtschaftskammer) | 1. 1. | 31. 1. | Jahreshöchstbestand bei Schwein, Schaf, Ziege, Geflügel, Bienen |
-| Rheinland-Pfalz | Tierseuchenkasse Rheinland-Pfalz | 1. 1. | – | |
-| Saarland | Tierseuchenkasse Saarland | 1. 1. | – | |
+| Rheinland-Pfalz | Tierseuchenkasse Rheinland-Pfalz | 1. 1. | **15. 2.** | Pferde und Esel, Bienen- und Hummelvölker, Geflügel (seit 2025) |
+| Saarland | Tierseuchenkasse Saarland | 1. 1. | 15. 1. | auch null Tiere und das Ende der Haltung melden |
 | Sachsen | Sächsische Tierseuchenkasse | 1. 1. | 15. 1. | Neuanmeldung binnen 30 Tagen |
-| Sachsen-Anhalt | Tierseuchenkasse Sachsen-Anhalt | 1. 1. | – | Neuanmeldung binnen zwei Wochen |
+| Sachsen-Anhalt | Tierseuchenkasse Sachsen-Anhalt | 3. 1. | 17. 1. | Neuanmeldung binnen zwei Wochen |
 | Schleswig-Holstein | Tierseuchenfonds Schleswig-Holstein (ohne Link) | 1. 1. | – | |
 | Thüringen | Thüringer Tierseuchenkasse | 3. 1. | 17. 1. | Neue Tiere nach dem Stichtag gleich nachmelden |
 
@@ -71,7 +71,11 @@ Tabelle in `lib/dutyStates.ts` (`STATES`), recherchiert im Oktober 2026 auf den 
 - Eine jährliche Meldung betrifft **dieses Jahr**, wenn der Hof am Stichtag (1. oder 3. Januar, je nach Land) Tiere der Art hatte, also wenn sie bis dahin in der App angelegt und nicht archiviert waren. Vor dem 3. Januar zählen die Tiere von heute. Sonst betrifft sie das **nächste Jahr** („Stichtag …“); abhaken geht dann erst ab dem Stichtag.
 - Die Zahlen am Stichtag zählt die App aus ihren eigenen Daten. Tiere, die erst später eingetragen wurden, fehlen darin. Deshalb heißt es auf der Seite immer „laut App“.
 - Bis zur Frist steht die Meldung auf „fällig“, danach auf „noch nicht abgehakt“.
-- Push um 07:30 an die Admins (nicht an Vertretungen), solange eine Meldung offen ist: je Meldung **13 und 3 Tage vor ihrer Frist** (`reportPushDays`), bei Frist 15. 1. also am 2. und 12. Januar, in NRW für die Kasse am 18. und 28. Januar. Pro Hof und Tag geht höchstens eine Nachricht raus (`farm_push_log`, Thema `duties`).
+- Push um 07:30 an die Admins (nicht an Vertretungen), solange eine Meldung offen ist: je Meldung **13 und 3 Tage vor ihrer Frist** (`reportPushDays`), die erste nie vor dem Stichtag.
+  - Bei Frist 15. 1. kommen die Pushes am 2. und 12. Januar.
+  - In NRW kommen sie für die Kasse am 18. und 28. Januar.
+  - In Brandenburg (Stichtag 3. 1.) kommen sie am 3. und 12. Januar.
+  - In Rheinland-Pfalz (Frist 15. 2.) kommen sie am 2. und 12. Februar. Pro Hof und Tag geht höchstens eine Nachricht raus (`farm_push_log`, Thema `duties`).
 
 ## Betrieb
 
@@ -81,6 +85,10 @@ Tabelle in `lib/dutyStates.ts` (`STATES`), recherchiert im Oktober 2026 auf den 
 ## Offen
 
 - Fachliche Prüfung der Texte vor dem öffentlichen Start, am besten durch ein Veterinäramt oder eine Tierseuchenkasse.
-- Prüfung der Bundesland-Tabelle (`lib/dutyStates.ts`): Namen, Websites, Stichtage und Fristen; die fehlenden Fristen (Berlin, Brandenburg, Bremen, Hamburg, Hessen, Mecklenburg-Vorpommern, Rheinland-Pfalz, Saarland, Sachsen-Anhalt, Schleswig-Holstein) ergänzen; jährlich nachsehen, ob sich etwas geändert hat.
+- **Bundesland-Tabelle** (`lib/dutyStates.ts`) prüfen: Namen, Websites, Stichtage und Fristen. Jährlich nachsehen, ob sich etwas geändert hat.
+  - Am 29.10.2026 aus Verordnungen, Satzungen und Merkblättern ergänzt: Brandenburg (Stichtag korrigiert auf den 3. 1.), Hessen, Mecklenburg-Vorpommern, Rheinland-Pfalz, Saarland, Sachsen-Anhalt (Stichtag korrigiert auf den 3. 1.).
+  - Hessen: Eine Satzung von 2023 nennt „zwei Wochen nach dem Stichtag“, ein Halter-Merkblatt den 15. 1.
+  - Rheinland-Pfalz: Der 15. 2. gilt laut Kasse für Pferde, Bienen und Geflügel. Für Schweine, Schafe und Ziegen nennt ein DLR-Merkblatt von 2024 den 15. 1., das könnte aber die HI-Tier-Meldung meinen.
+  - **Weiter ohne geprüfte Frist:** Berlin, Bremen, Hamburg, Schleswig-Holstein. Schleswig-Holstein legt Stichtag und Frist jedes Jahr per Verordnung fest; die zuletzt gefundene Fassung nennt einen Stichtag außerhalb des Januars. Diese Länder brauchen eine Nachfrage bei der Kasse.
 - NRW zählt bei manchen Arten den Jahreshöchstbestand – die App zählt weiter am Stichtag und sagt das nur dazu.
 - Weitere Landesregeln (Hundegesetze, Chip- und Haftpflicht, Beitragssätze) sind noch nicht je Land hinterlegt.

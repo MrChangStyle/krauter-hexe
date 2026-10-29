@@ -5,7 +5,7 @@ vi.hoisted(() => {
 });
 
 const { DUTIES, countOn, dutiesFor, reportMessage, yearlyItem } = await import("./farmDuties");
-const { STATES, STATE_CODES, reportPushDays } = await import("./dutyStates");
+const { STATES, STATE_CODES, dayOfYear, reportPushDays } = await import("./dutyStates");
 
 const goats = [
   { species: "goat" as const, from: "2025-05-01", until: null },
@@ -91,13 +91,16 @@ describe("Pflichten – push", () => {
 describe("Pflichten je Bundesland", () => {
   const hit = DUTIES.find((d) => d.key === "hit_report")!;
 
-  it("has every Land with its Kasse, a stock day and a January deadline", () => {
+  it("has every Land with its Kasse, a stock day and a deadline after it", () => {
     expect(STATE_CODES).toHaveLength(16);
     for (const code of STATE_CODES) {
       const s = STATES[code];
       expect(s.tsk, code).not.toBe("");
       expect([1, 3], code).toContain(s.stockDay);
-      if (s.dueDay !== null) expect(s.dueDay - 13, code).toBeGreaterThan(s.stockDay - 1);
+      if (s.dueDay !== null) {
+        expect(s.dueDay - 3, code).toBeGreaterThan(s.stockDay);
+        expect(s.dueDay, code).toBeLessThanOrEqual(59);
+      }
       if (s.url) expect(s.url, code).toMatch(/^https:\/\//);
     }
   });
@@ -122,15 +125,27 @@ describe("Pflichten je Bundesland", () => {
     expect(by.find((d) => d.key === "tsk_member")).toMatchObject({ link: { label: "Bayerische Tierseuchenkasse", url: "https://www.btsk.de" }, source: "Tiergesundheitsgesetz, Landesrecht Bayern" });
     expect(by.find((d) => d.key === "tsk_report")).toMatchObject({ source: "Tierseuchenkasse Bayern", dueOn: "2026-01-20" });
     expect(by.find((d) => d.key === "registration")).toMatchObject({ link: null, note: null });
-    const he = dutiesFor(["goat"], goats, new Map(), "2026-10-19", false, "HE").find((d) => d.key === "tsk_report")!;
-    expect(he.note).toBe("Die genaue Frist steht im Meldebogen der Kasse; die App rechnet mit dem 15. Januar.");
+    const be = dutiesFor(["goat"], goats, new Map(), "2026-10-19", false, "BE").find((d) => d.key === "tsk_report")!;
+    expect(be.note).toBe("Die genaue Frist steht im Meldebogen der Kasse; die App rechnet mit dem 15. Januar.");
     expect(dutiesFor(["goat"], goats, new Map(), "2026-10-19").find((d) => d.key === "tsk_report")).toMatchObject({ link: null, note: null, source: "Tierseuchenkasse des Bundeslandes" });
   });
 
   it("pushes two weeks and three days before the deadline, each report with its own", () => {
     expect(reportPushDays(15)).toEqual([2, 12]);
     expect(reportPushDays(31)).toEqual([18, 28]);
+    expect(reportPushDays(15, 3)).toEqual([3, 12]);
     const nw = dutiesFor(["goat"], goats, new Map(), "2026-01-12", false, "NW").filter((d) => d.status === "due");
     expect(reportMessage(nw)!.body).toBe("Stand 1. Januar laut App: Hühner 1, Ziegen 1. Bitte bis 31.01. an Tierseuchenkasse NRW (Landwirtschaftskammer) und bis 15.01. an HI-Tier melden und in der App abhaken.");
+  });
+
+  it("takes a deadline in February (Rheinland-Pfalz) and a stock day on 3 January (Brandenburg)", () => {
+    expect(dayOfYear("2027-02-15")).toBe(46);
+    expect(dayOfYear("2028-01-03")).toBe(3);
+    const rp = dutiesFor(["goat"], goats, new Map(), "2027-02-02", false, "RP");
+    expect(rp.find((d) => d.key === "tsk_report")).toMatchObject({ status: "due", dueOn: "2027-02-15" });
+    expect(reportPushDays(dayOfYear("2027-02-15"))).toEqual([33, 43]);
+    expect(reportMessage(rp.filter((d) => d.key === "tsk_report"))!.body).toBe("Stand 1. Januar laut App: Hühner 1, Ziegen 2. Bitte bis 15.02. an Tierseuchenkasse Rheinland-Pfalz melden und in der App abhaken.");
+    const bb = dutiesFor(["goat"], goats, new Map(), "2026-10-19", false, "BB").find((d) => d.key === "tsk_report")!;
+    expect(bb).toMatchObject({ dueOn: "2026-01-15", stock: { day: "2026-01-03" } });
   });
 });

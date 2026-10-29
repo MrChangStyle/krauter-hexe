@@ -94,6 +94,11 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 - **Freischaltung:** Die ersten `FREE_TESTER_SLOTS` Konten (Standard 20, der Betreiber zählt nicht, bestehende Konten zählen mit) starten sofort. Danach wartet ein neues Konto auf die Freischaltung unter Verwaltung → Benutzer. Der Betreiber bekommt bei jeder Anmeldung einen Push.
 - **Betreiber:** Das erste Konto wird Betreiber (Owner). Es sieht die Verwaltung (Betrieb, Feedback, Moderation, Entwürfe, Premium, Benutzer, Aufräumen) und hat kein KI-Limit.
 - **Höfe und Rollen:** Jedes Konto bekommt einen eigenen Hof („Meine Farm“) und kann weitere anlegen. Auf einem Hof gibt es die Rollen Admin, Mitarbeiter (caretaker) und Gast, dazu Modul-Freigaben und Vertretungen mit Enddatum (`docs/team.md`). Geteilte Höfe stehen unter „Wähle deine Farm“.
+- **Passwort vergessen und ändern** (`docs/konto.md`):
+  - „Passwort vergessen?“ auf der Anmeldeseite schickt einen Einmal-Link per Mail, sobald `RESEND_API_KEY` gesetzt ist.
+  - Bis dahin bekommt der Betreiber einen Push und gibt einen „Passwort-Link“ aus Verwaltung → Benutzer weiter.
+  - Passwort ändern geht unter Mehr → Konto.
+  - Ein neues Passwort meldet alle anderen Geräte ab.
 - **Konto löschen:** in der App, mit allen persönlichen Daten. Ein Hof geht an ein anderes Mitglied über oder wird gelöscht.
 - **Bremsen:** Konten je Anschluss (5 pro Stunde), Konten je Tag (`REGISTRATION_DAILY_CAP`, nur bei offener Registrierung), optional Cloudflare Turnstile, Login-Sperre nach 10 Fehlversuchen.
 
@@ -189,7 +194,8 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 | `SCAN_DAILY_BUDGET` | nein | KI-Anfragen je Tag für die ganze App |
 | `TEST_PHASE_END` | nein | letzter Tag der Testphase |
 | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` | nein | „Mit Google anmelden“ |
-| `PUBLIC_BASE_URL` | bei Google | öffentliche Adresse |
+| `PUBLIC_BASE_URL` | bei Google und Mail | öffentliche Adresse |
+| `RESEND_API_KEY` / `MAIL_FROM` | nein | Mailversand (Passwort vergessen); ohne Schlüssel gibt der Betreiber den Link weiter |
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | nein | Bot-Schutz bei der Registrierung |
 | `LEGACY_ORIGINS` | nein | alte Adressen für den Umzug |
 | `TRUST_PROXY_HOPS` | nein | Proxys vor dem Server (Standard 1) |
@@ -220,6 +226,8 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 
 ## 10. Offen und als Nächstes
 
+Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.md`. Den Stand je Modul hält `docs/BESTANDSAUFNAHME.md` fest, größere Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`. Was nur der Betreiber erledigen kann, sammelt `docs/TODO-CHANG.md`.
+
 - **Öffentlicher Start:**
   - Seitenpasswort löschen.
   - Testphase beenden (`TEST_PHASE_END`).
@@ -240,6 +248,8 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #107 | Passwort vergessen (Mail über Resend oder Link vom Betreiber), Passwort ändern, neues Passwort meldet andere Geräte ab; Resend in der Datenschutzerklärung |
+| 29.10.2026 | #107 | Launch-Plan, Bestandsaufnahme, Entscheidungen und To-do-Liste für den Betreiber |
 | 28.10.2026 | #106 | Beet-Vorschlag: Schieberegler Küche/Tierfutter für die KI; diese Projektbeschreibung angelegt |
 | 27.10.2026 | #105 | Kein Einladungscode mehr, Seitenpasswort reicht |
 | 27.10.2026 | #101–#104 | App-Updates von selbst, App-Stand; KI-Listen mit Zeitgrenzen und minimalem Nachdenken, Grund für „ohne KI“ sichtbar |

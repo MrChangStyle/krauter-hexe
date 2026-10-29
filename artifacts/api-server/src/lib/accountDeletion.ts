@@ -24,6 +24,7 @@ import {
   farmTaskCommentsTable,
   dailyNotesTable,
   noteSharesTable,
+  passwordResetsTable,
   farmTasksTable,
   farmsTable,
   favoritesTable,
@@ -86,6 +87,8 @@ export const PERSONAL_TABLES = [
   { name: 'note_shares', table: noteSharesTable, userId: noteSharesTable.userId },
   // Comments on Hof-Aufgaben this person wrote.
   { name: 'farm_task_comments', table: farmTaskCommentsTable, userId: farmTaskCommentsTable.userId },
+  // Links for "Passwort vergessen".
+  { name: 'password_resets', table: passwordResetsTable, userId: passwordResetsTable.userId },
   // Farm memberships – deleteAccount first hands over or removes the farms.
   { name: 'farm_memberships', table: farmMembershipsTable, userId: farmMembershipsTable.userId },
 ] as const;

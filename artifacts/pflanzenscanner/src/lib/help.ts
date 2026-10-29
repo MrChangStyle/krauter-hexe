@@ -382,6 +382,11 @@ export const GENERAL_HELP: HelpTopic[] = [
     faq: [
       { q: "Wer sieht meine Daten?", a: "Die Hofdaten sehen nur die Mitglieder des Hofs. Fotos für die KI gehen zur Auswertung an Google Gemini; Details in der Datenschutzerklärung." },
       { q: "Kann ich meine Daten herunterladen oder löschen?", a: "Ja, unter „Mehr → Konto“: alles als Datei herunterladen oder das Konto löschen." },
+      {
+        q: "Ich habe mein Passwort vergessen.",
+        a: "Auf der Anmeldeseite auf „Passwort vergessen?“ tippen und die E-Mail-Adresse eingeben. Du bekommst einen Link, mit dem du ein neues Passwort festlegst; er gilt einmal. Solange der Mailversand nicht eingerichtet ist, schickt dir der Betreiber den Link.",
+      },
+      { q: "Wie ändere ich mein Passwort?", a: "Unter „Mehr → Konto → Passwort ändern“. Danach sind alle anderen Geräte abgemeldet – praktisch, wenn jemand dein Passwort kennen könnte." },
     ],
   },
   {

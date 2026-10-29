@@ -959,6 +959,103 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/OkResult"
+  /auth/password-reset:
+    post:
+      tags: [Auth]
+      operationId: requestPasswordReset
+      summary: Ask for a link to set a new password
+      description: >
+        Sends a one-time link by mail when a mail service is configured;
+        otherwise the owner gets a push and passes on a link by hand. The
+        answer is the same whether the address has an account or not.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetRequestInput"
+      responses:
+        "200":
+          description: Request taken.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetRequestResult"
+        "400":
+          description: Invalid email address.
+        "429":
+          description: Too many requests from this address.
+  /auth/password-reset/check:
+    post:
+      tags: [Auth]
+      operationId: checkPasswordResetLink
+      summary: Whether a reset link can still be used
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetTokenInput"
+      responses:
+        "200":
+          description: Link state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetCheckResult"
+        "429":
+          description: Too many requests.
+  /auth/password-reset/confirm:
+    post:
+      tags: [Auth]
+      operationId: confirmPasswordReset
+      summary: Set a new password with a reset link and sign in
+      description: >
+        The link works once. All other devices of the account are signed out.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetConfirmInput"
+      responses:
+        "200":
+          description: Password set and signed in.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthUserEnvelope"
+        "400":
+          description: Password too short or link expired/used.
+        "429":
+          description: Too many requests.
+  /auth/password:
+    post:
+      tags: [Auth]
+      operationId: changePassword
+      summary: Change the password of the signed-in account
+      description: >
+        Needs the current password, except for accounts that have none yet
+        (Google only). All other devices are signed out.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangePasswordInput"
+      responses:
+        "200":
+          description: Password changed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OkResult"
+        "400":
+          description: New password too short or current password wrong.
+        "401":
+          description: Not signed in.
+        "429":
+          description: Too many attempts.
   /users:
     get:
       tags: [users]
@@ -1024,6 +1121,33 @@ paths:
           description: Not signed in
         "403":
           description: Signed in but not the owner
+  /users/{id}/password-reset-link:
+    post:
+      tags: [users]
+      operationId: createPasswordResetLink
+      summary: Create a one-time link to set a new password (owner only)
+      description: >
+        For passing on by hand when someone forgot the password. Works for 24
+        hours and once.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The link.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PasswordResetLink"
+        "401":
+          description: Not signed in
+        "403":
+          description: Signed in but not the owner
+        "404":
+          description: No such account
   /users/{id}:
     patch:
       tags: [users]
@@ -11742,6 +11866,62 @@ components:
           description: >
             True when this scan's photo was clearly better than the shared one
             and replaced it.
+    PasswordResetRequestInput:
+      type: object
+      required: [email]
+      properties:
+        email:
+          type: string
+          maxLength: 200
+    PasswordResetRequestResult:
+      type: object
+      required: [mail]
+      properties:
+        mail:
+          type: boolean
+          description: True when links go out by mail; false when the owner passes them on.
+    PasswordResetTokenInput:
+      type: object
+      required: [token]
+      properties:
+        token:
+          type: string
+    PasswordResetCheckResult:
+      type: object
+      required: [valid]
+      properties:
+        valid:
+          type: boolean
+    PasswordResetConfirmInput:
+      type: object
+      required: [token, password]
+      properties:
+        token:
+          type: string
+        password:
+          type: string
+          minLength: 8
+          maxLength: 200
+    ChangePasswordInput:
+      type: object
+      required: [newPassword]
+      properties:
+        currentPassword:
+          type: string
+          maxLength: 200
+        newPassword:
+          type: string
+          minLength: 8
+          maxLength: 200
+    PasswordResetLink:
+      type: object
+      required: [url, expiresAt]
+      properties:
+        url:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time
     LoginInput:
       type: object
       required: [email, password]

@@ -31,7 +31,7 @@ export const OPERATOR_VAT = "Kleinunternehmer im Sinne von § 19 UStG. Es wird k
  * (artifacts/api-server/src/lib/registrationPolicy.ts), denn dieser Wert wird
  * bei jeder Registrierung mit dem Konto gespeichert.
  */
-export const LEGAL_VERSION = "2026-10-26";
+export const LEGAL_VERSION = "2026-10-29";
 
 export function operatorDataIncomplete(): boolean {
   return Object.values(OPERATOR).some((value) => value === OFFEN);

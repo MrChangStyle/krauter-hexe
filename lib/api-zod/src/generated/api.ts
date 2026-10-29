@@ -1313,6 +1313,86 @@ export const LogoutResponse = zod.object({
 
 
 /**
+ * Sends a one-time link by mail when a mail service is configured; otherwise the owner gets a push and passes on a link by hand. The answer is the same whether the address has an account or not.
+ * @summary Ask for a link to set a new password
+ */
+export const requestPasswordResetBodyEmailMax = 200;
+
+
+
+export const RequestPasswordResetBody = zod.object({
+  "email": zod.string().max(requestPasswordResetBodyEmailMax)
+})
+
+export const RequestPasswordResetResponse = zod.object({
+  "mail": zod.boolean().describe('True when links go out by mail; false when the owner passes them on.')
+})
+
+
+/**
+ * @summary Whether a reset link can still be used
+ */
+export const CheckPasswordResetLinkBody = zod.object({
+  "token": zod.string()
+})
+
+export const CheckPasswordResetLinkResponse = zod.object({
+  "valid": zod.boolean()
+})
+
+
+/**
+ * The link works once. All other devices of the account are signed out.
+ * @summary Set a new password with a reset link and sign in
+ */
+export const confirmPasswordResetBodyPasswordMin = 8;
+export const confirmPasswordResetBodyPasswordMax = 200;
+
+
+
+export const ConfirmPasswordResetBody = zod.object({
+  "token": zod.string(),
+  "password": zod.string().min(confirmPasswordResetBodyPasswordMin).max(confirmPasswordResetBodyPasswordMax)
+})
+
+export const ConfirmPasswordResetResponse = zod.object({
+  "user": zod.union([zod.object({
+  "id": zod.string(),
+  "email": zod.string().nullable(),
+  "firstName": zod.string().nullable(),
+  "lastName": zod.string().nullable(),
+  "profileImageUrl": zod.string().nullable(),
+  "approved": zod.boolean().describe('Whether the owner has granted this account access to the app.'),
+  "isOwner": zod.boolean().describe('Whether this account is the app owner (the first account that ever signed in).'),
+  "username": zod.string().nullable(),
+  "leavesCount": zod.number(),
+  "blockedAt": zod.coerce.date().nullish().describe('Set when the owner blocked the account through moderation; the app then says \"gesperrt\" instead of \"warte auf Freigabe\".\n')
+}),zod.null()])
+})
+
+
+/**
+ * Needs the current password, except for accounts that have none yet (Google only). All other devices are signed out.
+ * @summary Change the password of the signed-in account
+ */
+export const changePasswordBodyCurrentPasswordMax = 200;
+
+export const changePasswordBodyNewPasswordMin = 8;
+export const changePasswordBodyNewPasswordMax = 200;
+
+
+
+export const ChangePasswordBody = zod.object({
+  "currentPassword": zod.string().max(changePasswordBodyCurrentPasswordMax).optional(),
+  "newPassword": zod.string().min(changePasswordBodyNewPasswordMin).max(changePasswordBodyNewPasswordMax)
+})
+
+export const ChangePasswordResponse = zod.object({
+  "ok": zod.boolean()
+})
+
+
+/**
  * @summary List all accounts that have ever signed in (owner only)
  */
 export const ListUsersResponseItem = zod.object({
@@ -1351,6 +1431,20 @@ export const CleanupOrphanedDataBody = zod.object({
 export const CleanupOrphanedDataResponse = zod.object({
   "counts": zod.record(zod.string(), zod.number()).describe('Rows per table name.'),
   "total": zod.number()
+})
+
+
+/**
+ * For passing on by hand when someone forgot the password. Works for 24 hours and once.
+ * @summary Create a one-time link to set a new password (owner only)
+ */
+export const CreatePasswordResetLinkParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const CreatePasswordResetLinkResponse = zod.object({
+  "url": zod.string(),
+  "expiresAt": zod.coerce.date()
 })
 
 

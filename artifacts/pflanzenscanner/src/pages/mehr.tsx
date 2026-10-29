@@ -42,6 +42,7 @@ import { useAuthContext } from "@/lib/auth-context";
 import { ThemeCard } from "@/components/theme-card";
 import { PushNotificationCard } from "@/components/push-notification-card";
 import { AccountCard } from "@/components/account-card";
+import { ResetLinkButton } from "@/components/password";
 import { TesterNotice } from "@/components/tester-notice";
 import { ImageRescueCard } from "@/components/image-rescue-card";
 import { HubGrid, HubTile } from "@/components/hub-tile";
@@ -1034,6 +1035,7 @@ export function Benutzerverwaltung() {
                 </AlertDialog>
               </div>
             )}
+            {!u.isOwner && <ResetLinkButton userId={u.id} name={name} />}
           </div>
         );
       })}

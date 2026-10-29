@@ -232,6 +232,19 @@ const STATEMENTS = [
   `DO $$ BEGIN
      ALTER TABLE "farm_push_log" ADD CONSTRAINT "farm_push_log_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  // Passwort vergessen (docs/konto.md).
+  "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamp with time zone",
+  `CREATE TABLE IF NOT EXISTS "password_resets" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"token_hash" text NOT NULL,
+	"via" text NOT NULL,
+	"expires_at" timestamp with time zone NOT NULL,
+	"used_at" timestamp with time zone,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "password_resets_token_hash_unique" UNIQUE("token_hash")
+)`,
+  `CREATE INDEX IF NOT EXISTS "password_resets_user_idx" ON "password_resets" USING btree ("user_id")`,
 ];
 
 export async function upgradeSchema(): Promise<void> {

@@ -89,6 +89,7 @@ function farmTaskDueOn(task: FarmTask, todayKey: string): boolean {
     createdDay: berlinDayKey(task.createdAt),
     completedDay: task.lastCompletedAt ? berlinDayKey(task.lastCompletedAt) : null,
     intervalDays: task.intervalValue * unitToDays(task.intervalUnit),
+    weekdays: task.weekdays,
   });
   return !done && dueDate <= todayKey;
 }

@@ -19,6 +19,13 @@ const runModelChain = vi.hoisted(() => {
   return vi.fn();
 });
 vi.mock("./plantIdentification", async (orig) => ({ ...(await orig<object>()), runModelChain }));
+const pushes = vi.hoisted(() => [] as Array<{ to: string; body: string; topic: string }>);
+vi.mock("./webPush", () => ({
+  sendPushToUser: (to: string, p: { body: string; topic: string }) => {
+    pushes.push({ to, body: p.body, topic: p.topic });
+    return Promise.resolve(1);
+  },
+}));
 
 const testUrl = process.env["TEST_DATABASE_URL"];
 const enabled =
@@ -155,5 +162,25 @@ describe.skipIf(!enabled)("Alltagsnotizen (real database)", () => {
     runModelChain.mockResolvedValue({ notizen: [] });
     expect((await api("POST", "/notes/plan", { text: "Hallo" })).status).toBe(422);
     expect(await q("SELECT scan_type FROM scan_attempts")).toHaveLength(1);
+  });
+
+  it("tells the others on a shared list in one push – not the writer, not on a list of one", async () => {
+    const { flushNotesPush, pendingNotesPushes } = await import("./notesPush");
+    // Earlier tests share lists too: send what they left waiting.
+    for (const key of pendingNotesPushes()) await flushNotesPush(key);
+    pushes.length = 0;
+    // Stefan's own list, not shared: nobody to tell.
+    await api("POST", "/notes", { text: "Schrauben" });
+    expect(pendingNotesPushes()).toEqual([]);
+
+    await api("POST", "/notes/shares", { userId: "maria" });
+    await api("POST", "/notes/shares", { email: "oma@x.de" });
+    as = "maria";
+    for (const t of ["Hafer", "Milch", "Eier"]) await api("POST", "/notes", { text: t, listOwnerId: "stefan" });
+    expect(pendingNotesPushes()).toEqual(["stefan|maria"]);
+    await flushNotesPush("stefan|maria");
+    expect(pushes.map((p) => p.to).sort()).toEqual(["oma", "stefan"]);
+    expect(pushes.find((p) => p.to === "stefan")).toMatchObject({ topic: "notes", body: "Maria hat 3 Sachen: „Hafer“, „Milch“, „Eier“ auf deine Liste gesetzt." });
+    expect(pushes.find((p) => p.to === "oma")!.body).toMatch(/auf die gemeinsame Liste gesetzt\.$/);
   });
 });

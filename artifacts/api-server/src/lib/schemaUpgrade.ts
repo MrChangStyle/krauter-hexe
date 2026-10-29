@@ -243,6 +243,8 @@ const STATEMENTS = [
   // Kostenschutz: daily AI checks per camera (docs/kostenschutz.md).
   `ALTER TABLE "cameras" ADD COLUMN IF NOT EXISTS "ai_day" date`,
   `ALTER TABLE "cameras" ADD COLUMN IF NOT EXISTS "ai_count" integer DEFAULT 0 NOT NULL`,
+  // Hof-Aufgaben an Wochentagen (docs/hof-aufgaben.md).
+  `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "weekdays" jsonb`,
   // Passwort vergessen (docs/konto.md).
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamp with time zone",
   `CREATE TABLE IF NOT EXISTS "password_resets" (

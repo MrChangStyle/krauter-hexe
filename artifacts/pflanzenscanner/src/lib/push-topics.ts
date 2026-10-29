@@ -5,6 +5,7 @@ export const PUSH_TOPICS: { topic: PushTopic; label: string; hint: string; modul
   { topic: "plant-care", label: "Pflanzenpflege", hint: "Pflegeplan und Pflege-Guides", module: "care-plan" },
   { topic: "garden", label: "Gartenkalender", hint: "Säen, pflanzen, ernten", module: "garden" },
   { topic: "farm-tasks", label: "Hof- & Stall-Aufgaben", hint: "Fällige Aufgaben, Kommentare im Team", module: "farm-tasks" },
+  { topic: "notes", label: "Alltagsnotizen", hint: "Neues auf einer geteilten Liste" },
   { topic: "feed", label: "Futtervorrat", hint: "Rechtzeitig nachkaufen", module: "feed" },
   { topic: "medicines", label: "Arzneimittel", hint: "Ablaufdaten", module: "medicines" },
   { topic: "breeding", label: "Zucht", hint: "Geburt, Schlupf, Schritte", module: "breeding" },

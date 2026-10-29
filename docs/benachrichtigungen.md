@@ -9,6 +9,7 @@ Unter Mehr → **Benachrichtigungen** schaltet man Push für das Gerät ein. Dar
 | Pflanzenpflege (`plant-care`) | Pflegeplan, Pflege-Guides |
 | Gartenkalender (`garden`) | Säen, pflanzen, ernten |
 | Stall-Aufgaben (`farm-tasks`) | fällige Aufgaben im Stall |
+| Alltagsnotizen (`notes`) | Neues auf einer geteilten Liste (`docs/alltagsnotizen.md`) |
 | Futtervorrat (`feed`) | rechtzeitig nachkaufen |
 | Arzneimittel (`medicines`) | Ablaufdaten |
 | Zucht (`breeding`) | Schritte, Geburt, Schlupf |

@@ -9467,7 +9467,7 @@ components:
     PushTopic:
       type: string
       description: What a push is about – each can be switched off (docs/benachrichtigungen.md)
-      enum: [plant-care, farm-tasks, feed, medicines, breeding, duties, weather, garden, grow, wildlife, bees, pantry, pasture, admin]
+      enum: [plant-care, farm-tasks, notes, feed, medicines, breeding, duties, weather, garden, grow, wildlife, bees, pantry, pasture, admin]
     QuietHours:
       type: object
       description: No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes
@@ -12346,7 +12346,7 @@ components:
           description: The daily switch of the quick entry; used where the text says nothing.
     PlannedFarmTask:
       type: object
-      required: [title, area, startsOn, repeats, intervalValue, intervalUnit, reminderTime, assigneeId, assigneeName, herdId, herdName]
+      required: [title, area, startsOn, repeats, intervalValue, intervalUnit, weekdays, reminderTime, assigneeId, assigneeName, herdId, herdName]
       properties:
         title:
           type: string
@@ -12360,6 +12360,13 @@ components:
           type: integer
         intervalUnit:
           $ref: "#/components/schemas/TaskIntervalUnit"
+        weekdays:
+          type: [array, 'null']
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          description: Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.
         reminderTime:
           type: string
         assigneeId:
@@ -12403,7 +12410,7 @@ components:
           maxLength: 300
     FarmTask:
       type: object
-      required: [id, animalId, animalName, herdId, herdName, actionType, title, area, startsOn, repeats, assigneeId, assigneeName, lastCompletedBy, lastCompletedByName, notes, intervalValue, intervalUnit, reminderTime, isActive, lastCompletedAt, createdAt, dueDate, isDue, isDone, doneToday, commentCount, comments]
+      required: [id, animalId, animalName, herdId, herdName, actionType, title, area, startsOn, repeats, assigneeId, assigneeName, lastCompletedBy, lastCompletedByName, notes, intervalValue, intervalUnit, weekdays, reminderTime, isActive, lastCompletedAt, createdAt, dueDate, isDue, isDone, doneToday, commentCount, comments]
       properties:
         id:
           type: integer
@@ -12456,6 +12463,13 @@ components:
           type: integer
         intervalUnit:
           $ref: "#/components/schemas/TaskIntervalUnit"
+        weekdays:
+          type: [array, 'null']
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          description: Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.
         reminderTime:
           type: string
           description: HH:MM, Berlin time
@@ -12524,6 +12538,13 @@ components:
           maximum: 365
         intervalUnit:
           $ref: "#/components/schemas/TaskIntervalUnit"
+        weekdays:
+          type: [array, 'null']
+          items:
+            type: integer
+            minimum: 1
+            maximum: 7
+          description: Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.
         reminderTime:
           type: string
           pattern: "^([01][0-9]|2[0-3]):[0-5][0-9]$"

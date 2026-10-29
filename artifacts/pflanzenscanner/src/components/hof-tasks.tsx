@@ -299,7 +299,8 @@ export function HofTaskRow({
 // ── New or changed task ──────────────────────────────────────────────────────
 
 type Target = "farm" | `a:${number}` | `h:${number}`;
-type When = "once" | "repeat";
+type When = "once" | "repeat" | "days";
+const WEEKDAY_SHORT = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
 
 export function HofTaskDialog({
   farm,
@@ -321,7 +322,8 @@ export function HofTaskDialog({
   const [area, setArea] = useState<FarmTaskArea | null>(task?.area ?? null);
   const [target, setTarget] = useState<Target>(task?.animalId ? `a:${task.animalId}` : task?.herdId ? `h:${task.herdId}` : "farm");
   const [assignee, setAssignee] = useState(task?.assigneeId ?? "");
-  const [when, setWhen] = useState<When>(task && !task.repeats ? "once" : task ? "repeat" : "once");
+  const [when, setWhen] = useState<When>(task && !task.repeats ? "once" : task?.weekdays?.length ? "days" : task ? "repeat" : "once");
+  const [weekdays, setWeekdays] = useState<number[]>(task?.weekdays ?? []);
   const [startsOn, setStartsOn] = useState(task?.startsOn ?? todayIso());
   const [intervalValue, setIntervalValue] = useState(String(task?.intervalValue ?? 1));
   const [intervalUnit, setIntervalUnit] = useState<TaskIntervalUnit>(task?.intervalUnit ?? "Tage");
@@ -343,6 +345,10 @@ export function HofTaskDialog({
   function submit(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (when === "days" && weekdays.length === 0) {
+      setError("Bitte wähle mindestens einen Wochentag.");
+      return;
+    }
     const own = title.trim();
     // An unchanged action name stays the action, as in the Stall-Aufgaben.
     const keepsAction = task !== null && task.title === null && own === task.actionType;
@@ -353,10 +359,11 @@ export function HofTaskDialog({
       animalId: area === "tiere" && target.startsWith("a:") ? Number(target.slice(2)) : null,
       herdId: area === "tiere" && target.startsWith("h:") ? Number(target.slice(2)) : null,
       assigneeId: assignee || null,
-      repeats: when === "repeat",
+      repeats: when !== "once",
       startsOn,
       intervalValue: when === "repeat" ? Number(intervalValue) : 1,
-      intervalUnit: when === "repeat" ? intervalUnit : "Tage",
+      intervalUnit: when === "repeat" ? intervalUnit : when === "days" ? "Wochen" : "Tage",
+      weekdays: when === "days" ? weekdays : null,
       reminderTime,
       notes,
       isActive,
@@ -426,10 +433,30 @@ export function HofTaskDialog({
           )}
           <fieldset className="space-y-1.5">
             <legend className="text-sm font-medium">Wann?</legend>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-3 gap-1.5">
               <AreaChip active={when === "once"} onClick={() => setWhen("once")}>Einmalig</AreaChip>
-              <AreaChip active={when === "repeat"} onClick={() => setWhen("repeat")}>Wiederkehrend</AreaChip>
+              <AreaChip active={when === "repeat"} onClick={() => setWhen("repeat")}>Regelmäßig</AreaChip>
+              <AreaChip active={when === "days"} onClick={() => setWhen("days")}>Wochentage</AreaChip>
             </div>
+            {when === "days" && (
+              <div className="grid grid-cols-7 gap-1" role="group" aria-label="Wochentage">
+                {WEEKDAY_SHORT.map((label, i) => {
+                  const day = i + 1;
+                  const on = weekdays.includes(day);
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => setWeekdays(on ? weekdays.filter((d) => d !== day) : [...weekdays, day].sort((a, b) => a - b))}
+                      className={`h-9 rounded-md border text-sm font-medium ${on ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background"}`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </fieldset>
           <div className="grid grid-cols-2 gap-2">
             <div className="flex flex-col gap-1.5">

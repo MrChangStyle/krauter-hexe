@@ -117,9 +117,20 @@ describe("KI-Aufgabenplan – without the AI", () => {
     const plan = planLocally("Eier einsammeln, Teichpumpe prüfen, das Ganze ist für übermorgen", today, team, none);
     expect(plan.map((p) => p.startsOn)).toEqual(["2026-10-29", "2026-10-29"]);
     const [a, b, c] = planLocally("Stall ausmisten jeden Freitag. Rasen mähen alle zwei Wochen. Am Montag abends Holz holen", today, team, none);
-    expect(a).toMatchObject({ title: "Stall ausmisten", startsOn: "2026-10-30", repeats: true, intervalValue: 1, intervalUnit: "Wochen" });
+    // "jeden Freitag" is a fixed weekday now; the server works out the day.
+    expect(a).toMatchObject({ title: "Stall ausmisten", repeats: true, weekdays: [5] });
     expect(b).toMatchObject({ title: "Rasen mähen", repeats: true, intervalValue: 2, intervalUnit: "Wochen" });
     expect(c).toMatchObject({ title: "Holz holen", startsOn: "2026-11-02", reminderTime: "18:00", repeats: false });
+  });
+
+  it("reads several weekdays, workdays and the weekend", () => {
+    const [a, b, c, d] = planLocally("Müll rausbringen montags und donnerstags. Hühner rauslassen werktags. Rasen am Wochenende mähen. Jeden Dienstag und Freitag Eier verkaufen", today, team, none);
+    expect(a).toMatchObject({ title: "Müll rausbringen", repeats: true, weekdays: [1, 4] });
+    expect(b).toMatchObject({ title: "Hühner rauslassen", weekdays: [1, 2, 3, 4, 5] });
+    expect(c).toMatchObject({ weekdays: [6, 7] });
+    expect(d).toMatchObject({ title: "Eier verkaufen", weekdays: [2, 5] });
+    expect(scheduleText({ ...a!, dueDate: "2026-10-29" })).toBe("montags und donnerstags");
+    expect(needsPlan("Hühner rauslassen werktags")).toBe(true);
   });
 
   it("uses the quick entry's choice where nothing is said; 'für alle' and 'einmalig' win", () => {

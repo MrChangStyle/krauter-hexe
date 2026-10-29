@@ -23,6 +23,7 @@ import { and, asc, count, eq, inArray, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { guessNoteCategory, guessNoteKind } from './noteRules';
+import { noteAdded } from './notesPush';
 
 /** At most this many open notes on one list – a list, not an archive. */
 export const MAX_OPEN_NOTES = 300;
@@ -122,7 +123,10 @@ export async function createNote(userId: string, input: NoteInput) {
     .insert(dailyNotesTable)
     .values({ userId: owner, addedBy: userId, text: value, ...kindAndCategory(value, input.kind, input.category) })
     .returning();
-  return (await present([row!], userId))[0]!;
+  const note = (await present([row!], userId))[0]!;
+  // Tell the others on a shared list (gathered into one push).
+  void noteAdded(owner, userId, note.addedByName, value).catch(() => {});
+  return note;
 }
 
 /** Tick off or back: everyone on the list. Wording and kind: the owner and who wrote it. */

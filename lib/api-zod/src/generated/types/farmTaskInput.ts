@@ -41,6 +41,13 @@ export interface FarmTaskInput {
      */
   intervalValue: number;
   intervalUnit: TaskIntervalUnit;
+  /**
+     * Fixed weekdays, 1 = Montag … 7 = Sonntag; replaces the interval. null = every interval.
+     * @nullable
+     * @items.minimum 1
+     * @items.maximum 7
+     */
+  weekdays?: number[] | null;
   /** @pattern ^([01][0-9]|2[0-3]):[0-5][0-9]$ */
   reminderTime: string;
   isActive?: boolean;

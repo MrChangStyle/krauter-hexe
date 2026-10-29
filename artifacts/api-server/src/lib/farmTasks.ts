@@ -25,7 +25,7 @@ import { and, asc, eq, inArray, ne, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { grantedSql } from './farmModules';
-import { farmTaskDue, guessFarmTaskAction, guessFarmTaskArea } from './farmTaskRules';
+import { farmTaskDue, guessFarmTaskAction, guessFarmTaskArea, normalizeWeekdays } from './farmTaskRules';
 import { berlinDayKey, berlinTodayKey, unitToDays } from './pushScheduler';
 import { sendPushToUser } from './webPush';
 
@@ -44,6 +44,8 @@ export interface FarmTaskInput {
   notes?: unknown;
   intervalValue: number;
   intervalUnit: IntervalUnit;
+  /** 1 = Montag … 7 = Sonntag; replaces the interval when set. */
+  weekdays?: unknown;
   reminderTime: string;
   isActive?: boolean;
 }
@@ -64,6 +66,7 @@ const taskColumns = {
   notes: farmTasksTable.notes,
   intervalValue: farmTasksTable.intervalValue,
   intervalUnit: farmTasksTable.intervalUnit,
+  weekdays: farmTasksTable.weekdays,
   reminderTime: farmTasksTable.reminderTime,
   isActive: farmTasksTable.isActive,
   lastCompletedAt: farmTasksTable.lastCompletedAt,
@@ -133,6 +136,7 @@ async function present(farmId: number, rows: TaskRow[], viewerId: string | null)
       createdDay: berlinDayKey(task.createdAt),
       completedDay,
       intervalDays: task.intervalValue * unitToDays(task.intervalUnit),
+      weekdays: task.weekdays,
     });
     // Someone who left the farm no longer counts: the task is for everyone again.
     const assigneeName = task.assigneeId ? (names.get(task.assigneeId) ?? null) : null;
@@ -207,6 +211,8 @@ async function taskValues(farmId: number, input: FarmTaskInput) {
   }
   const repeats = input.repeats ?? true;
   if (!repeats && startsOn === null) throw new FarmDataError(400, 'Eine einmalige Aufgabe braucht einen Tag.');
+  const weekdays = normalizeWeekdays(input.weekdays);
+  if (weekdays === 'invalid') throw new FarmDataError(400, 'Bitte wähle Wochentage von Montag bis Sonntag.');
   const assigneeId = input.assigneeId ?? null;
   if (assigneeId !== null) {
     const [member] = await db
@@ -227,6 +233,8 @@ async function taskValues(farmId: number, input: FarmTaskInput) {
     notes: text(input.notes, 200, 'Die Notiz'),
     intervalValue: input.intervalValue,
     intervalUnit: input.intervalUnit,
+    // Weekdays only for a repeating task.
+    weekdays: repeats ? weekdays : null,
     reminderTime: input.reminderTime,
     isActive: input.isActive ?? true,
   };

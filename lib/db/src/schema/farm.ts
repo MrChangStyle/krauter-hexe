@@ -308,6 +308,9 @@ export const farmTasksTable = pgTable(
     // at a Berlin wall-clock time (HH:MM), sent by the same cron.
     intervalValue: integer("interval_value").notNull(),
     intervalUnit: taskIntervalUnitEnum("interval_unit").notNull(),
+    // Hof-Aufgaben: fixed weekdays instead of the interval (1 = Montag … 7 =
+    // Sonntag, docs/hof-aufgaben.md); null = every <interval>.
+    weekdays: jsonb("weekdays").$type<number[]>(),
     reminderTime: text("reminder_time").notNull(),
     isActive: boolean("is_active").notNull().default(true),
     lastCompletedAt: timestamp("last_completed_at", { withTimezone: true }),

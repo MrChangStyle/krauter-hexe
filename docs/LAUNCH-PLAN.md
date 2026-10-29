@@ -35,7 +35,7 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
    - [x] 5a: Gänse, Enten, Puten, Wachteln als eigene Geflügelarten, dazu „Tierart anfragen“ mit Eingang in der Verwaltung (`docs/gefluegel.md`).
    - [x] 5b: Nandus, Esel (`docs/nandu-esel.md`).
 6. [x] **Scannen**: Ablauf mit allen Fehlerfällen prüfen. „Meine Scans“ mit Wahl zwischen altem und neuem Foto. Galerie mit einem Bild je Art (bei Pilzen zwei). Ergebnis: Fotowahl und Galerie gab es schon, behoben wurde die Ladeanzeige bei einem KI-Fehler (`docs/scannen.md`).
-7. [ ] **Hof-Aufgaben und Notizen**: Wochentage („montags und donnerstags“), Push bei Einträgen auf geteilten Listen, mehrere Listen.
+7. [x] **Hof-Aufgaben und Notizen**: Wochentage („montags und donnerstags“) und Push bei Einträgen auf geteilten Listen sind gebaut. Mehrere Listen kommen bewusst nach dem Start.
 8. [ ] **Beet-Architekt**: Ergebnis der Planer nachvollziehbar, Boden und Düngung, Hochbeet-Aufbau prüfen.
 9. [ ] **Tiere**: Krankenakte nach Standard (Diagnose, Behandlung, Tierarzt, Wartezeit), Freigabe an den Tierarzt als Gast-Rolle mit Ablaufdatum.
 10. [ ] Restliche Module nach der Bestandsaufnahme (Lücken aus den „Offen“-Abschnitten, die Nutzer wirklich brauchen).

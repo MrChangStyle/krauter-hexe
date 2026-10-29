@@ -200,14 +200,14 @@ function HelpfulPlantsBody({ farmId, species }: { farmId: number; species: FarmS
   if (plants.length === 0) {
     return (
       <p className="text-muted-foreground">
-        Im Pflanzenarchiv ist noch keine Pflanze eingetragen, die für {label} {carnivore ? "als Heilkraut hilft" : "verträglich ist"}. Mit jedem Scan in der Kräuterhexe wächst die Liste.
+        Im Pflanzenarchiv ist noch keine Pflanze eingetragen, die für {label} {carnivore ? "als Heilkraut hilft" : "verträglich ist"}. Mit jedem Scan wächst die Liste.
       </p>
     );
   }
   return (
     <>
       <p className="text-muted-foreground">
-        Aus dem Pflanzenarchiv der Kräuterhexe – nur Pflanzen, die dort als verträglich für {label} gelten.
+        Aus dem Pflanzenarchiv – nur Pflanzen, die dort als verträglich für {label} gelten.
         {carnivore && ` ${label === "Katze" ? "Katzen" : "Hunde"} fressen kaum Pflanzen: Heilkräuter nur gezielt und wie beschrieben anwenden.`}
       </p>
       {medicinal.length > 0 && (

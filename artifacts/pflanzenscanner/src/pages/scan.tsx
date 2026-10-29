@@ -640,7 +640,7 @@ export default function ScanPage() {
           <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
             <Leaf className="w-8 h-8 text-primary" />
           </div>
-          <h1 className="text-4xl font-serif text-foreground">Kräuterhexe</h1>
+          <h1 className="text-4xl font-serif text-foreground">Scannen</h1>
           <p className="text-muted-foreground max-w-sm mx-auto">
             Scanne Pflanzen, Insekten und Pilze.
           </p>

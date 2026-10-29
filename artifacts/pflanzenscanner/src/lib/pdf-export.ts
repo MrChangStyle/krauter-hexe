@@ -405,7 +405,7 @@ export async function exportPlantPdf(plant: Plant, appUrl?: string): Promise<Blo
   doc.setFontSize(8.5);
   doc.setTextColor(TEXT[0], TEXT[1], TEXT[2]);
   doc.text(
-    "Pflanzensteckbrief erstellt mit Little Farming (Kräuterhexe)",
+    "Pflanzensteckbrief erstellt mit Little Farming",
     margin + 4,
     y + 5 + 8.5 * PT_TO_MM * 1.3,
     { baseline: "top" },

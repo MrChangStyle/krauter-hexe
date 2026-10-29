@@ -256,6 +256,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #115 | Namensreste: Die App heißt überall „Little Farming“ (Meta-Beschreibung, Manifest, Login, Scan-Seite, PDF, Futter-KI, Nutzungsbedingungen); nur der Heilkräuter-Ratgeber heißt „Kräuter-Hexe“ |
 | 29.10.2026 | #114 | Pflichten: Fristen der Tierseuchenkasse für Brandenburg, Hessen, Mecklenburg-Vorpommern, Rheinland-Pfalz (15. Februar), Saarland und Sachsen-Anhalt ergänzt, Stichtag in Brandenburg und Sachsen-Anhalt auf den 3. Januar korrigiert; Fristen im Februar möglich |
 | 29.10.2026 | #113 | Krankenakte: „Behandlung bis“ für Behandlungen über mehrere Tage, die Wartezeit zählt ab dem letzten Tag (Akte, Übergabe, Futterplaner, Export); „Tierarzt einladen“ mit Enddatum und nur Arzneimitteln und Export |
 | 29.10.2026 | #112 | Hof-Aufgaben an festen Wochentagen („montags und donnerstags“, auch gesprochen); Push bei Einträgen auf geteilten Notizlisten (Thema „Alltagsnotizen“); Garten-Assistent zeigt seine Rechnung („So rechnet der Assistent“) |

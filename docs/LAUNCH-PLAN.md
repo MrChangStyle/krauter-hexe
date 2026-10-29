@@ -41,7 +41,7 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
 10. [x] Restliche Module nach der Bestandsaufnahme (Lücken aus den „Offen“-Abschnitten, die Nutzer wirklich brauchen). Erledigt: Fristen der Tierseuchenkassen in 6 weiteren Ländern. Was bleibt, ist fachliche Prüfung (Richtwerte in Zucht, Schädlingen, Kräuter-Hexe, Pflichten) und steht in den „Offen“-Abschnitten.
 
 ### D – Außenauftritt und Rechtliches
-11. [ ] **Namensreste** „Kräuterhexe“ auf „Little Farming“ umstellen: Meta-Tags, Manifest, Login, Scan-Seite, PDF. Nur der Heilkräuter-Ratgeber heißt weiter „Kräuter-Hexe“.
+11. [x] **Namensreste** „Kräuterhexe“ auf „Little Farming“ umstellen: Meta-Tags, Manifest, Login, Scan-Seite, PDF. Nur der Heilkräuter-Ratgeber heißt weiter „Kräuter-Hexe“.
 12. [ ] **SEO**: sitemap.xml, Open-Graph-Bilder, strukturierte Daten, Titel und Beschreibungen prüfen.
 13. [ ] **Rechtstexte als Entwürfe**: Impressum, Datenschutz (Render, Neon, Cloudinary, Google Gemini, Google-Login, Zahlungsanbieter), AGB, Widerrufsbelehrung, jeweils als „rechtlich zu prüfen“ markiert. Haftungshinweise bei Pilzen, Giftpflanzen und Tierarzneimitteln.
 14. [ ] **Homepage und FAQ** an den Endstand angleichen, „Kostenlos starten“.

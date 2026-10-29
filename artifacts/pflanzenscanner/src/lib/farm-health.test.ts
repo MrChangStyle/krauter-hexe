@@ -7,6 +7,7 @@ import {
   exportForPeriod,
   weightWarning,
   withdrawalEnd,
+  dateRangeText,
 } from "@/lib/farm-health";
 
 let nextId = 1;
@@ -43,6 +44,7 @@ const rec = (over: Partial<MedicalRecord> = {}): MedicalRecord => ({
   treatment: null,
   medication: null,
   withdrawalPeriodDays: null,
+  treatmentUntil: null,
   vet: null,
   notes: null,
   createdAt: "2026-05-02T10:00:00Z",
@@ -75,6 +77,12 @@ describe("Wartezeit", () => {
   it("ends that many days after the treatment", () => {
     expect(withdrawalEnd(rec({ date: "2026-05-30", withdrawalPeriodDays: 7 }))).toBe("2026-06-06");
     expect(withdrawalEnd(rec({ withdrawalPeriodDays: 0 }))).toBeNull();
+  });
+
+  it("counts from the last day of a treatment over several days", () => {
+    expect(withdrawalEnd(rec({ date: "2026-05-30", treatmentUntil: "2026-06-03", withdrawalPeriodDays: 7 }))).toBe("2026-06-10");
+    expect(dateRangeText(rec({ date: "2026-05-30", treatmentUntil: "2026-06-03" }))).toBe("30.5.2026 – 3.6.2026");
+    expect(dateRangeText(rec({ date: "2026-05-30", treatmentUntil: null }))).toBe("30.5.2026");
   });
 
   it("finds the latest one still running", () => {

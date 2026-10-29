@@ -17,10 +17,15 @@ export interface MedicalRecord {
   /** @nullable */
   medication: string | null;
   /**
-     * Wartezeit in days after the treatment date.
+     * Wartezeit in days after the last day of the treatment (treatmentUntil, else date).
      * @nullable
      */
   withdrawalPeriodDays: number | null;
+  /**
+     * YYYY-MM-DD, last day of a treatment over several days; null = a single day
+     * @nullable
+     */
+  treatmentUntil: string | null;
   /** @nullable */
   vet: string | null;
   /** @nullable */

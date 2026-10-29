@@ -164,11 +164,15 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     steps: [
       "„Schnellstart“: eine Gruppe mit nummerierten Tieren, Startration und Erinnerungen in einem Rutsch.",
       "Oder ein Tier einzeln anlegen – Foto, Name und Ring-/Ohrmarke sind optional (ohne Namen heißt es z. B. „Ziege 1“).",
-      "In der Gesundheitsakte Behandlungen mit Wartezeit eintragen; Entwurmen und Impfen erinnern auf Wunsch an die Wiederholung.",
+      "In der Gesundheitsakte Behandlungen mit Wartezeit eintragen – bei mehreren Tagen mit „Behandlung bis“; Entwurmen und Impfen erinnern auf Wunsch an die Wiederholung.",
       "Gewicht eintragen – die App warnt bei mehr als 5 % Abnahme in 14 Tagen.",
     ],
     faq: [
       { q: "Muss ich die Ohrmarkennummer eintragen?", a: "Nein, sie lässt sich jederzeit nachtragen. Rinder, Schafe, Ziegen und Schweine müssen aber gekennzeichnet sein – das Formular erinnert daran." },
+      {
+        q: "Ab wann zählt die Wartezeit?",
+        a: "Ab dem letzten Behandlungstag. Bei einer Behandlung über mehrere Tage trägst du „Behandlung bis“ ein; das Formular zeigt sofort, bis wann Milch, Eier und Fleisch nicht verwendet werden dürfen. Maßgeblich bleibt die Angabe auf dem Beipackzettel oder vom Tierarzt.",
+      },
       { q: "Was passiert beim Archivieren?", a: "Das Tier verschwindet aus den Listen, bleibt aber mit seiner Akte für den Veterinäramt-Export erhalten." },
       {
         q: "Wo sind Gänse, Enten, Puten und Wachteln?",
@@ -338,8 +342,19 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     title: "Farm & Team",
     href: "/team",
     intro: "Wer gehört zum Hof und was darf wer: Admins, Mitarbeiter, Gäste, Vertretungen mit Enddatum, Freigaben je Modul und wichtige Kontakte wie Tierarzt und Hufschmied.",
-    steps: ["Mitglieder per E-Mail einladen und eine Rolle wählen.", "Optional Module freigeben – etwa nur Stall-Aufgaben.", "Kontakte eintragen; sie stehen auch in der Übergabe."],
-    faq: [{ q: "Was dürfen Gäste?", a: "Lesen, aber nichts ändern." }],
+    steps: [
+      "Mitglieder per E-Mail einladen und eine Rolle wählen.",
+      "Optional Module freigeben – etwa nur Stall-Aufgaben.",
+      "Bei der Vertretung „Tierarzt einladen“: Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export.",
+      "Kontakte eintragen; sie stehen auch in der Übergabe.",
+    ],
+    faq: [
+      { q: "Was dürfen Gäste?", a: "Lesen, aber nichts ändern." },
+      {
+        q: "Wie gebe ich meinem Tierarzt Einblick?",
+        a: "Unter Vertretung auf „Tierarzt einladen“ tippen. Die E-Mail kommt aus dem Kontakt „Tierarzt“, der Zugang endet nach 14 Tagen (änderbar). Er sieht die Tiere mit Krankenakte, den Arzneimittel-Vorrat und den Export – sonst nichts. Als Gast liest er nur; als Mitarbeiter kann er Behandlungen eintragen. Er braucht ein eigenes Little-Farming-Konto.",
+      },
+    ],
   },
   export: {
     title: "Veterinäramt-Export",

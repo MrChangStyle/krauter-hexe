@@ -34,6 +34,7 @@ import { medicineWithdrawal } from "@/lib/medicine-labels";
 import {
   WEIGHT_LOSS_WINDOW_DAYS,
   activeWithdrawalEnd,
+  dateRangeText,
   deDate,
   doseText,
   kg,
@@ -230,6 +231,7 @@ const EMPTY_RECORD: MedicalRecordInput = {
   treatment: "",
   medication: "",
   withdrawalPeriodDays: null,
+  treatmentUntil: null,
   vet: "",
   notes: "",
   medicineId: null,
@@ -243,6 +245,7 @@ function toRecordInput(r: MedicalRecord): MedicalRecordInput {
     treatment: r.treatment ?? "",
     medication: r.medication ?? "",
     withdrawalPeriodDays: r.withdrawalPeriodDays,
+    treatmentUntil: r.treatmentUntil,
     vet: r.vet ?? "",
     notes: r.notes ?? "",
     medicineId: r.medicineId,
@@ -301,6 +304,7 @@ function RecordDialog({
   // Offer what can still be used – and the one this record already uses.
   const offered = (medicines.data ?? []).filter((m) => m.id === form.medicineId || (!m.archived && m.status !== "expired"));
   const chosen = medicines.data?.find((m) => m.id === form.medicineId) ?? null;
+  const formWaitEnd = form.date ? withdrawalEnd({ date: form.date, treatmentUntil: form.treatmentUntil ?? null, withdrawalPeriodDays: form.withdrawalPeriodDays ?? null }) : null;
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -332,6 +336,16 @@ function RecordDialog({
               <Input id="med-date" type="date" required max={todayIso()} value={form.date} onChange={(e) => set("date", e.target.value)} />
             </div>
             <div className="flex flex-col gap-1.5">
+              <Label htmlFor="med-until">Behandlung bis</Label>
+              <Input
+                id="med-until"
+                type="date"
+                min={form.date || undefined}
+                value={form.treatmentUntil ?? ""}
+                onChange={(e) => set("treatmentUntil", e.target.value === "" ? null : e.target.value)}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
               <Label htmlFor="med-wait">Wartezeit (Tage)</Label>
               <Input
                 id="med-wait"
@@ -342,6 +356,9 @@ function RecordDialog({
                 onChange={(e) => set("withdrawalPeriodDays", e.target.value === "" ? null : Number(e.target.value))}
               />
             </div>
+            <p className="self-end pb-2 text-xs text-muted-foreground" data-testid="med-wait-end">
+              {formWaitEnd ? `Wartezeit bis ${deDate(formWaitEnd)}` : "Zählt ab dem letzten Behandlungstag."}
+            </p>
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="med-diagnosis">Diagnose / Anlass *</Label>
@@ -533,7 +550,7 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
               <>
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="min-w-0 font-medium">{r.diagnosis}</p>
-                  <span className="shrink-0 text-xs text-muted-foreground">{deDate(r.date)}</span>
+                  <span className="shrink-0 text-xs text-muted-foreground">{dateRangeText(r)}</span>
                 </div>
                 {r.treatment && <p className="whitespace-pre-wrap text-muted-foreground">{r.treatment}</p>}
                 {(r.medication || r.vet) && (

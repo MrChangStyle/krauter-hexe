@@ -44,6 +44,10 @@ Ganz oben auf der Hofseite steht der Knopf **„Wähle deine Farm“** (`compone
 
 Der Dialog „Listen teilen“ (auf den Seiten Hof-Aufgaben und Alltagsnotizen) teilt die Hof-Aufgaben, die eigenen Alltagsnotizen oder beides – mit jemandem aus dem Team oder per E-Mail. Für die Hof-Aufgaben kommt eine neue Person als Mitarbeiter mit der Freigabe „Hof- & Stall-Aufgaben“ ins Team (nur Admins). Wer mitmacht, hakt ab und fügt hinzu, löscht aber nichts (`docs/alltagsnotizen.md`).
 
+## Tierarzt-Zugang
+
+Bei der Vertretung steht der Knopf **„Tierarzt einladen“**. Er füllt das Formular vor: die E-Mail aus dem Kontakt „Tierarzt“, Gast, Ende in 14 Tagen und nur die Freigaben Arzneimittel und Veterinäramt-Export. Die Tiere mit ihrer Krankenakte sieht jedes Mitglied. Die Freigaben werden mit der Einladung gespeichert (`modules` in `POST /farms/:farmId/members`). Einzelheiten: `docs/krankenakte.md`.
+
 ## Modul-Freigaben
 
 Ein Admin legt für jedes Mitglied fest, welche Farm-Module es sieht: Im Team bzw. bei der Vertretung auf **„Freigaben: Alle Module“** tippen. Zum Beispiel sieht eine Stallhilfe dann nur Stall-Aufgaben und Futterplaner.

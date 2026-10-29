@@ -96,6 +96,19 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
     expect((await api("POST", `/farms/${farm}/members`, { email: "bert@example.org", role: "guest" })).status).toBe(409);
   });
 
+  it("invites the vet with an end date and only the grants given", async () => {
+    const farm = await ownFarmId();
+    const until = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10);
+    const res = await api("POST", `/farms/${farm}/members`, { email: "bert@example.org", role: "guest", accessUntil: until, modules: ["medicines", "export"] });
+    expect(res.status).toBe(200);
+    expect((await json(res)).find((m: any) => m.userId === "bert")).toMatchObject({ role: "guest", accessUntil: until, modules: ["medicines", "export"] });
+    // Without grants: all modules, as before.
+    const all = await json(await api("POST", `/farms/${farm}/members`, { email: "cleo@example.org", role: "caretaker" }));
+    expect(all.find((m: any) => m.userId === "cleo").modules).toBeNull();
+    as = "bert";
+    expect((await json(await api("GET", "/farms"))).find((f: any) => f.id === farm)).toMatchObject({ role: "guest", accessUntil: until, modules: ["medicines", "export"] });
+  });
+
   it("shows email addresses to admins only", async () => {
     const farm = await ownFarmId();
     await api("POST", `/farms/${farm}/members`, { email: "bert@example.org", role: "guest" });

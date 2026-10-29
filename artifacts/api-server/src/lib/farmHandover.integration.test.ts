@@ -109,10 +109,11 @@ describe.skipIf(!enabled)("Vertretung (real database)", () => {
   it("shows the handover: note, contacts, running withdrawal periods and recent treatments", async () => {
     const [lotte] = await q<{ id: number }>(`INSERT INTO farm_animals (farm_id, name, species, registration_number) VALUES ($1, 'Lotte', 'goat', 'Z1') RETURNING id`, [farmId]);
     await q(
-      `INSERT INTO medical_records (farm_id, animal_id, date, diagnosis, treatment, medication, withdrawal_period_days) VALUES
-       ($1, $2, '2026-10-15', 'Moderhinke', 'Klauenbad', 'Oxytetracyclin', 14),
-       ($1, $2, '2026-09-01', 'Entwurmung', NULL, 'Flubenol', 7),
-       ($1, $2, '2026-10-10', 'Husten', 'Inhalieren', NULL, NULL)`,
+      `INSERT INTO medical_records (farm_id, animal_id, date, diagnosis, treatment, medication, withdrawal_period_days, treatment_until) VALUES
+       ($1, $2, '2026-10-15', 'Moderhinke', 'Klauenbad', 'Oxytetracyclin', 14, NULL),
+       ($1, $2, '2026-09-01', 'Entwurmung', NULL, 'Flubenol', 7, NULL),
+       ($1, $2, '2026-09-20', 'Mastitis', NULL, 'Penicillin', 5, '2026-10-30'),
+       ($1, $2, '2026-10-10', 'Husten', 'Inhalieren', NULL, NULL, NULL)`,
       [farmId, lotte!.id],
     );
     const note = await api("PUT", `/farms/${farmId}/handover-note`, { note: "Schlüssel liegt unter dem Blumentopf. Tierärztin Dr. Klee: 0123 456" });
@@ -120,7 +121,11 @@ describe.skipIf(!enabled)("Vertretung (real database)", () => {
       note: "Schlüssel liegt unter dem Blumentopf. Tierärztin Dr. Klee: 0123 456",
       accessUntil: null,
       contacts: [{ displayName: "Anna Hof" }],
-      withdrawals: [{ animalName: "Lotte", medication: "Oxytetracyclin", until: "2026-10-29" }],
+      // Counted from the last day of a treatment over several days.
+      withdrawals: [
+        { animalName: "Lotte", medication: "Penicillin", until: "2026-11-04" },
+        { animalName: "Lotte", medication: "Oxytetracyclin", until: "2026-10-29" },
+      ],
       recentHealth: [
         { animalName: "Lotte", date: "2026-10-15", diagnosis: "Moderhinke", treatment: "Klauenbad", medication: "Oxytetracyclin" },
         { animalName: "Lotte", date: "2026-10-10", diagnosis: "Husten", treatment: "Inhalieren", medication: null },

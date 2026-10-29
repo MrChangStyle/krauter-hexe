@@ -51,10 +51,13 @@ export function weightWarning(logs: WeightLog[]): WeightWarning | null {
 
 // ── Withdrawal period (Wartezeit) ────────────────────────────────────────────
 
-/** Last day of the Wartezeit, or null without one. */
-export function withdrawalEnd(record: Pick<MedicalRecord, "date" | "withdrawalPeriodDays">): string | null {
+/**
+ * Last day of the Wartezeit, or null without one. It counts from the last day
+ * of the treatment – a treatment over several days moves it back.
+ */
+export function withdrawalEnd(record: Pick<MedicalRecord, "date" | "withdrawalPeriodDays"> & { treatmentUntil?: string | null }): string | null {
   if (!record.withdrawalPeriodDays) return null;
-  return addDays(record.date, record.withdrawalPeriodDays);
+  return addDays(record.treatmentUntil ?? record.date, record.withdrawalPeriodDays);
 }
 
 /** The latest end of a Wartezeit still running on `today`, or null. */
@@ -74,6 +77,11 @@ export function deDate(isoDate: string | null | undefined): string {
   if (!isoDate) return "";
   const [y, m, d] = isoDate.slice(0, 10).split("-").map(Number);
   return `${d}.${m}.${y}`;
+}
+
+/** "2.5.2026" or, for a treatment over several days, "2.5.2026 – 6.5.2026" */
+export function dateRangeText(r: Pick<MedicalRecord, "date"> & { treatmentUntil?: string | null }): string {
+  return r.treatmentUntil && r.treatmentUntil !== r.date ? `${deDate(r.date)} – ${deDate(r.treatmentUntil)}` : deDate(r.date);
 }
 
 /** "1 Tier", "3 Tiere" */
@@ -174,7 +182,7 @@ export function doseText(r: Pick<MedicalRecord, "dose" | "doseUnit" | "batch">):
 
 export function medicalRow({ record: r, animal: a }: ExportData["records"][number]): string[] {
   return [
-    deDate(r.date),
+    dateRangeText(r),
     a.registrationNumber ?? "",
     a.name,
     r.diagnosis,

@@ -115,6 +115,16 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
     vet: 'Tierarztpraxis Muster',
     repeat: { kind: 'deworm', every: 3, unit: 'Monate' },
   });
+  // A treatment over several days: the Wartezeit counts from its last day.
+  await createMedicalRecord(farmId, goat!.id, {
+    date: ago(4),
+    treatmentUntil: ago(1),
+    diagnosis: 'Klauenentzündung (Demo)',
+    treatment: 'Klauenbad, vier Tage lang',
+    medication: 'Klauenspray',
+    withdrawalPeriodDays: 7,
+    vet: 'Tierarztpraxis Muster',
+  });
   for (const [days, kg] of [[60, 52], [30, 54.5], [2, 55]] as const) await createWeightLog(farmId, goat!.id, { date: ago(days), weightKg: kg });
 
   // Alpakas (docs/alpaka.md): three in a herd, ration and care tasks from the quick start, a mare in cria.

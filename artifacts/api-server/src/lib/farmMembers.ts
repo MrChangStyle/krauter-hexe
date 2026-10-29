@@ -237,6 +237,8 @@ export async function addMember(
   rawEmail: unknown,
   role: FarmRole,
   rawAccessUntil?: string | null,
+  /** Modul-Freigaben right away (e.g. for the vet); null or omitted = all. */
+  modules: string[] | null = null,
 ): Promise<void> {
   const accessUntil = accessUntilValue(rawAccessUntil, role);
   const now = Date.now();
@@ -262,7 +264,7 @@ export async function addMember(
 
   const inserted = await db
     .insert(farmMembershipsTable)
-    .values({ farmId, userId: user.id, role, accessUntil })
+    .values({ farmId, userId: user.id, role, accessUntil, modules: role === 'admin' ? null : modules })
     .onConflictDoNothing()
     .returning({ id: farmMembershipsTable.id });
   if (inserted.length === 0) throw new FarmError(409, 'Diese Person gehört schon zur Farm.');

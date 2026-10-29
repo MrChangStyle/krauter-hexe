@@ -245,6 +245,8 @@ const STATEMENTS = [
   `ALTER TABLE "cameras" ADD COLUMN IF NOT EXISTS "ai_count" integer DEFAULT 0 NOT NULL`,
   // Hof-Aufgaben an Wochentagen (docs/hof-aufgaben.md).
   `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "weekdays" jsonb`,
+  // Krankenakte: Behandlung über mehrere Tage (docs/gesundheit.md).
+  `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "treatment_until" date`,
   // Passwort vergessen (docs/konto.md).
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamp with time zone",
   `CREATE TABLE IF NOT EXISTS "password_resets" (

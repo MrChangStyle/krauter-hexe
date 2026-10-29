@@ -10,6 +10,7 @@ import { beeColoniesTable, beeTreatmentsTable, db, farmAnimalsTable, farmsTable,
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 
 import { FarmDataError, listAnimals, notFound, text, validDate } from './farmAnimals';
+import { addDays } from './feedSeason';
 import { adjustStock, usableMedicine, withdrawalFor } from './medicines';
 import { checkRepeat, scheduleRepeat, type MedicalRepeat } from './medicalRepeat';
 
@@ -25,6 +26,18 @@ async function assertAnimal(farmId: number, animalId: number): Promise<{ species
 
 // ── Health records ───────────────────────────────────────────────────────────
 
+/** A treatment over several days lasts at most this long (Richtwert). */
+export const MAX_TREATMENT_DAYS = 90;
+
+/**
+ * Last day of the Wartezeit: counted from the last day of the treatment (or
+ * its only day). Null without a withdrawal period.
+ */
+export function withdrawalUntil(r: { date: string; treatmentUntil: string | null; withdrawalPeriodDays: number | null }): string | null {
+  if (!r.withdrawalPeriodDays) return null;
+  return addDays(r.treatmentUntil ?? r.date, r.withdrawalPeriodDays);
+}
+
 const medicalColumns = {
   id: medicalRecordsTable.id,
   animalId: medicalRecordsTable.animalId,
@@ -33,6 +46,7 @@ const medicalColumns = {
   treatment: medicalRecordsTable.treatment,
   medication: medicalRecordsTable.medication,
   withdrawalPeriodDays: medicalRecordsTable.withdrawalPeriodDays,
+  treatmentUntil: medicalRecordsTable.treatmentUntil,
   vet: medicalRecordsTable.vet,
   notes: medicalRecordsTable.notes,
   medicineId: medicalRecordsTable.medicineId,
@@ -63,6 +77,8 @@ export interface MedicalInput {
   treatment?: unknown;
   medication?: unknown;
   withdrawalPeriodDays?: number | null;
+  /** Last day of a treatment over several days (empty: just the date). */
+  treatmentUntil?: unknown;
   vet?: unknown;
   notes?: unknown;
   /** From the Arzneimittel-Vorrat, with the amount given (its unit). */
@@ -77,8 +93,15 @@ function medicalValues(input: MedicalInput) {
   if (days !== null && (!Number.isInteger(days) || days < 0 || days > 999)) {
     throw new FarmDataError(400, 'Die Wartezeit muss zwischen 0 und 999 Tagen liegen.');
   }
+  const date = validDate(input.date, 'Datum');
+  const until = input.treatmentUntil == null || input.treatmentUntil === '' ? null : input.treatmentUntil;
+  // May lie ahead: a treatment that is still running.
+  if (until !== null && (typeof until !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(until) || until < date || until > addDays(date, MAX_TREATMENT_DAYS))) {
+    throw new FarmDataError(400, `Die Behandlung endet frühestens am Tag des Eintrags und höchstens ${MAX_TREATMENT_DAYS} Tage danach.`);
+  }
   return {
-    date: validDate(input.date, 'Datum'),
+    date,
+    treatmentUntil: until === date ? null : until,
     diagnosis: text(input.diagnosis, 200, 'Die Diagnose', true),
     treatment: text(input.treatment, 2000, 'Die Behandlung'),
     medication: text(input.medication, 200, 'Das Medikament'),

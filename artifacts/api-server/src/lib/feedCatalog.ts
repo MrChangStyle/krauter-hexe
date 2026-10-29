@@ -90,6 +90,7 @@ export const FEED_CATALOG: readonly Feed[] = [
   // Gänse, Enten, Puten, Wachteln (docs/gefluegel.md) – typical label values.
   f('wassergefluegel', 'Alleinfutter Enten und Gänse', 'compound', [88, 17.5, 4, 5, 12, 6, 10], { forSpecies: ['goose', 'duck'], hint: 'ohne Kokzidiostatikum; in der Legezeit Muschelkalk dazu' }),
   f('puten', 'Puten-Alleinfutter', 'compound', [88, 22, 5, 4, 10, 7, 15], { forSpecies: ['turkey'], hint: 'Küken in den ersten Wochen mit Putenstarter (über 24 % Eiweiß)' }),
+  f('laufvogel', 'Laufvogel-Alleinfutter (Strauß/Nandu)', 'compound', [88, 18, 3.5, 9, 15, 6, 15], { forSpecies: ['rhea'], hint: 'als Ergänzung zur Weide' }),
   f('wachtel', 'Wachtel-Legefutter', 'compound', [88, 21, 5, 4, 30, 6, 15], { forSpecies: ['quail'], hint: 'fein gekörnt, etwa 25–30 g je Tier und Tag' }),
   f('kaninchenpellets', 'Kaninchen-Alleinfutter (Pellets)', 'compound', [89, 17, 3.5, 17, 10, 6, 15]),
   f('meerschweinchenpellets', 'Meerschweinchen-Pellets', 'compound', [89, 18, 3.5, 15, 9, 6, 15]),
@@ -97,11 +98,11 @@ export const FEED_CATALOG: readonly Feed[] = [
   f('milchleistungsfutter', 'Milchleistungsfutter (Ziege/Schaf/Rind)', 'compound', [88, 20, 4, 9, 9, 5.5, 20]),
   f('schweinefutter', 'Schweine-Alleinfutter', 'compound', [88, 18, 3.5, 4.5, 7.5, 5.5, 20]),
   // ── Mineralfutter ──
-  f('muschelkalk', 'Muschelkalk / Austernschalen', 'mineral', [99, 0, 0, 0, 380, 0.5, 0], { forSpecies: ['poultry', 'goose', 'duck', 'turkey', 'quail'], hint: 'zur freien Aufnahme in einer eigenen Schale' }),
+  f('muschelkalk', 'Muschelkalk / Austernschalen', 'mineral', [99, 0, 0, 0, 380, 0.5, 0], { forSpecies: ['poultry', 'goose', 'duck', 'turkey', 'quail', 'rhea'], hint: 'zur freien Aufnahme in einer eigenen Schale' }),
   f('mineral_rind', 'Mineralfutter Rind', 'mineral', [95, 0, 0, 0, 140, 60, 1000], { forSpecies: ['cattle'] }),
   f('mineral_schaf', 'Mineralfutter Schaf (kupferarm)', 'mineral', [95, 0, 0, 0, 150, 40, 10], { forSpecies: ['sheep'] }),
   f('mineral_ziege', 'Mineralfutter Ziege', 'mineral', [95, 0, 0, 0, 140, 50, 600], { forSpecies: ['goat'] }),
-  f('mineral_pferd', 'Mineralfutter Pferd', 'mineral', [95, 0, 0, 0, 150, 50, 1000], { forSpecies: ['horse'] }),
+  f('mineral_pferd', 'Mineralfutter Pferd', 'mineral', [95, 0, 0, 0, 150, 50, 1000], { forSpecies: ['horse', 'donkey'] }),
   // Alpakas: their own mineral feed (zinc, selenium, vitamin D) instead of sheep or cattle feed; copper differs by product.
   f('mineral_alpaka', 'Mineralfutter Alpaka/Lama', 'mineral', [95, 0, 0, 0, 140, 60, null], { forSpecies: ['alpaca'], hint: 'mit Zink, Selen und Vitamin D; im Winter wichtig, wenn wenig Sonne ist' }),
 ];

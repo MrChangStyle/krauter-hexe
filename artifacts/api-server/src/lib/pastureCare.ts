@@ -133,7 +133,7 @@ type WormGroup = 'smallRuminant' | 'cattle' | 'horse' | 'pig' | 'poultry';
  * Goats and sheep share their worms – and alpacas largely the same ones (Roter
  * Magenwurm), so they count as one group; the others mostly keep their own.
  */
-const GROUP: Partial<Record<FarmSpecies, WormGroup>> = { goat: 'smallRuminant', sheep: 'smallRuminant', alpaca: 'smallRuminant', cattle: 'cattle', horse: 'horse', pig: 'pig', poultry: 'poultry', goose: 'poultry', duck: 'poultry', turkey: 'poultry', quail: 'poultry' };
+const GROUP: Partial<Record<FarmSpecies, WormGroup>> = { goat: 'smallRuminant', sheep: 'smallRuminant', alpaca: 'smallRuminant', cattle: 'cattle', horse: 'horse', donkey: 'horse', pig: 'pig', poultry: 'poultry', goose: 'poultry', duck: 'poultry', turkey: 'poultry', quail: 'poultry', rhea: 'poultry' };
 
 interface ParasiteRule {
   /** Richtwert: how long larvae or eggs from earlier grazing stay a risk. */

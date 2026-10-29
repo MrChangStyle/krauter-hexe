@@ -51,4 +51,4 @@ Unter jeder Tierart-Auswahl (Tiergruppe anlegen, Tier bearbeiten) steht „Deine
 
 - **Fachlich prüfen:** Alle Bedarfswerte, Brutdauern, Kältegrenzen und Startrationen sind Richtwerte. Sie sollen von einer Fachperson (Geflügelgesundheitsdienst) geprüft werden.
 - **Legeleistung:** Gänse und Puten legen nur im Frühjahr. Die gemeinsame Legeleistung aller Hennen sinkt deshalb, wenn sie mitgezählt werden. Eine Legeleistung je Art wäre eine spätere Verbesserung.
-- **Nandus und Esel** folgen in Schritt 5b.
+- **Nandus** gehören seit Schritt 5b auch zur Geflügel-Familie (`docs/nandu-esel.md`).

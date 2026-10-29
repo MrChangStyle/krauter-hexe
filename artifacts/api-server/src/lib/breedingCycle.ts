@@ -66,6 +66,14 @@ export const CYCLES: Partial<Record<FarmSpecies, CycleRule>> = {
     restDays: 7,
     signs: 'Rossig: häufiger Harnabsatz, „Blitzen“, sucht den Hengst, Schweif zur Seite.',
   },
+  donkey: {
+    cycleDays: 23,
+    heatDays: 6,
+    season: [3, 4, 5, 6, 7, 8, 9],
+    seasonText: 'März bis September',
+    restDays: 9,
+    signs: 'Rossig: „Maulen“ (Kaubewegungen mit offenem Maul), häufiger Harnabsatz, sucht den Hengst.',
+  },
   guineaPig: {
     cycleDays: 16,
     heatDays: 1,
@@ -89,6 +97,7 @@ export const WEANING: Partial<Record<FarmSpecies, [number, string]>> = {
   pig: [35, 'Ferkel absetzen – nicht vor vier Wochen (Tierschutz-Nutztierhaltungsverordnung).'],
   cattle: [240, 'Kalb absetzen (Mutterkuhhaltung, etwa acht Monate).'],
   horse: [180, 'Fohlen absetzen (etwa sechs Monate) – am besten mit einem vertrauten Gefährten.'],
+  donkey: [210, 'Eselfohlen absetzen (etwa sechs bis acht Monate) – nie allein, immer mit einem vertrauten Esel.'],
   alpaca: [180, 'Crias absetzen (etwa sechs Monate, Richtwert mindestens 25 kg) – Hengstfohlen dann von den Stuten trennen.'],
   cat: [84, 'Kätzchen frühestens mit zwölf Wochen abgeben.'],
   dog: [56, 'Welpen frühestens mit acht Wochen abgeben (Tierschutz-Hundeverordnung).'],

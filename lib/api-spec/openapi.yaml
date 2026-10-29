@@ -11965,7 +11965,7 @@ components:
           description: For a farm shared with the viewer (not admin) – the name of its first admin, to tell farms with the same name apart.
     FarmSpecies:
       type: string
-      enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, alpaca, goose, duck, turkey, quail, other]
+      enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, alpaca, goose, duck, turkey, quail, rhea, donkey, other]
     AnimalSex:
       type: string
       enum: [female, male, neutered, unknown]

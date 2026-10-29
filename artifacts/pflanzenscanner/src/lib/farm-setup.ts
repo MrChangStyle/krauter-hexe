@@ -27,6 +27,8 @@ const GROUP_NAMES: Record<FarmSpecies, string> = {
   duck: "Enten",
   turkey: "Puten",
   quail: "Wachteln",
+  rhea: "Nandus",
+  donkey: "Esel",
   cat: "Katzen",
   dog: "Hunde",
   other: "Tiere",

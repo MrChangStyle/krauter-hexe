@@ -49,6 +49,8 @@ const SPECIES_DE: Record<FarmSpecies, string> = {
   duck: 'Enten',
   turkey: 'Puten',
   quail: 'Wachteln',
+  rhea: 'Nandus',
+  donkey: 'Esel',
   other: 'sonstige Tiere',
 };
 
@@ -392,7 +394,7 @@ function ionophoreWarnings(species: FarmSpecies, items: ResolvedItem[]): Warning
   return items.flatMap((r) => {
     const found = ionophoresIn(r.additives ?? []);
     if (found.length === 0) return [];
-    const harm = species === 'horse' ? 'schon kleine Mengen sind für Pferde tödlich' : `nur für Hühner und Puten bestimmt, für ${SPECIES_DE[species]} gefährlich`;
+    const harm = species === 'horse' || species === 'donkey' ? `schon kleine Mengen sind für ${SPECIES_DE[species]} tödlich` : `nur für Hühner und Puten bestimmt, für ${SPECIES_DE[species]} gefährlich`;
     return [{ kind: 'ionophore' as const, text: `${r.name} enthält ${found.join(', ')} (Kokzidiostatikum) – ${harm}.` }];
   });
 }

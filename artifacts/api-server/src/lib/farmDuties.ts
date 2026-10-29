@@ -20,7 +20,7 @@ import { FarmDataError, notFound, text } from './farmAnimals';
 import { addDays } from './feedSeason';
 import { logger } from './logger';
 import { berlinDay } from './monitoring';
-import { POULTRY_SPECIES, WATERFOWL } from './species';
+import { EQUIDS, POULTRY_SPECIES, WATERFOWL } from './species';
 import { sendPushToUser } from './webPush';
 
 export type DutyKind = 'once' | 'yearly' | 'rule' | 'tip';
@@ -40,11 +40,11 @@ export interface DutyDef {
 }
 
 /** Species the veterinary office registers (ViehVerkV § 26) and the Tierseuchenkassen insure. */
-const LIVESTOCK: FarmSpecies[] = [...POULTRY_SPECIES, 'goat', 'sheep', 'pig', 'cattle', 'horse'];
+const LIVESTOCK: FarmSpecies[] = [...POULTRY_SPECIES, 'goat', 'sheep', 'pig', 'cattle', ...EQUIDS];
 /** Species the veterinary office registers: the livestock plus the New World camelids (alpacas). */
 const REGISTERED: FarmSpecies[] = [...LIVESTOCK, 'alpaca'];
 /** Farm animals in the sense of the ban on catering waste. */
-const FOOD_ANIMALS: FarmSpecies[] = [...POULTRY_SPECIES, 'goat', 'sheep', 'pig', 'cattle', 'horse', 'rabbit', 'alpaca'];
+const FOOD_ANIMALS: FarmSpecies[] = [...POULTRY_SPECIES, 'goat', 'sheep', 'pig', 'cattle', ...EQUIDS, 'rabbit', 'alpaca'];
 
 export const DUTIES: DutyDef[] = [
   {
@@ -116,7 +116,7 @@ export const DUTIES: DutyDef[] = [
   {
     key: 'equine_pass',
     kind: 'rule',
-    species: ['horse'],
+    species: [...EQUIDS],
     title: 'Equidenpass und Chip',
     text: 'Jedes Pferd, Pony und jeder Esel braucht einen Equidenpass und einen Transponder (Chip) – Fohlen bis spätestens zwölf Monate nach der Geburt. Der Pass begleitet das Tier immer, auch beim Transport.',
     source: 'Durchführungsverordnung (EU) 2021/963',
@@ -195,6 +195,31 @@ export const DUTIES: DutyDef[] = [
     title: 'Wachteln: Voliere statt Käfig',
     text: 'Japanwachteln brauchen Platz zum Laufen, Scharren und Sandbaden und einen Rückzugsort; die Decke weich oder hoch genug, weil sie bei Schreck senkrecht hochspringen. Richtwert: ein Hahn auf vier bis fünf Hennen.',
     source: 'Merkblätter der Veterinärämter',
+  },
+  // Nandus und Esel (docs/nandu-esel.md).
+  {
+    key: 'rhea_permit',
+    kind: 'once',
+    species: ['rhea'],
+    title: 'Nandus: Gehege und Genehmigung klären',
+    text: 'Nandus brauchen ein großes, ausbruchsicheres Gehege mit Laufstrecke und einen Unterstand. Fragt vor dem Kauf beim Veterinäramt und bei der unteren Naturschutzbehörde, ob ihr eine Genehmigung braucht (Gehege, Artenschutz-Nachweis) – das regelt das Bundesland.',
+    source: 'Landesrecht, Bundesnaturschutzgesetz',
+  },
+  {
+    key: 'rhea_group',
+    kind: 'tip',
+    species: ['rhea'],
+    title: 'Nandus in der Gruppe halten',
+    text: 'Nandus leben in Gruppen; Richtwert ein Hahn auf drei bis fünf Hennen. In der Brutzeit brütet der Hahn und verteidigt das Nest – dann vorsichtig ins Gehege gehen.',
+    source: 'Merkblätter der Veterinärämter',
+  },
+  {
+    key: 'donkey_company',
+    kind: 'rule',
+    species: ['donkey'],
+    title: 'Esel nie allein halten',
+    text: 'Esel sind Herdentiere und brauchen einen Artgenossen – ein Pferd ersetzt ihn nur schlecht. Dazu ein trockener Unterstand: Eselfell ist nicht wasserdicht.',
+    source: 'Tierschutzgesetz § 2, Leitlinien Tierschutz im Pferdesport/Equidenhaltung',
   },
   {
     key: 'rabbit_vaccination',
@@ -502,6 +527,8 @@ const SPECIES_PLURAL: Record<FarmSpecies, string> = {
   duck: 'Enten',
   turkey: 'Puten',
   quail: 'Wachteln',
+  rhea: 'Nandus',
+  donkey: 'Esel',
   cat: 'Katzen',
   dog: 'Hunde',
   other: 'Tiere',

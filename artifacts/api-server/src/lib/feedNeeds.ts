@@ -77,6 +77,20 @@ export const FEED_NEEDS: Partial<Record<FarmSpecies, Partial<Record<LifeStage, N
     growth: n(0.1, 0.015, [24, 28], [2, 5], [8, 12], [6, 8], 0.03),
     winter: n(0.18, 0.025, [17, 20], [2, 6], [8, 12], [4, 7], 0.04),
   },
+  // Nandus und Esel (docs/nandu-esel.md) – Richtwerte.
+  rhea: {
+    maintenance: n(25, 1, [14, 18], [8, 18], [10, 16], [4, 7], 4),
+    laying: n(25, 1.1, [17, 20], [8, 16], [20, 30], [5, 7], 4),
+    growth: n(10, 0.6, [18, 22], [6, 12], [12, 16], [6, 8], 2),
+    winter: n(25, 1.1, [14, 18], [8, 18], [10, 16], [4, 7], 4),
+  },
+  // Donkeys: about 1.5 % of body weight as dry matter, much fibre, little protein.
+  donkey: {
+    maintenance: n(200, 3, [6, 10], [28, 45], [2.5, 6], [1.7, 4], 18),
+    pregnancy: n(220, 3.3, [8, 11], [25, 40], [4, 7], [3, 5], 20),
+    lactation: n(200, 4, [10, 13], [22, 38], [5, 8], [3, 5], 30),
+    winter: n(200, 3.3, [6, 10], [28, 45], [2.5, 6], [1.7, 4], 18),
+  },
   rabbit: {
     maintenance: n(3, 0.12, [12, 16], [18, 30], [4, 10], [3, 6], 0.3),
     growth: n(2, 0.12, [15, 18], [14, 20], [4, 8], [3, 6], 0.25),
@@ -200,6 +214,15 @@ const TIPS: Partial<Record<FarmSpecies | '*', Partial<Record<`${Nutrient}:${'low
   quail: {
     'crudeProtein:low': 'Wachteln brauchen eiweißreiches Futter (Wachtel- oder Putenfutter), reine Körner reichen nicht.',
     'calcium:low': 'Fein gemahlenen Muschelkalk zur freien Aufnahme anbieten.',
+  },
+  rhea: {
+    'crudeFibre:low': 'Mehr Weide und Grünfutter – Nandus fressen vor allem Pflanzen.',
+    'calcium:low': 'In der Legezeit Muschelkalk anbieten.',
+  },
+  donkey: {
+    'crudeProtein:high': 'Esel brauchen sehr wenig Eiweiß: mehr Stroh, weniger Heu, kein Kraftfutter.',
+    'crudeFibre:low': 'Mehr Stroh (Gerste oder Hafer) zur Beschäftigung – Esel sind Raufutterverwerter.',
+    'amount:high': 'Esel verfetten schnell und bekommen dann Hufrehe – die Ration verringern, mehr Stroh statt Heu.',
   },
   rabbit: {
     'crudeFibre:low': 'Mehr Heu zur freien Aufnahme, weniger Pellets und Getreide.',

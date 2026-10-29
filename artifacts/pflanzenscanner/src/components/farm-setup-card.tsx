@@ -27,7 +27,7 @@ function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
 }
 
-const QUICK_SPECIES: FarmSpecies[] = ["poultry", "duck", "goose", "turkey", "quail", "rabbit", "guineaPig", "goat", "sheep", "alpaca", "pig", "horse", "cattle", "cat", "dog"];
+const QUICK_SPECIES: FarmSpecies[] = ["poultry", "duck", "goose", "turkey", "quail", "rhea", "rabbit", "guineaPig", "goat", "sheep", "alpaca", "pig", "horse", "donkey", "cattle", "cat", "dog"];
 
 function QuickStartDialog({ farm, onClose }: { farm: FarmSummary; onClose: () => void }) {
   const queryClient = useQueryClient();

@@ -102,6 +102,19 @@ export const BREEDING: Partial<Record<FarmSpecies, SpeciesRule>> = {
     young: 'Wachtelküken',
     prefix: 'WK',
   },
+  // Nandus (docs/nandu-esel.md): the cock broods; thick shells – weigh rather than candle.
+  rhea: {
+    kind: 'incubation',
+    days: 36,
+    early: 2,
+    late: 3,
+    steps: [
+      [14, 'Eier wiegen statt schieren: bis zum Schlupf sollten sie etwa 13–15 % Gewicht verlieren.'],
+      [-3, 'Nicht mehr wenden – Schlupfruhe. Küken schlüpfen oft über zwei Tage verteilt.'],
+    ],
+    young: 'Nandu-Küken',
+    prefix: 'NK',
+  },
   rabbit: {
     kind: 'pregnancy',
     days: 31,
@@ -189,6 +202,20 @@ export const BREEDING: Partial<Record<FarmSpecies, SpeciesRule>> = {
     ],
     young: 'Fohlen',
     prefix: 'FO',
+  },
+  // Esel (docs/nandu-esel.md): about twelve months, with a wide range.
+  donkey: {
+    kind: 'pregnancy',
+    days: 365,
+    early: 20,
+    late: 30,
+    steps: [
+      [16, 'Trächtigkeitsuntersuchung beim Tierarzt (Ultraschall).'],
+      [-60, 'Letzte zwei Monate: Futter etwas steigern, aber Verfettung vermeiden.'],
+      [-30, 'Abfohlbox vorbereiten und das Euter beobachten.'],
+    ],
+    young: 'Eselfohlen',
+    prefix: 'EF',
   },
   // Alpakas (docs/alpaka.md): about 11.5 months, often longer in autumn and
   // winter; the mare ovulates on mating, so there is no heat to watch.

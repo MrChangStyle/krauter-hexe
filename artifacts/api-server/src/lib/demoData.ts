@@ -142,6 +142,8 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
 
   // Enten und Gänse (docs/gefluegel.md): ducks from the quick start (ration, eggs, bathing water) and a goose brood.
   await quickStart(farmId, { species: 'duck', count: 3, name: 'Laufenten' });
+  // Esel (docs/nandu-esel.md): two, never one – hooves, faecal sample and teeth from the quick start.
+  await quickStart(farmId, { species: 'donkey', count: 2, name: 'Esel' });
   await createBreeding(farmId, { species: 'goose', startedOn: ago(9), eggCount: 5, durationDays: 30, notes: 'Demo: Gänseeier im Brutapparat' });
 
   // Pflichten: the farm's registration number (made up).

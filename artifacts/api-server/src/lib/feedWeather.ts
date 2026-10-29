@@ -35,6 +35,9 @@ export const COLD_RULES: Partial<Record<FarmSpecies, ColdRule>> = {
   duck: { limit: -5, feeds: ['compound', 'grain'], what: 'Körner' },
   turkey: { limit: 0, feeds: ['compound', 'grain'], what: 'Körner und Putenfutter' },
   quail: { limit: 5, feeds: ['compound', 'grain'], what: 'Wachtelfutter' },
+  rhea: { limit: -10, feeds: ['roughage', 'compound'], what: 'Heu und Laufvogelfutter' },
+  // No waterproof coat: wet cold hits donkeys earlier than horses.
+  donkey: { limit: 0, feeds: ['roughage'], what: 'Heu und Stroh' },
 };
 
 /** More than this is no longer a matter of the ration – the shelter needs help. */

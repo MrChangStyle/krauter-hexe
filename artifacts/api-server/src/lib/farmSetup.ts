@@ -94,8 +94,17 @@ export const START_RATIONS: Partial<Record<FarmSpecies, { stage: LifeStage; item
   // Most hobby turkeys are raised for meat: the quick start sets them up growing.
   turkey: { stage: 'growth', items: [['puten', 290]] },
   quail: { stage: 'laying', items: [['wachtel', 28]] },
+  rhea: { stage: 'maintenance', items: [['laufvogel', 700], ['gras', 2000]] },
+  donkey: { stage: 'maintenance', items: [['stroh', 1700], ['heu', 1700], ['mineral_pferd', 30]] },
   pig: { stage: 'maintenance', items: [['schweinefutter', 2600]] },
 };
+
+/** The usual care of donkeys as stall tasks (Richtwerte). */
+export const DONKEY_TASKS = [
+  { actionType: 'Klauen-/Hufpflege', notes: 'Hufe auskratzen und vom Hufschmied ausschneiden lassen', intervalValue: 8, intervalUnit: 'Wochen' },
+  { actionType: 'Gesundheitskontrolle', notes: 'Kotprobe zum Tierarzt – entwurmt wird nur nach Befund', intervalValue: 4, intervalUnit: 'Monate' },
+  { actionType: 'Gesundheitskontrolle', notes: 'Zähne vom Tierarzt kontrollieren lassen', intervalValue: 12, intervalUnit: 'Monate' },
+] as const;
 
 /** The usual care of alpacas as stall tasks (Richtwerte). */
 export const ALPACA_TASKS = [
@@ -162,6 +171,12 @@ export async function quickStart(farmId: number, input: QuickStartInput): Promis
   if (WATERFOWL.includes(input.species)) {
     tasks += 1;
     await createFarmTask(farmId, { actionType: 'Tränken', herdId, notes: 'Badewasser wechseln, Badestelle sauber halten', intervalValue: 1, intervalUnit: 'Tage', reminderTime: '09:00' });
+  }
+  if (input.species === 'donkey') {
+    for (const t of DONKEY_TASKS) {
+      tasks += 1;
+      await createFarmTask(farmId, { ...t, herdId, reminderTime: '10:00' });
+    }
   }
   if (input.species === 'alpaca') {
     // Alpakas (docs/alpaka.md): toenails, a faecal sample, the yearly shearing – Richtwerte.

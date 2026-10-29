@@ -1500,12 +1500,12 @@ export const GetFeedReferenceResponse = zod.object({
   "key": zod.string(),
   "name": zod.string(),
   "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
-  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])).nullable(),
+  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])).nullable(),
   "botanicalName": zod.string().nullable(),
   "hint": zod.string().nullable()
 }))),
   "species": zod.array(zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "stages": zod.array(zod.enum(['maintenance', 'growth', 'laying', 'molt', 'pregnancy', 'lactation', 'winter'])),
   "hasNeeds": zod.boolean()
 }))
@@ -1566,7 +1566,7 @@ export const AddFarmFeedBody = zod.object({
   "phosphorus": zod.number(),
   "copper": zod.number().nullish()
 }).describe('As printed on the label (as fed) – crude nutrients, calcium and phosphorus in %, copper in mg\/kg'),
-  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])).nullish(),
+  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])).nullish(),
   "botanicalName": zod.string().nullish(),
   "additives": zod.array(zod.string().max(addFarmFeedBodyAdditivesItemMax)).max(addFarmFeedBodyAdditivesMax).nullish()
 })
@@ -1604,7 +1604,7 @@ export const ReadFeedLabelBody = zod.object({
 export const ReadFeedLabelResponse = zod.object({
   "name": zod.string().nullable(),
   "category": zod.enum(['roughage', 'fresh', 'grain', 'compound', 'vegetable', 'mineral']),
-  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "forSpecies": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "dryMatter": zod.number().nullable().describe('% – from moisture, only when printed'),
   "label": zod.object({
   "crudeProtein": zod.number().nullable(),
@@ -1643,7 +1643,7 @@ export const ListRationsResponseItem = zod.object({
   "kind": zod.enum(['animal', 'herd']),
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "count": zod.number()
 }),
   "season": zod.enum(['all', 'summer', 'winter']).describe('all year, summer (April–October) or winter (November–March)'),
@@ -1750,7 +1750,7 @@ export const SaveRationResponse = zod.object({
   "kind": zod.enum(['animal', 'herd']),
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "count": zod.number()
 }),
   "season": zod.enum(['all', 'summer', 'winter']).describe('all year, summer (April–October) or winter (November–March)'),
@@ -2061,7 +2061,7 @@ export const RemoveFeedStockResponse = zod.void()
 export const ListFeedRecipesResponseItem = zod.object({
   "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
   "title": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
   "ingredients": zod.array(zod.object({
   "name": zod.string(),
@@ -2090,7 +2090,7 @@ export const submitFeedRecipeBodyHygieneMax = 10;
 
 export const SubmitFeedRecipeBody = zod.object({
   "title": zod.string().max(submitFeedRecipeBodyTitleMax),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
   "ingredients": zod.array(zod.object({
   "name": zod.string(),
@@ -2103,7 +2103,7 @@ export const SubmitFeedRecipeBody = zod.object({
 export const SubmitFeedRecipeResponse = zod.object({
   "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
   "title": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
   "ingredients": zod.array(zod.object({
   "name": zod.string(),
@@ -2132,7 +2132,7 @@ export const DeleteFeedRecipeResponse = zod.void()
 export const ListFeedRecipeDraftsResponseItem = zod.object({
   "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
   "title": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
   "ingredients": zod.array(zod.object({
   "name": zod.string(),
@@ -2159,7 +2159,7 @@ export const ApproveFeedRecipeParams = zod.object({
 export const ApproveFeedRecipeResponse = zod.object({
   "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
   "title": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
   "ingredients": zod.array(zod.object({
   "name": zod.string(),
@@ -2182,7 +2182,7 @@ export const RejectFeedRecipeParams = zod.object({
 export const RejectFeedRecipeResponse = zod.object({
   "id": zod.string().describe('b:<key> built in, u:<id> sent in'),
   "title": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "kind": zod.enum(['fermented', 'sprouts', 'mix', 'treat']),
   "ingredients": zod.array(zod.object({
   "name": zod.string(),
@@ -2204,19 +2204,19 @@ export const GetFeedCalendarParams = zod.object({
 
 export const GetFeedCalendarResponse = zod.object({
   "year": zod.number(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "months": zod.array(zod.object({
   "month": zod.number(),
   "fresh": zod.array(zod.object({
   "key": zod.string(),
   "name": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "planted": zod.boolean()
 })),
   "stored": zod.array(zod.object({
   "key": zod.string(),
   "name": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "planted": zod.boolean()
 }))
 }))
@@ -2525,7 +2525,7 @@ export const ListBreedingParams = zod.object({
 
 export const ListBreedingResponseItem = zod.object({
   "id": zod.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "kind": zod.enum(['pregnancy', 'incubation']),
   "motherId": zod.number().nullable(),
   "motherName": zod.string().nullable(),
@@ -2568,7 +2568,7 @@ export const createBreedingBodyNotesMax = 2000;
 
 
 export const CreateBreedingBody = zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']).optional(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']).optional(),
   "motherId": zod.number().nullish(),
   "fatherId": zod.number().nullish(),
   "fatherName": zod.string().max(createBreedingBodyFatherNameMax).nullish(),
@@ -2580,7 +2580,7 @@ export const CreateBreedingBody = zod.object({
 
 export const CreateBreedingResponse = zod.object({
   "id": zod.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "kind": zod.enum(['pregnancy', 'incubation']),
   "motherId": zod.number().nullable(),
   "motherName": zod.string().nullable(),
@@ -2619,7 +2619,7 @@ export const GetBreedingCyclesResponse = zod.object({
   "animals": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "status": zod.enum(['pregnant', 'nursing', 'resting', 'open']),
   "until": zod.string().nullable().describe('Due day (pregnant), weaning (nursing) or ready to mate (resting).'),
   "lastHeat": zod.string().nullable(),
@@ -2635,7 +2635,7 @@ export const GetBreedingCyclesResponse = zod.object({
 })),
   "weanings": zod.array(zod.object({
   "recordId": zod.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "motherName": zod.string().nullable(),
   "bornOn": zod.string(),
   "alive": zod.number(),
@@ -2666,7 +2666,7 @@ export const AddHeatResponse = zod.object({
   "animals": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "status": zod.enum(['pregnant', 'nursing', 'resting', 'open']),
   "until": zod.string().nullable().describe('Due day (pregnant), weaning (nursing) or ready to mate (resting).'),
   "lastHeat": zod.string().nullable(),
@@ -2682,7 +2682,7 @@ export const AddHeatResponse = zod.object({
 })),
   "weanings": zod.array(zod.object({
   "recordId": zod.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "motherName": zod.string().nullable(),
   "bornOn": zod.string(),
   "alive": zod.number(),
@@ -2704,7 +2704,7 @@ export const DeleteHeatResponse = zod.object({
   "animals": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "status": zod.enum(['pregnant', 'nursing', 'resting', 'open']),
   "until": zod.string().nullable().describe('Due day (pregnant), weaning (nursing) or ready to mate (resting).'),
   "lastHeat": zod.string().nullable(),
@@ -2720,7 +2720,7 @@ export const DeleteHeatResponse = zod.object({
 })),
   "weanings": zod.array(zod.object({
   "recordId": zod.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "motherName": zod.string().nullable(),
   "bornOn": zod.string(),
   "alive": zod.number(),
@@ -2745,7 +2745,7 @@ export const updateBreedingBodyNotesMax = 2000;
 
 
 export const UpdateBreedingBody = zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']).optional(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']).optional(),
   "motherId": zod.number().nullish(),
   "fatherId": zod.number().nullish(),
   "fatherName": zod.string().max(updateBreedingBodyFatherNameMax).nullish(),
@@ -2757,7 +2757,7 @@ export const UpdateBreedingBody = zod.object({
 
 export const UpdateBreedingResponse = zod.object({
   "id": zod.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "kind": zod.enum(['pregnancy', 'incubation']),
   "motherId": zod.number().nullable(),
   "motherName": zod.string().nullable(),
@@ -2820,7 +2820,7 @@ export const EndBreedingBody = zod.object({
 export const EndBreedingResponse = zod.object({
   "record": zod.object({
   "id": zod.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "kind": zod.enum(['pregnancy', 'incubation']),
   "motherId": zod.number().nullable(),
   "motherName": zod.string().nullable(),
@@ -4799,7 +4799,7 @@ export const GetPasturesResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -4814,7 +4814,7 @@ export const GetPasturesResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -4839,7 +4839,7 @@ export const GetPasturesResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -4905,7 +4905,7 @@ export const CreatePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -4920,7 +4920,7 @@ export const CreatePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -4945,7 +4945,7 @@ export const CreatePastureResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -5012,7 +5012,7 @@ export const UpdatePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5027,7 +5027,7 @@ export const UpdatePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5052,7 +5052,7 @@ export const UpdatePastureResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -5096,7 +5096,7 @@ export const DeletePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5111,7 +5111,7 @@ export const DeletePastureResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5136,7 +5136,7 @@ export const DeletePastureResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -5160,7 +5160,7 @@ export const startGrazingBodyNotesMax = 300;
 export const StartGrazingBody = zod.object({
   "herdId": zod.number().nullish(),
   "label": zod.string().max(startGrazingBodyLabelMax).nullish(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).optional().describe('For other animals; a herd brings its own.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).optional().describe('For other animals; a herd brings its own.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "fromGrazingId": zod.number().nullish().describe('Umtreiben – the grazing the herd leaves; it ends the day before.'),
@@ -5196,7 +5196,7 @@ export const StartGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5211,7 +5211,7 @@ export const StartGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5236,7 +5236,7 @@ export const StartGrazingResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -5292,7 +5292,7 @@ export const AddPastureCutResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5307,7 +5307,7 @@ export const AddPastureCutResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5332,7 +5332,7 @@ export const AddPastureCutResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -5376,7 +5376,7 @@ export const DeletePastureCutResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5391,7 +5391,7 @@ export const DeletePastureCutResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5416,7 +5416,7 @@ export const DeletePastureCutResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -5464,7 +5464,7 @@ export const EndGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5479,7 +5479,7 @@ export const EndGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5504,7 +5504,7 @@ export const EndGrazingResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -5548,7 +5548,7 @@ export const DeleteGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5563,7 +5563,7 @@ export const DeleteGrazingResponse = zod.object({
   "pastureId": zod.number(),
   "herdId": zod.number().nullable(),
   "label": zod.string(),
-  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
+  "species": zod.union([zod.null(),zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])]).describe('The animals that grazed – for the parasite hints; null when unknown.'),
   "animals": zod.number(),
   "startOn": zod.string(),
   "endOn": zod.string().nullable().describe('Null – still grazing.'),
@@ -5588,7 +5588,7 @@ export const DeleteGrazingResponse = zod.object({
   "herds": zod.array(zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "animals": zod.number()
 })),
   "year": zod.number()
@@ -6681,14 +6681,14 @@ export const GetFarmDutiesResponse = zod.object({
   "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "duties": zod.array(zod.object({
   "key": zod.string(),
   "kind": zod.enum(['once', 'yearly', 'rule', 'tip']),
   "title": zod.string(),
   "text": zod.string(),
   "source": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "status": zod.enum(['open', 'done', 'due', 'overdue', 'upcoming', 'info']),
   "period": zod.string().nullable().describe('\"once\" or the year of the stock report.'),
   "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
@@ -6696,7 +6696,7 @@ export const GetFarmDutiesResponse = zod.object({
   "stock": zod.object({
   "day": zod.string().describe('The stock day (1 or 3 January depending on the Land, YYYY-MM-DD).'),
   "counts": zod.array(zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "count": zod.number()
 })),
   "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
@@ -6736,14 +6736,14 @@ export const SetFarmDutySettingsResponse = zod.object({
   "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "duties": zod.array(zod.object({
   "key": zod.string(),
   "kind": zod.enum(['once', 'yearly', 'rule', 'tip']),
   "title": zod.string(),
   "text": zod.string(),
   "source": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "status": zod.enum(['open', 'done', 'due', 'overdue', 'upcoming', 'info']),
   "period": zod.string().nullable().describe('\"once\" or the year of the stock report.'),
   "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
@@ -6751,7 +6751,7 @@ export const SetFarmDutySettingsResponse = zod.object({
   "stock": zod.object({
   "day": zod.string().describe('The stock day (1 or 3 January depending on the Land, YYYY-MM-DD).'),
   "counts": zod.array(zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "count": zod.number()
 })),
   "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
@@ -6786,14 +6786,14 @@ export const CheckFarmDutyResponse = zod.object({
   "bees": zod.boolean().describe('Active bee colonies – the beekeeping duties apply.'),
   "holdingNumber": zod.string().nullable(),
   "housingOrderUntil": zod.string().nullable().describe('Last day (YYYY-MM-DD) of a running housing order for poultry; null without one.'),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "duties": zod.array(zod.object({
   "key": zod.string(),
   "kind": zod.enum(['once', 'yearly', 'rule', 'tip']),
   "title": zod.string(),
   "text": zod.string(),
   "source": zod.string(),
-  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])),
+  "species": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])),
   "status": zod.enum(['open', 'done', 'due', 'overdue', 'upcoming', 'info']),
   "period": zod.string().nullable().describe('\"once\" or the year of the stock report.'),
   "doneOn": zod.string().nullable().describe('YYYY-MM-DD'),
@@ -6801,7 +6801,7 @@ export const CheckFarmDutyResponse = zod.object({
   "stock": zod.object({
   "day": zod.string().describe('The stock day (1 or 3 January depending on the Land, YYYY-MM-DD).'),
   "counts": zod.array(zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "count": zod.number()
 })),
   "current": zod.boolean().describe('True when the stock day is still ahead and the counts are today\'s.')
@@ -6865,7 +6865,7 @@ export const farmQuickStartBodyNameMax = 60;
 
 
 export const FarmQuickStartBody = zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "count": zod.number().min(1).max(farmQuickStartBodyCountMax),
   "name": zod.string().max(farmQuickStartBodyNameMax).nullish()
 })
@@ -7417,7 +7417,7 @@ export const ListHerdsParams = zod.object({
 export const ListHerdsResponseItem = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "notes": zod.string().nullable(),
   "animalCount": zod.number().describe('Animals in the herd that are not archived.')
 })
@@ -7439,14 +7439,14 @@ export const createHerdBodyNotesMax = 2000;
 
 export const CreateHerdBody = zod.object({
   "name": zod.string().min(1).max(createHerdBodyNameMax),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "notes": zod.string().max(createHerdBodyNotesMax).nullish()
 })
 
 export const CreateHerdResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "notes": zod.string().nullable(),
   "animalCount": zod.number().describe('Animals in the herd that are not archived.')
 })
@@ -7468,14 +7468,14 @@ export const updateHerdBodyNotesMax = 2000;
 
 export const UpdateHerdBody = zod.object({
   "name": zod.string().min(1).max(updateHerdBodyNameMax),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "notes": zod.string().max(updateHerdBodyNotesMax).nullish()
 })
 
 export const UpdateHerdResponse = zod.object({
   "id": zod.number(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "notes": zod.string().nullable(),
   "animalCount": zod.number().describe('Animals in the herd that are not archived.')
 })
@@ -7504,7 +7504,7 @@ export const ListFarmAnimalsResponseItem = zod.object({
   "herdId": zod.number().nullable(),
   "herdName": zod.string().nullable(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -7536,7 +7536,7 @@ export const createFarmAnimalBodyNotesMax = 2000;
 
 export const CreateFarmAnimalBody = zod.object({
   "name": zod.string().max(createFarmAnimalBodyNameMax).nullish().describe('Optional – a new animal without one is called like \"Ziege 3\", an edited one keeps its name.'),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().max(createFarmAnimalBodyBreedMax).nullish(),
   "birthDate": zod.string().describe('YYYY-MM-DD, not in the future'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -7550,7 +7550,7 @@ export const CreateFarmAnimalResponse = zod.object({
   "herdId": zod.number().nullable(),
   "herdName": zod.string().nullable(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -7575,7 +7575,7 @@ export const GetFarmAnimalResponse = zod.object({
   "herdId": zod.number().nullable(),
   "herdName": zod.string().nullable(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -7607,7 +7607,7 @@ export const updateFarmAnimalBodyNotesMax = 2000;
 
 export const UpdateFarmAnimalBody = zod.object({
   "name": zod.string().max(updateFarmAnimalBodyNameMax).nullish().describe('Optional – a new animal without one is called like \"Ziege 3\", an edited one keeps its name.'),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().max(updateFarmAnimalBodyBreedMax).nullish(),
   "birthDate": zod.string().describe('YYYY-MM-DD, not in the future'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -7621,7 +7621,7 @@ export const UpdateFarmAnimalResponse = zod.object({
   "herdId": zod.number().nullable(),
   "herdName": zod.string().nullable(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -7650,7 +7650,7 @@ export const SetFarmAnimalArchivedResponse = zod.object({
   "herdId": zod.number().nullable(),
   "herdName": zod.string().nullable(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -7679,7 +7679,7 @@ export const SetFarmAnimalPhotoResponse = zod.object({
   "herdId": zod.number().nullable(),
   "herdName": zod.string().nullable(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -8524,7 +8524,7 @@ export const GetFarmExportResponse = zod.object({
   "herdId": zod.number().nullable(),
   "herdName": zod.string().nullable(),
   "name": zod.string(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "breed": zod.string().nullable(),
   "birthDate": zod.string().nullable().describe('YYYY-MM-DD'),
   "sex": zod.enum(['female', 'male', 'neutered', 'unknown']),
@@ -8588,7 +8588,7 @@ export const SuggestFarmAnimalSpeciesBody = zod.object({
 
 export const SuggestFarmAnimalSpeciesResponse = zod.object({
   "isAnimal": zod.boolean(),
-  "species": zod.union([zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),zod.null()]),
+  "species": zod.union([zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),zod.null()]),
   "breed": zod.string().nullable(),
   "confidence": zod.number().describe('0..1')
 })
@@ -8599,11 +8599,11 @@ export const SuggestFarmAnimalSpeciesResponse = zod.object({
  */
 export const GetHusbandryGuideParams = zod.object({
   "farmId": zod.coerce.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])
 })
 
 export const GetHusbandryGuideResponse = zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "summary": zod.string(),
   "nutrition": zod.string(),
   "housing": zod.string(),
@@ -8619,7 +8619,7 @@ export const GetHusbandryGuideResponse = zod.object({
  */
 export const GetHelpfulPlantsParams = zod.object({
   "farmId": zod.coerce.number(),
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other'])
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other'])
 })
 
 export const GetHelpfulPlantsResponse = zod.object({
@@ -9811,7 +9811,7 @@ export const GetGardenPlanResponse = zod.object({
   "kitchenNeedM2": zod.number(),
   "fodder": zod.object({
   "animals": zod.array(zod.object({
-  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'other']),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "count": zod.number(),
   "perDayKg": zod.number()
 })),

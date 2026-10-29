@@ -54,6 +54,9 @@ export const FARM_SPECIES = [
   "duck",
   "turkey",
   "quail",
+  // Nandus (Laufvögel, count as poultry) and donkeys (docs/nandu-esel.md).
+  "rhea",
+  "donkey",
   "other",
 ] as const;
 export type FarmSpecies = (typeof FARM_SPECIES)[number];

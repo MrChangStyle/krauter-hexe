@@ -192,6 +192,8 @@ export const NAMES: Record<FarmSpecies, { one: string; group: string; prefix: st
   duck: { one: 'Ente', group: 'Enten', prefix: 'EN' },
   turkey: { one: 'Pute', group: 'Puten', prefix: 'PU' },
   quail: { one: 'Wachtel', group: 'Wachteln', prefix: 'WA' },
+  rhea: { one: 'Nandu', group: 'Nandus', prefix: 'NA' },
+  donkey: { one: 'Esel', group: 'Esel', prefix: 'E' },
   cat: { one: 'Katze', group: 'Katzen', prefix: 'KA' },
   dog: { one: 'Hund', group: 'Hunde', prefix: 'HU' },
   other: { one: 'Tier', group: 'Tiere', prefix: 'T' },

@@ -173,6 +173,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         a: "Sie sind eigene Tierarten mit eigenem Futterbedarf, eigener Brutdauer (Gans 30, Ente 28, Pute 28, Wachtel 17 Tage) und eigenen Hinweisen bei Frost. Was du bisher als „Geflügel“ eingetragen hast, heißt jetzt „Huhn“ – führst du darunter Enten oder Gänse, stell die Tierart an der Gruppe oder am Tier um. Eine Tierart fehlt? Unter der Tierart-Auswahl auf „Anfragen“ tippen.",
       },
       {
+        q: "Was gilt für Nandus und Esel?",
+        a: "Nandus zählen als Laufvögel zum Geflügel: beim Veterinäramt anmelden, Geflügelpest-Regeln beachten, vor dem Kauf Gehege und Genehmigung klären. Brut etwa 36 Tage – die Eier wiegen statt schieren. Esel brauchen einen Artgenossen, einen Equidenpass und einen trockenen Unterstand (ihr Fell ist nicht wasserdicht); sie fressen wenig Eiweiß, deshalb startet die Ration mit viel Stroh. Alle Zahlen sind Richtwerte.",
+      },
+      {
         q: "Was gilt für Alpakas?",
         a: "Alpakas sind Herdentiere – mindestens zwei, besser drei. Der Schnellstart legt Heu und Alpaka-Mineralfutter als Ration an und erinnert an Zehennägel (alle 3 Monate), Kotprobe (alle 4 Monate) und die Schur im Frühsommer. Beim Veterinäramt anmelden; ob die Tierseuchenkasse sie will, regelt das Bundesland. Alle Zahlen sind Richtwerte.",
       },

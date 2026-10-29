@@ -16,6 +16,8 @@ export const SPECIES_LABELS: Record<FarmSpecies, string> = {
   duck: "Ente",
   turkey: "Pute",
   quail: "Wachtel",
+  rhea: "Nandu",
+  donkey: "Esel",
   other: "Sonstiges",
 };
 
@@ -25,11 +27,13 @@ export const SPECIES_ORDER: FarmSpecies[] = [
   "goose",
   "turkey",
   "quail",
+  "rhea",
   "goat",
   "sheep",
   "cattle",
   "pig",
   "horse",
+  "donkey",
   "alpaca",
   "rabbit",
   "guineaPig",
@@ -38,8 +42,8 @@ export const SPECIES_ORDER: FarmSpecies[] = [
   "other",
 ];
 
-/** Chickens and the other poultry (docs/gefluegel.md): eggs, brood, laying. */
-export const POULTRY_SPECIES: readonly FarmSpecies[] = ["poultry", "goose", "duck", "turkey", "quail"];
+/** Chickens and the other poultry, Nandus included (docs/gefluegel.md): eggs, brood, laying. */
+export const POULTRY_SPECIES: readonly FarmSpecies[] = ["poultry", "goose", "duck", "turkey", "quail", "rhea"];
 
 export function isPoultry(species: FarmSpecies): boolean {
   return POULTRY_SPECIES.includes(species);

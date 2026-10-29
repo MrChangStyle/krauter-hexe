@@ -87,7 +87,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 | Feedback | Feedback-Blase in der App, Formular auf der Homepage | `docs/feedback.md` |
 | Demo-Daten | Beispiel-Hof zum Ausprobieren | `docs/demo.md` |
 | Datenexport & -sicherung | Daten herunterladen, nächtliche DB-Sicherung | `docs/datenexport.md`, `docs/datensicherung.md` |
-| Homepage | Landingpage, Preise, Rechtstexte, Seitenpasswort, SEO mit Link-Vorschau und Sitemap | `docs/landingpage.md`, `docs/seo.md` |
+| Homepage | Landingpage, Preise, Rechtstexte, Seitenpasswort, SEO mit Link-Vorschau und Sitemap | `docs/landingpage.md`, `docs/seo.md`, `docs/rechtstexte.md` |
 
 ## 4. Konten, Zugang und Rollen
 
@@ -256,6 +256,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #117 | Rechtstexte: Datenschutz um Hof, Tiere und Wildkameras ergänzt, Nutzungsbedingungen mit Haftungshinweisen (Pilze, Giftpflanzen, Heilkräuter, Wartezeiten, Pflichten); AGB, Widerruf und Datenschutz zur Bezahlung als Entwürfe (`docs/rechtstexte.md`) |
 | 29.10.2026 | #116 | SEO: eigene HTML-Datei je öffentlicher Seite mit Titel, Beschreibung und Link-Vorschau, Vorschaubild, strukturierte Daten, sitemap.xml, robots.txt |
 | 29.10.2026 | #115 | Namensreste: Die App heißt überall „Little Farming“ (Meta-Beschreibung, Manifest, Login, Scan-Seite, PDF, Futter-KI, Nutzungsbedingungen); nur der Heilkräuter-Ratgeber heißt „Kräuter-Hexe“ |
 | 29.10.2026 | #114 | Pflichten: Fristen der Tierseuchenkasse für Brandenburg, Hessen, Mecklenburg-Vorpommern, Rheinland-Pfalz (15. Februar), Saarland und Sachsen-Anhalt ergänzt, Stichtag in Brandenburg und Sachsen-Anhalt auf den 3. Januar korrigiert; Fristen im Februar möglich |

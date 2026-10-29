@@ -160,6 +160,22 @@ export function DatenschutzPage() {
             Abs. 1 lit. b DSGVO).
           </li>
           <li>
+            <strong>Hof und Tiere:</strong> Was du für deinen Hof einträgst –
+            Tiere mit Gesundheitsakte und Behandlungen, Aufgaben, Futter,
+            Ertrag, Weiden, Bienen, Beete und Kontakte. Diese Daten gehören zum
+            Hof: Wer zum Hof gehört (Team, Vertretung, eingeladener Tierarzt),
+            sieht sie je nach Rolle und Freigabe; eine Vertretung oder ein
+            Tierarzt nur bis zum eingetragenen Tag (Art. 6 Abs. 1 lit. b DSGVO).
+          </li>
+          <li>
+            <strong>Wildkameras:</strong> Fotos, die eine eingerichtete Kamera
+            an die App schickt, speichern wir beim Hof, lassen sie auf
+            Wildtiere auswerten und leiten sie auf Wunsch an eine von dir
+            angegebene Adresse weiter. Richte die Kamera so aus, dass sie keine
+            Menschen, Wege oder fremden Grundstücke erfasst (Art. 6 Abs. 1 lit.
+            b DSGVO).
+          </li>
+          <li>
             <strong>Region:</strong> Wenn du es erlaubst, ermittelt die App aus
             deinem Standort die nächstgelegene Stadt. Gespeichert wird nur der
             Stadtname, nie die Koordinaten (Art. 6 Abs. 1 lit. a DSGVO).
@@ -221,7 +237,7 @@ export function DatenschutzPage() {
           <li>Cloudinary (Speicherung und Auslieferung der Fotos)</li>
           <li>
             Google Gemini (KI-Bestimmung und KI-Vorschläge, z. B. im Beet-Architekt und beim Standort-Check der Bienen: deine
-            Fotos werden zur Auswertung an Google übermittelt; beim KI-Aufgabenplan der Hof-Aufgaben der gesprochene oder
+            Fotos und die Bilder der Wildkameras werden zur Auswertung an Google übermittelt; beim KI-Aufgabenplan der Hof-Aufgaben der gesprochene oder
             getippte Text sowie die Namen des Teams und der Tiergruppen; bei den Alltagsnotizen nur der gesprochene oder
             getippte Text)
           </li>
@@ -256,7 +272,7 @@ export function DatenschutzPage() {
         <h2>4. Speicherdauer</h2>
         <p>
           Kontodaten speichern wir, bis du dein Konto löschst (in der App
-          unter „Home“ → „Dein Konto“). Beim Löschen
+          unter „Mehr“ → „Konto“). Beim Löschen
           entfernen wir deine persönlichen Daten; Arten, die du dem
           gemeinsamen Archiv hinzugefügt hast, bleiben ohne Bezug zu deiner
           Person erhalten. Daten zum Missbrauchsschutz werden nach spätestens
@@ -314,7 +330,43 @@ export function NutzungsbedingungenPage() {
         </p>
       </section>
       <section>
-        <h2>3. Deine Inhalte</h2>
+        <h2>3. Hinweise zu Gesundheit, Tieren und Pflichten</h2>
+        <ul>
+          <li>
+            <strong>Pilze:</strong> Kein Pilz wird allein aufgrund der App
+            gegessen. Lass jeden Speisepilz von einer Pilzsachverständigen oder
+            einem Pilzsachverständigen prüfen. Bei Verdacht auf eine Vergiftung
+            sofort den Giftnotruf oder den Notruf 112 anrufen.
+          </li>
+          <li>
+            <strong>Giftpflanzen und Futter:</strong> Angaben zur Giftigkeit
+            und zur Verträglichkeit für Tiere sind Richtwerte aus Fachliteratur
+            und KI und können unvollständig sein. Sie ersetzen nicht die
+            sichere Bestimmung vor dem Verfüttern. Futterpläne und
+            Nährstoffwerte sind Richtwerte; bei kranken, trächtigen oder jungen
+            Tieren frag deinen Tierarzt.
+          </li>
+          <li>
+            <strong>Heilkräuter:</strong> Der Heilkräuter-Ratgeber gibt
+            überliefertes Wissen wieder. Er ersetzt keine ärztliche oder
+            tierärztliche Behandlung.
+          </li>
+          <li>
+            <strong>Tierarzneimittel und Wartezeiten:</strong> Die App rechnet
+            Wartezeiten aus deinen Eingaben. Maßgeblich sind der Beipackzettel
+            und die Anweisung deines Tierarztes. Für die Abgabe von Milch, Eiern
+            und Fleisch bleibst du als Halterin oder Halter verantwortlich.
+          </li>
+          <li>
+            <strong>Pflichten und Fristen:</strong> Die Hinweise zu Anmeldung,
+            Tierseuchenkasse und Fristen sind eine Arbeitshilfe und keine
+            Rechtsberatung. Maßgeblich sind das Veterinäramt, die
+            Tierseuchenkasse und deren Bescheide.
+          </li>
+        </ul>
+      </section>
+      <section>
+        <h2>4. Deine Inhalte</h2>
         <p>
           Lade nur Fotos hoch, die du selbst aufgenommen hast und die keine
           Personen zeigen. Mit dem Hochladen erlaubst du uns, das Foto im
@@ -323,7 +375,7 @@ export function NutzungsbedingungenPage() {
         </p>
       </section>
       <section>
-        <h2>4. Sperrung</h2>
+        <h2>5. Sperrung</h2>
         <p>
           Wir können Inhalte entfernen und Konten sperren, die gegen diese
           Bedingungen verstoßen oder die App missbrauchen (z. B. durch
@@ -331,10 +383,10 @@ export function NutzungsbedingungenPage() {
         </p>
       </section>
       <section>
-        <h2>5. Konto beenden</h2>
+        <h2>6. Konto beenden</h2>
         <p>
           Du kannst dein Konto jederzeit selbst löschen: in der App unter
-          „Home“ → „Dein Konto“ → „Konto löschen“. Alternativ schreib uns an
+          „Mehr“ → „Konto“ → „Konto löschen“. Alternativ schreib uns an
           die im Impressum genannte E-Mail-Adresse.
         </p>
       </section>

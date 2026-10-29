@@ -28,7 +28,7 @@ function passwordMatches(provided: string, expected: string): boolean {
   const b = createHash("sha256").update(expected).digest();
   return timingSafeEqual(a, b);
 }
-import { requireApproved } from "../middlewares/requireApproved";
+import { requireApproved, requireOwner } from "../middlewares/requireApproved";
 import { generateCareGuide } from "../lib/plantIdentification";
 
 const router: IRouter = Router();
@@ -333,6 +333,8 @@ router.patch(
 // calling it twice on the same dataset awards 0 the second time (no double-count).
 router.post(
   "/care-guides/backfill-leaves",
+  // Maintenance: the signed-in owner AND the maintenance password.
+  requireOwner,
   async (req: Request, res: Response): Promise<void> => {
     const deletePassword = process.env.DELETE_PASSWORD;
     if (!deletePassword) {
@@ -384,6 +386,8 @@ router.post(
 // Password-gated targeted correction: awards N leaves to a specific user.
 router.post(
   "/care-guides/award-leaves",
+  // Maintenance: the signed-in owner AND the maintenance password.
+  requireOwner,
   async (req: Request, res: Response): Promise<void> => {
     const deletePassword = process.env.DELETE_PASSWORD;
     if (!deletePassword) {

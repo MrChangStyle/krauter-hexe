@@ -2,6 +2,8 @@
 
 Project overview in German, kept current with every change: `docs/PROJEKT.md`.
 
+Datentrennung (`docs/datentrennung.md`): `lib/farmIsolation.integration.test.ts` and `lib/accountIsolation.integration.test.ts` walk the real router – every farm route (stranger 404, foreign record ids, guest writes 403, caretaker without modules 403, farm A's rows unchanged), every route without sign-in (401 unless in `PUBLIC`), every `requireOwner` route, and personal records. A new route is covered automatically; a new public route must be added to `PUBLIC` with a reason.
+
 Launch plan (step by step to the public start, one PR per step): `docs/LAUNCH-PLAN.md`; status per module `docs/BESTANDSAUFNAHME.md`, decisions `docs/ENTSCHEIDUNGEN.md`, owner to-dos `docs/TODO-CHANG.md`.
 
 **Little Farming** is the app; the **Kräuterhexe** (plant/mushroom/insect scanning, archive, care tasks) is its first module, "Meine Farm" (animals) comes next — see `docs/meine-farm-app.md`. User-facing text names the app "Little Farming" (manifest, page title, header, login, push default title, PDF footers and file names `LittleFarming_*.pdf`) and the module "Kräuterhexe" (scan page badge, login subtitle). "Kräuter-Hexe" is also the name of the AI herb advisor under Werkzeug and stays. Package names, DB, Cloudinary folder and the Render service keep their old names on purpose.

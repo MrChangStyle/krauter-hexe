@@ -23,7 +23,7 @@ describe("Homepage – Tierarten", () => {
   it("shows every species of the app (and the bees), each once", () => {
     const species = Object.values(FarmSpecies).filter((s) => s !== "other");
     expect(SITE_SPECIES.map((s) => s.key).sort()).toEqual([...species, "bees"].sort());
-    expect(SITE_SPECIES.filter((s) => s.isNew).map((s) => s.key)).toEqual(["alpaca"]);
+    expect(SITE_SPECIES.filter((s) => s.isNew).map((s) => s.key)).toEqual(["duck", "goose", "turkey", "quail"]);
   });
 });
 

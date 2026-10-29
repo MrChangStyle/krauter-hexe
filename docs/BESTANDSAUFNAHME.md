@@ -16,7 +16,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 - **Was den Start blockiert** (🔴):
   - Es gibt keine Bezahlung.
   - Die Rechtstexte sind nicht geprüft.
-- **Größte fachliche Lücke:** Geflügel ist nur eine Art. Gänse, Enten und Puten lassen sich nicht getrennt führen.
+- **Größte fachliche Lücke** (seit Schritt 5a geschlossen): Geflügel war nur eine Art. Gänse, Enten und Puten ließen sich nicht getrennt führen.
 
 ## Plattform
 
@@ -58,7 +58,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 
 | Modul | Stand | Befund | Schritt |
 |---|---|---|---|
-| Meine Tiere | 🟡 | Tiergruppen, Einzeltiere, Gewicht, Gesundheitsakte. **Geflügel ist eine einzige Art**. Gänse, Enten, Puten und Wachteln brauchen eigene Werte (Futter, Brutdauer, Wetter). Nandus und Esel fehlen. Wer eine Art wünscht, kann das nur als Feedback schicken | 5 |
+| Meine Tiere | 🟡 | Tiergruppen, Einzeltiere, Gewicht, Gesundheitsakte. Seit Schritt 5a sind Gänse, Enten, Puten und Wachteln eigene Arten, und „Tierart anfragen“ steht unter jeder Tierart-Auswahl. Nandus und Esel fehlen noch (5b) | 5 |
 | Gesundheitsakte | 🟡 | Einträge, Erinnerungen, Arzneimittel mit Wartezeit. Zu prüfen ist, ob Diagnose, Verordnung, Dosis und Zeitraum vollständig sind, dazu eine Freigabe an den Tierarzt | 9 |
 | Hof- & Stall-Aufgaben | 🟡 | gemeinsame Liste, KI-Plan aus Sprache. Es fehlen Wochentage („montags und donnerstags“) und Fotos an Kommentaren | 7 |
 | Futterplaner | ✅ | Rationen, Bedarf, Vorrat, Wetter | – |

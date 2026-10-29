@@ -12,11 +12,18 @@ export const BREEDING_DAYS: Partial<Record<FarmSpecies, number>> = {
   cattle: 283,
   horse: 335,
   alpaca: 345,
+  goose: 30,
+  duck: 28,
+  turkey: 28,
+  quail: 17,
   cat: 63,
   dog: 63,
 };
 
-/** Incubation by bird (poultry is one species in the app). */
+/**
+ * Incubation by bird. "Huhn" (poultry) offers all of them: before geese, ducks,
+ * turkeys and quails were species of their own, they were kept as poultry.
+ */
 export const BIRDS: { label: string; days: number }[] = [
   { label: "Huhn", days: 21 },
   { label: "Pute", days: 28 },
@@ -25,6 +32,23 @@ export const BIRDS: { label: string; days: number }[] = [
   { label: "Gans", days: 30 },
   { label: "Wachtel", days: 17 },
 ];
+
+/** The birds to choose from for a brood of this species. */
+export function birdsFor(species: FarmSpecies): { label: string; days: number }[] {
+  const pick = (...labels: string[]) => BIRDS.filter((b) => labels.includes(b.label));
+  switch (species) {
+    case "goose":
+      return pick("Gans");
+    case "duck":
+      return pick("Ente", "Moschusente (Flugente)");
+    case "turkey":
+      return pick("Pute");
+    case "quail":
+      return pick("Wachtel");
+    default:
+      return BIRDS;
+  }
+}
 
 /** Animals that can be the mother / father of a record of this species. */
 export function parentChoices(animals: FarmAnimal[], species: FarmSpecies, role: "mother" | "father"): FarmAnimal[] {

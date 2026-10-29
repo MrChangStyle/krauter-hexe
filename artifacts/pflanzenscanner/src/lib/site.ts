@@ -184,13 +184,17 @@ export const moduleLabel = (id: ModuleId): string => MODULES.find((m) => m.id ==
 
 /**
  * The animals the app knows, for the Tiere page: every farm species but
- * "other", and the bees (their own module). `isNew` marks the latest one.
+ * "other", and the bees (their own module). `isNew` marks the latest ones.
  */
 export const SITE_SPECIES: { key: Exclude<FarmSpecies, "other"> | "bees"; label: string; emoji: string; isNew?: true }[] = [
-  { key: "poultry", label: "Hühner & Geflügel", emoji: "🐔" },
+  { key: "poultry", label: "Hühner", emoji: "🐔" },
+  { key: "duck", label: "Enten", emoji: "🦆", isNew: true },
+  { key: "goose", label: "Gänse", emoji: "🪿", isNew: true },
+  { key: "turkey", label: "Puten", emoji: "🦃", isNew: true },
+  { key: "quail", label: "Wachteln", emoji: "🐦", isNew: true },
   { key: "goat", label: "Ziegen", emoji: "🐐" },
   { key: "sheep", label: "Schafe", emoji: "🐑" },
-  { key: "alpaca", label: "Alpakas", emoji: "🦙", isNew: true },
+  { key: "alpaca", label: "Alpakas", emoji: "🦙" },
   { key: "cattle", label: "Rinder", emoji: "🐄" },
   { key: "pig", label: "Schweine", emoji: "🐖" },
   { key: "horse", label: "Pferde", emoji: "🐴" },

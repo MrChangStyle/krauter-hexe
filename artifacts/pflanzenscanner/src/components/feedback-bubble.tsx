@@ -9,6 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 import { usePushToTalk } from "@/hooks/use-push-to-talk";
 import { appendPhrase } from "@/lib/speech";
 
+const OPEN_EVENT = "lf-feedback";
+
+/** Opens the feedback dialog from anywhere in the app, with a text to start from. */
+export function openFeedback(text = ""): void {
+  window.dispatchEvent(new CustomEvent<string>(OPEN_EVENT, { detail: text }));
+}
+
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
 }
@@ -40,6 +47,16 @@ export function FeedbackBubble() {
       onError: (err) => toast({ title: "Nicht gesendet", description: errorText(err, "Bitte versuche es noch einmal."), variant: "destructive" }),
     },
   });
+
+  useEffect(() => {
+    const onOpen = (event: Event) => {
+      const start = (event as CustomEvent<string>).detail ?? "";
+      if (start) setText((t) => (t.trim() ? t : start));
+      setOpen(true);
+    };
+    window.addEventListener(OPEN_EVENT, onOpen);
+    return () => window.removeEventListener(OPEN_EVENT, onOpen);
+  }, []);
 
   useEffect(() => {
     if (!open) stop();

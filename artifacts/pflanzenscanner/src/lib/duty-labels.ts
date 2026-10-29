@@ -3,7 +3,7 @@ import { SPECIES_LABELS } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 
 const PLURAL: Record<FarmSpecies, string> = {
-  poultry: "Geflügel",
+  poultry: "Hühner",
   rabbit: "Kaninchen",
   guineaPig: "Meerschweinchen",
   cat: "Katzen",
@@ -14,10 +14,14 @@ const PLURAL: Record<FarmSpecies, string> = {
   cattle: "Rinder",
   pig: "Schweine",
   alpaca: "Alpakas",
+  goose: "Gänse",
+  duck: "Enten",
+  turkey: "Puten",
+  quail: "Wachteln",
   other: "Sonstige",
 };
 
-/** "1 Ziege", "3 Ziegen", "12 Geflügel" */
+/** "1 Ziege", "3 Ziegen", "12 Hühner" */
 export function speciesCount(species: FarmSpecies, n: number): string {
   return `${n} ${n === 1 ? SPECIES_LABELS[species] : PLURAL[species]}`;
 }

@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { SPECIES_LABELS, SPECIES_ORDER, SEX_LABELS, ageText } from "@/lib/farm-labels";
+import { SpeciesRequestLink } from "@/components/species-request";
 
 const selectClass =
   "h-9 w-full rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
@@ -116,6 +117,7 @@ function NewHerdDialog({
                 </option>
               ))}
             </select>
+            <SpeciesRequestLink beforeOpen={() => onOpenChange(false)} />
           </div>
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           <DialogFooter className="gap-2">

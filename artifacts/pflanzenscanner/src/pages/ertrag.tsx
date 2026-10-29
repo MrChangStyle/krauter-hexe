@@ -30,7 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
-import { todayIso } from "@/lib/farm-labels";
+import { isPoultry, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { EXPENSE_LABELS, GARDEN_DEFAULT_CATEGORIES, MONTHS, PRODUCTS, changeText, euro, num } from "@/lib/yield-labels";
 
@@ -46,7 +46,7 @@ function EntryForm({ farm, year }: { farm: FarmSummary; year: number }) {
   const { toast } = useToast();
   const herds = useListHerds(farm.id).data ?? [];
   // Hens for "Legeleistung je Henne" (docs/legeleistung.md) – optional.
-  const hens = (useListFarmAnimals(farm.id).data ?? []).filter((a) => a.species === "poultry" && a.sex !== "male" && !a.archivedAt);
+  const hens = (useListFarmAnimals(farm.id).data ?? []).filter((a) => isPoultry(a.species) && a.sex !== "male" && !a.archivedAt);
   const [product, setProduct] = useState<FarmProduct>("eggs");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(todayIso());

@@ -2,6 +2,8 @@
 
 Project overview in German, kept current with every change: `docs/PROJEKT.md`.
 
+Geflügelarten (`docs/gefluegel.md`): `goose`, `duck`, `turkey`, `quail` are species of their own beside `poultry` (= Huhn); `POULTRY_SPECIES`/`isPoultry` (server `lib/species.ts`, app `lib/farm-labels.ts`) cover eggs, brood, laying, avian flu and the stock register; per-species values in breeding, feed needs/catalog, setup, duties, weather, garden, medicines; the archive maps them to "Geflügel". "Deine Tierart fehlt? Anfragen" opens the feedback (`openFeedback`).
+
 Kostenschutz (`docs/kostenschutz.md`): every AI call counts – Pflanzendoc and Pflege-Guide as `plant`, the universal scan's first look as `classify` (45/day, outside the app budget); cameras count their AI checks on the camera row (`ai_day`, `ai_count`; 300 per camera, 600 per farm and Berlin day) because `camera_events` keep only the newest 100.
 
 Datentrennung (`docs/datentrennung.md`): `lib/farmIsolation.integration.test.ts` and `lib/accountIsolation.integration.test.ts` walk the real router – every farm route (stranger 404, foreign record ids, guest writes 403, caretaker without modules 403, farm A's rows unchanged), every route without sign-in (401 unless in `PUBLIC`), every `requireOwner` route, and personal records. A new route is covered automatically; a new public route must be added to `PUBLIC` with a reason.

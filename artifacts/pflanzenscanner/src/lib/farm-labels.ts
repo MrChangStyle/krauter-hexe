@@ -1,7 +1,7 @@
 import type { AnimalSex, FarmSpecies } from "@workspace/api-client-react";
 
 export const SPECIES_LABELS: Record<FarmSpecies, string> = {
-  poultry: "Geflügel",
+  poultry: "Huhn",
   rabbit: "Kaninchen",
   guineaPig: "Meerschweinchen",
   cat: "Katze",
@@ -12,11 +12,19 @@ export const SPECIES_LABELS: Record<FarmSpecies, string> = {
   cattle: "Rind",
   pig: "Schwein",
   alpaca: "Alpaka",
+  goose: "Gans",
+  duck: "Ente",
+  turkey: "Pute",
+  quail: "Wachtel",
   other: "Sonstiges",
 };
 
 export const SPECIES_ORDER: FarmSpecies[] = [
   "poultry",
+  "duck",
+  "goose",
+  "turkey",
+  "quail",
   "goat",
   "sheep",
   "cattle",
@@ -29,6 +37,13 @@ export const SPECIES_ORDER: FarmSpecies[] = [
   "cat",
   "other",
 ];
+
+/** Chickens and the other poultry (docs/gefluegel.md): eggs, brood, laying. */
+export const POULTRY_SPECIES: readonly FarmSpecies[] = ["poultry", "goose", "duck", "turkey", "quail"];
+
+export function isPoultry(species: FarmSpecies): boolean {
+  return POULTRY_SPECIES.includes(species);
+}
 
 export const SEX_LABELS: Record<AnimalSex, string> = {
   female: "weiblich",

@@ -38,7 +38,7 @@ describe("Garten-Assistent", () => {
     expect(plan.kitchenM2).toBe(18.6);
     expect(plan.fodderCoverage).toBe(10);
     const fodderBed = plan.beds.find((b) => b.role === "fodder")!;
-    expect(fodderBed.wishes).toMatch(/^Tierfutter für Kaninchen und Geflügel: Möhre, Mangold/);
+    expect(fodderBed.wishes).toMatch(/^Tierfutter für Kaninchen und Hühner: Möhre, Mangold/);
     expect(fodderBed.crops).not.toContain("kartoffel");
     expect(plan.tips.join(" ")).toMatch(/Pferde: Futter kommt von Weide/);
     expect(plan.tips.join(" ")).toMatch(/98 kg Lagerfutter/);

@@ -55,6 +55,11 @@ export const FODDER_KG_PER_DAY: Record<FarmSpecies, number> = {
   pig: 0.5,
   // Alpakas live on pasture and hay; roots only as a small extra (Richtwert).
   alpaca: 0.3,
+  // Geese graze a lot; the small poultry only nibble (Richtwerte).
+  goose: 0.5,
+  duck: 0.1,
+  turkey: 0.1,
+  quail: 0.01,
   horse: 0,
   cattle: 0,
   cat: 0,
@@ -71,6 +76,10 @@ export const FODDER_CROPS: Record<FarmSpecies, string[]> = {
   sheep: ['mangold', 'rote_bete', 'moehre', 'kuerbis', 'pastinake'],
   pig: ['kuerbis', 'rote_bete', 'moehre', 'zucchini', 'mangold'],
   alpaca: ['moehre', 'pastinake', 'fenchel'],
+  goose: ['salat', 'mangold', 'kuerbis', 'moehre'],
+  duck: ['salat', 'mangold', 'zucchini', 'kuerbis'],
+  turkey: ['mangold', 'salat', 'kuerbis', 'zucchini'],
+  quail: ['salat', 'spinat', 'mangold'],
   horse: [],
   cattle: [],
   cat: [],
@@ -79,7 +88,7 @@ export const FODDER_CROPS: Record<FarmSpecies, string[]> = {
 };
 
 export const SPECIES_DE: Record<FarmSpecies, string> = {
-  poultry: 'Geflügel',
+  poultry: 'Hühner',
   rabbit: 'Kaninchen',
   guineaPig: 'Meerschweinchen',
   cat: 'Katzen',
@@ -90,6 +99,10 @@ export const SPECIES_DE: Record<FarmSpecies, string> = {
   cattle: 'Rinder',
   pig: 'Schweine',
   alpaca: 'Alpakas',
+  goose: 'Gänse',
+  duck: 'Enten',
+  turkey: 'Puten',
+  quail: 'Wachteln',
   other: 'sonstige Tiere',
 };
 

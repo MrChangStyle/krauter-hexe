@@ -82,7 +82,7 @@ describe("Pflichten – push", () => {
     expect(open.map((d) => d.key)).toEqual(["tsk_report", "hit_report"]);
     expect(reportMessage(open)).toEqual({
       title: "Bestandsmeldung fällig",
-      body: "Stand 1. Januar laut App: Geflügel 1, Ziegen 1. Bitte bis 15.01. an Tierseuchenkasse und HI-Tier melden und in der App abhaken.",
+      body: "Stand 1. Januar laut App: Hühner 1, Ziegen 1. Bitte bis 15.01. an Tierseuchenkasse und HI-Tier melden und in der App abhaken.",
     });
     expect(reportMessage([])).toBeNull();
   });
@@ -131,6 +131,6 @@ describe("Pflichten je Bundesland", () => {
     expect(reportPushDays(15)).toEqual([2, 12]);
     expect(reportPushDays(31)).toEqual([18, 28]);
     const nw = dutiesFor(["goat"], goats, new Map(), "2026-01-12", false, "NW").filter((d) => d.status === "due");
-    expect(reportMessage(nw)!.body).toBe("Stand 1. Januar laut App: Geflügel 1, Ziegen 1. Bitte bis 31.01. an Tierseuchenkasse NRW (Landwirtschaftskammer) und bis 15.01. an HI-Tier melden und in der App abhaken.");
+    expect(reportMessage(nw)!.body).toBe("Stand 1. Januar laut App: Hühner 1, Ziegen 1. Bitte bis 31.01. an Tierseuchenkasse NRW (Landwirtschaftskammer) und bis 15.01. an HI-Tier melden und in der App abhaken.");
   });
 });

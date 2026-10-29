@@ -169,6 +169,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Muss ich die Ohrmarkennummer eintragen?", a: "Nein, sie lässt sich jederzeit nachtragen. Rinder, Schafe, Ziegen und Schweine müssen aber gekennzeichnet sein – das Formular erinnert daran." },
       { q: "Was passiert beim Archivieren?", a: "Das Tier verschwindet aus den Listen, bleibt aber mit seiner Akte für den Veterinäramt-Export erhalten." },
       {
+        q: "Wo sind Gänse, Enten, Puten und Wachteln?",
+        a: "Sie sind eigene Tierarten mit eigenem Futterbedarf, eigener Brutdauer (Gans 30, Ente 28, Pute 28, Wachtel 17 Tage) und eigenen Hinweisen bei Frost. Was du bisher als „Geflügel“ eingetragen hast, heißt jetzt „Huhn“ – führst du darunter Enten oder Gänse, stell die Tierart an der Gruppe oder am Tier um. Eine Tierart fehlt? Unter der Tierart-Auswahl auf „Anfragen“ tippen.",
+      },
+      {
         q: "Was gilt für Alpakas?",
         a: "Alpakas sind Herdentiere – mindestens zwei, besser drei. Der Schnellstart legt Heu und Alpaka-Mineralfutter als Ration an und erinnert an Zehennägel (alle 3 Monate), Kotprobe (alle 4 Monate) und die Schur im Frühsommer. Beim Veterinäramt anmelden; ob die Tierseuchenkasse sie will, regelt das Bundesland. Alle Zahlen sind Richtwerte.",
       },

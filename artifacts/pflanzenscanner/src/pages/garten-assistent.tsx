@@ -42,6 +42,10 @@ const SPECIES_DE: Record<string, string> = {
   cattle: "Rinder",
   pig: "Schweine",
   alpaca: "Alpakas",
+  goose: "Gänse",
+  duck: "Enten",
+  turkey: "Puten",
+  quail: "Wachteln",
   other: "Sonstige",
 };
 

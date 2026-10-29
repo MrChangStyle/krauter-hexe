@@ -256,7 +256,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
-| 29.10.2026 | #112 | Hof-Aufgaben an festen Wochentagen („montags und donnerstags“, auch gesprochen); Push bei Einträgen auf geteilten Notizlisten (Thema „Alltagsnotizen“) |
+| 29.10.2026 | #112 | Hof-Aufgaben an festen Wochentagen („montags und donnerstags“, auch gesprochen); Push bei Einträgen auf geteilten Notizlisten (Thema „Alltagsnotizen“); Garten-Assistent zeigt seine Rechnung („So rechnet der Assistent“) |
 | 29.10.2026 | #111 | Nandus und Esel als Tierarten in allen Tier-Modulen; Scannen: bei einem KI-Fehler sofort ein Hinweis statt minutenlanger Ladeanzeige, Fehlerfälle in `docs/scannen.md` |
 | 29.10.2026 | #110 | Gänse, Enten, Puten und Wachteln als eigene Tierarten in allen Tier-Modulen; „Geflügel“ heißt jetzt „Huhn“; „Tierart anfragen“ unter der Tierart-Auswahl |
 | 29.10.2026 | #109 | Kostenschutz: Pflanzendoc, Pflege-Guide und erster Blick des Universal-Scans zählen gegen das Tageslimit; Kamera-Tagesgrenze zählt jetzt wirklich (vorher nie erreicht), dazu eine Grenze je Hof |

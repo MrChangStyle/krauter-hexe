@@ -5338,6 +5338,8 @@ export interface GardenPlan {
   learned: GardenPlanLearned;
   beds: GardenPlanBedsItem[];
   tips: string[];
+  /** The arithmetic behind the numbers, one line each ("So rechnet der Assistent"). */
+  calculation: string[];
 }
 
 export interface GardenBedInput {

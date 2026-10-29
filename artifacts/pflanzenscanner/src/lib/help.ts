@@ -133,6 +133,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         q: "Kann die KI einen Teil des Beetes als Tierfutter planen?",
         a: "Ja. Im „KI-Vorschlag“ stellst du mit dem Schieberegler ein, wie viel für die Tiere und wie viel für die Küche sein soll, z. B. 30 % Futter für die Hühner. Die KI nimmt dafür nur Pflanzen, die für deine Tiere geeignet und nicht giftig sind, und zeigt danach, wie viel Fläche es wirklich geworden ist. Vorgabe ist der Anteil aus dem Garten-Assistenten.",
       },
+      { q: "Wie kommt der Garten-Assistent auf seine Zahlen?", a: "Unter der Aufteilung „So rechnet der Assistent“ aufklappen: Dort steht die Rechnung mit deinen Zahlen – Personen mal Fläche je Richtung, Grünfutter je Tier und Tag, Saison und Winter in m² und welche Beete den Futteranteil ergeben. Hast du schon Ernten eingetragen, rechnet er mit deinen eigenen Erträgen." },
       { q: "Zählen Gartenausgaben unter Ertrag & Bilanz doppelt?", a: "Nein. Sie sind ganz normale Ausgaben des Hofs mit dem Zeichen „Garten“ und zählen dort einmal." },
     ],
   },

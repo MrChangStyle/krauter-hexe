@@ -2,6 +2,8 @@
 
 Project overview in German, kept current with every change: `docs/PROJEKT.md`.
 
+Garden assistant: `planGarden` also returns `calculation` – its arithmetic line by line, shown as "So rechnet der Assistent".
+
 Hof-Aufgaben weekdays and notes push (docs/hof-aufgaben.md, docs/alltagsnotizen.md): `farm_tasks.weekdays` (jsonb 1–7) makes a repeating task due on the next of those days after the last tick (`farmTaskDue`); the AI plan has a `wochentage` field and `planLocally` reads "montags und donnerstags", "werktags", "am Wochenende". New notes on a shared list are gathered for a minute per writer and list and pushed to the others under topic `notes` (`lib/notesPush.ts`).
 
 Scannen (`docs/scannen.md`): when the scan the page waits for fails, the page hands over to the queue at once – a toast for an auto-retry, the server's reason otherwise (it used to keep "95 %" for minutes while the queue backed off).

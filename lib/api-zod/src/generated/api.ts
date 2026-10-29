@@ -9886,7 +9886,8 @@ export const GetGardenPlanResponse = zod.object({
   "crops": zod.array(zod.string()),
   "wishes": zod.string().describe('Wishes for the KI planting suggestion of this bed')
 })),
-  "tips": zod.array(zod.string())
+  "tips": zod.array(zod.string()),
+  "calculation": zod.array(zod.string()).describe('The arithmetic behind the numbers, one line each (\"So rechnet der Assistent\").')
 })
 
 

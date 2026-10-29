@@ -13151,7 +13151,7 @@ components:
           maximum: 80
     GardenPlan:
       type: object
-      required: [goals, kitchenNeedM2, fodder, availableM2, kitchenM2, fodderM2, kitchenCoverage, fodderCoverage, manageableM2, learned, beds, tips]
+      required: [goals, kitchenNeedM2, fodder, availableM2, kitchenM2, fodderM2, kitchenCoverage, fodderCoverage, manageableM2, learned, beds, tips, calculation]
       properties:
         goals:
           $ref: "#/components/schemas/GardenGoals"
@@ -13235,6 +13235,11 @@ components:
                 description: Wishes for the KI planting suggestion of this bed
         tips:
           type: array
+          items:
+            type: string
+        calculation:
+          type: array
+          description: The arithmetic behind the numbers, one line each ("So rechnet der Assistent").
           items:
             type: string
     GardenBedInput:

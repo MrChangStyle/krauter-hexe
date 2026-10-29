@@ -48,7 +48,7 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 | Schädlinge & Nützlinge | 🟡 | bio und chemisch. Richtwerte noch fachlich zu prüfen, seltene Arten werden nicht erkannt | 10 |
 | Lexikon | ✅ | alle Arten mit Pilzen | – |
 | Kräuter-Hexe | 🟡 | Ratgeber vorhanden, Zuordnungen fachlich zu prüfen | 10 |
-| Beet-Architekt | ✅ | Raster, Mischkultur, Fruchtfolge, Kalender, Frost, KI-Vorschlag mit Küche/Futter, Assistent, Hochbeet. Die Rechnung des Planers soll nachvollziehbarer werden | 8 |
+| Beet-Architekt | ✅ | Raster, Mischkultur, Fruchtfolge, Kalender, Frost, KI-Vorschlag mit Küche/Futter, Assistent, Hochbeet. Seit Schritt 8 zeigt der Garten-Assistent seine Rechnung | 8 |
 | Saatgut | ✅ | Vorrat, Keimfähigkeit. Tauschbörse offen (später) | – |
 | Ernte & Wirtschaftlichkeit | ✅ | Ladenwert, Kosten, Stundenlohn. Kosten je Kultur fehlen (später) | – |
 | Vorratskammer | ✅ | Haltbarkeit, aus der Ernte übernehmen | – |

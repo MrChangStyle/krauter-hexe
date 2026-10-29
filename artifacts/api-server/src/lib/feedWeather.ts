@@ -30,6 +30,11 @@ export const COLD_RULES: Partial<Record<FarmSpecies, ColdRule>> = {
   rabbit: { limit: 0, feeds: ['roughage'], what: 'Heu' },
   pig: { limit: 5, feeds: ['compound', 'grain'], what: 'Kraftfutter' },
   poultry: { limit: 5, feeds: ['compound', 'grain'], what: 'Körner und Legefutter' },
+  // Geese and ducks have thick down; turkeys and above all quails feel the cold earlier (Richtwerte).
+  goose: { limit: -10, feeds: ['compound', 'grain'], what: 'Körner' },
+  duck: { limit: -5, feeds: ['compound', 'grain'], what: 'Körner' },
+  turkey: { limit: 0, feeds: ['compound', 'grain'], what: 'Körner und Putenfutter' },
+  quail: { limit: 5, feeds: ['compound', 'grain'], what: 'Wachtelfutter' },
 };
 
 /** More than this is no longer a matter of the ration – the shelter needs help. */

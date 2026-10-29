@@ -28,8 +28,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
-import { BIRDS, BREEDING_DAYS, breedingTitle, cycleStatusText, nextHeatText, outcomeText, parentChoices, progress, relDay } from "@/lib/breeding-labels";
-import { SPECIES_LABELS, SPECIES_ORDER, todayIso } from "@/lib/farm-labels";
+import { BREEDING_DAYS, birdsFor, breedingTitle, cycleStatusText, nextHeatText, outcomeText, parentChoices, progress, relDay } from "@/lib/breeding-labels";
+import { SPECIES_LABELS, SPECIES_ORDER, isPoultry, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
@@ -74,8 +74,9 @@ function NewDialog({ farm, onClose }: { farm: FarmSummary; onClose: () => void }
       onError: (err) => toast({ title: "Nicht eingetragen", description: errorText(err, ""), variant: "destructive" }),
     },
   });
-  const incubation = species === "poultry";
-  const days = incubation ? BIRDS[bird]!.days : BREEDING_DAYS[species]!;
+  const incubation = isPoultry(species);
+  const birds = birdsFor(species);
+  const days = incubation ? (birds[bird] ?? birds[0]!).days : BREEDING_DAYS[species]!;
   const mothers = parentChoices(animals, species, "mother");
   const fathers = parentChoices(animals, species, "father");
 
@@ -98,6 +99,7 @@ function NewDialog({ farm, onClose }: { farm: FarmSummary; onClose: () => void }
 
   function pickSpecies(s: FarmSpecies) {
     setPicked(s);
+    setBird(0);
     setMotherId("");
     setFatherId("");
   }
@@ -125,7 +127,7 @@ function NewDialog({ farm, onClose }: { farm: FarmSummary; onClose: () => void }
               <div className="flex flex-col gap-1.5">
                 <Label htmlFor="b-bird">Vogel</Label>
                 <select id="b-bird" className={selectClass} value={bird} onChange={(e) => setBird(Number(e.target.value))}>
-                  {BIRDS.map((b, k) => (
+                  {birds.map((b, k) => (
                     <option key={b.label} value={k}>
                       {b.label} ({b.days} Tage)
                     </option>

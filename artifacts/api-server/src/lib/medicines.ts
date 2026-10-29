@@ -62,6 +62,10 @@ export function medicineStatus(m: Pick<Row, 'amount' | 'expiresOn' | 'archivedAt
 export function withdrawalFor(m: Pick<Row, 'withdrawalMeatDays' | 'withdrawalMilkDays' | 'withdrawalEggsDays'>, species: FarmSpecies): number | null {
   const products: Partial<Record<FarmSpecies, (number | null)[]>> = {
     poultry: [m.withdrawalMeatDays, m.withdrawalEggsDays],
+    goose: [m.withdrawalMeatDays, m.withdrawalEggsDays],
+    duck: [m.withdrawalMeatDays, m.withdrawalEggsDays],
+    turkey: [m.withdrawalMeatDays, m.withdrawalEggsDays],
+    quail: [m.withdrawalMeatDays, m.withdrawalEggsDays],
     cattle: [m.withdrawalMeatDays, m.withdrawalMilkDays],
     goat: [m.withdrawalMeatDays, m.withdrawalMilkDays],
     sheep: [m.withdrawalMeatDays, m.withdrawalMilkDays],

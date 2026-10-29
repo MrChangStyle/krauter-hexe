@@ -5,7 +5,7 @@ describe("duty labels", () => {
   it("names counts in singular and plural", () => {
     expect(speciesCount("goat", 1)).toBe("1 Ziege");
     expect(speciesCount("goat", 3)).toBe("3 Ziegen");
-    expect(speciesCount("poultry", 12)).toBe("12 Geflügel");
+    expect(speciesCount("poultry", 12)).toBe("12 Hühner");
   });
 
   it("shows the state of a duty", () => {
@@ -22,7 +22,7 @@ describe("duty labels", () => {
     const d = (status: string) => ({ status }) as never;
     expect(openDuties([d("open"), d("due"), d("overdue"), d("done"), d("upcoming"), d("info")])).toBe(3);
     expect(stockText({ day: "2026-01-01", current: false, counts: [{ species: "goat", count: 1 }, { species: "poultry", count: 12 }] })).toBe(
-      "Stand 1. Januar 2026 laut App: 1 Ziege, 12 Geflügel",
+      "Stand 1. Januar 2026 laut App: 1 Ziege, 12 Hühner",
     );
     expect(stockText({ day: "2027-01-01", current: true, counts: [] })).toBe("Heute laut App: keine Tiere");
     // Niedersachsen, Thüringen, Mecklenburg-Vorpommern count on 3 January.

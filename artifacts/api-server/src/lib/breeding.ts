@@ -50,6 +50,58 @@ export const BREEDING: Partial<Record<FarmSpecies, SpeciesRule>> = {
     young: 'Küken',
     prefix: 'KÜ',
   },
+  // Gänse, Enten, Puten, Wachteln (docs/gefluegel.md) – Richtwerte.
+  goose: {
+    kind: 'incubation',
+    days: 30,
+    early: 2,
+    late: 2,
+    steps: [
+      [10, 'Schieren: unbefruchtete und abgestorbene Eier aussortieren.'],
+      [-15, 'Ab jetzt die Eier täglich kurz mit lauwarmem Wasser besprühen – Gänseeier brauchen viel Feuchte.'],
+      [-3, 'Nicht mehr wenden und die Luftfeuchte erhöhen – Schlupfruhe.'],
+    ],
+    young: 'Gössel',
+    prefix: 'GÖ',
+  },
+  duck: {
+    kind: 'incubation',
+    days: 28,
+    early: 1,
+    late: 2,
+    steps: [
+      [8, 'Schieren: unbefruchtete und abgestorbene Eier aussortieren. Warzenenten (Flugenten) brüten 35 Tage – dann eine Woche später rechnen.'],
+      [-12, 'Ab jetzt die Eier täglich kurz mit lauwarmem Wasser besprühen.'],
+      [-3, 'Nicht mehr wenden und die Luftfeuchte erhöhen – Schlupfruhe.'],
+    ],
+    young: 'Entenküken',
+    prefix: 'EK',
+  },
+  turkey: {
+    kind: 'incubation',
+    days: 28,
+    early: 1,
+    late: 1,
+    steps: [
+      [8, 'Schieren: unbefruchtete und abgestorbene Eier aussortieren.'],
+      [-7, 'Zweites Schieren.'],
+      [-3, 'Nicht mehr wenden und die Luftfeuchte erhöhen – Schlupfruhe.'],
+    ],
+    young: 'Putenküken',
+    prefix: 'PK',
+  },
+  quail: {
+    kind: 'incubation',
+    days: 17,
+    early: 1,
+    late: 1,
+    steps: [
+      [6, 'Schieren mit heller Lampe – bei den gefleckten Schalen schwierig, im Zweifel liegen lassen.'],
+      [-3, 'Nicht mehr wenden und die Luftfeuchte erhöhen – Schlupfruhe.'],
+    ],
+    young: 'Wachtelküken',
+    prefix: 'WK',
+  },
   rabbit: {
     kind: 'pregnancy',
     days: 31,

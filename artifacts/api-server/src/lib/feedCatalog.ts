@@ -87,13 +87,17 @@ export const FEED_CATALOG: readonly Feed[] = [
   f('legehennen', 'Legehennen-Alleinfutter', 'compound', [88, 19, 5, 4.5, 41, 5.5, 15], { hint: 'Hauptfutter der Legehennen, etwa 110–130 g je Tier und Tag' }),
   f('kueken', 'Küken-/Junghennenfutter', 'compound', [88, 21, 4.5, 4, 11, 7.5, 15]),
   f('koernermix', 'Körnermischung Geflügel', 'compound', [88, 11.5, 4, 4, 0.8, 3.5, 5], { hint: 'Ergänzung, höchstens ein Drittel der Ration' }),
+  // Gänse, Enten, Puten, Wachteln (docs/gefluegel.md) – typical label values.
+  f('wassergefluegel', 'Alleinfutter Enten und Gänse', 'compound', [88, 17.5, 4, 5, 12, 6, 10], { forSpecies: ['goose', 'duck'], hint: 'ohne Kokzidiostatikum; in der Legezeit Muschelkalk dazu' }),
+  f('puten', 'Puten-Alleinfutter', 'compound', [88, 22, 5, 4, 10, 7, 15], { forSpecies: ['turkey'], hint: 'Küken in den ersten Wochen mit Putenstarter (über 24 % Eiweiß)' }),
+  f('wachtel', 'Wachtel-Legefutter', 'compound', [88, 21, 5, 4, 30, 6, 15], { forSpecies: ['quail'], hint: 'fein gekörnt, etwa 25–30 g je Tier und Tag' }),
   f('kaninchenpellets', 'Kaninchen-Alleinfutter (Pellets)', 'compound', [89, 17, 3.5, 17, 10, 6, 15]),
   f('meerschweinchenpellets', 'Meerschweinchen-Pellets', 'compound', [89, 18, 3.5, 15, 9, 6, 15]),
   f('pferdemuesli', 'Pferdemüsli', 'compound', [88, 11, 5, 9, 7, 4.5, 20]),
   f('milchleistungsfutter', 'Milchleistungsfutter (Ziege/Schaf/Rind)', 'compound', [88, 20, 4, 9, 9, 5.5, 20]),
   f('schweinefutter', 'Schweine-Alleinfutter', 'compound', [88, 18, 3.5, 4.5, 7.5, 5.5, 20]),
   // ── Mineralfutter ──
-  f('muschelkalk', 'Muschelkalk / Austernschalen', 'mineral', [99, 0, 0, 0, 380, 0.5, 0], { forSpecies: ['poultry'], hint: 'zur freien Aufnahme in einer eigenen Schale' }),
+  f('muschelkalk', 'Muschelkalk / Austernschalen', 'mineral', [99, 0, 0, 0, 380, 0.5, 0], { forSpecies: ['poultry', 'goose', 'duck', 'turkey', 'quail'], hint: 'zur freien Aufnahme in einer eigenen Schale' }),
   f('mineral_rind', 'Mineralfutter Rind', 'mineral', [95, 0, 0, 0, 140, 60, 1000], { forSpecies: ['cattle'] }),
   f('mineral_schaf', 'Mineralfutter Schaf (kupferarm)', 'mineral', [95, 0, 0, 0, 150, 40, 10], { forSpecies: ['sheep'] }),
   f('mineral_ziege', 'Mineralfutter Ziege', 'mineral', [95, 0, 0, 0, 140, 50, 600], { forSpecies: ['goat'] }),

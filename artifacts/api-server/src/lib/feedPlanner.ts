@@ -34,7 +34,7 @@ import { createFarmTask } from './farmTasks';
 import { speciesKey } from './speciesKey';
 
 const SPECIES_DE: Record<FarmSpecies, string> = {
-  poultry: 'Geflügel',
+  poultry: 'Hühner',
   rabbit: 'Kaninchen',
   guineaPig: 'Meerschweinchen',
   cat: 'Katzen',
@@ -45,6 +45,10 @@ const SPECIES_DE: Record<FarmSpecies, string> = {
   cattle: 'Rinder',
   pig: 'Schweine',
   alpaca: 'Alpakas',
+  goose: 'Gänse',
+  duck: 'Enten',
+  turkey: 'Puten',
+  quail: 'Wachteln',
   other: 'sonstige Tiere',
 };
 
@@ -378,13 +382,17 @@ function resolve(items: RationItemJson[], own: Map<number, OwnFeed>): ResolvedIt
   });
 }
 
-/** Feeds with a coccidiostat like Monensin – deadly for horses, meant for poultry only. */
+/**
+ * Feeds with a coccidiostat like Monensin – deadly for horses, meant for
+ * chickens and turkeys. Geese and ducks get the warning too: chick feed with a
+ * coccidiostat is not for waterfowl.
+ */
 function ionophoreWarnings(species: FarmSpecies, items: ResolvedItem[]): Warning[] {
-  if (species === 'poultry') return [];
+  if (species === 'poultry' || species === 'turkey') return [];
   return items.flatMap((r) => {
     const found = ionophoresIn(r.additives ?? []);
     if (found.length === 0) return [];
-    const harm = species === 'horse' ? 'schon kleine Mengen sind für Pferde tödlich' : `nur für Geflügel bestimmt, für ${SPECIES_DE[species]} gefährlich`;
+    const harm = species === 'horse' ? 'schon kleine Mengen sind für Pferde tödlich' : `nur für Hühner und Puten bestimmt, für ${SPECIES_DE[species]} gefährlich`;
     return [{ kind: 'ionophore' as const, text: `${r.name} enthält ${found.join(', ')} (Kokzidiostatikum) – ${harm}.` }];
   });
 }

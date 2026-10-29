@@ -51,6 +51,32 @@ export const FEED_NEEDS: Partial<Record<FarmSpecies, Partial<Record<LifeStage, N
     maintenance: n(2, 0.09, [14, 18], [3, 8], [9, 15], [4, 7], 0.2),
     winter: n(2, 0.105, [15, 19], [3, 8], [9, 40], [4, 7], 0.2),
   },
+  // Gänse, Enten, Puten, Wachteln (docs/gefluegel.md) – Richtwerte.
+  goose: {
+    // Geese live on grass: more protein and fibre than chickens take.
+    maintenance: n(5.5, 0.25, [13, 18], [5, 16], [8, 12], [4, 7], 1),
+    laying: n(5.5, 0.28, [15, 18], [5, 10], [25, 35], [5, 7], 1),
+    growth: n(3, 0.2, [16, 20], [4, 8], [8, 12], [6, 8], 0.7),
+    winter: n(5.5, 0.3, [13, 18], [5, 16], [8, 12], [4, 7], 1),
+  },
+  duck: {
+    maintenance: n(3, 0.14, [13, 16], [3, 8], [8, 12], [4, 7], 0.6),
+    laying: n(3, 0.16, [16, 19], [3, 8], [28, 38], [4, 7], 0.7),
+    growth: n(1.5, 0.12, [17, 21], [3, 6], [8, 12], [6, 8], 0.4),
+    winter: n(3, 0.16, [13, 16], [3, 8], [8, 12], [4, 7], 0.6),
+  },
+  turkey: {
+    maintenance: n(8, 0.3, [14, 17], [3, 8], [8, 12], [5, 7], 0.6),
+    laying: n(8, 0.33, [16, 18], [3, 8], [25, 30], [5, 7], 0.7),
+    growth: n(4, 0.25, [20, 26], [3, 6], [10, 13], [6, 8], 0.5),
+    winter: n(8, 0.33, [14, 17], [3, 8], [8, 12], [5, 7], 0.6),
+  },
+  quail: {
+    maintenance: n(0.18, 0.02, [17, 20], [2, 6], [8, 12], [4, 7], 0.04),
+    laying: n(0.18, 0.025, [20, 24], [2, 6], [25, 35], [5, 7], 0.05),
+    growth: n(0.1, 0.015, [24, 28], [2, 5], [8, 12], [6, 8], 0.03),
+    winter: n(0.18, 0.025, [17, 20], [2, 6], [8, 12], [4, 7], 0.04),
+  },
   rabbit: {
     maintenance: n(3, 0.12, [12, 16], [18, 30], [4, 10], [3, 6], 0.3),
     growth: n(2, 0.12, [15, 18], [14, 20], [4, 8], [3, 6], 0.25),
@@ -158,6 +184,22 @@ const TIPS: Partial<Record<FarmSpecies | '*', Partial<Record<`${Nutrient}:${'low
     'crudeProtein:low': 'Mehr Alleinfutter, weniger Körner (Körner höchstens ein Drittel der Ration).',
     'crudeFibre:high': 'Weniger Gras und Heu im Futtertrog; Grünes als Beschäftigung reicht.',
     'amount:low': 'Futter zur freien Aufnahme anbieten – Hühner fressen nach Bedarf.',
+  },
+  goose: {
+    'crudeFibre:low': 'Gänse grasen: täglich Weide oder frisches Gras, Getreide nur als Ergänzung.',
+    'calcium:low': 'In der Legezeit Muschelkalk zur freien Aufnahme anbieten.',
+  },
+  duck: {
+    'calcium:low': 'In der Legezeit Muschelkalk zur freien Aufnahme anbieten.',
+    'crudeProtein:low': 'Mehr Alleinfutter für Wassergeflügel, weniger Körner.',
+  },
+  turkey: {
+    'crudeProtein:low': 'Puten brauchen viel Eiweiß, Küken über 24 % – Putenstarter statt Hühnerfutter.',
+    'calcium:low': 'In der Legezeit Muschelkalk zur freien Aufnahme anbieten.',
+  },
+  quail: {
+    'crudeProtein:low': 'Wachteln brauchen eiweißreiches Futter (Wachtel- oder Putenfutter), reine Körner reichen nicht.',
+    'calcium:low': 'Fein gemahlenen Muschelkalk zur freien Aufnahme anbieten.',
   },
   rabbit: {
     'crudeFibre:low': 'Mehr Heu zur freien Aufnahme, weniger Pellets und Getreide.',

@@ -8,6 +8,7 @@
 import type { FarmSpecies } from '@workspace/db';
 
 import type { FeedCategory } from './feedCatalog';
+import { isPoultry } from './species';
 
 export const SEASONS = ['all', 'summer', 'winter'] as const;
 export type Season = (typeof SEASONS)[number];
@@ -42,6 +43,10 @@ const TRANSITION_DAYS: Record<FarmSpecies, number> = {
   sheep: 14,
   cattle: 14,
   alpaca: 14,
+  goose: 7,
+  duck: 7,
+  turkey: 7,
+  quail: 7,
   horse: 14,
   rabbit: 10,
   guineaPig: 10,
@@ -108,7 +113,7 @@ export function mix<K>(oldItems: MixItem<K>[], newItems: MixItem<K>[], share: nu
   return out.filter((i) => i.grams > 0);
 }
 
-const GRAZERS: FarmSpecies[] = ['rabbit', 'guineaPig', 'goat', 'sheep', 'horse', 'cattle', 'alpaca'];
+const GRAZERS: FarmSpecies[] = ['rabbit', 'guineaPig', 'goat', 'sheep', 'horse', 'cattle', 'alpaca', 'goose'];
 
 /** Fixed hints for the season of a ration in effect. */
 export function seasonHints(species: FarmSpecies, dayKey: string, categories: readonly FeedCategory[]): string[] {
@@ -121,7 +126,7 @@ export function seasonHints(species: FarmSpecies, dayKey: string, categories: re
       hints.push('Frisches Gras und Wildkräuter gibt es im Winter kaum – Heu und Lagerfutter (Rüben, Möhren) einplanen.');
     }
     hints.push(
-      species === 'poultry'
+      isPoultry(species)
         ? 'Bei Frost: Wasser mehrmals am Tag frostfrei anbieten; abends etwas Körner geben – sie liefern Energie für die Nacht.'
         : 'Bei Frost: Wasser mehrmals am Tag frostfrei anbieten; Raufutter um 10–20 % erhöhen – die Verdauung von Heu wärmt.',
     );

@@ -49,6 +49,11 @@ export const FARM_SPECIES = [
   "cattle",
   "pig",
   "alpaca",
+  // Geflügel besides chickens (docs/gefluegel.md) – own feed, brood and weather values.
+  "goose",
+  "duck",
+  "turkey",
+  "quail",
   "other",
 ] as const;
 export type FarmSpecies = (typeof FARM_SPECIES)[number];

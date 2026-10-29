@@ -20,6 +20,7 @@ import { FarmDataError, notFound, text } from './farmAnimals';
 import { addDays } from './feedSeason';
 import { logger } from './logger';
 import { berlinDay } from './monitoring';
+import { POULTRY_SPECIES, WATERFOWL } from './species';
 import { sendPushToUser } from './webPush';
 
 export type DutyKind = 'once' | 'yearly' | 'rule' | 'tip';
@@ -39,11 +40,11 @@ export interface DutyDef {
 }
 
 /** Species the veterinary office registers (ViehVerkV § 26) and the Tierseuchenkassen insure. */
-const LIVESTOCK: FarmSpecies[] = ['poultry', 'goat', 'sheep', 'pig', 'cattle', 'horse'];
+const LIVESTOCK: FarmSpecies[] = [...POULTRY_SPECIES, 'goat', 'sheep', 'pig', 'cattle', 'horse'];
 /** Species the veterinary office registers: the livestock plus the New World camelids (alpacas). */
 const REGISTERED: FarmSpecies[] = [...LIVESTOCK, 'alpaca'];
 /** Farm animals in the sense of the ban on catering waste. */
-const FOOD_ANIMALS: FarmSpecies[] = ['poultry', 'goat', 'sheep', 'pig', 'cattle', 'horse', 'rabbit', 'alpaca'];
+const FOOD_ANIMALS: FarmSpecies[] = [...POULTRY_SPECIES, 'goat', 'sheep', 'pig', 'cattle', 'horse', 'rabbit', 'alpaca'];
 
 export const DUTIES: DutyDef[] = [
   {
@@ -83,7 +84,7 @@ export const DUTIES: DutyDef[] = [
   {
     key: 'stock_register',
     kind: 'rule',
-    species: ['poultry', 'goat', 'sheep', 'pig', 'cattle', 'alpaca'],
+    species: [...POULTRY_SPECIES, 'goat', 'sheep', 'pig', 'cattle', 'alpaca'],
     title: 'Bestandsregister führen',
     text: 'Zu- und Abgänge mit Datum, Herkunft oder Verbleib aufschreiben, bei Geflügel auch die Zahl der Tiere. Die Tierliste der App mit dem Veterinäramt-Export hilft dabei; fragt beim Amt, ob sie so genügt.',
     source: 'Viehverkehrsverordnung, Geflügelpest-Verordnung',
@@ -123,7 +124,7 @@ export const DUTIES: DutyDef[] = [
   {
     key: 'nd_vaccination',
     kind: 'rule',
-    species: ['poultry'],
+    species: ['poultry', 'turkey'],
     title: 'Hühner und Puten gegen Newcastle impfen',
     text: 'Hühner und Puten müssen regelmäßig gegen die Newcastle-Krankheit geimpft sein – auch im kleinsten Hobbybestand. Lasst euch die Impfung vom Tierarzt bescheinigen und tragt sie in die Gesundheitsakte ein.',
     source: 'Geflügelpest-Verordnung § 7',
@@ -131,9 +132,9 @@ export const DUTIES: DutyDef[] = [
   {
     key: 'avian_flu',
     kind: 'rule',
-    species: ['poultry'],
+    species: [...POULTRY_SPECIES],
     title: 'Geflügelpest: Stallpflicht beachten',
-    text: 'Ordnet der Kreis eine Aufstallung an, müssen Hühner, Enten und Gänse in den Stall oder unter ein Dach mit Seitenschutz gegen Wildvögel. Futter und Wasser auch sonst so stellen, dass Wildvögel nicht herankommen. Tragt eine Anordnung unten ein, dann sehen sie alle auf dem Hof.',
+    text: 'Ordnet der Kreis eine Aufstallung an, muss alles Geflügel – Hühner, Enten, Gänse, Puten, Wachteln – in den Stall oder unter ein Dach mit Seitenschutz gegen Wildvögel. Futter und Wasser auch sonst so stellen, dass Wildvögel nicht herankommen. Tragt eine Anordnung unten ein, dann sehen sie alle auf dem Hof.',
     source: 'Geflügelpest-Verordnung, Anordnung des Kreises',
   },
   {
@@ -169,6 +170,31 @@ export const DUTIES: DutyDef[] = [
     title: 'Alpakas nie allein halten',
     text: 'Alpakas sind Herdentiere: mindestens zwei, besser drei Tiere zusammen halten. Dazu ein Unterstand mit etwa 2 m² je Tier und rund 1000–1500 m² Weide für zwei Tiere (Richtwerte).',
     source: 'Tierschutzgesetz § 2, Merkblätter der Veterinärämter',
+  },
+  // Gänse, Enten, Puten, Wachteln (docs/gefluegel.md).
+  {
+    key: 'waterfowl_water',
+    kind: 'rule',
+    species: [...WATERFOWL],
+    title: 'Enten und Gänse brauchen Badewasser',
+    text: 'Wassergeflügel muss den Kopf ins Wasser tauchen und das Gefieder pflegen können: mindestens eine Wanne oder ein Becken, in dem sie baden können, dazu eine Tränke, die tief genug für den ganzen Schnabel ist. Das Wasser oft wechseln.',
+    source: 'Tierschutzgesetz § 2, Empfehlungen zur Haltung von Wassergeflügel',
+  },
+  {
+    key: 'turkey_blackhead',
+    kind: 'tip',
+    species: ['turkey'],
+    title: 'Puten nicht mit Hühnern halten',
+    text: 'Hühner tragen oft den Erreger der Schwarzkopfkrankheit, ohne selbst krank zu werden – für Puten ist sie meist tödlich, und es gibt kein zugelassenes Mittel. Puten deshalb getrennt und nicht auf Flächen halten, auf denen vorher Hühner waren.',
+    source: 'Empfehlung der Geflügelgesundheitsdienste',
+  },
+  {
+    key: 'quail_keeping',
+    kind: 'tip',
+    species: ['quail'],
+    title: 'Wachteln: Voliere statt Käfig',
+    text: 'Japanwachteln brauchen Platz zum Laufen, Scharren und Sandbaden und einen Rückzugsort; die Decke weich oder hoch genug, weil sie bei Schreck senkrecht hochspringen. Richtwert: ein Hahn auf vier bis fünf Hennen.',
+    source: 'Merkblätter der Veterinärämter',
   },
   {
     key: 'rabbit_vaccination',
@@ -463,7 +489,7 @@ export async function setDutySettings(farmId: number, input: DutySettingsInput, 
 // ── Push: the stock report in January ─────────────────────────────────────────
 
 const SPECIES_PLURAL: Record<FarmSpecies, string> = {
-  poultry: 'Geflügel',
+  poultry: 'Hühner',
   rabbit: 'Kaninchen',
   guineaPig: 'Meerschweinchen',
   goat: 'Ziegen',
@@ -472,6 +498,10 @@ const SPECIES_PLURAL: Record<FarmSpecies, string> = {
   cattle: 'Rinder',
   pig: 'Schweine',
   alpaca: 'Alpakas',
+  goose: 'Gänse',
+  duck: 'Enten',
+  turkey: 'Puten',
+  quail: 'Wachteln',
   cat: 'Katzen',
   dog: 'Hunde',
   other: 'Tiere',

@@ -198,7 +198,15 @@ function spell(days: DayForecast[], test: (d: DayForecast) => boolean): DayForec
 
 const temp = (t: number) => `${t < 0 ? '−' : ''}${Math.abs(t).toLocaleString('de-DE')} °C`;
 const SMALL_PETS: FarmSpecies[] = ['rabbit', 'guineaPig'];
-const GRAZERS: FarmSpecies[] = ['goat', 'sheep', 'horse', 'cattle', 'alpaca'];
+const GRAZERS: FarmSpecies[] = ['goat', 'sheep', 'horse', 'cattle', 'alpaca', 'goose'];
+const WATERFOWL: FarmSpecies[] = ['goose', 'duck'];
+/** Frost notes for poultry besides chickens (docs/gefluegel.md). */
+function poultryFrost(has: (list: FarmSpecies[]) => boolean): string {
+  return (
+    (has(WATERFOWL) ? ' Enten und Gänse: Badewasser täglich eisfrei – sie baden auch im Winter.' : '') +
+    (has(['quail']) ? ' Wachteln zugfrei und trocken unterbringen, sie vertragen Kälte schlechter als Hühner.' : '')
+  );
+}
 /** Alpakas suffer from heat early, above all in full fleece before shearing. */
 const ALPACA_HEAT = ' Alpakas leiden früh unter Hitze, besonders vor der Schur: Schatten, Wasser, Bauch und Beine mit dem Schlauch abkühlen – nicht den Rücken.';
 
@@ -226,7 +234,8 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
         text:
           `Frostperiode: ${frostRun.length} Tage in Folge Frost bis ${temp(low)} (bis ${dayText(frostRun.at(-1)!.date)}${frostRun.length === days.length ? ' und länger' : ''}): ` +
           'Tränken mehrmals am Tag frostfrei, Vorrat an Heu, Einstreu und Futter für die ganze Zeit prüfen, Wasserleitungen schützen.' +
-          (species.includes('guineaPig') ? ' Meerschweinchen frostfrei unterbringen.' : ''),
+          (species.includes('guineaPig') ? ' Meerschweinchen frostfrei unterbringen.' : '') +
+          poultryFrost(has),
       });
     }
     if (cold.minTemp <= -10) {
@@ -235,7 +244,8 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
         date: cold.date,
         text:
           `Strenger Frost bis ${temp(cold.minTemp)} (${when(cold)}): Ställe zugfrei schließen, Tränken mehrmals am Tag wechseln, mehr Raufutter.` +
-          (has(SMALL_PETS) ? ' Außenställe von Kaninchen isolieren, Meerschweinchen ins Haus.' : ''),
+          (has(SMALL_PETS) ? ' Außenställe von Kaninchen isolieren, Meerschweinchen ins Haus.' : '') +
+          poultryFrost(has),
       });
     } else if (cold.minTemp <= 0 && !frostRun) {
       out.push({
@@ -243,7 +253,8 @@ export function weatherWarnings(days: DayForecast[], species: FarmSpecies[], gar
         date: cold.date,
         text:
           `Frost bis ${temp(cold.minTemp)} (${when(cold)}): Tränken frostfrei halten – mehrmals am Tag frisches Wasser, Einstreu dicker.` +
-          (species.includes('guineaPig') ? ' Meerschweinchen frostfrei unterbringen.' : ''),
+          (species.includes('guineaPig') ? ' Meerschweinchen frostfrei unterbringen.' : '') +
+          poultryFrost(has),
       });
     }
     const hot = worst((d) => d.maxTemp, 1);

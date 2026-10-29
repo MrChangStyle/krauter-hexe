@@ -13,6 +13,7 @@ import { and, eq, gte, inArray, lte } from 'drizzle-orm';
 
 import { addDays } from './feedSeason';
 import { berlinDay } from './monitoring';
+import { POULTRY_SPECIES } from './species';
 
 export const LAYING_WEEKS = 26;
 /** Hens start laying at about 20 weeks. */
@@ -223,8 +224,8 @@ export async function loadLayingHistory(farmId: number, today = berlinDay()): Pr
         archivedAt: farmAnimalsTable.archivedAt,
       })
       .from(farmAnimalsTable)
-      .where(and(eq(farmAnimalsTable.farmId, farmId), eq(farmAnimalsTable.species, 'poultry'), inArray(farmAnimalsTable.sex, ['female', 'unknown']))),
-    db.select({ id: herdsTable.id, name: herdsTable.name }).from(herdsTable).where(and(eq(herdsTable.farmId, farmId), eq(herdsTable.species, 'poultry'))).orderBy(herdsTable.name),
+      .where(and(eq(farmAnimalsTable.farmId, farmId), inArray(farmAnimalsTable.species, [...POULTRY_SPECIES]), inArray(farmAnimalsTable.sex, ['female', 'unknown']))),
+    db.select({ id: herdsTable.id, name: herdsTable.name }).from(herdsTable).where(and(eq(herdsTable.farmId, farmId), inArray(herdsTable.species, [...POULTRY_SPECIES]))).orderBy(herdsTable.name),
     db
       .select({ date: farmYieldsTable.date, amount: farmYieldsTable.amount, herdId: farmYieldsTable.herdId, animalId: farmYieldsTable.animalId })
       .from(farmYieldsTable)

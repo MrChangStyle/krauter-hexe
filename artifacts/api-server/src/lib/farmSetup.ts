@@ -24,6 +24,7 @@ import { DEFAULT_FARM_NAME } from './farmMembers';
 import { createFarmTask } from './farmTasks';
 import { feedReminders, saveRation } from './feedPlanner';
 import type { LifeStage } from './feedNeeds';
+import { WATERFOWL } from './species';
 
 export const SETUP_STEPS = ['name', 'location', 'animals', 'rations', 'tasks', 'beds', 'members'] as const;
 export type SetupStep = (typeof SETUP_STEPS)[number];
@@ -88,6 +89,11 @@ export const START_RATIONS: Partial<Record<FarmSpecies, { stage: LifeStage; item
   horse: { stage: 'maintenance', items: [['heu', 10000], ['mineral_pferd', 50]] },
   cattle: { stage: 'maintenance', items: [['heu', 14000], ['mineral_rind', 80]] },
   alpaca: { stage: 'maintenance', items: [['heu', 1500], ['mineral_alpaka', 10]] },
+  goose: { stage: 'maintenance', items: [['wassergefluegel', 150], ['gras', 1000]] },
+  duck: { stage: 'laying', items: [['wassergefluegel', 170], ['muschelkalk', 8]] },
+  // Most hobby turkeys are raised for meat: the quick start sets them up growing.
+  turkey: { stage: 'growth', items: [['puten', 290]] },
+  quail: { stage: 'laying', items: [['wachtel', 28]] },
   pig: { stage: 'maintenance', items: [['schweinefutter', 2600]] },
 };
 
@@ -148,9 +154,14 @@ export async function quickStart(farmId: number, input: QuickStartInput): Promis
   }
   tasks += 1;
   await createFarmTask(farmId, { actionType: 'Ausmisten', herdId, notes: null, intervalValue: 1, intervalUnit: 'Wochen', reminderTime: '10:00' });
-  if (input.species === 'poultry') {
+  // Daily layers; geese and turkeys lay only in spring (docs/gefluegel.md).
+  if (input.species === 'poultry' || input.species === 'duck' || input.species === 'quail') {
     tasks += 1;
     await createFarmTask(farmId, { actionType: 'Eier sammeln', herdId, notes: null, intervalValue: 1, intervalUnit: 'Tage', reminderTime: '17:00' });
+  }
+  if (WATERFOWL.includes(input.species)) {
+    tasks += 1;
+    await createFarmTask(farmId, { actionType: 'Tränken', herdId, notes: 'Badewasser wechseln, Badestelle sauber halten', intervalValue: 1, intervalUnit: 'Tage', reminderTime: '09:00' });
   }
   if (input.species === 'alpaca') {
     // Alpakas (docs/alpaka.md): toenails, a faecal sample, the yearly shearing – Richtwerte.

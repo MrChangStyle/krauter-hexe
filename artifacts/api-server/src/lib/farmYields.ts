@@ -21,7 +21,7 @@ import {
   type ExpenseCategory,
   type FarmProduct,
 } from '@workspace/db';
-import { and, asc, desc, eq, gte, isNull, lte, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, gte, inArray, isNull, lte, or, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text, validDate } from './farmAnimals';
 import { feedStock } from './feedStock';
@@ -30,6 +30,7 @@ import { cropByKey } from './gardenCatalog';
 import { LAYING_AGE_DAYS } from './layingHistory';
 import { logger } from './logger';
 import { berlinDay } from './monitoring';
+import { POULTRY_SPECIES } from './species';
 
 export const PRODUCT_UNITS: Record<FarmProduct, { unit: string; label: string }> = {
   eggs: { unit: 'Stück', label: 'Eier' },
@@ -372,7 +373,7 @@ export async function yieldOverview(farmId: number, rawYear?: unknown, today = b
       db
         .select({ n: sql<number>`count(*)::int` })
         .from(farmAnimalsTable)
-        .where(and(eq(farmAnimalsTable.farmId, farmId), eq(farmAnimalsTable.species, 'poultry'), isNull(farmAnimalsTable.archivedAt), or(eq(farmAnimalsTable.sex, 'female'), eq(farmAnimalsTable.sex, 'unknown')), or(isNull(farmAnimalsTable.birthDate), lte(farmAnimalsTable.birthDate, addDays(today, -LAYING_AGE_DAYS))))),
+        .where(and(eq(farmAnimalsTable.farmId, farmId), inArray(farmAnimalsTable.species, [...POULTRY_SPECIES]), isNull(farmAnimalsTable.archivedAt), or(eq(farmAnimalsTable.sex, 'female'), eq(farmAnimalsTable.sex, 'unknown')), or(isNull(farmAnimalsTable.birthDate), lte(farmAnimalsTable.birthDate, addDays(today, -LAYING_AGE_DAYS))))),
       db
         .select({ n: sql<number>`coalesce(sum(${farmYieldsTable.amount}), 0)::float` })
         .from(farmYieldsTable)
@@ -429,7 +430,7 @@ export async function addYield(farmId: number, input: YieldInput): Promise<void>
     const [hen] = await db
       .select({ id: farmAnimalsTable.id })
       .from(farmAnimalsTable)
-      .where(and(eq(farmAnimalsTable.id, animalId), eq(farmAnimalsTable.farmId, farmId), eq(farmAnimalsTable.species, 'poultry')));
+      .where(and(eq(farmAnimalsTable.id, animalId), eq(farmAnimalsTable.farmId, farmId), inArray(farmAnimalsTable.species, [...POULTRY_SPECIES])));
     if (!hen) throw new FarmDataError(400, 'Diese Henne gibt es auf der Farm nicht.');
   }
   const clientId = input.clientId ?? null;

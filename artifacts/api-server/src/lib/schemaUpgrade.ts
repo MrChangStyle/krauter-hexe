@@ -54,6 +54,11 @@ const STATEMENTS = [
   // Alpakas (docs/alpaka.md): a new value in an existing enum. Runs on its
   // own, outside any transaction, so the value can be used right after.
   `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'alpaca' BEFORE 'other'`,
+  // Gänse, Enten, Puten, Wachteln (docs/gefluegel.md).
+  `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'goose' BEFORE 'other'`,
+  `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'duck' BEFORE 'other'`,
+  `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'turkey' BEFORE 'other'`,
+  `ALTER TYPE "public"."farm_species" ADD VALUE IF NOT EXISTS 'quail' BEFORE 'other'`,
   // Beet-Architekt (generated, see gardenSchemaStatements.ts).
   ...GARDEN_SCHEMA_STATEMENTS,
   // Futterplaner (generated, see feedSchemaStatements.ts).

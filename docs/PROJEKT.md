@@ -66,6 +66,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 | Weide | Flächen auf der Karte, Weidetagebuch, Ruhezeit, Mähtermine | `docs/weide.md` |
 | Bienen | Stockkarte, Durchsicht, Varroa, Honig, Standort-Check | `docs/bienen.md` |
 | Alpaka | Besonderheiten der Alpakahaltung | `docs/alpaka.md` |
+| Gänse, Enten, Puten, Wachteln | eigene Geflügelarten mit Futter, Brut, Pflichten, Wetter; „Tierart anfragen“ | `docs/gefluegel.md` |
 | Wildtier-Radar | Wildkameras, Raubtier-Alarm | `docs/meine-farm-app.md` |
 | Übergabe | Vertretung für ein paar Tage | `docs/team.md` |
 | Farm & Team | Mitglieder, Rollen, Modul-Freigaben, Kontakte | `docs/team.md` |
@@ -254,6 +255,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 29.10.2026 | #110 | Gänse, Enten, Puten und Wachteln als eigene Tierarten in allen Tier-Modulen; „Geflügel“ heißt jetzt „Huhn“; „Tierart anfragen“ unter der Tierart-Auswahl |
 | 29.10.2026 | #109 | Kostenschutz: Pflanzendoc, Pflege-Guide und erster Blick des Universal-Scans zählen gegen das Tageslimit; Kamera-Tagesgrenze zählt jetzt wirklich (vorher nie erreicht), dazu eine Grenze je Hof |
 | 29.10.2026 | #108 | Datentrennung: Tests über alle Hof- und Konto-Endpunkte; Wartungs-Endpunkte nur noch für den angemeldeten Betreiber, Archiv bearbeiten nur angemeldet; CI startet ein eigenes Postgres, die Integrationstests liefen dort vorher gar nicht |
 | 29.10.2026 | #107 | Passwort vergessen (Mail über Resend oder Link vom Betreiber), Passwort ändern, neues Passwort meldet andere Geräte ab; Resend in der Datenschutzerklärung |

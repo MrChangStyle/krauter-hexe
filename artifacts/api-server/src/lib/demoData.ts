@@ -140,6 +140,10 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await addFarmTaskComment(farmId, eggTask.id, userId, 'Demo: Wir brauchen neue Eierkartons.');
   await addFarmTaskComment(farmId, pump.id, userId, 'Demo: Läuft, Filter ist sauber.');
 
+  // Enten und Gänse (docs/gefluegel.md): ducks from the quick start (ration, eggs, bathing water) and a goose brood.
+  await quickStart(farmId, { species: 'duck', count: 3, name: 'Laufenten' });
+  await createBreeding(farmId, { species: 'goose', startedOn: ago(9), eggCount: 5, durationDays: 30, notes: 'Demo: Gänseeier im Brutapparat' });
+
   // Pflichten: the farm's registration number (made up).
   // Thüringen: the demo pastures lie there too.
   await setDutySettings(farmId, { holdingNumber: '276 09 000 000 0000 (Demo)', state: 'TH' });

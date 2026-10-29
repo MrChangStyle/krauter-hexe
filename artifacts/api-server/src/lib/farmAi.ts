@@ -30,7 +30,7 @@ import { speciesKey } from './speciesKey';
 export { speciesKey };
 
 const SPECIES_DE: Record<FarmSpecies, string> = {
-  poultry: 'Geflügel (Hühner, Enten, Gänse)',
+  poultry: 'Huhn',
   rabbit: 'Kaninchen',
   guineaPig: 'Meerschweinchen',
   cat: 'Katze',
@@ -41,12 +41,21 @@ const SPECIES_DE: Record<FarmSpecies, string> = {
   cattle: 'Rind',
   pig: 'Schwein',
   alpaca: 'Alpaka',
+  goose: 'Gans',
+  duck: 'Ente',
+  turkey: 'Pute',
+  quail: 'Wachtel',
   other: 'sonstiges Tier',
 };
 
 /** Farm species the plant archive keeps a toxicity status for. */
 const ARCHIVE_KIND: Partial<Record<FarmSpecies, AnimalKind>> = {
   poultry: 'poultry',
+  // The plant archive knows "Geflügel" as one kind.
+  goose: 'poultry',
+  duck: 'poultry',
+  turkey: 'poultry',
+  quail: 'poultry',
   rabbit: 'rabbit',
   guineaPig: 'guineaPig',
   cat: 'cat',
@@ -254,6 +263,11 @@ export const DIET: Record<FarmSpecies, Diet> = {
   sheep: 'herbivore',
   cattle: 'herbivore',
   alpaca: 'herbivore',
+  // Geese graze; ducks, turkeys and quails eat grains, greens and insects.
+  goose: 'herbivore',
+  duck: 'omnivore',
+  turkey: 'omnivore',
+  quail: 'omnivore',
   poultry: 'omnivore',
   pig: 'omnivore',
   cat: 'carnivore',

@@ -33,6 +33,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     ],
     faq: [
       { q: "Wie sicher ist die Bestimmung?", a: "Die KI liegt meist richtig, aber nicht immer. Bei Giftpflanzen und Pilzen gilt: im Zweifel nicht essen und nicht verfüttern – frag eine Fachperson." },
+      { q: "Was passiert, wenn die Erkennung nicht klappt?", a: "Dein Foto geht nicht verloren: Es bleibt in der Warteschlange (Mehr → Warteschlange) und wird automatisch noch einmal versucht – ohne Netz, sobald du wieder online bist. Fehlgeschlagene Versuche zählen nicht gegen dein Tageslimit." },
       { q: "Wie viele Scans habe ich?", a: "Es gibt ein tägliches Kontingent je Konto; um Mitternacht beginnt es neu. Pflanzendoc und Pflege-Guides zählen wie ein Pflanzen-Scan. Die App zeigt, wenn es erreicht ist; schlägt die KI fehl, zählt die Anfrage nicht." },
     ],
   },

@@ -72,6 +72,10 @@ function GreetingHeader({ username, pendingGuide }: { username: string; pendingG
   );
 }
 
+/** Shown when the AI fails for now and the queue will try the photo again. */
+export const SCAN_RETRY_TEXT =
+  "Die Erkennung klappt gerade nicht. Dein Foto ist gespeichert und wird automatisch noch einmal versucht – du findest es unter Mehr → Warteschlange.";
+
 export default function ScanPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -397,24 +401,28 @@ export default function ScanPage() {
     setErrorMsg(match.message);
   }, [noSubjectResults, waitingForItemId, clearNoSubjectResults]);
 
-  // If the scan we're waiting for keeps failing, don't show a warning: the
-  // photo stays silently in the queue (auto-retried in the background,
-  // visible unter /warteschlange). We only stop the spinner once the item
-  // has exhausted its automatic retries or failed permanently - while it is
-  // still auto-retrying, the scan simply keeps running.
+  // The scan we're waiting for failed (docs/scannen.md). The photo stays in
+  // the queue (Mehr → Warteschlange) either way, so the spinner stops at once
+  // and the user learns what happens next: retried automatically while the
+  // AI is merely unreachable, or the server's reason when it will not work.
+  // Waiting silently meant minutes of "95 %", because the retries back off.
   useEffect(() => {
     if (!waitingForItemId) return;
     const item = pending.find((p) => p.id === waitingForItemId);
     if (!item || item.status !== "error") return;
     const willAutoRetry =
       item.autoRetry === true && item.attempts < MAX_AUTO_ATTEMPTS;
-    if (willAutoRetry) return;
-    // Silently hand over to the queue - no error message.
     setWaitingForItemId(null);
     setScanProgress(0);
-    setErrorMsg(null);
     setIsPreparing(false);
-  }, [pending, waitingForItemId]);
+    if (willAutoRetry) {
+      setErrorMsg(null);
+      toast({ title: "Noch kein Ergebnis", description: SCAN_RETRY_TEXT });
+    } else {
+      setErrorKind("plant");
+      setErrorMsg(item.error ?? "Der Scan ist fehlgeschlagen. Unter Mehr → Warteschlange kannst du ihn erneut starten.");
+    }
+  }, [pending, waitingForItemId, toast]);
 
   // If the network drops while we're waiting for a scan result, the drain
   // will have stopped and the item stays pending indefinitely. Hand the scan

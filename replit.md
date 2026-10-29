@@ -2,6 +2,8 @@
 
 Project overview in German, kept current with every change: `docs/PROJEKT.md`.
 
+Scannen (`docs/scannen.md`): when the scan the page waits for fails, the page hands over to the queue at once – a toast for an auto-retry, the server's reason otherwise (it used to keep "95 %" for minutes while the queue backed off).
+
 Geflügelarten (`docs/gefluegel.md`): `goose`, `duck`, `turkey`, `quail` are species of their own beside `poultry` (= Huhn), and `rhea` (Nandu, a Laufvogel – poultry by law) and `donkey` (Esel; `EQUIDS` with the horse for the Equidenpass, worms and TSK; archive kind "horse"), docs/nandu-esel.md; `POULTRY_SPECIES`/`isPoultry` (server `lib/species.ts`, app `lib/farm-labels.ts`) cover eggs, brood, laying, avian flu and the stock register; per-species values in breeding, feed needs/catalog, setup, duties, weather, garden, medicines; the archive maps them to "Geflügel". "Deine Tierart fehlt? Anfragen" opens the feedback (`openFeedback`).
 
 Kostenschutz (`docs/kostenschutz.md`): every AI call counts – Pflanzendoc and Pflege-Guide as `plant`, the universal scan's first look as `classify` (45/day, outside the app budget); cameras count their AI checks on the camera row (`ai_day`, `ai_count`; 300 per camera, 600 per farm and Berlin day) because `camera_events` keep only the newest 100.

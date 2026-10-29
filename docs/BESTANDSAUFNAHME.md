@@ -41,8 +41,8 @@ Ergebnis der Durchsicht von Code, Doku und den „Offen“-Abschnitten aller Mod
 
 | Modul | Stand | Befund | Schritt |
 |---|---|---|---|
-| Scannen (Pflanze, Pilz, Insekt) | ✅ | Warteschlange offline, Pilze nur mit 2 Fotos essbar. Die Galerie zeigt das bessere Foto, Doppelte werden nach botanischem Namen zusammengeführt. Fehlerfälle sind in einem Durchgang zu prüfen | 6 |
-| Meine Pflanzen | 🟡 | Sammlung je Konto mit Ort. Bei erneutem Scan fehlt die Wahl zwischen altem und neuem Foto | 6 |
+| Scannen (Pflanze, Pilz, Insekt) | ✅ | Warteschlange offline, Pilze nur mit 2 Fotos essbar. Die Galerie zeigt das bessere Foto, Doppelte werden nach botanischem Namen zusammengeführt. Seit Schritt 6 sind alle Fehlerfälle geprüft (`docs/scannen.md`), und die Ladeanzeige bei einem KI-Fehler ist behoben | 6 |
+| Meine Pflanzen | ✅ | Sammlung je Konto mit Ort. Bei erneutem Scan wählt man zwischen altem und neuem Foto (gab es schon, die erste Bestandsaufnahme hatte das übersehen) | 6 |
 | Pflegeplan | ✅ | Aufgaben, Erinnerungen, wetterabhängig | – |
 | Pflanzendoc | ✅ | Diagnose und Pflege-Guide | – |
 | Schädlinge & Nützlinge | 🟡 | bio und chemisch. Richtwerte noch fachlich zu prüfen, seltene Arten werden nicht erkannt | 10 |

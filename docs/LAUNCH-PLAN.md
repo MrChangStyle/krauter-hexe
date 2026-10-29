@@ -45,7 +45,7 @@ Die Schritte sind nach Wichtigkeit für den Start sortiert. Jeder Schritt ist ei
 12. [x] **SEO**: sitemap.xml, Open-Graph-Bilder, strukturierte Daten, Titel und Beschreibungen prüfen.
 13. [x] **Rechtstexte als Entwürfe**: Impressum, Datenschutz (Render, Neon, Cloudinary, Google Gemini, Google-Login, Zahlungsanbieter), AGB, Widerrufsbelehrung, jeweils als „rechtlich zu prüfen“ markiert. Haftungshinweise bei Pilzen, Giftpflanzen und Tierarzneimitteln.
 14. [x] **Homepage und FAQ** an den Endstand angleichen, „Kostenlos starten“.
-15. [ ] **Marketing-Plan** (`docs/MARKETING.md`): Zielgruppen, Botschaften, Kanäle, Startfahrplan, Pressetext, Social-Media-Ideen, Messgrößen.
+15. [x] **Marketing-Plan** (`docs/MARKETING.md`): Zielgruppen, Botschaften, Kanäle, Startfahrplan, Pressetext, Social-Media-Ideen, Messgrößen.
 
 ### E – Technik und Bezahlung
 16. [ ] **Premium und Bezahlung**: Abo-Status, Upgrade, Kündigung, Webhook. Mit Testdaten und Mock gebaut, es fehlen nur Konto und Schlüssel.

@@ -398,6 +398,10 @@ export const GENERAL_HELP: HelpTopic[] = [
       { q: "Kostet die App etwas?", a: "In der Testphase nicht: Alle Funktionen sind offen und kostenlos, die KI mit einem Tageslimit. Wer jetzt testet, behält die App auch nach dem Start kostenlos." },
       { q: "Wie komme ich in die App?", a: "Über littlefarming.de/app – oder auf littlefarming.de oben auf „Zur App“. littlefarming.de selbst zeigt im Browser die Homepage. Am bequemsten: die App auf dem Startbildschirm installieren, sie öffnet sich dann immer direkt." },
       { q: "Was steht oben auf den Seiten?", a: "Jedes Modul hat oben einen Kasten „So funktioniert’s“. Du kannst ihn zuklappen; die ganze Erklärung steht hier in der Hilfe." },
+      {
+        q: "Wie melde ich einen Fehler?",
+        a: "Über die Sprechblase unten rechts: schreiben oder „Halten & sprechen“. Am meisten hilft ein Screenshot – mach ihn mit dem Handy und häng ihn mit „Bild“ an. Wir sehen dazu, auf welcher Seite du warst.",
+      },
     ],
   },
   {

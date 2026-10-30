@@ -10702,12 +10702,15 @@ export const sendFeedbackBodyTextMax = 2000;
 
 export const sendFeedbackBodyPageMax = 200;
 
+export const sendFeedbackBodyScreenshotMax = 2000000;
+
 
 
 export const SendFeedbackBody = zod.object({
   "text": zod.string().min(1).max(sendFeedbackBodyTextMax),
   "page": zod.string().max(sendFeedbackBodyPageMax).nullish(),
-  "voice": zod.boolean().optional()
+  "voice": zod.boolean().optional(),
+  "screenshot": zod.string().max(sendFeedbackBodyScreenshotMax).nullish().describe('App only – a screenshot as an image data URL (JPEG, PNG or WebP), downscaled by the app; stored privately, only the owner sees it')
 })
 
 export const SendFeedbackResponse = zod.void()
@@ -10724,6 +10727,7 @@ export const ListFeedbackResponse = zod.object({
   "voice": zod.boolean(),
   "kind": zod.union([zod.literal('idea'),zod.literal('problem'),zod.literal(null)]).nullable().describe('Homepage – idea or problem; null from the app.'),
   "visitor": zod.boolean().describe('Sent from the homepage without an account.'),
+  "hasScreenshot": zod.boolean().describe('A screenshot is attached – GET \/feedback\/{feedbackId}\/screenshot (owner only)'),
   "author": zod.string(),
   "email": zod.string().nullable(),
   "createdAt": zod.string(),
@@ -10731,6 +10735,16 @@ export const ListFeedbackResponse = zod.object({
 })),
   "unread": zod.number()
 })
+
+
+/**
+ * @summary The screenshot attached to a feedback (app owner only)
+ */
+export const GetFeedbackScreenshotParams = zod.object({
+  "feedbackId": zod.coerce.number()
+})
+
+export const GetFeedbackScreenshotResponse = zod.unknown()
 
 
 /**
@@ -10752,6 +10766,7 @@ export const MarkFeedbackResponse = zod.object({
   "voice": zod.boolean(),
   "kind": zod.union([zod.literal('idea'),zod.literal('problem'),zod.literal(null)]).nullable().describe('Homepage – idea or problem; null from the app.'),
   "visitor": zod.boolean().describe('Sent from the homepage without an account.'),
+  "hasScreenshot": zod.boolean().describe('A screenshot is attached – GET \/feedback\/{feedbackId}\/screenshot (owner only)'),
   "author": zod.string(),
   "email": zod.string().nullable(),
   "createdAt": zod.string(),
@@ -10776,6 +10791,7 @@ export const DeleteFeedbackResponse = zod.object({
   "voice": zod.boolean(),
   "kind": zod.union([zod.literal('idea'),zod.literal('problem'),zod.literal(null)]).nullable().describe('Homepage – idea or problem; null from the app.'),
   "visitor": zod.boolean().describe('Sent from the homepage without an account.'),
+  "hasScreenshot": zod.boolean().describe('A screenshot is attached – GET \/feedback\/{feedbackId}\/screenshot (owner only)'),
   "author": zod.string(),
   "email": zod.string().nullable(),
   "createdAt": zod.string(),

@@ -20,6 +20,8 @@ export interface FeedbackItem {
   kind: FeedbackItemKind;
   /** Sent from the homepage without an account. */
   visitor: boolean;
+  /** A screenshot is attached – GET /feedback/{feedbackId}/screenshot (owner only) */
+  hasScreenshot: boolean;
   author: string;
   /** @nullable */
   email: string | null;

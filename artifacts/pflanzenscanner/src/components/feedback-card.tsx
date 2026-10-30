@@ -51,6 +51,17 @@ export function FeedbackCard() {
                 )}
               </p>
               <p className="mt-1 whitespace-pre-wrap">{f.text}</p>
+              {f.hasScreenshot && (
+                // Same origin, signed in as the owner: the image comes with the session cookie.
+                <a href={`${import.meta.env.BASE_URL}api/feedback/${f.id}/screenshot`} target="_blank" rel="noreferrer" className="mt-2 block w-fit" data-testid="feedback-screenshot">
+                  <img
+                    src={`${import.meta.env.BASE_URL}api/feedback/${f.id}/screenshot`}
+                    alt="Screenshot zum Feedback"
+                    loading="lazy"
+                    className="max-h-48 rounded-md border object-contain"
+                  />
+                </a>
+              )}
               <div className="mt-2 flex gap-2">
                 <Button size="sm" variant="outline" className="h-8 gap-1" disabled={mark.isPending} onClick={() => mark.mutate({ feedbackId: f.id, data: { read: !f.readAt } })}>
                   {f.readAt ? <RotateCcw className="h-3.5 w-3.5" /> : <Check className="h-3.5 w-3.5" />}

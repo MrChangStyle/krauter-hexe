@@ -134,4 +134,25 @@ describe.skipIf(!enabled)("Feedback (real database)", () => {
     for (let i = 0; i < 19; i++) await api("POST", "/feedback", { text: `Idee ${i}` });
     expect((await api("POST", "/feedback", { text: "Noch eine" })).status).toBe(429);
   });
+
+  it("keeps a screenshot privately for the owner and checks it is an image", async () => {
+    // A 1×1 PNG.
+    const png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=";
+    expect((await api("POST", "/feedback", { text: "Knopf fehlt", page: "/farm", screenshot: png })).status).toBe(201);
+    expect((await api("POST", "/feedback", { text: "Ohne Bild" })).status).toBe(201);
+    expect((await api("POST", "/feedback", { text: "Kein Bild", screenshot: "data:text/html;base64,PGgxPg==" })).status).toBe(400);
+
+    // Only the owner gets it – as an image, not as JSON.
+    const [row] = await q<{ id: number }>("SELECT id FROM feedback WHERE text = 'Knopf fehlt'");
+    expect((await fetch(`${base}/feedback/${row!.id}/screenshot`)).status).toBe(403);
+    as = "owner";
+    const list = (await api("GET", "/feedback")).data.items;
+    expect(list.map((f: any) => [f.text, f.hasScreenshot])).toEqual([["Ohne Bild", false], ["Knopf fehlt", true]]);
+    const img = await fetch(`${base}/feedback/${row!.id}/screenshot`);
+    expect(img.status).toBe(200);
+    expect(img.headers.get("content-type")).toBe("image/png");
+    expect(Buffer.from(await img.arrayBuffer()).subarray(1, 4).toString()).toBe("PNG");
+    const none = list.find((f: any) => !f.hasScreenshot);
+    expect((await fetch(`${base}/feedback/${none.id}/screenshot`)).status).toBe(404);
+  });
 });

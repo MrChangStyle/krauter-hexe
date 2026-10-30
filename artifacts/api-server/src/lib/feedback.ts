@@ -6,7 +6,7 @@
  */
 
 import { db, feedbackTable, usersTable } from '@workspace/db';
-import { and, count, desc, eq, gte, isNull, lt } from 'drizzle-orm';
+import { and, count, desc, eq, gte, isNull, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, text } from './farmAnimals';
 import { logger } from './logger';
@@ -18,6 +18,20 @@ export interface FeedbackInput {
   text: unknown;
   page?: unknown;
   voice?: unknown;
+  /** A screenshot as an image data URL (the app downscales it). */
+  screenshot?: unknown;
+}
+
+/** About 1.5 MB of base64 – a downscaled screenshot is far smaller. */
+export const MAX_SCREENSHOT_CHARS = 2_000_000;
+
+function screenshotOf(raw: unknown): string | null {
+  if (raw == null || raw === '') return null;
+  if (typeof raw !== 'string' || !/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(raw)) {
+    throw new FarmDataError(400, 'Der Screenshot muss ein Bild sein (JPEG, PNG oder WebP).');
+  }
+  if (raw.length > MAX_SCREENSHOT_CHARS) throw new FarmDataError(400, 'Der Screenshot ist zu groß.');
+  return raw;
 }
 
 export interface FeedbackItem {
@@ -29,6 +43,8 @@ export interface FeedbackItem {
   kind: FeedbackKind | null;
   /** Sent from the homepage without an account. */
   visitor: boolean;
+  /** A screenshot is attached (GET /feedback/:id/screenshot, owner only). */
+  hasScreenshot: boolean;
   author: string;
   email: string | null;
   createdAt: string;
@@ -57,13 +73,14 @@ async function notifyOwners(title: string, body: string, from: string | null): P
 export async function sendFeedback(userId: string, input: FeedbackInput, now = new Date()): Promise<void> {
   const body = text(input.text, 2000, 'Deine Nachricht', true);
   if (body.length < 3) throw new FarmDataError(400, 'Schreib bitte ein paar Worte mehr.');
+  const screenshot = screenshotOf(input.screenshot);
   const [sent] = await db
     .select({ n: count() })
     .from(feedbackTable)
     .where(and(eq(feedbackTable.userId, userId), gte(feedbackTable.createdAt, new Date(now.getTime() - 24 * 60 * 60 * 1000))));
   if ((sent?.n ?? 0) >= MAX_PER_DAY) throw new FarmDataError(429, 'Danke für so viel Feedback! Für heute ist das Limit erreicht – morgen geht es weiter.');
-  await db.insert(feedbackTable).values({ userId, text: body, page: pagePath(input.page), voice: input.voice === true });
-  await notifyOwners('Neues Feedback', body, userId);
+  await db.insert(feedbackTable).values({ userId, text: body, page: pagePath(input.page), voice: input.voice === true, screenshot });
+  await notifyOwners(screenshot ? 'Neues Feedback mit Screenshot' : 'Neues Feedback', body, userId);
 }
 
 // ── From the homepage ────────────────────────────────────────────────────────
@@ -134,6 +151,7 @@ export async function listFeedback(limit = 200): Promise<{ items: FeedbackItem[]
       voice: feedbackTable.voice,
       kind: feedbackTable.kind,
       contact: feedbackTable.contact,
+      hasScreenshot: sql<boolean>`${feedbackTable.screenshot} is not null`,
       userId: feedbackTable.userId,
       createdAt: feedbackTable.createdAt,
       readAt: feedbackTable.readAt,
@@ -154,6 +172,7 @@ export async function listFeedback(limit = 200): Promise<{ items: FeedbackItem[]
       voice: r.voice,
       kind: (FEEDBACK_KINDS as readonly string[]).includes(r.kind ?? '') ? (r.kind as FeedbackKind) : null,
       visitor: r.userId === null,
+      hasScreenshot: r.hasScreenshot,
       author: r.userId === null ? 'Besuch der Homepage' : r.username || r.firstName || r.email?.split('@')[0] || 'Unbekannt',
       email: r.contact ?? r.email ?? null,
       createdAt: r.createdAt.toISOString(),
@@ -161,6 +180,13 @@ export async function listFeedback(limit = 200): Promise<{ items: FeedbackItem[]
     })),
     unread: unread?.n ?? 0,
   };
+}
+
+/** The screenshot of one feedback as bytes, or null. */
+export async function feedbackScreenshot(id: number): Promise<{ type: string; bytes: Buffer } | null> {
+  const [row] = await db.select({ screenshot: feedbackTable.screenshot }).from(feedbackTable).where(eq(feedbackTable.id, id));
+  const m = row?.screenshot ? /^data:(image\/(?:jpeg|png|webp));base64,(.+)$/.exec(row.screenshot) : null;
+  return m ? { type: m[1]!, bytes: Buffer.from(m[2]!, 'base64') } : null;
 }
 
 export async function markFeedback(id: number, read: boolean): Promise<void> {

@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation } from "wouter";
-import { Loader2, MessageCircle, Mic, Send } from "lucide-react";
+import { ImagePlus, Loader2, MessageCircle, Mic, Send, X } from "lucide-react";
 import { useSendFeedback } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { usePushToTalk } from "@/hooks/use-push-to-talk";
+import { downscaleFile } from "@/lib/image";
 import { appendPhrase } from "@/lib/speech";
 
 const OPEN_EVENT = "lf-feedback";
@@ -31,6 +32,10 @@ export function FeedbackBubble() {
   const [open, setOpen] = useState(false);
   const [text, setText] = useState("");
   const [usedVoice, setUsedVoice] = useState(false);
+  // A screenshot of the problem (from the gallery after taking it on the phone), downscaled.
+  const [screenshot, setScreenshot] = useState<string | null>(null);
+  const [preparing, setPreparing] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   // Hold to speak, let go when done (docs/spracheingabe.md).
   const { supported: canDictate, listening, stop, handlers } = usePushToTalk((phrase) => {
     setUsedVoice(true);
@@ -42,6 +47,7 @@ export function FeedbackBubble() {
         setOpen(false);
         setText("");
         setUsedVoice(false);
+        setScreenshot(null);
         toast({ title: "Danke für dein Feedback!", description: "Es ist beim Little-Farming-Team angekommen." });
       },
       onError: (err) => toast({ title: "Nicht gesendet", description: errorText(err, "Bitte versuche es noch einmal."), variant: "destructive" }),
@@ -80,7 +86,7 @@ export function FeedbackBubble() {
           <DialogHeader>
             <DialogTitle>Feedback an das Team</DialogTitle>
             <DialogDescription>
-              Was fehlt, was stört, was wäre toll? {canDictate ? "Schreib es auf oder sprich es ein." : "Schreib es einfach auf."} Wir sehen, auf welcher Seite du gerade bist.
+              Was fehlt, was stört, was wäre toll? {canDictate ? "Schreib es auf oder sprich es ein." : "Schreib es einfach auf."} Bei einem Fehler hilft ein Screenshot: Mach ihn mit dem Handy und häng ihn hier an. Wir sehen, auf welcher Seite du gerade bist.
             </DialogDescription>
           </DialogHeader>
           <Textarea
@@ -91,13 +97,45 @@ export function FeedbackBubble() {
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
+          {screenshot && (
+            <div className="relative w-fit">
+              <img src={screenshot} alt="Angehängter Screenshot" className="max-h-40 rounded-md border object-contain" />
+              <button
+                type="button"
+                aria-label="Screenshot entfernen"
+                onClick={() => setScreenshot(null)}
+                className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-foreground text-background shadow"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            aria-hidden="true"
+            data-testid="feedback-screenshot-input"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (!file) return;
+              setPreparing(true);
+              // Wide enough to read the screen, small enough for the database (~200 KB).
+              downscaleFile(file, 1600, 0.8)
+                .then(setScreenshot)
+                .catch(() => toast({ title: "Das Bild ließ sich nicht lesen", variant: "destructive" }))
+                .finally(() => setPreparing(false));
+            }}
+          />
           {listening && (
             <p className="flex items-center gap-2 text-xs text-primary" role="status">
               <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
               Ich höre zu … lass los, wenn du fertig bist.
             </p>
           )}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {canDictate && (
               <Button
                 type="button"
@@ -112,11 +150,22 @@ export function FeedbackBubble() {
               </Button>
             )}
             <Button
+              type="button"
+              variant="outline"
+              className="gap-1.5"
+              aria-label={screenshot ? "Anderen Screenshot wählen" : "Screenshot anhängen"}
+              disabled={preparing}
+              onClick={() => fileRef.current?.click()}
+            >
+              {preparing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+              {canDictate ? "Bild" : "Screenshot"}
+            </Button>
+            <Button
               className="ml-auto gap-1.5"
-              disabled={send.isPending || text.trim().length < 3}
+              disabled={send.isPending || preparing || text.trim().length < 3}
               onClick={() => {
                 stop();
-                send.mutate({ data: { text: text.trim(), page: location, voice: usedVoice } });
+                send.mutate({ data: { text: text.trim(), page: location, voice: usedVoice, screenshot } });
               }}
             >
               {send.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}

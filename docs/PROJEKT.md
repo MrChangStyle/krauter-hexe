@@ -94,7 +94,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 - **Seitenpasswort** (`SITE_PASSWORD`): Solange es gesetzt ist, zeigt die ganze Seite (Homepage, App, API) erst nach Eingabe des Passworts etwas. Das Passwort ist die Einladung für Tester. Zum öffentlichen Start wird es gelöscht.
 - **Registrierung:** E-Mail und Passwort oder Google, dazu die Zustimmung zu Datenschutz und Nutzungsbedingungen. **Es gibt keinen Einladungscode.**
 - **Freischaltung:** Die ersten `FREE_TESTER_SLOTS` Konten (Standard 20, der Betreiber zählt nicht, bestehende Konten zählen mit) starten sofort. Danach wartet ein neues Konto auf die Freischaltung unter Verwaltung → Benutzer. Der Betreiber bekommt bei jeder Anmeldung einen Push.
-- **Betreiber:** Das erste Konto wird Betreiber (Owner). Es sieht die Verwaltung (Betrieb, Feedback, Moderation, Entwürfe, Premium, Benutzer, Aufräumen) und hat kein KI-Limit.
+- **Betreiber:** Das erste Konto wird Betreiber (Owner). Es sieht die Verwaltung (Betrieb, Feedback, Moderation, Entwürfe, Premium, Benutzer, Aufräumen) und hat kein KI-Limit. In der Verwaltung ist alles zu, bis man eine Kachel antippt; dann öffnet sich nur dieser Bereich (`/verwaltung#feedback` öffnet direkt das Feedback).
 - **Höfe und Rollen:** Jedes Konto bekommt einen eigenen Hof („Meine Farm“) und kann weitere anlegen. Auf einem Hof gibt es die Rollen Admin, Mitarbeiter (caretaker) und Gast, dazu Modul-Freigaben und Vertretungen mit Enddatum (`docs/team.md`). Der Tierarzt bekommt per „Tierarzt einladen“ einen Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export (`docs/krankenakte.md`). Geteilte Höfe stehen unter „Wähle deine Farm“. Unter Farm & Team legt der Hof fest, wie er wirtschaftet: konventionell (Standard), naturnah oder bio – jederzeit umschaltbar; naturnah und bio stellen Pflanzendoc und Pflege-Guide auf biologische Mittel um (`docs/bio.md`).
 - **Passwort vergessen und ändern** (`docs/konto.md`):
   - „Passwort vergessen?“ auf der Anmeldeseite schickt einen Einmal-Link per Mail, sobald `RESEND_API_KEY` gesetzt ist.
@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #130 | Feedback mit Screenshot: In der Sprechblase lässt sich ein Bild anhängen (verkleinert, nur in der Datenbank, nur der Betreiber sieht es); Datenschutzerklärung ergänzt. Verwaltung: alle Bereiche zu, ein Tipp auf eine Kachel öffnet nur diesen |
 | 30.10.2026 | #129 | Beet-Architekt: Pflanzen im Raster verschieben (ziehen oder antippen → „Verschieben“), Ernten bleiben dran; KI-Vorschlag hängt nicht mehr (Zeitgrenze 45 s, minimales Nachdenken, klare Meldung), ebenso die Foto-Auswertungen |
 | 30.10.2026 | #128 | Pilz-Scan mit drei Fotos: zusätzlich die Lamellen von unten, essbar nur mit allen drei und sicherer Bestimmung; ein Scan mit drei Fotos darf einen vorhandenen Eintrag neu bewerten; der Betreiber kann einen Pilz nach Prüfung der Fotos als essbar freigeben oder die Freigabe zurücknehmen |
 | 30.10.2026 | #127 | Bio als Option (B1): Bewirtschaftung je Hof unter Farm & Team (konventionell als Standard, naturnah, Bio, Bio-Verband – jederzeit umschaltbar); Schalter „Nur biologische Empfehlungen“ im Pflanzendoc, bei naturnahen und Bio-Höfen automatisch an; Demo-Hof naturnah |

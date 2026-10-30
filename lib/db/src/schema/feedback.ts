@@ -17,6 +17,10 @@ export const feedbackTable = pgTable(
     // Homepage: "idea" or "problem", and where to answer (optional).
     kind: text("kind"),
     contact: text("contact"),
+    // App only: a screenshot of the problem, downscaled, as a data URL. Kept
+    // in the database, not on the public CDN – screenshots can show private
+    // things; only the owner fetches it (GET /feedback/:id/screenshot).
+    screenshot: text("screenshot"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     readAt: timestamp("read_at", { withTimezone: true }),
   },

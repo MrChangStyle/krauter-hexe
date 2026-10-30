@@ -680,7 +680,7 @@ function Planner({ farm }: { farm: FarmSummary }) {
             const missing = (["summer", "winter"] as const).filter((season) => !all.some((x) => x.season === season));
             const lights = r?.checks.map(light) ?? [];
             return (
-              <li key={`${t.kind}-${t.id}`} className="space-y-3 rounded-2xl border border-border bg-card p-4">
+              <li key={`${t.kind}-${t.id}`} className="space-y-3 rounded-2xl border bg-card p-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-semibold">{t.name}</p>
@@ -758,7 +758,7 @@ function Planner({ farm }: { farm: FarmSummary }) {
 
       {organicFarm && <FeedOriginsCard farmId={farm.id} rations={rations.data ?? []} canWrite={canWrite} />}
 
-      <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm">
         <div className="flex items-center justify-between gap-2">
           <h2 className="flex items-center gap-2 font-semibold">
             <Wheat className="h-4 w-4 text-primary" />

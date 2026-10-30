@@ -65,7 +65,7 @@ export function LineageSection({ farmId, animal, canWrite }: { farmId: number; a
         )}
       </div>
       {editing ? (
-        <div className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
+        <div className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="lin-mother">Mutter</Label>
             <select id="lin-mother" className={selectClass} value={mother} onChange={(e) => setMother(e.target.value)}>
@@ -95,7 +95,7 @@ export function LineageSection({ farmId, animal, canWrite }: { farmId: number; a
           </div>
         </div>
       ) : (
-        <div className="space-y-1 rounded-xl border border-border bg-card p-4 text-sm">
+        <div className="space-y-1 rounded-2xl border bg-card p-4 text-sm">
           <p>Mutter: {link(l.mother)}</p>
           <p>Vater: {link(l.father)}</p>
           {l.offspring.length > 0 && (

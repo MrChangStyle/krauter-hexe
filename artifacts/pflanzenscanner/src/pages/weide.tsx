@@ -443,7 +443,7 @@ function PastureCard({ farm, p, onMove, onEdit, onCut }: { farm: FarmSummary; p:
   const removeCut = useDeletePastureCut({ mutation: saved });
   const canWrite = farm.role !== "guest";
   return (
-    <li id={`pasture-${p.id}`} className="scroll-mt-20 rounded-xl border border-border bg-card p-3" data-testid="pasture">
+    <li id={`pasture-${p.id}`} className="scroll-mt-20 rounded-xl border bg-card p-3" data-testid="pasture">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1">
           <p className="font-semibold">{p.name}</p>
@@ -623,7 +623,7 @@ function Pastures({ farm }: { farm: FarmSummary }) {
               ["ready", "Bereit"],
             ] as const
           ).map(([s, label]) => (
-            <div key={s} className="rounded-xl border border-border bg-card p-3">
+            <div key={s} className="rounded-xl border bg-card p-3">
               <p className="text-xs text-muted-foreground">{label}</p>
               <p className="text-lg font-semibold" data-testid={`pastures-${s}`}>
                 {count(s)}

@@ -80,7 +80,7 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
   }
 
   return (
-    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+    <section className="space-y-3 rounded-2xl border bg-card p-4">
       <div>
         <h2 className="flex items-center gap-2 font-semibold">
           <FileDown className="h-4 w-4 text-primary" />

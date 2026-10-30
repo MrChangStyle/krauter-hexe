@@ -47,7 +47,7 @@ function CheckCard({ check, onDelete }: { check: GrowCheck; onDelete: () => void
   const h = check.health;
   const t = check.trichomes;
   return (
-    <li className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm" data-testid={`grow-check-${check.id}`}>
+    <li className="space-y-2 rounded-xl border bg-card p-3 text-sm" data-testid={`grow-check-${check.id}`}>
       <div className="flex items-start justify-between gap-2">
         <p className="text-xs text-muted-foreground">
           {deDay(check.date)} · {check.kind === "health" ? "Gesundheit" : "Trichome"}
@@ -151,7 +151,7 @@ export function GrowCheckSection({ detail }: { detail: GrowPlantDetail }) {
         }}
       />
       {locked ? (
-        <p className="flex items-start gap-2 rounded-xl border border-border bg-card p-3 text-sm" data-testid="grow-check-locked">
+        <p className="flex items-start gap-2 rounded-xl border bg-card p-3 text-sm" data-testid="grow-check-locked">
           <Crown className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
           <span>
             Der KI-Check gehört zu <span className="font-semibold">Premium</span>: Die KI erkennt auf einem Foto Mangel, Schädlinge, Schimmel und Stress und schätzt die Reife der Trichome. Premium gibt es bald als Monats- oder Jahresabo – bis dahin schaltet der Betreiber es auf Anfrage frei.

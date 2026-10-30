@@ -81,7 +81,7 @@ export function OrphanCleanupCard() {
   const lines = report.data ? describeOrphans(report.data.counts) : [];
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 space-y-3">
+    <section className="rounded-2xl border bg-card p-4 space-y-3">
       <h2 className="flex items-center gap-2 font-semibold">
         <Eraser className="h-4 w-4 text-primary" />
         Datenreste früherer Konten

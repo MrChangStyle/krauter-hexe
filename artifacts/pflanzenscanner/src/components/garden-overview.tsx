@@ -61,7 +61,7 @@ function GardenTodo({ farm }: { farm: FarmSummary }) {
     );
 
   return (
-    <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
+    <section className="space-y-3 rounded-2xl border bg-card p-4">
       <div className="flex items-center justify-between gap-2">
         <h2 className="font-semibold">Im Garten</h2>
         <Link href="/beete/kalender" className="inline-flex items-center gap-1 text-sm text-primary">

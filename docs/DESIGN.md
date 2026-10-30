@@ -12,7 +12,8 @@ Vorbild sind die Übersichten **Hof, Pflanzen und Tiere**: Kacheln mit farbigem 
   - darunter eine Zeile, wofür die Seite da ist;
   - rechts Platz für eine Aktion („Neue Aufgabe“, „Teilen“).
 - **Untermenüs** eines Moduls als Kacheln im selben Raster (`HubGrid`, `HubTile`), nicht als Textlinks oder Listenzeilen.
-- **Karten** mit `rounded-2xl border bg-card p-4`, Überschrift mit kleinem Symbol in der Modulfarbe.
+- **Karten** mit `rounded-2xl border bg-card p-4`, Überschrift `flex items-center gap-2 font-semibold` mit kleinem Symbol. **Listenzeilen** in einer Karte oder Liste: `rounded-xl border bg-card p-3`. Abschnitts-Überzeilen: `text-sm font-semibold uppercase tracking-wider text-muted-foreground`.
+- Bewusst anders: Vollbild-Hinweise (Umzug, Freigabe, Scan-Ergebnis) mit größerem Titel; „Am Stall“ mit größerer Schrift für die Hand im Stall.
 
 ## Schritte
 
@@ -20,7 +21,7 @@ Vorbild sind die Übersichten **Hof, Pflanzen und Tiere**: Kacheln mit farbigem 
 |---|---|---|
 | **D1** | Modul-Aussehen an einer Stelle, Seitenkopf für alle Modulseiten (32 Seiten), Übersichten Pflanzen und Tiere lesen daraus | ✅ (#139) |
 | **D2** | Untermenüs als Kacheln: Beet-Architekt (Assistent, Kalender, Saatgut, Ernte), Futterplaner (Vorrat & Kosten, Tipps & Rezepte), Grow (Wissen, Rechtliches); jede Unterseite mit eigener Farbe | ✅ (#140) |
-| **D3** | Karten und Abstände vereinheitlichen (Ecken, Innenabstand, Überschriften) | offen |
+| **D3** | Karten vereinheitlicht: Karten `rounded-2xl border bg-card p-4` (79), Listenzeilen `rounded-xl border bg-card p-3` (45), farbige Hinweis-Karten mit großen Ecken (12); Überschriften in Karten einheitlich `flex items-center gap-2 font-semibold` mit Symbol | ✅ (#142) |
 
 ## Bewusst so gelassen
 

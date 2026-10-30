@@ -195,7 +195,7 @@ function Stock({ farm }: { farm: FarmSummary }) {
         type="button"
         disabled={!canWrite}
         onClick={() => setEditing(m)}
-        className="w-full space-y-1 rounded-xl border border-border bg-card p-3 text-left text-sm hover:bg-muted/50 disabled:hover:bg-card"
+        className="w-full space-y-1 rounded-xl border bg-card p-3 text-left text-sm hover:bg-muted/50 disabled:hover:bg-card"
       >
         <span className="flex items-start justify-between gap-2">
           <span className="font-medium">

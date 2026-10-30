@@ -122,7 +122,7 @@ function NewColonyDialog({ farm, apiaries, open, onOpenChange }: { farm: FarmSum
 
 function ColonyCard({ c }: { c: BeeColony }) {
   return (
-    <Link href={`/farm/bienen/${c.id}`} className="flex gap-3 rounded-xl border border-border bg-card p-3 text-sm hover:bg-muted/50">
+    <Link href={`/farm/bienen/${c.id}`} className="flex gap-3 rounded-xl border bg-card p-3 text-sm hover:bg-muted/50">
       {c.photoUrl && <img src={c.photoUrl} alt="" className="h-14 w-14 shrink-0 rounded-lg object-cover" />}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
@@ -162,12 +162,12 @@ function Overview({ farm }: { farm: FarmSummary }) {
     <div className="space-y-5">
       {d.colonies.length > 0 && (
         <section className="grid grid-cols-2 gap-3 text-sm">
-          <div className="rounded-xl border border-border bg-card p-3">
+          <div className="rounded-xl border bg-card p-3">
             <p className="text-xs text-muted-foreground">Völker</p>
             <p className="text-lg font-semibold" data-testid="bees-active">{d.active}</p>
             <p className="text-xs text-muted-foreground">aktiv</p>
           </div>
-          <div className="rounded-xl border border-border bg-card p-3">
+          <div className="rounded-xl border bg-card p-3">
             <p className="text-xs text-muted-foreground">Honig {d.year}</p>
             <p className="text-lg font-semibold">{num(d.honeyKgThisYear)} kg</p>
             <Link href="/farm/ertrag" className="text-xs text-primary">

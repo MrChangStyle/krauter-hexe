@@ -70,7 +70,7 @@ function PowerCard({ grow, costs }: { grow: Grow; costs: GrowCosts }) {
   }
 
   return (
-    <section className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
+    <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
       <h2 className="flex items-center gap-2 font-semibold">
         <Zap className="h-4 w-4 text-primary" />
         Strom
@@ -160,7 +160,7 @@ function CostForm({ growId }: { growId: number }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-2 rounded-xl border border-border bg-card p-3">
+    <form onSubmit={submit} className="space-y-2 rounded-xl border bg-card p-3">
       <div className="grid grid-cols-2 gap-2">
         <div className="flex flex-col gap-1.5">
           <Label htmlFor="c-date">Datum</Label>
@@ -206,7 +206,7 @@ function Costs({ grow, costs }: { grow: Grow; costs: GrowCosts }) {
   const s = costs.summary;
   return (
     <div className="space-y-5">
-      <section className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm" data-testid="cost-summary">
+      <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm" data-testid="cost-summary">
         <h2 className="flex items-center gap-2 font-semibold">
           <Coins className="h-4 w-4 text-primary" />
           Kosten des Grows

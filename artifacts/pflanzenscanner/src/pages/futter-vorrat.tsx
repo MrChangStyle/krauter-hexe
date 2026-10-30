@@ -128,7 +128,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
 
   return (
     <div className="space-y-5">
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
         <h2 className="flex items-center gap-2 font-semibold">
           <Package className="h-4 w-4 text-primary" />
           Vorrat
@@ -173,7 +173,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
         <p className="text-xs text-muted-foreground">Gerechnet mit den Rationen, die gerade gelten. Ab und zu nachwiegen hält die Zahlen genau.</p>
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
         <h2 className="flex items-center gap-2 font-semibold">
           <Coins className="h-4 w-4 text-primary" />
           Kosten
@@ -209,7 +209,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
         )}
       </section>
 
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
         <h2 className="flex items-center gap-2 font-semibold">
           <Snowflake className="h-4 w-4 text-primary" />
           Wintervorrat

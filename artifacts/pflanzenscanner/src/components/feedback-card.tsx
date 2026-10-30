@@ -22,7 +22,7 @@ export function FeedbackCard() {
   const items = list.data?.items ?? [];
 
   return (
-    <section className="space-y-3 rounded-xl border bg-card p-4" data-testid="feedback-card">
+    <section className="space-y-3 rounded-2xl border bg-card p-4" data-testid="feedback-card">
       <h2 className="flex items-center gap-2 font-semibold">
         <MessageCircle className="h-4 w-4 text-primary" />
         Feedback

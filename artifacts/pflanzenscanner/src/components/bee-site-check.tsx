@@ -31,7 +31,7 @@ const when = (iso: string) => new Date(iso).toLocaleDateString("de-DE", { day: "
 function CheckCard({ check, canWrite, onDelete }: { check: BeeSiteCheck; canWrite: boolean; onDelete: () => void }) {
   const a = check.analysis;
   return (
-    <li className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm" data-testid="site-check">
+    <li className="space-y-2 rounded-xl border bg-card p-3 text-sm" data-testid="site-check">
       <div className="flex gap-3">
         {check.photoUrl && <img src={check.photoUrl} alt="Bienenstand" className="h-16 w-16 shrink-0 rounded-lg object-cover" />}
         <div className="min-w-0 flex-1">

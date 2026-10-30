@@ -51,12 +51,12 @@ function Report({ r }: { r: HarvestReport }) {
   return (
     <div className="space-y-5">
       <section className="grid grid-cols-2 gap-3 text-sm">
-        <div className="rounded-xl border border-border bg-card p-3">
+        <div className="rounded-xl border bg-card p-3">
           <p className="text-xs text-muted-foreground">Geerntet</p>
           <p className="text-lg font-semibold" data-testid="report-kg">{num(r.kg)} kg</p>
           <p className="text-xs text-muted-foreground">{change ?? (r.fodderKg > 0 ? `davon ${num(r.fodderKg)} kg Futter` : "erste Saison mit Ernten")}</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-3">
+        <div className="rounded-xl border bg-card p-3">
           <p className="text-xs text-muted-foreground">Wert im Laden</p>
           <p className="text-lg font-semibold">{euro(r.value)}</p>
           <p className="text-xs text-muted-foreground">nach euren Preisen unter Ertrag</p>

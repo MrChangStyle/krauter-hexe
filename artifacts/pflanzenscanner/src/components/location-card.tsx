@@ -20,7 +20,7 @@ export function LocationCard({ loc }: { loc: UseLocationRegionReturn }) {
               <div className="p-2 rounded-xl bg-primary/10 text-primary shrink-0">
                 <MapPin className="w-5 h-5" />
               </div>
-              <h2 className="font-semibold text-base leading-tight">
+              <h2 className="font-semibold leading-tight">
                 Fundort speichern?
               </h2>
             </div>
@@ -55,7 +55,7 @@ export function LocationCard({ loc }: { loc: UseLocationRegionReturn }) {
               <div className="p-2 rounded-xl bg-amber-100 dark:bg-amber-950/40 text-amber-600 shrink-0">
                 <MapPin className="w-5 h-5" />
               </div>
-              <h2 className="font-semibold text-base leading-tight">
+              <h2 className="font-semibold leading-tight">
                 Ort eingeben
               </h2>
             </div>

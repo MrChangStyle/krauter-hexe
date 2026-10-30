@@ -531,7 +531,7 @@ function ScanTab() {
       )}
 
       {!isLoading && !preview && queuedInfo && waitingId && (
-        <div className="rounded-xl bg-amber-50 border border-amber-200 p-4 flex gap-3 dark:bg-amber-950/40 dark:border-amber-800">
+        <div className="rounded-2xl bg-amber-50 border border-amber-200 p-4 flex gap-3 dark:bg-amber-950/40 dark:border-amber-800">
           <Bug className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium">Foto gespeichert</p>
@@ -556,7 +556,7 @@ function ScanTab() {
       )}
 
       {!isLoading && !preview && errorMsg && (
-        <div className="rounded-xl bg-destructive/10 border border-destructive/20 p-4 flex gap-3">
+        <div className="rounded-2xl bg-destructive/10 border border-destructive/20 p-4 flex gap-3">
           <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-destructive">Kein Insekt erkannt</p>

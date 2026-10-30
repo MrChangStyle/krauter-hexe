@@ -16,7 +16,7 @@ export default function GrowWissenPage() {
         ))}
       </nav>
       {KNOWLEDGE.map((s) => (
-        <section key={s.id} id={s.id} className="scroll-mt-4 space-y-2 rounded-xl border border-border bg-card p-4 text-sm">
+        <section key={s.id} id={s.id} className="scroll-mt-4 space-y-2 rounded-2xl border bg-card p-4 text-sm">
           <h2 className="font-semibold">{s.title}</h2>
           <p className="text-muted-foreground">{s.intro}</p>
           <dl className="space-y-2">

@@ -275,7 +275,7 @@ function RecordCard({ farm, record, canWrite }: { farm: FarmSummary; record: Bre
   const outcome = outcomeText(record);
 
   return (
-    <li className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm" data-testid={`breeding-${record.id}`}>
+    <li className="space-y-3 rounded-2xl border bg-card p-4 text-sm" data-testid={`breeding-${record.id}`}>
       <div className="flex items-start gap-2">
         <Icon className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
         <div className="min-w-0 flex-1">
@@ -423,7 +423,7 @@ function Cycles({ farm, canWrite }: { farm: FarmSummary; canWrite: boolean }) {
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Absetzen</h2>
           <ul className="space-y-2">
             {d.weanings.map((w) => (
-              <li key={w.recordId} className="rounded-xl border border-border bg-card p-3 text-sm" data-testid="weaning">
+              <li key={w.recordId} className="rounded-xl border bg-card p-3 text-sm" data-testid="weaning">
                 <p className="font-semibold">
                   {w.motherName ?? SPECIES_LABELS[w.species]} · {w.alive} {w.alive === 1 ? "Jungtier" : "Jungtiere"}, geboren {deDay(w.bornOn)}
                 </p>
@@ -443,7 +443,7 @@ function Cycles({ farm, canWrite }: { farm: FarmSummary; canWrite: boolean }) {
             {d.animals.map((a) => {
               const heat = nextHeatText(a, today);
               return (
-                <li key={a.id} className="rounded-xl border border-border bg-card p-3 text-sm" data-testid="cycle-animal">
+                <li key={a.id} className="rounded-xl border bg-card p-3 text-sm" data-testid="cycle-animal">
                   <div className="flex items-start gap-2">
                     <CalendarHeart className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                     <div className="min-w-0 flex-1">
@@ -513,7 +513,7 @@ function Breeding({ farm }: { farm: FarmSummary }) {
         </Button>
       )}
       {list.data.length === 0 && (
-        <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+        <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
           Noch nichts eingetragen. Mit dem Deck- oder Einlegedatum rechnet die App den Geburts- oder Schlupftermin aus und erinnert per Push an Schieren, Nestbox, Trockenstellen und Co.
         </p>
       )}

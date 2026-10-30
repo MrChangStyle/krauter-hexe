@@ -15,7 +15,7 @@ const l = (n: number) => `${n.toLocaleString("de-DE")} l`;
 
 function Section({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
   return (
-    <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+    <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm">
       <h2 className="flex items-center gap-2 font-semibold">
         {icon}
         {title}

@@ -60,7 +60,7 @@ function BedList({ farm }: { farm: FarmSummary }) {
             <li key={b.id}>
               <Link
                 href={`/beete/${farm.id}/${b.id}`}
-                className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:bg-muted/50"
+                className="flex items-center gap-3 rounded-xl border bg-card p-3 transition-colors hover:bg-muted/50"
               >
                 <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                   <Fence className="h-5 w-5 text-primary" />

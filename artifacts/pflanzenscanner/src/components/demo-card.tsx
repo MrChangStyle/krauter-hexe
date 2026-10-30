@@ -57,7 +57,7 @@ export function DemoCard({ onLoaded }: { onLoaded?: () => void }) {
   const active = status.data?.active;
 
   return (
-    <section className="space-y-2 rounded-xl border bg-card p-4" data-testid="demo-card">
+    <section className="space-y-2 rounded-2xl border bg-card p-4" data-testid="demo-card">
       <h2 className="flex items-center gap-2 font-semibold">
         <FlaskConical className="h-4 w-4 text-primary" />
         Demo-Daten

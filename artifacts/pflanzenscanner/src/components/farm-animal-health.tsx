@@ -648,13 +648,13 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
                 {canWrite ? (
                   <button
                     type="button"
-                    className="w-full space-y-1 rounded-xl border border-border bg-card p-3 text-left text-sm transition-colors hover:bg-muted/50"
+                    className="w-full space-y-1 rounded-xl border bg-card p-3 text-left text-sm transition-colors hover:bg-muted/50"
                     onClick={() => setDialog({ record: r, key: Date.now() })}
                   >
                     {body}
                   </button>
                 ) : (
-                  <div className="space-y-1 rounded-xl border border-border bg-card p-3 text-sm">{body}</div>
+                  <div className="space-y-1 rounded-xl border bg-card p-3 text-sm">{body}</div>
                 )}
               </li>
             );

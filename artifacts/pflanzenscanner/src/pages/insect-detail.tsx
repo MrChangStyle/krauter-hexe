@@ -187,7 +187,7 @@ export default function InsectDetailPage() {
 
         {/* Description */}
         <section className="space-y-2">
-          <h2 className="flex items-center gap-2 font-semibold text-base">
+          <h2 className="flex items-center gap-2 font-semibold">
             <Info className="w-4 h-4 text-muted-foreground" />
             Beschreibung
           </h2>
@@ -199,7 +199,7 @@ export default function InsectDetailPage() {
         {/* Affected plants */}
         {insect.affectedPlants && insect.affectedPlants.length > 0 && (
           <section className="space-y-2">
-            <h2 className="flex items-center gap-2 font-semibold text-base">
+            <h2 className="flex items-center gap-2 font-semibold">
               <Sprout className="w-4 h-4 text-muted-foreground" />
               {isPest ? "Befällt / schadet" : "Besucht / bestäubt"}
             </h2>
@@ -219,11 +219,11 @@ export default function InsectDetailPage() {
         {/* Treatment tips — only for pests */}
         {isPest && insect.treatmentTips && (
           <section className="space-y-2">
-            <h2 className="flex items-center gap-2 font-semibold text-base">
+            <h2 className="flex items-center gap-2 font-semibold">
               <Wrench className="w-4 h-4 text-muted-foreground" />
               Biologische Bekämpfung
             </h2>
-            <div className="rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 p-4">
+            <div className="rounded-2xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-800 p-4">
               <p className="text-sm text-foreground leading-relaxed">
                 {insect.treatmentTips}
               </p>
@@ -235,7 +235,7 @@ export default function InsectDetailPage() {
         {isPest && (
           <Link
             href={pestProblem ? problemHref(pestProblem.id) : GUIDE_HREF}
-            className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 flex gap-3"
+            className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 flex gap-3"
           >
             <Leaf className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <span className="text-sm text-foreground leading-relaxed">
@@ -249,7 +249,7 @@ export default function InsectDetailPage() {
 
         {/* Beneficial callout */}
         {isBeneficial && (
-          <div className="rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 flex gap-3">
+          <div className="rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 p-4 flex gap-3">
             <Leaf className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
             <div className="text-sm text-foreground leading-relaxed space-y-1">
               <p>

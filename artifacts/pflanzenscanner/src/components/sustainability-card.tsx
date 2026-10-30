@@ -48,7 +48,7 @@ export function SustainabilityCard({ farm }: { farm: FarmSummary }) {
   }
 
   return (
-    <section className="space-y-3 rounded-xl border bg-card p-4 text-sm" data-testid="sustainability">
+    <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm" data-testid="sustainability">
       <div>
         <h2 className="flex items-center gap-2 font-semibold">
           <Flower2 className="h-4 w-4 text-primary" />

@@ -87,7 +87,7 @@ export function FeedOriginsCard({ farmId, rations, canWrite }: { farmId: number;
     origins.data?.find((o) => (f.feedKey ? o.feedKey === f.feedKey : o.feedId === f.feedId));
 
   return (
-    <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm" data-testid="feed-origins">
+    <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm" data-testid="feed-origins">
       <h2 className="flex items-center gap-2 font-semibold">
         <Leaf className="h-4 w-4 text-primary" />
         Herkunft der Futtermittel

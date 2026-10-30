@@ -301,7 +301,7 @@ function FeedResult({ log, onDelete }: { log: FeedLog; onDelete?: () => void }) 
   ];
   const poisonous = a.items.filter((i) => i.poisonous);
   return (
-    <div className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm">
+    <div className="space-y-2 rounded-xl border bg-card p-3 text-sm">
       <div className="flex items-center justify-between gap-2">
         <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold", VERDICT[a.verdict].className)}>
           {VERDICT[a.verdict].label}

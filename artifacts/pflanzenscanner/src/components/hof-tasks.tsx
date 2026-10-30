@@ -249,7 +249,7 @@ export function HofTaskRow({
   }
 
   return (
-    <li className={cn("rounded-2xl border bg-card p-3", done && "border-primary/30 bg-primary/5")} data-testid="hof-task">
+    <li className={cn("rounded-xl border bg-card p-3", done && "border-primary/30 bg-primary/5")} data-testid="hof-task">
       <div className="flex items-start gap-3">
         <button
           type="button"

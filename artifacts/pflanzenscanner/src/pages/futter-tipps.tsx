@@ -345,14 +345,14 @@ export default function FutterTippsPage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="futter-tipps" subtitle="Was der Garten im Jahr liefert, und geprüfte Rezepte mit Hygieneregeln." />
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
+      <section className="space-y-3 rounded-2xl border bg-card p-4">
         <h2 className="flex items-center gap-2 font-semibold">
           <CalendarDays className="h-4 w-4 text-primary" />
           Futterkalender aus dem Garten <PremiumBadge />
         </h2>
         {!farm ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <FodderCalendar farm={farm} />}
       </section>
-      <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
+      <section className="space-y-3 rounded-2xl border bg-card p-4">
         <h2 className="flex items-center gap-2 font-semibold">
           <BookOpen className="h-4 w-4 text-primary" />
           Rezepte

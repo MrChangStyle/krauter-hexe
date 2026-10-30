@@ -6,11 +6,14 @@ import {
   useDeleteFarm,
   useEnsureOwnFarm,
   useGetDemoStatus,
+  useGetFarmFarming,
+  getGetFarmFarmingQueryKey,
   useRenameFarm,
   type FarmSummary,
   type ModuleId,
 } from "@workspace/api-client-react";
 import { FarmDutiesTile } from "@/components/farm-duties-link";
+import { certifiedIn } from "@/lib/farming-labels";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { FarmSetupCard } from "@/components/farm-setup-card";
 import { HousingOrderBanner } from "@/components/housing-order-banner";
@@ -30,7 +33,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useModules } from "@/hooks/use-modules";
 import { farmModuleGranted } from "@/lib/modules";
 import { MyAnimalsCard } from "@/components/farm-animals-section";
-import { OrganicCheckCard } from "@/components/organic-check-card";
 import { FarmTasksTile } from "@/components/farm-tasks-section";
 import {
   FARM_ROLE_HINTS,
@@ -147,6 +149,8 @@ export default function FarmPage() {
 
   const farm = farms ? pickActiveFarm(farms, activeId) : null;
   const demo = useGetDemoStatus();
+  // Bio-Check as a tile when the farm keeps at least one area for animals or garden organic.
+  const farming = useGetFarmFarming(farm?.id ?? 0, { query: { queryKey: getGetFarmFarmingQueryKey(farm?.id ?? 0), enabled: !!farm } });
 
   function select(id: number) {
     setActiveId(id);
@@ -215,6 +219,7 @@ export default function FarmPage() {
   const isAdmin = farm.role === "admin";
   // Hidden by the account, or not granted on this farm (Modul-Freigaben).
   const show = (id: ModuleId) => visible(id) && farmModuleGranted(farm, id);
+  const organic = (["feed", "space", "treatments", "garden"] as const).some((area) => certifiedIn(farming.data, area));
 
   return (
     <div className="space-y-5 px-4 pb-4 pt-6">
@@ -269,8 +274,6 @@ export default function FarmPage() {
 
       <MyAnimalsCard farm={farm} />
 
-      <OrganicCheckCard farm={farm} />
-
       {(show("farm-tasks") || show("yields")) && farm.role !== "guest" && (
         <Link
           href="/farm/stall"
@@ -300,6 +303,7 @@ export default function FarmPage() {
         {show("handover") && <HubTile {...tileOf("uebergabe")} />}
         {show("members") && <HubTile {...tileOf("team")} />}
         {show("export") && <HubTile {...tileOf("export")} />}
+        {organic && <HubTile {...tileOf("bio-check")} />}
       </HubGrid>
 
       <FarmSetupCard farm={farm} onRename={() => openDialog("rename")} />

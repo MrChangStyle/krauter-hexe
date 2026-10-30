@@ -10,11 +10,13 @@ import {
   useDeleteTask,
   getListTasksQueryKey,
   useListPlants,
+  useListCareGuides,
 } from "@workspace/api-client-react";
 import type { Task } from "@workspace/api-client-react";
 import { plantImageUrl } from "@/lib/image";
 import { PageHeader } from "@/components/page-header";
-import { PflegeGuidesSection } from "@/pages/mehr";
+import { HubGrid, HubTile } from "@/components/hub-tile";
+import { tileOf } from "@/lib/module-look";
 import { GardenTodoSection } from "@/components/garden-overview";
 import { GardenHofTasks } from "@/components/hof-tasks";
 import { useActiveFarm } from "@/hooks/use-active-farm";
@@ -153,6 +155,12 @@ export default function AufgabenPage() {
   const preselectedPlantId = new URLSearchParams(search).get("plantId") ?? "";
 
   const { data: tasks = [], isLoading: tasksLoading } = useListTasks();
+  const guides = useListCareGuides();
+  const guidesHint = guides.data
+    ? guides.data.length === 0
+      ? "Noch keiner – im Pflanzendoc erstellen"
+      : `${guides.data.length} ${guides.data.length === 1 ? "Guide" : "Guides"} aus dem Pflanzendoc`
+    : tileOf("pflege-guides").hint;
   const { data: plants = [] } = useListPlants(undefined, {
     query: { queryKey: ["/api/plants"] },
   });
@@ -347,9 +355,11 @@ export default function AufgabenPage() {
         </div>
       )}
 
-      {/* 30-day care guides from the Pflanzendoc belong to the care plan. */}
+      {/* 30-day care guides from the Pflanzendoc belong to the care plan – a tile to their own page (docs/DESIGN.md, D4). */}
       <div className="px-6 pb-4">
-        <PflegeGuidesSection />
+        <HubGrid>
+          <HubTile {...tileOf("pflege-guides")} hint={guidesHint} className="col-span-2" />
+        </HubGrid>
       </div>
       <div className="space-y-4 px-6 pb-4">
         <GardenHofTasksSection />

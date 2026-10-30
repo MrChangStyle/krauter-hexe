@@ -13,6 +13,7 @@ Vorbild sind die Übersichten **Hof, Pflanzen und Tiere**: Kacheln mit farbigem 
   - rechts Platz für eine Aktion („Neue Aufgabe“, „Teilen“).
 - **Untermenüs** eines Moduls als Kacheln im selben Raster (`HubGrid`, `HubTile`), nicht als Textlinks oder Listenzeilen.
 - **Karten** mit `rounded-2xl border bg-card p-4`, Überschrift `flex items-center gap-2 font-semibold` mit kleinem Symbol. **Listenzeilen** in einer Karte oder Liste: `rounded-xl border bg-card p-3`. Abschnitts-Überzeilen: `text-sm font-semibold uppercase tracking-wider text-muted-foreground`.
+- **Seitlich wischbare Leisten** (Filter-Chips, ABC): `components/scroll-row.tsx` (`ScrollRow`) – kein Scrollbalken, am PC Pfeile links und rechts, nur solange es in die Richtung weitergeht; Innenabstand oben und unten, damit der Ring des gewählten Chips nicht abgeschnitten wird.
 - Bewusst anders: Vollbild-Hinweise (Umzug, Freigabe, Scan-Ergebnis) mit größerem Titel; „Am Stall“ mit größerer Schrift für die Hand im Stall.
 
 ## Schritte

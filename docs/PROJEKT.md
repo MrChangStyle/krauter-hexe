@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #148 | Meine Pflanzen: Filter-Leiste schnitt den Ring der gewählten Art ab (Handy und PC) – behoben; kein Scrollbalken mehr, am PC Pfeile links und rechts (`ScrollRow`, auch in der ABC-Leiste des Lexikons); neu ABC-Filter unter den Arten |
 | 30.10.2026 | #147 | Datenschutzerklärung mit dem Code abgeglichen: Rangliste, Standort (gerundet statt „nie Koordinaten“), Grow, Spracheingabe, Futter-Rezepte, Push-Dienste, alle KI-Funktionen; Stand 2026-10-30; monatliche Prüfung der Rechtstexte und Richtwerte als geplante Aufgabe |
 | 30.10.2026 | #146 | Bio je Bereich: Admins schalten Bio für Pflanzendoc, Garten, Fütterung, Stall & Auslauf, Behandlungen und Erzeugnisse einzeln an oder aus (auch für Privathaushalte); Bio-Richtwerte freigegeben mit Hinweis „keine Gewähr“ in App, PDF, Nutzungsbedingungen und Homepage |
 | 30.10.2026 | #145 | Meine Tierarten unter „Meine Module“: jedes Konto wählt seine Tiere, „Essbar für“ und Kräuter-Hexe zeigen nur diese (Mensch immer); Standard: alle |

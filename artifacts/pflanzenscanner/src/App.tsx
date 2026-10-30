@@ -83,6 +83,7 @@ const VorratPage = lazy(() => import('@/pages/vorrat'));
 const WeidePage = lazy(() => import('@/pages/weide'));
 const ErnteAuswertungPage = lazy(() => import('@/pages/ernte-auswertung'));
 const GrowPage = lazy(() => import('@/pages/grow'));
+const GrowSectionPage = lazy(() => import('@/pages/grow').then((m) => ({ default: m.GrowSectionPage })));
 const GrowPlantPage = lazy(() => import('@/pages/grow-plant'));
 const GrowKostenPage = lazy(() => import('@/pages/grow-kosten'));
 const VerwaltungPage = lazy(() => import('@/pages/verwaltung'));
@@ -221,6 +222,7 @@ function Router() {
         <Route path="/grow/kosten/:growId" component={GrowKostenPage} />
         <Route path="/grow/wissen" component={GrowWissenPage} />
         <Route path="/grow/recht" component={GrowRechtPage} />
+        <Route path="/grow/:section" component={GrowSectionPage} />
         <Route path="/farm/:farmId/tier/:animalId" component={FarmAnimalPage} />
         <Route path="/farm/:farmId/tier/:animalId/:section" component={FarmAnimalPage} />
         <Route path="/beete" component={BeetePage} />

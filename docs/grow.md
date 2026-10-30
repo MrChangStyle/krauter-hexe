@@ -19,6 +19,10 @@ Das Modul gibt gärtnerische Tipps. Es ist **keine** Rechtsberatung und gibt **k
   - Grows, Pflanzen und Tagebuch gehören dem Konto, nicht dem Hof.
   - Sie sind in keinem Export und werden mit dem Konto gelöscht (`PERSONAL_TABLES`: `grow_access`, `grows`, `grow_push_log`; Pflanzen und Tagebuch hängen per Fremdschlüssel daran).
 
+## Aufbau der Seite
+
+Die Übersicht `/grow` zeigt Kacheln (Design D4): **KCanG-Check** (`/grow/kcang`, auf der Kachel „x von y Pflanzen“, bei Überschreitung „Zu viel“), **Erinnerungen** (`/grow/erinnerungen`), **Grow-Wissen**, **Rechtliches** und **Premium** (`/grow/premium`). Darunter „Grow anlegen“ und die Grows mit ihren Pflanzen. Die Unterseiten stehen hinter derselben Altersbestätigung; ohne sie führt jede auf `/grow`.
+
 ## Daten
 
 | Tabelle | Inhalt |

@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #132 | Bio im Futterplaner (B3): Herkunft je Futtermittel (bio, Umstellung, konventionell, vom Hof/aus der Region); auf Bio-Höfen zeigt jede Ration Bio-Anteil, zugekauftes Umstellungsfutter, Anteil vom Hof und Raufutter mit Ampel (Richtwerte) |
 | 30.10.2026 | #131 | Bio in der Krankenakte (B2): Art der Behandlung (chemisch, Naturheilverfahren, Impfung, Parasiten); auf Bio-Höfen doppelte gesetzliche Wartezeit (mindestens 2 Tage) am Tier, in Übergabe, Futterplaner und Export, Zähler der chemischen Behandlungen je Tier in 12 Monaten |
 | 30.10.2026 | #130 | Feedback mit Screenshot: In der Sprechblase lässt sich ein Bild anhängen (verkleinert, nur in der Datenbank, nur der Betreiber sieht es); Datenschutzerklärung ergänzt. Verwaltung: alle Bereiche zu, ein Tipp auf eine Kachel öffnet nur diesen |
 | 30.10.2026 | #129 | Beet-Architekt: Pflanzen im Raster verschieben (ziehen oder antippen → „Verschieben“), Ernten bleiben dran; KI-Vorschlag hängt nicht mehr (Zeitgrenze 45 s, minimales Nachdenken, klare Meldung), ebenso die Foto-Auswertungen |

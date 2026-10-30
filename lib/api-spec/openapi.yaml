@@ -1434,6 +1434,53 @@ paths:
                 $ref: "#/components/schemas/FeedRemindersResult"
         "409":
           description: Not the ration in effect.
+  /farms/{farmId}/feed-origins:
+    get:
+      tags: [feed]
+      operationId: listFeedOrigins
+      summary: Bio – where the farm's feeds come from (docs/bio.md)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The origins.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeedOrigin"
+    put:
+      tags: [feed]
+      operationId: setFeedOrigin
+      summary: Bio – set or remove the origin of one feed (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FeedOriginInput"
+      responses:
+        "200":
+          description: The origins.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FeedOrigin"
+        "400":
+          description: Invalid input.
   /farms/{farmId}/feed-stock:
     get:
       tags: [feed]
@@ -10835,7 +10882,7 @@ components:
           type: string
     RationEvaluation:
       type: object
-      required: [id, target, season, active, stage, items, times, waterL, need, values, checks, warnings, transition, hints, cold, group, updatedAt]
+      required: [id, target, season, active, stage, items, times, waterL, need, values, checks, warnings, transition, hints, cold, group, organic, updatedAt]
       properties:
         id:
           type: integer
@@ -10942,8 +10989,73 @@ components:
               type: number
             waterL:
               type: [number, 'null']
+        organic:
+          description: Bio (docs/bio.md) – shares of the ration by dry matter against the organic rules; null unless the farm is organic
+          oneOf:
+            - $ref: "#/components/schemas/OrganicShares"
+            - type: 'null'
         updatedAt:
           type: string
+    OrganicShares:
+      type: object
+      required: [checks, missing]
+      properties:
+        checks:
+          type: array
+          items:
+            type: object
+            required: [key, value, target, bound, ok]
+            properties:
+              key:
+                type: string
+                enum: [organic, conversion, ownFarm, roughage]
+              value:
+                type: number
+                description: Share of the dry matter, %
+              target:
+                type: number
+                description: Richtwert, %
+              bound:
+                type: string
+                enum: [min, max]
+              ok:
+                type: boolean
+        missing:
+          type: array
+          description: Feeds of the ration without a stated origin (counted as conventional)
+          items:
+            type: string
+    FeedOrganic:
+      type: string
+      enum: [organic, conversion, conventional]
+    FeedOrigin:
+      type: object
+      required: [feedKey, feedId, organic, ownFarm]
+      properties:
+        feedKey:
+          type: [string, 'null']
+        feedId:
+          type: [integer, 'null']
+        organic:
+          $ref: "#/components/schemas/FeedOrganic"
+        ownFarm:
+          type: boolean
+          description: Grown on the farm itself or in the region
+    FeedOriginInput:
+      type: object
+      required: [organic]
+      properties:
+        feedKey:
+          type: [string, 'null']
+        feedId:
+          type: [integer, 'null']
+        organic:
+          description: null removes the origin
+          oneOf:
+            - $ref: "#/components/schemas/FeedOrganic"
+            - type: 'null'
+        ownFarm:
+          type: boolean
     AppStatus:
       type: object
       required: [message, level, updatedAt]

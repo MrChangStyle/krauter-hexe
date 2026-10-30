@@ -20,6 +20,7 @@ const SEGMENT_MODULE: Record<string, FarmModule> = {
   feed: 'feed',
   'feed-calendar': 'feed',
   'feed-stock': 'feed',
+  'feed-origins': 'feed',
   feeds: 'feed',
   rations: 'feed',
   breeding: 'breeding',

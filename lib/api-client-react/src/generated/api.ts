@@ -118,6 +118,8 @@ import type {
   FeedCalendar,
   FeedLabelReading,
   FeedLog,
+  FeedOrigin,
+  FeedOriginInput,
   FeedPurchaseInput,
   FeedRecipe,
   FeedRecipeDraft,
@@ -4764,6 +4766,155 @@ export const useCreateFeedReminders = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getCreateFeedRemindersMutationOptions(options));
+    }
+
+export const getListFeedOriginsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feed-origins`
+}
+
+/**
+ * @summary Bio – where the farm's feeds come from (docs/bio.md)
+ */
+export const listFeedOrigins = async (farmId: number, options?: RequestInit): Promise<FeedOrigin[]> => {
+
+  return customFetch<FeedOrigin[]>(getListFeedOriginsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFeedOriginsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/feed-origins`
+    ] as const;
+    }
+
+
+export const getListFeedOriginsQueryOptions = <TData = Awaited<ReturnType<typeof listFeedOrigins>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedOrigins>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFeedOriginsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFeedOrigins>>> = ({ signal }) => listFeedOrigins(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFeedOrigins>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFeedOriginsQueryResult = NonNullable<Awaited<ReturnType<typeof listFeedOrigins>>>
+export type ListFeedOriginsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Bio – where the farm's feeds come from (docs/bio.md)
+ */
+
+export function useListFeedOrigins<TData = Awaited<ReturnType<typeof listFeedOrigins>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFeedOrigins>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFeedOriginsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetFeedOriginUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/feed-origins`
+}
+
+/**
+ * @summary Bio – set or remove the origin of one feed (caretaker or admin)
+ */
+export const setFeedOrigin = async (farmId: number,
+    feedOriginInput: FeedOriginInput, options?: RequestInit): Promise<FeedOrigin[]> => {
+
+  return customFetch<FeedOrigin[]>(getSetFeedOriginUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(feedOriginInput)
+  }
+);}
+
+
+
+
+
+export const getSetFeedOriginMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFeedOrigin>>, TError,{farmId: number;data: BodyType<FeedOriginInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setFeedOrigin>>, TError,{farmId: number;data: BodyType<FeedOriginInput>}, TContext> => {
+
+const mutationKey = ['setFeedOrigin'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setFeedOrigin>>, {farmId: number;data: BodyType<FeedOriginInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  setFeedOrigin(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetFeedOriginMutationResult = NonNullable<Awaited<ReturnType<typeof setFeedOrigin>>>
+    export type SetFeedOriginMutationBody = BodyType<FeedOriginInput>
+    export type SetFeedOriginMutationError = ErrorType<void>
+
+    /**
+ * @summary Bio – set or remove the origin of one feed (caretaker or admin)
+ */
+export const useSetFeedOrigin = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFeedOrigin>>, TError,{farmId: number;data: BodyType<FeedOriginInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setFeedOrigin>>,
+        TError,
+        {farmId: number;data: BodyType<FeedOriginInput>},
+        TContext
+      > => {
+      return useMutation(getSetFeedOriginMutationOptions(options));
     }
 
 export const getGetFeedStockUrl = (farmId: number,) => {

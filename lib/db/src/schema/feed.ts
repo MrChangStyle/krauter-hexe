@@ -1,4 +1,4 @@
-import { date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { boolean, date, doublePrecision, index, integer, jsonb, pgTable, primaryKey, serial, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
 import { farmAnimalsTable, farmsTable, herdsTable } from "./farm";
 import { usersTable } from "./auth";
@@ -100,6 +100,32 @@ export const feedStocksTable = pgTable(
     index("feed_stocks_farm_idx").on(table.farmId),
     uniqueIndex("feed_stocks_farm_key_unique").on(table.farmId, table.feedKey).where(sql`${table.feedKey} IS NOT NULL`),
     uniqueIndex("feed_stocks_feed_unique").on(table.feedId).where(sql`${table.feedId} IS NOT NULL`),
+  ],
+);
+
+// Bio (docs/bio.md): where a feed of the farm comes from – organic, from a
+// farm in conversion or conventional, and whether it grows on the farm itself
+// or in the region. Only asked on organic farms; a feed without a row counts
+// as not stated.
+export const feedOriginsTable = pgTable(
+  "feed_origins",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    // A catalog feed (key) or an own feed (id).
+    feedKey: text("feed_key"),
+    feedId: integer("feed_id").references(() => farmFeedsTable.id, { onDelete: "cascade" }),
+    // "organic", "conversion" or "conventional".
+    organic: text("organic").notNull(),
+    ownFarm: boolean("own_farm").notNull().default(false),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("feed_origins_farm_idx").on(table.farmId),
+    uniqueIndex("feed_origins_farm_key_unique").on(table.farmId, table.feedKey).where(sql`${table.feedKey} IS NOT NULL`),
+    uniqueIndex("feed_origins_feed_unique").on(table.feedId).where(sql`${table.feedId} IS NOT NULL`),
   ],
 );
 

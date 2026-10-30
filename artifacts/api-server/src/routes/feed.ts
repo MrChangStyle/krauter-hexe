@@ -11,6 +11,9 @@ import {
   GetFeedCalendarResponse,
   GetFeedReferenceResponse,
   GetFeedStockResponse,
+  ListFeedOriginsResponse,
+  SetFeedOriginBody,
+  SetFeedOriginResponse,
   ListFarmFeedsResponse,
   ListFeedRecipeDraftsResponse,
   ListFeedRecipesResponse,
@@ -31,6 +34,7 @@ import { feedCalendar } from '../lib/feedCalendar';
 import { berlinDay } from '../lib/monitoring';
 import { readFeedLabel } from '../lib/feedLabel';
 import { deleteRecipe, listRecipeDrafts, listRecipes, reviewRecipe, submitRecipe } from '../lib/feedRecipes';
+import { listFeedOrigins, setFeedOrigin } from '../lib/feedOrganic';
 import { buyFeed, countStock, feedStock, removeStock } from '../lib/feedStock';
 import { addFarmFeed, feedReference, feedReminders, listFarmFeeds, listRations, removeFarmFeed, removeRation, saveRation } from '../lib/feedPlanner';
 import { badRequest, handle, idParam, notFound, withAiQuota } from './farmRouteHelpers';
@@ -166,6 +170,26 @@ router.delete(
     if (stockId === null) return notFound(res);
     await removeStock(req.farm!.farmId, stockId);
     res.sendStatus(204);
+  }),
+);
+
+// Bio (docs/bio.md): where the feeds come from.
+
+router.get(
+  '/farms/:farmId/feed-origins',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(ListFeedOriginsResponse.parse(await listFeedOrigins(req.farm!.farmId)));
+  }),
+);
+
+router.put(
+  '/farms/:farmId/feed-origins',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const body = SetFeedOriginBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(SetFeedOriginResponse.parse(await setFeedOrigin(req.farm!.farmId, body.data)));
   }),
 );
 

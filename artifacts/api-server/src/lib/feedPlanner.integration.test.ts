@@ -492,4 +492,41 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
     expect((await ration({ animalId: ids.hase, stage: "maintenance", items: [{ feedKey: "heu", grams: 100 }], times: [] }, farm.bert)).status).toBe(404);
     expect((await api("GET", `/farms/${farm.bert}/rations`)).data).toEqual([]);
   });
+
+  it("shows the organic shares of a ration on an organic farm only (Bio)", async () => {
+    const sheep = await ration({ animalId: ids.sheep, stage: "maintenance", items: [{ feedKey: "heu", grams: 1500 }, { feedKey: "hafer", grams: 300 }], times: ["morgens"] });
+    expect(sheep.data.organic).toBeNull(); // conventional farm: as before
+    await q("UPDATE farms SET farming = 'organic' WHERE id = $1", [farm.anna]);
+    try {
+      // Nothing stated yet: everything counts as conventional.
+      let r = (await api("GET", `/farms/${farm.anna}/rations`)).data.find((x: any) => x.id === sheep.data.id);
+      expect(r.organic.missing).toEqual(["Wiesenheu", "Hafer"]);
+      expect(r.organic.checks.find((c: any) => c.key === "organic")).toMatchObject({ value: 0, ok: false });
+
+      await api("PUT", `/farms/${farm.anna}/feed-origins`, { feedKey: "heu", organic: "organic", ownFarm: true });
+      const origins = await api("PUT", `/farms/${farm.anna}/feed-origins`, { feedKey: "hafer", organic: "conversion" });
+      expect(origins.data).toEqual([
+        { feedKey: "heu", feedId: null, organic: "organic", ownFarm: true },
+        { feedKey: "hafer", feedId: null, organic: "conversion", ownFarm: false },
+      ]);
+      r = (await api("GET", `/farms/${farm.anna}/rations`)).data.find((x: any) => x.id === sheep.data.id);
+      const by = Object.fromEntries(r.organic.checks.map((c: any) => [c.key, c]));
+      expect(r.organic.missing).toEqual([]);
+      expect(by.organic).toMatchObject({ value: 100, ok: true });
+      expect(by.conversion.ok).toBe(true); // ~17 % bought conversion feed, at most 25 %
+      expect(by.ownFarm.value).toBeGreaterThan(70);
+      expect(by.roughage).toMatchObject({ target: 60, ok: true });
+
+      // Removing an origin, wrong values, a guest.
+      expect((await api("PUT", `/farms/${farm.anna}/feed-origins`, { feedKey: "hafer", organic: null })).data).toHaveLength(1);
+      expect((await api("PUT", `/farms/${farm.anna}/feed-origins`, { feedKey: "hafer", organic: "halbbio" })).status).toBe(400);
+      expect((await api("PUT", `/farms/${farm.anna}/feed-origins`, { feedKey: "gibtsnicht", organic: "organic" })).status).toBe(400);
+      as = "gast";
+      expect((await api("GET", `/farms/${farm.anna}/feed-origins`)).data).toHaveLength(1);
+      expect((await api("PUT", `/farms/${farm.anna}/feed-origins`, { feedKey: "heu", organic: "conventional" })).status).toBe(403);
+    } finally {
+      as = "anna";
+      await q("UPDATE farms SET farming = 'conventional' WHERE id = $1", [farm.anna]);
+    }
+  });
 });

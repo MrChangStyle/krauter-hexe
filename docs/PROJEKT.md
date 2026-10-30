@@ -16,6 +16,7 @@ Little Farming ist eine deutschsprachige Web-App (PWA, „mobile first“) für 
 Der **Hof** ist die Startseite und führt beides zusammen: Wetter, Hof-Aufgaben, Alltagsnotizen und Widgets.
 
 - **Adresse:** littlefarming.de (Homepage unter `/`, die App unter `/app`).
+- **Betreiber:** Little Farming, Kontakt info@littlefarming.de.
 - **Phase:** Testphase. Die Seite ist mit einem Seitenpasswort geschützt, nur eingeladene Tester kommen hinein. Alles ist kostenlos.
 - **Herkunft:** Die App hieß früher „Kräuterhexe“ (Pflanzenscanner). Paket-, Datenbank- und Dienstnamen tragen den alten Namen noch absichtlich (`replit.md`). „Kräuter-Hexe“ heißt heute nur noch der Heilkräuter-Ratgeber.
 

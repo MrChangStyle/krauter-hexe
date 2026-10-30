@@ -11468,6 +11468,20 @@ components:
           $ref: "#/components/schemas/AnimalInfo"
         horse:
           $ref: "#/components/schemas/AnimalInfo"
+        dog:
+          $ref: "#/components/schemas/AnimalInfo"
+        goat:
+          $ref: "#/components/schemas/AnimalInfo"
+        sheep:
+          $ref: "#/components/schemas/AnimalInfo"
+        cattle:
+          $ref: "#/components/schemas/AnimalInfo"
+        pig:
+          $ref: "#/components/schemas/AnimalInfo"
+        alpaca:
+          $ref: "#/components/schemas/AnimalInfo"
+        donkey:
+          $ref: "#/components/schemas/AnimalInfo"
     BackfillAnimalsResult:
       type: object
       description: Progress of the one-time per-animal backfill batch.
@@ -11485,7 +11499,7 @@ components:
     PlantSymptoms:
       type: object
       description: >
-        Treatable complaints/symptoms per target (human + 5 animals), as short
+        Treatable complaints/symptoms per target (human + every animal kind), as short
         canonical German tags derived from the plant's Heilwirkung. Each target
         is optional; a missing key means the plant has not been processed yet,
         while an empty array means nothing treatable for that target. Used only
@@ -11512,6 +11526,34 @@ components:
           items:
             type: string
         horse:
+          type: array
+          items:
+            type: string
+        dog:
+          type: array
+          items:
+            type: string
+        goat:
+          type: array
+          items:
+            type: string
+        sheep:
+          type: array
+          items:
+            type: string
+        cattle:
+          type: array
+          items:
+            type: string
+        pig:
+          type: array
+          items:
+            type: string
+        alpaca:
+          type: array
+          items:
+            type: string
+        donkey:
           type: array
           items:
             type: string
@@ -11663,6 +11705,34 @@ components:
           additionalProperties:
             type: string
         horse:
+          type: object
+          additionalProperties:
+            type: string
+        dog:
+          type: object
+          additionalProperties:
+            type: string
+        goat:
+          type: object
+          additionalProperties:
+            type: string
+        sheep:
+          type: object
+          additionalProperties:
+            type: string
+        cattle:
+          type: object
+          additionalProperties:
+            type: string
+        pig:
+          type: object
+          additionalProperties:
+            type: string
+        alpaca:
+          type: object
+          additionalProperties:
+            type: string
+        donkey:
           type: object
           additionalProperties:
             type: string

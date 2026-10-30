@@ -7,13 +7,20 @@ import { canonicalSymptom } from "@/lib/symptom-vocabulary";
 // columns or a per-animal fact sheet.
 export type HealTarget = "human" | AnimalKey;
 
-export const HEAL_TARGETS: ReadonlyArray<{ key: HealTarget; label: string }> = [
-  { key: "human", label: "Mensch" },
-  { key: "poultry", label: "Geflügel" },
-  { key: "rabbit", label: "Hase" },
-  { key: "guineaPig", label: "Meerschwein" },
-  { key: "cat", label: "Katze" },
-  { key: "horse", label: "Pferd" },
+export const HEAL_TARGETS: ReadonlyArray<{ key: HealTarget; label: string; emoji: string }> = [
+  { key: "human", label: "Mensch", emoji: "🧑" },
+  { key: "poultry", label: "Geflügel", emoji: "🐓" },
+  { key: "rabbit", label: "Hase", emoji: "🐇" },
+  { key: "guineaPig", label: "Meerschwein", emoji: "🐹" },
+  { key: "cat", label: "Katze", emoji: "🐱" },
+  { key: "horse", label: "Pferd", emoji: "🐴" },
+  { key: "dog", label: "Hund", emoji: "🐕" },
+  { key: "goat", label: "Ziege", emoji: "🐐" },
+  { key: "sheep", label: "Schaf", emoji: "🐑" },
+  { key: "cattle", label: "Rind", emoji: "🐄" },
+  { key: "pig", label: "Schwein", emoji: "🐖" },
+  { key: "alpaca", label: "Alpaka", emoji: "🦙" },
+  { key: "donkey", label: "Esel", emoji: "🫏" },
 ];
 
 export function healTargetLabel(key: HealTarget): string {

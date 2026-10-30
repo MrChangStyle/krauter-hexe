@@ -32,12 +32,22 @@ export type ToxicityLevel = (typeof TOXICITY_LEVELS)[number];
 // canonical key and mirrors the legacy poultryStatus/animalToxicityDetails/
 // poultryBenefits columns so old rows keep working while the new "Status Tiere"
 // dropdown can show every animal.
+// New kinds go at the end: existing plants get their fact sheet for a new kind
+// from the owner's background backfill (/plants/animals/backfill), which keeps
+// the kinds already stored.
 export const ANIMAL_KINDS = [
   "poultry",
   "rabbit",
   "guineaPig",
   "cat",
   "horse",
+  "dog",
+  "goat",
+  "sheep",
+  "cattle",
+  "pig",
+  "alpaca",
+  "donkey",
 ] as const;
 export type AnimalKind = (typeof ANIMAL_KINDS)[number];
 

@@ -16,4 +16,11 @@ export interface PlantAnimals {
   guineaPig?: AnimalInfo;
   cat?: AnimalInfo;
   horse?: AnimalInfo;
+  dog?: AnimalInfo;
+  goat?: AnimalInfo;
+  sheep?: AnimalInfo;
+  cattle?: AnimalInfo;
+  pig?: AnimalInfo;
+  alpaca?: AnimalInfo;
+  donkey?: AnimalInfo;
 }

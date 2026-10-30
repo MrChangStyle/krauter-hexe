@@ -117,6 +117,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     faq: [
       { q: "Ist das medizinischer Rat?", a: "Nein. Es ist überliefertes Wissen; bei Beschwerden ärztlichen Rat einholen, besonders in Schwangerschaft und bei Kindern." },
       { q: "Warum heißt meine Beschwerde anders als früher?", a: "Jede Beschwerde gibt es nur noch einmal und immer gleich geschrieben. „Magenkrämpfe“ und „Verdauungsbeschwerden“ heißen jetzt zum Beispiel „Magen-Darm-Beschwerden“, „Rachenentzündung“ heißt „Mund- und Rachenentzündungen“. Wer das alte Wort eintippt, findet trotzdem die passenden Pflanzen." },
+      { q: "Warum steht bei Hund, Ziege oder Esel noch „Keine Einträge“?", a: "Diese Tierarten sind neu. Neue Scans haben sie sofort; ältere Pflanzen bekommen sie nach und nach im Hintergrund. Beim Esel gilt bis dahin der Eintrag fürs Pferd." },
     ],
   },
   garden: {

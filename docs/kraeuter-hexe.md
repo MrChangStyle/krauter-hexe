@@ -53,8 +53,18 @@ Weitere Regeln:
 - `api-server/src/lib/symptomVocabulary.test.ts`: Server- und App-Liste sind gleich; Umbenennen samt Hinweisen.
 - `plantSymptoms.integration.test.ts`: gegen echtes Postgres.
 
+## Alle Tierarten
+
+Die Kräuter-Hexe und „Essbar für …“ im Lexikon (Archiv) kennen dieselben Ziele: Mensch und zwölf Tierarten – Geflügel (Hühner, Enten, Gänse, Puten, Wachteln, Nandus), Hase, Meerschweinchen, Katze, Pferd, Hund, Ziege, Schaf, Rind, Schwein, Alpaka und Esel. Die Liste steht an einer Stelle (`ANIMAL_KINDS` in `lib/db/src/schema/plants.ts`, in der App `lib/animals.ts` und `lib/heal-targets.ts`); die KI-Anweisungen werden daraus gebaut.
+
+- **Neue Scans** bekommen den Steckbrief für alle zwölf Tierarten.
+- **Pflanzen von früher** bekommen die neuen Tierarten nach und nach im Hintergrund, sobald der Betreiber die App öffnet (bis zu 120 Pflanzen je Sitzung, je Pflanze drei kurze KI-Aufrufe für Steckbrief, Beschwerden und Anwendung). Was schon gespeichert ist – Einstufung, Giftgrad, Beschwerden, Anwendungen –, bleibt unverändert.
+- Bis dahin zeigt „Essbar für“ bei den neuen Tierarten „Keine Einträge“. Beim **Esel** gilt bis dahin der Eintrag fürs Pferd (Esel fressen wie Pferde).
+- Tests: `api-server/src/lib/animalKinds.integration.test.ts` (Nachfüllen gegen echtes Postgres), `farmAi.test.ts` (Pferd für Esel), `pflanzenscanner/src/lib/animals.test.ts`.
+
 ## Offen
 
+- Die Einschätzungen für die neuen Tierarten stammen von der KI und sind fachlich zu prüfen – besonders bei Wiederkäuern (Ziege, Schaf, Rind, Alpaka), wo Verträglichkeit stark von der Menge abhängt.
 - Fachliche Prüfung der Zuordnungen, z. B.:
   - Gehört „Bronchitis“ zu Husten?
   - Gehört „Schleimhautentzündung“ zu Mund und Rachen?

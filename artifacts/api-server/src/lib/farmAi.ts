@@ -59,13 +59,24 @@ const ARCHIVE_KIND: Partial<Record<FarmSpecies, AnimalKind>> = {
   turkey: 'poultry',
   quail: 'poultry',
   rhea: 'poultry',
-  // Donkeys eat like horses.
-  donkey: 'horse',
   rabbit: 'rabbit',
   guineaPig: 'guineaPig',
   cat: 'cat',
   horse: 'horse',
+  dog: 'dog',
+  goat: 'goat',
+  sheep: 'sheep',
+  cattle: 'cattle',
+  pig: 'pig',
+  alpaca: 'alpaca',
+  donkey: 'donkey',
 };
+
+/**
+ * Until the owner's backfill has filled a newly added kind for a plant, the
+ * closest kind already stored stands in: donkeys eat like horses.
+ */
+const STAND_IN_KIND: Partial<Record<AnimalKind, AnimalKind>> = { donkey: 'horse' };
 
 export function archiveKindFor(species: FarmSpecies): AnimalKind | null {
   return ARCHIVE_KIND[species] ?? null;
@@ -232,7 +243,8 @@ type ArchiveRow = {
 
 /** Status of one archive plant for one animal kind; poultry falls back to the legacy columns. */
 export function statusFor(row: ArchiveRow, kind: AnimalKind): ArchivePlantStatus | null {
-  const info = row.animals?.[kind];
+  const standIn = STAND_IN_KIND[kind];
+  const info = row.animals?.[kind] ?? (standIn ? row.animals?.[standIn] : undefined);
   if (info) {
     return {
       plantId: row.id,

@@ -2289,6 +2289,12 @@ export interface FeedbackInput {
      */
   page?: string | null;
   voice?: boolean;
+  /**
+     * App only – a screenshot as an image data URL (JPEG, PNG or WebP), downscaled by the app; stored privately, only the owner sees it
+     * @maxLength 2000000
+     * @nullable
+     */
+  screenshot?: string | null;
 }
 
 export type SiteFeedbackInputKind = typeof SiteFeedbackInputKind[keyof typeof SiteFeedbackInputKind];
@@ -2353,6 +2359,8 @@ export interface FeedbackItem {
   kind: FeedbackItemKind;
   /** Sent from the homepage without an account. */
   visitor: boolean;
+  /** A screenshot is attached – GET /feedback/{feedbackId}/screenshot (owner only) */
+  hasScreenshot: boolean;
   author: string;
   /** @nullable */
   email: string | null;

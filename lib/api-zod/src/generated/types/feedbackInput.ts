@@ -18,4 +18,10 @@ export interface FeedbackInput {
      */
   page?: string | null;
   voice?: boolean;
+  /**
+     * App only – a screenshot as an image data URL (JPEG, PNG or WebP), downscaled by the app; stored privately, only the owner sees it
+     * @maxLength 2000000
+     * @nullable
+     */
+  screenshot?: string | null;
 }

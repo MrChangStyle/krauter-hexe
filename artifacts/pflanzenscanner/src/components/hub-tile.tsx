@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import type { ComponentType, MouseEvent } from "react";
 import { Link } from "wouter";
 import { cn } from "@/lib/utils";
 
@@ -15,6 +15,8 @@ export function HubTile({
   badge,
   tag,
   className: extra,
+  onClick,
+  active,
 }: {
   href: string;
   icon: ComponentType<{ className?: string; strokeWidth?: number }>;
@@ -28,6 +30,10 @@ export function HubTile({
   tag?: string | null;
   /** E.g. col-span-2 for a tile across the whole row. */
   className?: string;
+  /** In-page tiles that open a section instead of jumping (Verwaltung). */
+  onClick?: (event: MouseEvent<HTMLAnchorElement>) => void;
+  /** The section of this tile is open. */
+  active?: boolean;
 }) {
   const inner = (
     <>
@@ -49,7 +55,7 @@ export function HubTile({
   const className = cn("rounded-2xl border bg-card p-4 flex flex-col gap-3 hover:shadow-md active:scale-[0.98] transition-all", extra);
   // In-page anchors (#push, #konto) are plain links; areas are router links.
   return href.startsWith("#") ? (
-    <a href={href} className={className}>
+    <a href={href} className={className} onClick={onClick} aria-expanded={active}>
       {inner}
     </a>
   ) : (

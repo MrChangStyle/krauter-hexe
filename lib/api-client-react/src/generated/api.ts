@@ -22036,6 +22036,83 @@ export function useListFeedback<TData = Awaited<ReturnType<typeof listFeedback>>
 
 
 
+export const getGetFeedbackScreenshotUrl = (feedbackId: number,) => {
+
+
+
+
+  return `/api/feedback/${feedbackId}/screenshot`
+}
+
+/**
+ * @summary The screenshot attached to a feedback (app owner only)
+ */
+export const getFeedbackScreenshot = async (feedbackId: number, options?: RequestInit): Promise<Blob> => {
+
+  return customFetch<Blob>(getGetFeedbackScreenshotUrl(feedbackId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFeedbackScreenshotQueryKey = (feedbackId: number,) => {
+    return [
+    `/api/feedback/${feedbackId}/screenshot`
+    ] as const;
+    }
+
+
+export const getGetFeedbackScreenshotQueryOptions = <TData = Awaited<ReturnType<typeof getFeedbackScreenshot>>, TError = ErrorType<void>>(feedbackId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFeedbackScreenshot>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFeedbackScreenshotQueryKey(feedbackId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFeedbackScreenshot>>> = ({ signal }) => getFeedbackScreenshot(feedbackId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: feedbackId !== null && feedbackId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFeedbackScreenshot>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFeedbackScreenshotQueryResult = NonNullable<Awaited<ReturnType<typeof getFeedbackScreenshot>>>
+export type GetFeedbackScreenshotQueryError = ErrorType<void>
+
+
+/**
+ * @summary The screenshot attached to a feedback (app owner only)
+ */
+
+export function useGetFeedbackScreenshot<TData = Awaited<ReturnType<typeof getFeedbackScreenshot>>, TError = ErrorType<void>>(
+ feedbackId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFeedbackScreenshot>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFeedbackScreenshotQueryOptions(feedbackId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
 export const getMarkFeedbackUrl = (feedbackId: number,) => {
 
 

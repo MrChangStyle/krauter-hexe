@@ -6875,6 +6875,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/FeedbackList"
+  /feedback/{feedbackId}/screenshot:
+    get:
+      tags: [feedback]
+      operationId: getFeedbackScreenshot
+      summary: The screenshot attached to a feedback (app owner only)
+      parameters:
+        - name: feedbackId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The image.
+          content:
+            image/*:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: No screenshot.
   /feedback/{feedbackId}:
     put:
       tags: [feedback]
@@ -9744,6 +9765,10 @@ components:
           maxLength: 200
         voice:
           type: boolean
+        screenshot:
+          type: [string, 'null']
+          maxLength: 2000000
+          description: App only – a screenshot as an image data URL (JPEG, PNG or WebP), downscaled by the app; stored privately, only the owner sees it
     SiteFeedbackInput:
       type: object
       required: [text]
@@ -9774,7 +9799,7 @@ components:
           type: boolean
     FeedbackItem:
       type: object
-      required: [id, text, page, voice, kind, visitor, author, email, createdAt, readAt]
+      required: [id, text, page, voice, kind, visitor, hasScreenshot, author, email, createdAt, readAt]
       properties:
         id:
           type: integer
@@ -9791,6 +9816,9 @@ components:
         visitor:
           type: boolean
           description: Sent from the homepage without an account.
+        hasScreenshot:
+          type: boolean
+          description: A screenshot is attached – GET /feedback/{feedbackId}/screenshot (owner only)
         author:
           type: string
         email:

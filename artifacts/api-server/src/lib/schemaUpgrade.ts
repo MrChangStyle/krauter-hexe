@@ -116,6 +116,7 @@ const STATEMENTS = [
   `ALTER TABLE "feedback" ALTER COLUMN "user_id" DROP NOT NULL`,
   `ALTER TABLE "feedback" ADD COLUMN IF NOT EXISTS "kind" text`,
   `ALTER TABLE "feedback" ADD COLUMN IF NOT EXISTS "contact" text`,
+  `ALTER TABLE "feedback" ADD COLUMN IF NOT EXISTS "screenshot" text`,
   `CREATE INDEX IF NOT EXISTS "feedback_created_idx" ON "feedback" USING btree ("created_at")`,
   // Umzug über das Konto (schema/move.ts).
   `CREATE TABLE IF NOT EXISTS "move_parcels" (

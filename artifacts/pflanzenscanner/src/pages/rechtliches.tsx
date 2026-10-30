@@ -199,8 +199,10 @@ export function DatenschutzPage() {
           <li>
             <strong>Feedback:</strong> Wenn du uns über die Sprechblase eine
             Idee oder ein Problem schickst, speichern wir deine Nachricht, die
-            Seite, von der sie kommt, und – nur wenn du sie angibst – deine
-            E-Mail-Adresse für eine Antwort. Angemeldet gehört das Feedback zu
+            Seite, von der sie kommt, einen Screenshot, wenn du einen anhängst
+            (nur in der App; er liegt in unserer Datenbank und nur wir sehen
+            ihn), und – nur wenn du sie angibst – deine E-Mail-Adresse für eine
+            Antwort. Angemeldet gehört das Feedback zu
             deinem Konto. Ohne Konto löschen wir es spätestens nach einem Jahr
             (Art. 6 Abs. 1 lit. f DSGVO, Verbesserung der App).
           </li>

@@ -1,7 +1,7 @@
 import { Router, type IRouter } from 'express';
 import { ListFeedbackResponse, MarkFeedbackBody, SendFeedbackBody, SendSiteFeedbackBody } from '@workspace/api-zod';
 
-import { deleteFeedback, listFeedback, markFeedback, sendFeedback, sendSiteFeedback } from '../lib/feedback';
+import { deleteFeedback, feedbackScreenshot, listFeedback, markFeedback, sendFeedback, sendSiteFeedback } from '../lib/feedback';
 import { requireApproved, requireOwner } from '../middlewares/requireApproved';
 import { badRequest, handle, idParam, notFound } from './farmRouteHelpers';
 
@@ -37,6 +37,19 @@ router.get(
   requireOwner,
   handle(async (_req, res) => {
     res.json(ListFeedbackResponse.parse(await listFeedback()));
+  }),
+);
+
+// The screenshot of a feedback – only for the owner, never cached by others.
+router.get(
+  '/feedback/:feedbackId/screenshot',
+  requireOwner,
+  handle(async (req, res) => {
+    const id = idParam(req, 'feedbackId');
+    const shot = id === null ? null : await feedbackScreenshot(id);
+    if (!shot) return notFound(res);
+    res.set({ 'Content-Type': shot.type, 'Cache-Control': 'private, max-age=3600', 'X-Content-Type-Options': 'nosniff' });
+    res.send(shot.bytes);
   }),
 );
 

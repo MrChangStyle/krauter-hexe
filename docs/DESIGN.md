@@ -19,8 +19,13 @@ Vorbild sind die Übersichten **Hof, Pflanzen und Tiere**: Kacheln mit farbigem 
 | Schritt | Inhalt | Stand |
 |---|---|---|
 | **D1** | Modul-Aussehen an einer Stelle, Seitenkopf für alle Modulseiten (32 Seiten), Übersichten Pflanzen und Tiere lesen daraus | ✅ (#139) |
-| **D2** | Untermenüs als Kacheln: Futterplaner, Beet-Architekt, Ertrag, Grow, Lexikon | offen |
+| **D2** | Untermenüs als Kacheln: Beet-Architekt (Assistent, Kalender, Saatgut, Ernte), Futterplaner (Vorrat & Kosten, Tipps & Rezepte), Grow (Wissen, Rechtliches); jede Unterseite mit eigener Farbe | ✅ (#140) |
 | **D3** | Karten und Abstände vereinheitlichen (Ecken, Innenabstand, Überschriften) | offen |
+
+## Bewusst so gelassen
+
+- Der Kasten „So funktioniert’s“ steht über dem Seitenkopf und ist beim ersten Besuch offen; zugeklappt bleibt er zu (je Modul gemerkt).
+- Die Karte „Legeleistung“ in Ertrag & Bilanz bleibt eine Kennzahl mit Link, keine Kachel – sie zeigt einen Wert.
 
 ## Gefunden bei der Prüfung (30.10.2026)
 

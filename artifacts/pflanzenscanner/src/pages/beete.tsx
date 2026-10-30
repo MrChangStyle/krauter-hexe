@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { BarChart3, CalendarDays, ChevronRight, Compass, Fence, Loader2, MapPin, Plus, Sprout } from "lucide-react";
+import { ChevronRight, Fence, Loader2, MapPin, Plus } from "lucide-react";
 import { FrostWarnings } from "@/components/garden-overview";
-import { PremiumBadge } from "@/components/premium-badge";
 import { useEnsureOwnFarm, useListBeds, type FarmSummary } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { BED_TYPE_LABELS, bedArea, bedSize, dayMonth } from "@/lib/garden-labels";
 import { PageHeader } from "@/components/page-header";
+import { HubGrid, HubTile } from "@/components/hub-tile";
+import { tileOf } from "@/lib/module-look";
 
 function BedList({ farm }: { farm: FarmSummary }) {
   const beds = useListBeds(farm.id);
@@ -33,64 +34,13 @@ function BedList({ farm }: { farm: FarmSummary }) {
       </div>
 
       <FrostWarnings farmId={farm.id} />
-      {list.length > 0 && (
-        <Link
-          href="/beete/assistent"
-          className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm transition-colors hover:bg-muted/50"
-        >
-          <Compass className="h-5 w-5 text-primary" />
-          <span className="flex-1">
-            <span className="flex items-center gap-1.5 font-medium">
-              Garten-Assistent
-              <PremiumBadge />
-            </span>
-            <span className="block text-xs text-muted-foreground">Bedarf für Haushalt und Tiere, Aufteilung auf die Beete</span>
-          </span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-      )}
-      {list.length > 0 && (
-        <Link
-          href="/beete/kalender"
-          className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm transition-colors hover:bg-muted/50"
-        >
-          <CalendarDays className="h-5 w-5 text-primary" />
-          <span className="flex-1">
-            <span className="flex items-center gap-1.5 font-medium">
-              Gartenkalender
-              <PremiumBadge />
-            </span>
-            <span className="block text-xs text-muted-foreground">Säen, pflanzen, ernten – Monat für Monat</span>
-          </span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-      )}
-
-      {list.length > 0 && (
-        <Link
-          href="/beete/ernte"
-          className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm transition-colors hover:bg-muted/50"
-        >
-          <BarChart3 className="h-5 w-5 text-primary" />
-          <span className="flex-1">
-            <span className="block font-medium">Ernte-Auswertung</span>
-            <span className="block text-xs text-muted-foreground">kg und € je Kultur und Beet, was sich gelohnt hat</span>
-          </span>
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
-        </Link>
-      )}
-
-      <Link
-        href="/beete/saatgut"
-        className="flex items-center gap-3 rounded-xl border border-border bg-card p-3 text-sm transition-colors hover:bg-muted/50"
-      >
-        <Sprout className="h-5 w-5 text-primary" />
-        <span className="flex-1">
-          <span className="block font-medium">Saatgut</span>
-          <span className="block text-xs text-muted-foreground">Vorrat, Keimfähigkeit, was für den Beetplan fehlt</span>
-        </span>
-        <ChevronRight className="h-4 w-4 text-muted-foreground" />
-      </Link>
+      {/* The Beet-Architekt's parts as tiles, like the hubs (docs/DESIGN.md). */}
+      <HubGrid>
+        {list.length > 0 && <HubTile {...tileOf("garten-assistent")} tag="Premium" />}
+        {list.length > 0 && <HubTile {...tileOf("garten-kalender")} tag="Premium" />}
+        <HubTile {...tileOf("saatgut")} />
+        {list.length > 0 && <HubTile {...tileOf("ernte")} />}
+      </HubGrid>
 
       {beds.isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />

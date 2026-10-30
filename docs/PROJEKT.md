@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #140 | Design D2: Untermenüs von Beet-Architekt, Futterplaner und Grow als Kacheln wie auf den Übersichten |
 | 30.10.2026 | #139 | Design D1 (`docs/DESIGN.md`): alle Modulseiten mit demselben Kopf wie die Kacheln der Übersicht (Zurück zum Bereich, farbige Symbol-Kachel, Name, eine Zeile); Aussehen jedes Moduls an einer Stelle |
 | 30.10.2026 | #138 | Nachhaltigkeit (B8): Liste mit zwölf Maßnahmen unter Farm & Team für jeden Hof, Hof-Steckbrief zum Kopieren; Homepage-Abschnitt „Bio & nachhaltig“ und Frage „Ist Little Farming eine Bio-App?“ |
 | 30.10.2026 | #137 | Bio-Erzeugnisse (B7): Eier, Milch, Honig, Ernte usw. auf Bio-Höfen bekommen beim Eintragen das Zeichen „Bio“; Ertrag & Bilanz zeigt „davon Bio“ |

@@ -87,9 +87,17 @@ describe.skipIf(!enabled)("Meine Farm – herds and animals (real database)", ()
     expect(created.data).toMatchObject({ name: "Lotte", herdName: "Ziegen", birthDate: "2023-04-12", archivedAt: null });
 
     expect((await api("GET", `/farms/${farm.anna}/herds`)).data).toEqual([
-      { id: herd.data.id, name: "Ziegen", species: "goat", notes: null, animalCount: 1 },
+      { id: herd.data.id, name: "Ziegen", species: "goat", notes: null, stallM2: null, runM2: null, animalCount: 1 },
     ]);
     expect((await api("GET", `/farms/${farm.anna}/animals`)).data).toHaveLength(1);
+
+    // The count is per herd, not the animal's own id: two more goats, one archived, and an empty herd.
+    await api("POST", `/farms/${farm.anna}/animals`, animal({ name: "Mia", herdId: herd.data.id, registrationNumber: null }));
+    const old = await api("POST", `/farms/${farm.anna}/animals`, animal({ name: "Alma", herdId: herd.data.id, registrationNumber: null }));
+    expect((await api("POST", `/farms/${farm.anna}/animals/${old.data.id}/archive`, { archived: true })).status).toBe(200);
+    await api("POST", `/farms/${farm.anna}/herds`, { name: "Böcke", species: "goat" });
+    const counts = (await api("GET", `/farms/${farm.anna}/herds`)).data.map((h: { name: string; animalCount: number }) => [h.name, h.animalCount]);
+    expect(counts).toEqual([["Böcke", 0], ["Ziegen", 2]]);
   });
 
   it("keeps farms apart: no reading, no writing, no herd from another farm", async () => {
@@ -105,6 +113,20 @@ describe.skipIf(!enabled)("Meine Farm – herds and animals (real database)", ()
     const smuggle = await api("POST", `/farms/${farm.bert}/animals`, animal({ herdId: annasHerd.data.id }));
     expect(smuggle.status).toBe(400);
     expect(await q("SELECT name FROM farm_animals WHERE farm_id = $1", [farm.anna])).toEqual([{ name: "Lotte" }]);
+  });
+
+  it("keeps the stall and outdoor area of a group (Platz-Check, Bio)", async () => {
+    const herd = await api("POST", `/farms/${farm.anna}/herds`, { name: "Hühner", species: "poultry" });
+    const path = `/farms/${farm.anna}/herds/${herd.data.id}/space`;
+    expect((await api("PUT", path, { stallM2: 4.25, runM2: 60 })).data).toMatchObject({ stallM2: 4.3, runM2: 60 });
+    // Only what is sent changes; null clears.
+    expect((await api("PUT", path, { runM2: null })).data).toMatchObject({ stallM2: 4.3, runM2: null });
+    expect((await api("PUT", path, { stallM2: -1 })).status).toBe(400);
+    expect((await api("PUT", path, {})).data).toMatchObject({ stallM2: 4.3 });
+    as = "gast";
+    expect((await api("PUT", path, { stallM2: 1 })).status).toBe(403);
+    as = "bert";
+    expect((await api("PUT", `/farms/${farm.bert}/herds/${herd.data.id}/space`, { stallM2: 1 })).status).toBe(404);
   });
 
   it("lets guests read but not write", async () => {

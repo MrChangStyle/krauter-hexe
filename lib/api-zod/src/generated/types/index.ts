@@ -314,6 +314,7 @@ export * from './helpfulPlantsDiet';
 export * from './helpfulPlantUse';
 export * from './herd';
 export * from './herdInput';
+export * from './herdSpaceInput';
 export * from './humanStatus';
 export * from './husbandryGuide';
 export * from './imageLockInput';

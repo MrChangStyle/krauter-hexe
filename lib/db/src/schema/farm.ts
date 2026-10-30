@@ -155,6 +155,9 @@ export const herdsTable = pgTable(
     species: farmSpeciesEnum("species").notNull(),
     notes: text("notes"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    // Platz-Check (Bio, docs/bio.md): stall floor and outdoor run of the group, m².
+    stallM2: doublePrecision("stall_m2"),
+    runM2: doublePrecision("run_m2"),
   },
   (table) => [index("herds_farm_idx").on(table.farmId)],
 );

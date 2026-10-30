@@ -1,6 +1,6 @@
 # Bio und Bewirtschaftung
 
-Schritte B1 bis B3 aus `docs/BIO-KONZEPT.md`. **Bio ist eine Option, keine Pflicht.** Die App bleibt für alle da, die konventionell wirtschaften. Wer möchte, stellt auf naturnah oder bio um, und kann jederzeit zurückwechseln.
+Schritte B1 bis B4 aus `docs/BIO-KONZEPT.md`. **Bio ist eine Option, keine Pflicht.** Die App bleibt für alle da, die konventionell wirtschaften. Wer möchte, stellt auf naturnah oder bio um, und kann jederzeit zurückwechseln.
 
 ## Für Nutzer
 
@@ -65,6 +65,25 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
 - Futter ohne Angabe zählt als konventionell und zugekauft. Die Ration nennt es unter „Herkunft fehlt bei …“.
 - Konventionelle und naturnahe Höfe sehen den Futterplaner wie bisher.
 
+### Platz-Check (B4)
+
+Nur auf Höfen mit „Bio“ oder „Bio-Verband“, oben unter **Meine Tiere**:
+
+- Je Gruppe werden Stallfläche und Auslauf in m² eingetragen. Gespeichert wird beim Verlassen des Feldes; leer heißt „nicht angegeben“.
+- Die App rechnet die Mindestfläche für die Zahl der Tiere aus und zeigt eine Ampel für Stall und Auslauf. Richtwerte nach VO (EU) 2020/464, Anhang I, für ausgewachsene Tiere:
+
+  | Tierart (Grundlage) | Stall | Auslauf je Tier |
+  |---|---|---|
+  | Huhn (Legehennen) | höchstens 6 Tiere je m² | 4 m² |
+  | Pute | höchstens 10 Tiere je m² | 10 m² |
+  | Ente | höchstens 10 Tiere je m² | 4,5 m² |
+  | Gans | höchstens 10 Tiere je m² | 15 m² |
+  | Schwein (Mast bis 110 kg) | 1,3 m² je Tier | 1 m² |
+  | Rind (Milchkuh) | 6 m² je Tier | 4,5 m² |
+  | Schaf, Ziege | 1,5 m² je Tier | 2,5 m² |
+
+- Für andere Arten (Pferd, Esel, Alpaka, Kaninchen, Wachtel, Nandu …) nennt die App noch keine Werte.
+
 ## Technik
 
 - **Datenbank** (additiv, `farmSchemaStatements.ts`, `schemaUpgrade.ts`):
@@ -89,6 +108,10 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
   - `GET/PUT /farms/:farmId/feed-origins`, Modul Futter.
   - `RationEvaluation.organic` ist nur auf Bio-Höfen gefüllt.
   - App: `components/feed-organic.tsx`.
+- **Platz-Check (B4):**
+  - `herds.stall_m2` und `herds.run_m2`, gesetzt über `PUT /farms/:farmId/herds/:herdId/space` (`setHerdSpace`, Mitarbeiter und Admins).
+  - Die Rechnung macht die App (`lib/organic-space.ts`), angezeigt wird sie in `components/organic-space-card.tsx`.
+  - Behoben dabei: `listHerds` zählte die Tiere einer Gruppe falsch (die Spalte `id` im Unterabfrage-SQL war die des Tiers).
 - **Demo:** Der Demo-Hof ist naturnah (`docs/demo.md`).
 - **Tests:**
   - `farming.integration.test.ts`: Standard, Umschalten in beide Richtungen, Rollen, Prüfungen, wer biologische Tipps bekommt.
@@ -96,10 +119,12 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
   - `farmHealth.integration.test.ts`: doppelte Wartezeit nur bei Bio, Art der Behandlung.
   - App `farm-health.test.ts`: Wartezeit-Rechnung, Export-Text, Zähler über 12 Monate.
   - `feedPlanner.integration.test.ts`: Anteile nur auf Bio-Höfen, fehlende Herkunft, Rollen.
+  - `farmAnimals.integration.test.ts` und App `organic-space.test.ts`: Flächen speichern und prüfen.
 
 ## Offen
 
 - Richtwerte zur fachlichen Prüfung: doppelte Wartezeit, mindestens 48 Stunden; höchstens 3 chemisch-synthetische Behandlungen in 12 Monaten, bei Tieren mit weniger als einem Jahr Nutzungsdauer 1 (die App zeigt dafür nur einen Hinweis, sie kennt die Nutzungsdauer nicht); dass Impfungen und Parasitenbehandlungen nicht zählen (VO (EU) 2018/848, Anhang II Teil II).
 - Futter-Richtwerte zur fachlichen Prüfung: Anteil vom Hof oder aus der Region, zugekauftes Umstellungsfutter, Raufutter (bei Milchkühen in der Frühlaktation 50 %), Ausnahmen für Eiweißfutter bei Jungtieren (VO (EU) 2018/848, Anhang II Teil II 1.4). „Region“ prüft die App nicht, das Häkchen setzt der Hof selbst.
-- Die nächsten Schritte B4–B8 aus `docs/BIO-KONZEPT.md`, unter anderem doppelte Wartezeit bei Bio, Bio-Futter, Platz-Check, Bio-Check und Bio-Dokumentation. Der Berater-Zugang (B6) ist zurückgestellt.
+- Platz-Richtwerte zur fachlichen Prüfung: Jungtiere, Masthühner, Sauen mit Ferkeln, Mastrinder und Verbandswerte fehlen noch; Pferde, Esel, Alpakas und Kaninchen ohne Werte.
+- Die nächsten Schritte B5–B8 aus `docs/BIO-KONZEPT.md`, unter anderem doppelte Wartezeit bei Bio, Bio-Futter, Platz-Check, Bio-Check und Bio-Dokumentation. Der Berater-Zugang (B6) ist zurückgestellt.
 - Die Liste der „im Ökolandbau üblichen“ Mittel im KI-Hinweis ist ein Richtwert. Verbindlich ist Anhang I der VO (EU) 2021/1165 (zugelassene Pflanzenschutzmittel, Dünger); fachlich zu prüfen.

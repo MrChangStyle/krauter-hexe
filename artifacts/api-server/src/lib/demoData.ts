@@ -17,7 +17,7 @@ import { createBreeding, endBreeding } from './breeding';
 import { addHeat } from './breedingCycle';
 import { createItem as createPantryItem, takeOut } from './pantry';
 import { addCut, createPasture, endGrazing, startGrazing } from './pasture';
-import { FarmDataError } from './farmAnimals';
+import { FarmDataError, setHerdSpace } from './farmAnimals';
 import { setDutySettings } from './farmDuties';
 import { setHandoverNote } from './farmHandover';
 import { createMedicalRecord, createWeightLog } from './farmHealth';
@@ -82,8 +82,11 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   const year = Number(today.slice(0, 4));
 
   // Tiere, Stall-Aufgaben and Futterplaner: two groups with ration and reminders.
-  await quickStart(farmId, { species: 'poultry', count: 2, name: 'Hühner' });
+  const hens = await quickStart(farmId, { species: 'poultry', count: 2, name: 'Hühner' });
   const goats = await quickStart(farmId, { species: 'goat', count: 2, name: 'Ziegen' });
+  // Platz-Check (Bio): stall and run of both groups – shown once the demo farm is switched to Bio.
+  await setHerdSpace(farmId, hens.herdId, { stallM2: 1, runM2: 12 });
+  await setHerdSpace(farmId, goats.herdId, { stallM2: 4, runM2: 30 });
   // Futtervorrat: a sack of layer feed nearly gone, hay for a while.
   await buyFeed(farmId, { feedKey: 'legehennen', packages: 1, packageKg: 5 });
   await buyFeed(farmId, { feedKey: 'heu', packages: 4, packageKg: 20 });

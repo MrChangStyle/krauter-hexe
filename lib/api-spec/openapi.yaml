@@ -4600,6 +4600,37 @@ paths:
                 $ref: "#/components/schemas/Herd"
         "400":
           description: Invalid input.
+  /farms/{farmId}/herds/{herdId}/space:
+    put:
+      tags: [farm]
+      operationId: setHerdSpace
+      summary: Platz-Check (Bio) – stall and outdoor area of a group in m² (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: herdId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HerdSpaceInput"
+      responses:
+        "200":
+          description: The group.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Herd"
+        "400":
+          description: Invalid input.
   /farms/{farmId}/herds/{herdId}:
     patch:
       tags: [farm]
@@ -12486,7 +12517,7 @@ components:
       enum: [female, male, neutered, unknown]
     Herd:
       type: object
-      required: [id, name, species, notes, animalCount]
+      required: [id, name, species, notes, stallM2, runM2, animalCount]
       properties:
         id:
           type: integer
@@ -12496,9 +12527,24 @@ components:
           $ref: "#/components/schemas/FarmSpecies"
         notes:
           type: [string, 'null']
+        stallM2:
+          type: [number, 'null']
+          description: Platz-Check (Bio) – stall floor of the group, m²
+        runM2:
+          type: [number, 'null']
+          description: Platz-Check (Bio) – outdoor run of the group, m²
         animalCount:
           type: integer
           description: Animals in the herd that are not archived.
+    HerdSpaceInput:
+      type: object
+      properties:
+        stallM2:
+          type: [number, 'null']
+          minimum: 0
+        runM2:
+          type: [number, 'null']
+          minimum: 0
     HerdInput:
       type: object
       required: [name, species]

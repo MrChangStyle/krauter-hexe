@@ -74,8 +74,13 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"name" text NOT NULL,
 	"species" "farm_species" NOT NULL,
 	"notes" text,
-	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	"stall_m2" double precision,
+	"run_m2" double precision
 )`,
+  // Platz-Check (Bio).
+  `ALTER TABLE "herds" ADD COLUMN IF NOT EXISTS "stall_m2" double precision`,
+  `ALTER TABLE "herds" ADD COLUMN IF NOT EXISTS "run_m2" double precision`,
   `CREATE TABLE IF NOT EXISTS "farm_animals" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

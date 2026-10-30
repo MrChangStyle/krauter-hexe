@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { MedicalRepeat } from './medicalRepeat';
+import type { RemedyKind } from './remedyKind';
 
 export interface MedicalRecordInput {
   /** YYYY-MM-DD, not in the future */
@@ -53,6 +54,7 @@ export interface MedicalRecordInput {
   medicineId?: number | null;
   /** @nullable */
   dose?: number | null;
+  remedyKind?: RemedyKind | null;
   /** New records only – a stall task (Entwurmen/Impfen) for this animal, due one interval after the record's date. */
   repeat?: null | MedicalRepeat;
 }

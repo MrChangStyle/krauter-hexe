@@ -61,3 +61,7 @@ Der Tierarzt braucht ein eigenes Little-Farming-Konto. Eine Einladung per Link o
 - **Fachlich prüfen:** die 90 Tage als längste Behandlung und die 14 Tage als Standard-Dauer des Tierarzt-Zugangs. Beides sind Richtwerte.
 - **Wartezeit je Erzeugnis:** Die Akte speichert eine Wartezeit, die längste für die Tierart. Getrennte Wartezeiten für Milch, Eier und Fleisch gibt es nur im Arzneimittel-Vorrat.
 - **Tierarzt ohne Konto:** Ein Lese-Link ohne Konto, etwa für einen einmaligen Blick in die Akte, wäre eine eigene Funktion für später.
+
+## Bio
+
+Auf Bio-Höfen gilt die doppelte gesetzliche Wartezeit, mindestens 2 Tage, und die App zählt chemisch-synthetische Behandlungen je Tier in 12 Monaten. Die „Art der Behandlung“ gibt es für alle Höfe. Einzelheiten in `docs/bio.md`.

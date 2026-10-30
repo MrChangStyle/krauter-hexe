@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #131 | Bio in der Krankenakte (B2): Art der Behandlung (chemisch, Naturheilverfahren, Impfung, Parasiten); auf Bio-Höfen doppelte gesetzliche Wartezeit (mindestens 2 Tage) am Tier, in Übergabe, Futterplaner und Export, Zähler der chemischen Behandlungen je Tier in 12 Monaten |
 | 30.10.2026 | #130 | Feedback mit Screenshot: In der Sprechblase lässt sich ein Bild anhängen (verkleinert, nur in der Datenbank, nur der Betreiber sieht es); Datenschutzerklärung ergänzt. Verwaltung: alle Bereiche zu, ein Tipp auf eine Kachel öffnet nur diesen |
 | 30.10.2026 | #129 | Beet-Architekt: Pflanzen im Raster verschieben (ziehen oder antippen → „Verschieben“), Ernten bleiben dran; KI-Vorschlag hängt nicht mehr (Zeitgrenze 45 s, minimales Nachdenken, klare Meldung), ebenso die Foto-Auswertungen |
 | 30.10.2026 | #128 | Pilz-Scan mit drei Fotos: zusätzlich die Lamellen von unten, essbar nur mit allen drei und sicherer Bestimmung; ein Scan mit drei Fotos darf einen vorhandenen Eintrag neu bewerten; der Betreiber kann einen Pilz nach Prüfung der Fotos als essbar freigeben oder die Freigabe zurücknehmen |

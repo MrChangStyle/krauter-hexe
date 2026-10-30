@@ -4393,6 +4393,19 @@ export interface PhotoInput {
   imageData: string;
 }
 
+/**
+ * Bio (docs/bio.md) – chemical = chemisch-synthetisch allopathisch (counts towards the organic limit), natural = Naturheilverfahren, vaccine, antiparasitic
+ */
+export type RemedyKind = typeof RemedyKind[keyof typeof RemedyKind];
+
+
+export const RemedyKind = {
+  chemical: 'chemical',
+  natural: 'natural',
+  vaccine: 'vaccine',
+  antiparasitic: 'antiparasitic',
+} as const;
+
 export interface MedicalRecord {
   id: number;
   animalId: number;
@@ -4437,6 +4450,9 @@ export interface MedicalRecord {
      * @nullable
      */
   doseUnit: string | null;
+  remedyKind: RemedyKind | null;
+  /** Entered on an organic farm (docs/bio.md) – the Wartezeit is withdrawalPeriodDays doubled, at least 2 days; a chemical remedy without one gets 2 days */
+  organic: boolean;
   createdAt: string;
 }
 
@@ -4504,6 +4520,7 @@ export interface MedicalRecordInput {
   medicineId?: number | null;
   /** @nullable */
   dose?: number | null;
+  remedyKind?: RemedyKind | null;
   /** New records only – a stall task (Entwurmen/Impfen) for this animal, due one interval after the record's date. */
   repeat?: null | MedicalRepeat;
 }

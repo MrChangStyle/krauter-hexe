@@ -7913,6 +7913,8 @@ export const ListMedicalRecordsResponseItem = zod.object({
   "dose": zod.number().nullable().describe('Amount given, in the medicine\'s unit'),
   "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
   "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
+  "remedyKind": zod.union([zod.enum(['chemical', 'natural', 'vaccine', 'antiparasitic']).describe('Bio (docs\/bio.md) – chemical = chemisch-synthetisch allopathisch (counts towards the organic limit), natural = Naturheilverfahren, vaccine, antiparasitic'),zod.null()]),
+  "organic": zod.boolean().describe('Entered on an organic farm (docs\/bio.md) – the Wartezeit is withdrawalPeriodDays doubled, at least 2 days; a chemical remedy without one gets 2 days'),
   "createdAt": zod.coerce.date()
 })
 export const ListMedicalRecordsResponse = zod.array(ListMedicalRecordsResponseItem)
@@ -7954,6 +7956,7 @@ export const CreateMedicalRecordBody = zod.object({
   "notes": zod.string().max(createMedicalRecordBodyNotesMax).nullish(),
   "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
   "dose": zod.number().nullish(),
+  "remedyKind": zod.union([zod.enum(['chemical', 'natural', 'vaccine', 'antiparasitic']).describe('Bio (docs\/bio.md) – chemical = chemisch-synthetisch allopathisch (counts towards the organic limit), natural = Naturheilverfahren, vaccine, antiparasitic'),zod.null()]).optional(),
   "repeat": zod.union([zod.null(),zod.object({
   "kind": zod.enum(['deworm', 'vaccinate']),
   "every": zod.number().min(1).max(createMedicalRecordBodyRepeatTwoEveryMax),
@@ -7976,6 +7979,8 @@ export const CreateMedicalRecordResponse = zod.object({
   "dose": zod.number().nullable().describe('Amount given, in the medicine\'s unit'),
   "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
   "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
+  "remedyKind": zod.union([zod.enum(['chemical', 'natural', 'vaccine', 'antiparasitic']).describe('Bio (docs\/bio.md) – chemical = chemisch-synthetisch allopathisch (counts towards the organic limit), natural = Naturheilverfahren, vaccine, antiparasitic'),zod.null()]),
+  "organic": zod.boolean().describe('Entered on an organic farm (docs\/bio.md) – the Wartezeit is withdrawalPeriodDays doubled, at least 2 days; a chemical remedy without one gets 2 days'),
   "createdAt": zod.coerce.date()
 })
 
@@ -8016,6 +8021,7 @@ export const UpdateMedicalRecordBody = zod.object({
   "notes": zod.string().max(updateMedicalRecordBodyNotesMax).nullish(),
   "medicineId": zod.number().nullish().describe('A medicine from the stock; its dose is taken off the stock'),
   "dose": zod.number().nullish(),
+  "remedyKind": zod.union([zod.enum(['chemical', 'natural', 'vaccine', 'antiparasitic']).describe('Bio (docs\/bio.md) – chemical = chemisch-synthetisch allopathisch (counts towards the organic limit), natural = Naturheilverfahren, vaccine, antiparasitic'),zod.null()]).optional(),
   "repeat": zod.union([zod.null(),zod.object({
   "kind": zod.enum(['deworm', 'vaccinate']),
   "every": zod.number().min(1).max(updateMedicalRecordBodyRepeatTwoEveryMax),
@@ -8038,6 +8044,8 @@ export const UpdateMedicalRecordResponse = zod.object({
   "dose": zod.number().nullable().describe('Amount given, in the medicine\'s unit'),
   "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
   "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
+  "remedyKind": zod.union([zod.enum(['chemical', 'natural', 'vaccine', 'antiparasitic']).describe('Bio (docs\/bio.md) – chemical = chemisch-synthetisch allopathisch (counts towards the organic limit), natural = Naturheilverfahren, vaccine, antiparasitic'),zod.null()]),
+  "organic": zod.boolean().describe('Entered on an organic farm (docs\/bio.md) – the Wartezeit is withdrawalPeriodDays doubled, at least 2 days; a chemical remedy without one gets 2 days'),
   "createdAt": zod.coerce.date()
 })
 
@@ -8799,6 +8807,8 @@ export const GetFarmExportResponse = zod.object({
   "dose": zod.number().nullable().describe('Amount given, in the medicine\'s unit'),
   "batch": zod.string().nullable().describe('Batch (Charge) of the medicine'),
   "doseUnit": zod.string().nullable().describe('Unit of the dose (from the medicine)'),
+  "remedyKind": zod.union([zod.enum(['chemical', 'natural', 'vaccine', 'antiparasitic']).describe('Bio (docs\/bio.md) – chemical = chemisch-synthetisch allopathisch (counts towards the organic limit), natural = Naturheilverfahren, vaccine, antiparasitic'),zod.null()]),
+  "organic": zod.boolean().describe('Entered on an organic farm (docs\/bio.md) – the Wartezeit is withdrawalPeriodDays doubled, at least 2 days; a chemical remedy without one gets 2 days'),
   "createdAt": zod.coerce.date()
 })),
   "beeColonies": zod.array(zod.object({

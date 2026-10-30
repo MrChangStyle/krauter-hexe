@@ -113,6 +113,7 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
     treatment: 'Entwurmt',
     medication: 'Wurmkur Ziege',
     withdrawalPeriodDays: 14,
+    remedyKind: 'antiparasitic',
     vet: 'Tierarztpraxis Muster',
     repeat: { kind: 'deworm', every: 3, unit: 'Monate' },
   });
@@ -125,6 +126,14 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
     medication: 'Klauenspray',
     withdrawalPeriodDays: 7,
     vet: 'Tierarztpraxis Muster',
+    remedyKind: 'chemical',
+  });
+  // Bio (docs/bio.md): a Naturheilverfahren, without Wartezeit.
+  await createMedicalRecord(farmId, goat!.id, {
+    date: ago(12),
+    diagnosis: 'Leichter Husten (Demo)',
+    treatment: 'Thymian-Tee übers Trinkwasser, drei Tage',
+    remedyKind: 'natural',
   });
   for (const [days, kg] of [[60, 52], [30, 54.5], [2, 55]] as const) await createWeightLog(farmId, goat!.id, { date: ago(days), weightKg: kg });
 

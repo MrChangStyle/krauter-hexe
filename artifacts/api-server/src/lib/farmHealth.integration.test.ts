@@ -167,6 +167,26 @@ describe.skipIf(!enabled)("Meine Farm – health, weights, tasks, export (real d
     }
   });
 
+  it("doubles the Wartezeit on an organic farm, keeps the legal one and the kind of remedy (Bio)", async () => {
+    const path = `/farms/${farm.anna}/animals/${lotte}/medical`;
+    // Conventional: as entered.
+    const before = await api("POST", path, record({ remedyKind: "chemical" }));
+    expect(before.data).toMatchObject({ withdrawalPeriodDays: 7, organic: false, remedyKind: "chemical" });
+    await q("UPDATE farms SET farming = 'organic' WHERE id = $1", [farm.anna]);
+    const bio = await api("POST", path, record({ remedyKind: "chemical" }));
+    expect(bio.data).toMatchObject({ withdrawalPeriodDays: 7, organic: true });
+    const noWait = await api("POST", path, record({ remedyKind: "chemical", withdrawalPeriodDays: null }));
+    const { withdrawalUntil } = await import("./farmHealth");
+    expect(withdrawalUntil(bio.data)).toBe("2026-05-16"); // 2 × 7 days from 2 May
+    expect(withdrawalUntil(noWait.data)).toBe("2026-05-04"); // at least 48 hours
+    expect(withdrawalUntil(before.data)).toBe("2026-05-09"); // entered before: stays single
+    // Natural farms (no certificate) keep the legal one.
+    await q("UPDATE farms SET farming = 'natural' WHERE id = $1", [farm.anna]);
+    expect((await api("POST", path, record({}))).data.organic).toBe(false);
+    expect((await api("POST", path, record({ remedyKind: "homöopathisch" }))).status).toBe(400);
+    await q("UPDATE farms SET farming = 'conventional' WHERE id = $1", [farm.anna]);
+  });
+
   it("validates health records", async () => {
     const path = `/farms/${farm.anna}/animals/${lotte}/medical`;
     expect((await api("POST", path, record({ date: "2999-01-01" }))).data.error).toMatch(/Zukunft/);

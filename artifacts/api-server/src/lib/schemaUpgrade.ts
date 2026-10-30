@@ -253,6 +253,9 @@ const STATEMENTS = [
   `ALTER TABLE "farm_tasks" ADD COLUMN IF NOT EXISTS "weekdays" jsonb`,
   // Krankenakte: Behandlung über mehrere Tage (docs/gesundheit.md).
   `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "treatment_until" date`,
+  // Bio in der Krankenakte (docs/bio.md).
+  `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "remedy_kind" text`,
+  `ALTER TABLE "medical_records" ADD COLUMN IF NOT EXISTS "organic" boolean DEFAULT false NOT NULL`,
   // Besucher der Homepage (docs/analyse.md).
   `CREATE TABLE IF NOT EXISTS "site_visits" (
 	"day" date NOT NULL,

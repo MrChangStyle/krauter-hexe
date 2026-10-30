@@ -108,6 +108,28 @@ describe.skipIf(!enabled)("Beet-Architekt – Raster-Planer (real database)", ()
     expect((await api("POST", path(), { plantId: 999, x: 4, y: 3 })).status).toBe(400);
   });
 
+  it("moves a planting to a free spot – it keeps its id – never onto another or over the edge", async () => {
+    const tomato = await api("POST", path(), { cropKey: "tomate", x: 0, y: 0 });
+    const basil = await api("POST", path(), { cropKey: "basilikum", x: 2, y: 0 });
+    const move = (id: number, x: number, y: number, farmId = farm.anna) => api("PATCH", `/farms/${farmId}/plantings/${id}`, { x, y });
+    // Overlapping its own old spot is fine.
+    const moved = await move(tomato.data.id, 1, 1);
+    expect(moved.status).toBe(200);
+    expect(moved.data).toMatchObject({ id: tomato.data.id, label: "Tomate", x: 1, y: 1, w: 2, h: 2 });
+    const clash = await move(basil.data.id, 2, 2);
+    expect(clash.status).toBe(409);
+    expect(clash.data.error).toMatch(/Tomate/);
+    expect((await move(tomato.data.id, 5, 0)).data.error).toMatch(/2 × 2 Felder/);
+    expect((await move(basil.data.id, -1, 0)).status).toBe(400);
+    // Guests and strangers move nothing.
+    as = "gast";
+    expect((await move(basil.data.id, 0, 0)).status).toBe(403);
+    as = "bert";
+    expect((await move(basil.data.id, 0, 0, farm.bert)).status).toBe(404);
+    as = "anna";
+    expect((await api("GET", path())).data.map((p: any) => [p.label, p.x, p.y])).toEqual([["Basilikum", 2, 0], ["Tomate", 1, 1]]);
+  });
+
   it("keeps seasons apart", async () => {
     await api("POST", path(2026), { cropKey: "tomate", x: 0, y: 0 });
     expect((await api("POST", path(2027), { cropKey: "moehre", x: 0, y: 0 })).status).toBe(201);

@@ -16,3 +16,6 @@ export function withPlanTimeout<T>(answer: Promise<T>, ms: number = AI_PLAN_WAIT
   });
   return Promise.race([answer, slow]).finally(() => clearTimeout(timer));
 }
+
+/** KI-Vorschlag im Beet-Architekten: the server gives up after 45 s, the app waits a little longer. */
+export const AI_SUGGEST_WAIT_MS = 55_000;

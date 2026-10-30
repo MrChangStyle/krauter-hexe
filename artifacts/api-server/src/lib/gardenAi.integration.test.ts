@@ -17,7 +17,7 @@ import type { AddressInfo } from "node:net";
 vi.hoisted(() => {
   process.env["GEMINI_API_KEY"] ??= "test-key";
 });
-const runModelChain = vi.fn(async (_contents: unknown, _models: unknown, _config?: unknown): Promise<unknown> => ({}));
+const runModelChain = vi.fn(async (_contents: unknown, _models: unknown, _config?: unknown, _opts?: unknown): Promise<unknown> => ({}));
 vi.mock("./plantIdentification", async (orig) => ({ ...(await orig<object>()), runModelChain }));
 vi.mock("./imageStorage", async (orig) => ({ ...(await orig<object>()), deleteImageByUrl: vi.fn(async () => true) }));
 
@@ -219,7 +219,18 @@ describe.skipIf(!enabled)("Beet-Architekt – KI (real database)", () => {
     const prompt = promptOf(runModelChain.mock.calls[0]![0]);
     expect(prompt).toContain("Viel Salat");
     expect(prompt).toContain("Kartoffel (x 0–1, y 0–1)");
+    // Never spins for ever: a time budget, minimal thinking and room for the answer.
+    expect(runModelChain.mock.calls[0]![2]).toMatchObject({ maxOutputTokens: 8192 });
+    expect(runModelChain.mock.calls[0]![3]).toEqual({ timeoutMs: 45_000, attemptTimeoutMs: 25_000, quick: true });
     expect((await api("GET", `/farms/${farm.anna}/beds/${bed}/seasons/2026/plantings`)).data).toHaveLength(1);
+  });
+
+  it("answers a too slow AI with a clear message instead of spinning", async () => {
+    const { AiTimeoutError } = await import("./aiTimeout");
+    runModelChain.mockRejectedValueOnce(new AiTimeoutError());
+    const res = await api("POST", `/farms/${farm.anna}/beds/${bed}/seasons/2026/suggestion`, {});
+    expect(res.status).toBe(502);
+    expect(res.data.error).toContain("zu lange gebraucht");
   });
 
   it("splits kitchen and fodder as asked, and only suitable crops count as fodder", async () => {

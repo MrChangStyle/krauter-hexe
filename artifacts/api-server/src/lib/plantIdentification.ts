@@ -143,6 +143,13 @@ export const AI_PLAN_TIMEOUT_MS = 25_000;
 export const AI_PLAN_ATTEMPT_MS = 12_000;
 /** Room for the model's thinking as well as the answer – too few tokens give an empty answer. */
 export const AI_PLAN_OUTPUT_TOKENS = 8192;
+/**
+ * KI-Vorschlag im Beet-Architekten (docs/beet-architekt.md): a bigger job than
+ * splitting a list, but still waited for on screen – give up after 45 s, one
+ * model at most 25 s, so Flash-Lite still gets its turn.
+ */
+export const AI_SUGGEST_TIMEOUT_MS = 45_000;
+export const AI_SUGGEST_ATTEMPT_MS = 25_000;
 
 export const TEXT_MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
   { name: "gemini-flash-latest", attempts: 2 },

@@ -9876,6 +9876,38 @@ export const AddPlantingResponse = zod.object({
 
 
 /**
+ * @summary Verschieben – the same planting to another spot of its bed; it keeps its harvests and checks (caretaker or admin)
+ */
+export const MovePlantingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "plantingId": zod.coerce.number()
+})
+
+export const movePlantingBodyXMin = 0;
+
+export const movePlantingBodyYMin = 0;
+
+
+
+export const MovePlantingBody = zod.object({
+  "x": zod.number().min(movePlantingBodyXMin).describe('New column of the top left cell'),
+  "y": zod.number().min(movePlantingBodyYMin).describe('New row of the top left cell')
+})
+
+export const MovePlantingResponse = zod.object({
+  "id": zod.number(),
+  "season": zod.number(),
+  "cropKey": zod.string().nullable(),
+  "plantId": zod.number().nullable(),
+  "label": zod.string(),
+  "x": zod.number().describe('Column of the top-left cell (along the bed\'s length)'),
+  "y": zod.number(),
+  "w": zod.number(),
+  "h": zod.number()
+})
+
+
+/**
  * @summary Take a planting out of the grid (caretaker or admin)
  */
 export const RemovePlantingParams = zod.object({

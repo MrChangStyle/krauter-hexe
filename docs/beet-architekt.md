@@ -91,6 +91,20 @@ Definition of Done je Schritt wie beim Farm-Modul: Typecheck, Build, alle Tests 
 (neue inkl. Isolation gegen echtes Postgres), Browser-Test in Handybreite, replit.md
 aktualisiert.
 
+## Verschieben und KI-Vorschlag (30.10.2026)
+
+- **Verschieben im Raster**, auf zwei Wegen:
+  - Eine Pflanzung mit dem Finger oder der Maus auf ein freies Feld ziehen. Die Vorschau zeigt weiß, wo sie landet, rot, wenn sie dort nicht passt.
+  - Die Pflanzung antippen, „Verschieben“ wählen und das neue Feld tippen. Nur Felder, auf die sie passt, lassen sich wählen. Bei großen Pflanzen zählt die linke obere Ecke.
+  - Die Pflanzung behält ihre Nummer, Ernten und Häkchen bleiben also dran.
+  - Der Server prüft wie beim Setzen auf Rand und Überschneidung; den alten Platz darf sie mitbenutzen.
+  - Technik: `PATCH /farms/:farmId/plantings/:plantingId` (`movePlanting`), App `lib/bed-move.ts`.
+- **KI-Vorschlag hing:**
+  - Der Aufruf hatte keine Zeitgrenze und nur 2048 Ausgabe-Tokens. Ein nachdenkendes Modell verbrauchte sie, antwortete leer, und die Kette begann von vorn – die Ladeanzeige lief minutenlang.
+  - Jetzt: minimales Nachdenken, 8192 Tokens, höchstens 45 Sekunden (je Modell 25). Die App wartet höchstens 55 Sekunden.
+  - Danach kommt „Die KI hat zu lange gebraucht“. Der Versuch zählt nicht gegen das Limit.
+  - Die beiden Foto-Auswertungen des Beets (Ecken, Foto-Check) haben dieselbe Zeitgrenze bekommen.
+
 ## Offen
 
 - **Richtwerte fachlich prüfen** (Gärtnerin, Gartenbauberatung):

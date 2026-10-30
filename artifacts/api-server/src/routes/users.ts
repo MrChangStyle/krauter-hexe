@@ -19,13 +19,18 @@ import {
   type OrphanCounts,
 } from '../lib/orphanCleanup';
 
+import { assignMissingUserCodes } from '../lib/userCode';
+
 const router: IRouter = Router();
 
 // Revoking access takes effect on the next request: every request re-reads the
 // user row, so an unapproved or deleted account is locked out immediately
 // without any session bookkeeping here.
 
-router.get('/users', requireOwner, async (_req, res): Promise<void> => {
+router.get('/users', requireOwner, async (req, res): Promise<void> => {
+  // Accounts still without a Nutzer-ID get one now, so the owner never sees a
+  // gap even if the backfill at server start did not run through.
+  await assignMissingUserCodes().catch((err) => req.log?.error({ err }, 'Assigning Nutzer-IDs failed'));
   const rows = await db
     .select({
       id: usersTable.id,

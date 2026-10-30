@@ -49,7 +49,7 @@ describe.skipIf(!enabled)("Nutzer-ID (real database)", () => {
   });
 
   it("shows every account's Nutzer-ID in the owner's user list", async () => {
-    await q(`INSERT INTO users (id, email, approved, is_owner, user_code) VALUES ('chef', 'chef@x.de', true, true, 1234), ('anna', 'anna@x.de', true, false, 4821)`);
+    await q(`INSERT INTO users (id, email, approved, is_owner, user_code) VALUES ('chef', 'chef@x.de', true, true, 1234), ('anna', 'anna@x.de', true, false, 4821), ('ben', 'ben@x.de', true, false, NULL)`);
     const app = express();
     app.use((req: Request, _res: Response, next: NextFunction) => {
       (req as unknown as { user: unknown }).user = { id: "chef", approved: true, isOwner: true };
@@ -62,7 +62,10 @@ describe.skipIf(!enabled)("Nutzer-ID (real database)", () => {
     try {
       const res = await fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/users`);
       const list = (await res.json()) as { id: string; userCode: number | null }[];
-      expect(list.map((u) => [u.id, u.userCode])).toEqual([["chef", 1234], ["anna", 4821]]);
+      const byId = Object.fromEntries(list.map((u) => [u.id, u.userCode]));
+      expect(byId).toMatchObject({ chef: 1234, anna: 4821 });
+      // An older account without a number gets one when the owner looks.
+      expect(String(byId["ben"])).toMatch(/^\d{4}$/);
     } finally {
       await new Promise<void>((r) => server.close(() => r()));
     }

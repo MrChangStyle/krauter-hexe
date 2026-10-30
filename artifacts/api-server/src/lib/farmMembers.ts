@@ -22,6 +22,7 @@ import {
   usersTable,
   type FarmRole,
 } from '@workspace/db';
+import { accountByCode, parseUserCode } from './userCode';
 import { and, asc, count, eq, inArray, isNotNull, lt, sql } from 'drizzle-orm';
 
 import { addDays } from './feedSeason';
@@ -206,6 +207,7 @@ export async function listMembers(
       lastName: usersTable.lastName,
       username: usersTable.username,
       email: usersTable.email,
+      userCode: usersTable.userCode,
     })
     .from(farmMembershipsTable)
     .innerJoin(usersTable, eq(usersTable.id, farmMembershipsTable.userId))
@@ -215,6 +217,7 @@ export async function listMembers(
     userId: r.userId,
     displayName: displayNameOf(r),
     email: viewer.role === 'admin' ? r.email : null,
+    userCode: r.userCode,
     role: r.role,
     isMe: r.userId === viewer.userId,
     accessUntil: r.accessUntil,
@@ -230,11 +233,11 @@ export function resetInviteCounters(): void {
   invitesByActor.clear();
 }
 
-/** Adds an existing, approved account by its email address. */
+/** Adds an existing, approved account by its Nutzer-ID (lib/userCode.ts). */
 export async function addMember(
   farmId: number,
   actorId: string,
-  rawEmail: unknown,
+  rawUserCode: unknown,
   role: FarmRole,
   rawAccessUntil?: string | null,
   /** Modul-Freigaben right away (e.g. for the vet); null or omitted = all. */
@@ -248,17 +251,12 @@ export async function addMember(
   }
   invitesByActor.set(actorId, [...recent, now]);
 
-  const email = typeof rawEmail === 'string' ? rawEmail.trim().toLowerCase() : '';
-  if (!email || email.length > 254) throw new FarmError(400, 'Bitte gib eine E-Mail-Adresse ein.');
-
-  const [user] = await db
-    .select({ id: usersTable.id, approved: usersTable.approved, blockedAt: usersTable.blockedAt })
-    .from(usersTable)
-    .where(sql`lower(${usersTable.email}) = ${email}`);
-  if (!user || !user.approved || user.blockedAt) {
+  if (parseUserCode(rawUserCode) === null) throw new FarmError(400, 'Bitte gib die Nutzer-ID ein – eine Zahl mit mindestens vier Stellen.');
+  const user = await accountByCode(rawUserCode);
+  if (!user) {
     throw new FarmError(
       404,
-      'Zu dieser E-Mail-Adresse gibt es kein aktives Konto. Die Person muss sich zuerst bei Little Farming registrieren.',
+      'Zu dieser Nutzer-ID gibt es kein aktives Konto. Die Person muss sich zuerst bei Little Farming registrieren und dir ihre Nutzer-ID (Mehr → Konto) nennen.',
     );
   }
 

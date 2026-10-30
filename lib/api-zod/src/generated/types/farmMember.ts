@@ -16,6 +16,11 @@ export interface FarmMember {
      * @nullable
      */
   email: string | null;
+  /**
+     * Nutzer-ID of the member
+     * @nullable
+     */
+  userCode: number | null;
   role: FarmRole;
   isMe: boolean;
   /**

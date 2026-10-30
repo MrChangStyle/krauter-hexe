@@ -4066,6 +4066,11 @@ export interface AuthUser {
   username: string | null;
   leavesCount: number;
   /**
+     * Nutzer-ID (docs/konto.md) – the account passes it on to be added to a farm or a list
+     * @nullable
+     */
+  userCode?: number | null;
+  /**
      * Set when the owner blocked the account through moderation; the app then says "gesperrt" instead of "warte auf Freigabe".
      * @nullable
      */
@@ -4875,10 +4880,12 @@ export interface AddNoteShareInput {
   /** @nullable */
   userId?: string | null;
   /**
-     * @maxLength 200
+     * Nutzer-ID of the account (docs/konto.md)
+     * @minimum 1000
+     * @maximum 9999999
      * @nullable
      */
-  email?: string | null;
+  userCode?: number | null;
 }
 
 export interface PlanFarmTasksInput {
@@ -5904,6 +5911,11 @@ export interface FarmMember {
      * @nullable
      */
   email: string | null;
+  /**
+     * Nutzer-ID of the member
+     * @nullable
+     */
+  userCode: number | null;
   role: FarmRole;
   isMe: boolean;
   /**
@@ -5998,8 +6010,12 @@ export interface DeleteFarmInput {
 }
 
 export interface AddFarmMemberInput {
-  /** @maxLength 254 */
-  email: string;
+  /**
+     * Nutzer-ID of the account to add (docs/konto.md)
+     * @minimum 1000
+     * @maximum 9999999
+     */
+  userCode: number;
   role: FarmRole;
   /**
      * Vertretung – last day of access; not for admins

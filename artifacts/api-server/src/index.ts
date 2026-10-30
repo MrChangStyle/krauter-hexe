@@ -5,6 +5,7 @@ import { errorFromLog, flushErrors, recordError } from "./lib/monitoring";
 import { assertAuthConfigured } from "./lib/token";
 import { upgradeSchema } from "./lib/schemaUpgrade";
 import { normalizeStoredSymptoms } from "./lib/plantSymptoms";
+import { assignMissingUserCodes } from "./lib/userCode";
 
 // Error monitor: every logger.error/fatal ends up in the owner's list (lib/monitoring.ts).
 setErrorSink((obj, msg) => {
@@ -60,6 +61,9 @@ app.listen(port, host, (err?: Error) => {
 
   // Rename stored symptom tags to the fixed Beschwerden names (idempotent).
   void normalizeStoredSymptoms().catch((err) => logger.error({ err }, "Symptom renaming failed"));
+
+  // Every account gets its Nutzer-ID (lib/userCode.ts) – older ones once here.
+  void assignMissingUserCodes().catch((err) => logger.error({ err }, "Assigning Nutzer-IDs failed"));
 
   // Google sign-in builds its callback URL from the request unless a canonical
   // one is configured. Behind a proxy that is a guess based on headers the

@@ -47,6 +47,9 @@ export const usersTable = pgTable(
     isOwner: boolean('is_owner').notNull().default(false),
     username: varchar('username', { length: 8 }).unique(),
     leavesCount: integer('leaves_count').notNull().default(0),
+    // Nutzer-ID (docs/konto.md): a short number the account hands on so others
+    // can add it to a farm or share a list – 4 digits, 5 once those run out.
+    userCode: integer('user_code').unique(),
     // When and to which version of Datenschutzerklärung/Nutzungsbedingungen
     // the account agreed. Null for accounts from before public registration.
     termsAcceptedAt: timestamp('terms_accepted_at', { withTimezone: true }),

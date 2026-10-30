@@ -19,6 +19,7 @@ import {
   type NoteCategory,
   type NoteKind,
 } from '@workspace/db';
+import { accountByCode } from './userCode';
 import { and, asc, count, eq, inArray, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound, text } from './farmAnimals';
@@ -182,7 +183,16 @@ export async function listShares(userId: string) {
  * Shares the own list – with someone from one of the person's farms (userId)
  * or with any approved account (e-mail), e.g. family off the farm.
  */
-export async function addShare(userId: string, input: { userId?: string | null; email?: string | null }) {
+// Share attempts by Nutzer-ID per owner and day – in memory like the invite limit.
+const sharesByOwner = new Map<string, number[]>();
+const DAY_MS = 24 * 60 * 60 * 1000;
+const MAX_SHARE_TRIES_PER_DAY = 20;
+
+export function resetShareCounters(): void {
+  sharesByOwner.clear();
+}
+
+export async function addShare(userId: string, input: { userId?: string | null; userCode?: number | string | null }) {
   let target: string | null = null;
   if (input.userId) {
     const mine = db.select({ farmId: farmMembershipsTable.farmId }).from(farmMembershipsTable).where(eq(farmMembershipsTable.userId, userId));
@@ -191,14 +201,15 @@ export async function addShare(userId: string, input: { userId?: string | null; 
       .from(farmMembershipsTable)
       .where(and(eq(farmMembershipsTable.userId, input.userId), inArray(farmMembershipsTable.farmId, mine)));
     target = m?.userId ?? null;
-  } else if (typeof input.email === 'string' && input.email.trim()) {
-    const [u] = await db
-      .select({ id: usersTable.id, approved: usersTable.approved })
-      .from(usersTable)
-      .where(sql`lower(${usersTable.email}) = ${input.email.trim().toLowerCase()}`);
-    target = u?.approved ? u.id : null;
+  } else if (input.userCode !== undefined && input.userCode !== null && input.userCode !== '') {
+    // Many tries in a day would mean guessing Nutzer-IDs.
+    const now = Date.now();
+    const recent = (sharesByOwner.get(userId) ?? []).filter((t) => now - t < DAY_MS);
+    if (recent.length >= MAX_SHARE_TRIES_PER_DAY) throw new FarmDataError(429, 'Du hast heute schon sehr oft geteilt. Bitte versuche es morgen erneut.');
+    sharesByOwner.set(userId, [...recent, now]);
+    target = (await accountByCode(input.userCode))?.id ?? null;
   }
-  if (!target) throw new FarmDataError(400, 'Zu dieser Angabe gibt es kein freigeschaltetes Konto. Die Person braucht ein eigenes Konto in der App.');
+  if (!target) throw new FarmDataError(400, 'Zu dieser Nutzer-ID gibt es kein freigeschaltetes Konto. Die Person braucht ein eigenes Konto und findet ihre Nutzer-ID unter Mehr → Konto.');
   if (target === userId) throw new FarmDataError(400, 'Das ist deine eigene Liste.');
   const [{ n }] = await db.select({ n: count() }).from(noteSharesTable).where(eq(noteSharesTable.ownerId, userId));
   if ((n ?? 0) >= MAX_SHARES) throw new FarmDataError(400, `Eine Liste lässt sich mit höchstens ${MAX_SHARES} Personen teilen.`);

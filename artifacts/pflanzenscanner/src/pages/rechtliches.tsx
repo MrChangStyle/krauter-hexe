@@ -153,7 +153,8 @@ export function DatenschutzPage() {
             <strong>Konto:</strong> E-Mail-Adresse, Passwort (nur als
             verschlüsselter Hash gespeichert), optional Vor- und Nachname und
             Profilbild (bei Anmeldung mit Google), selbst gewählter
-            Benutzername, Zeitpunkt der Zustimmung zu diesen Bedingungen und
+            Benutzername, deine Nutzer-ID (eine Nummer, mit der dich andere
+            zu ihrem Hof oder einer Liste hinzufügen können), Zeitpunkt der Zustimmung zu diesen Bedingungen und
             deine Einstellungen (z. B. Meine Module, Meine Tierarten,
             Benachrichtigungen, Bio-Empfehlungen). Zweck: Bereitstellung deines
             Kontos (Art. 6 Abs. 1 lit. b DSGVO).

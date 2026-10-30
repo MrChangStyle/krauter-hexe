@@ -27,6 +27,10 @@ Eine unbekannte Unterseite führt zurück auf `/team`.
   - Zu jedem Kontakt gehören Name, Aufgabe, Telefon (zum Antippen), E-Mail und eine Notiz.
   - Alle Mitglieder sehen die Kontakte, auch auf der Übergabe-Seite. Nur Admins pflegen sie.
 
+## Hinzufügen per Nutzer-ID
+
+Team, Vertretung und Tierarzt kommen **per Nutzer-ID** auf den Hof, nicht per E-Mail (`docs/konto.md`). Jede Person braucht ein eigenes Konto und nennt ihre Nutzer-ID (Mehr → Konto). Der Admin trägt die Nummer ein, wählt die Rolle (bei der Vertretung das Enddatum) und tippt „Hinzufügen“. Unbekannte, nicht freigeschaltete oder gesperrte Konten werden abgelehnt; höchstens 30 Hinzufügungen am Tag (`MAX_INVITES_PER_DAY`). In der Mitgliederliste sehen Admins bei jedem die Nutzer-ID (und weiterhin die E-Mail).
+
 ## Rollen
 
 - **Admin**: alles, auch das Team verwalten.
@@ -54,11 +58,11 @@ Ganz oben auf der Hofseite steht der Knopf **„Wähle deine Farm“** (`compone
 
 ## Listen teilen
 
-Der Dialog „Listen teilen“ (auf den Seiten Hof-Aufgaben und Alltagsnotizen) teilt die Hof-Aufgaben, die eigenen Alltagsnotizen oder beides – mit jemandem aus dem Team oder per E-Mail. Für die Hof-Aufgaben kommt eine neue Person als Mitarbeiter mit der Freigabe „Hof- & Stall-Aufgaben“ ins Team (nur Admins). Wer mitmacht, hakt ab und fügt hinzu, löscht aber nichts (`docs/alltagsnotizen.md`).
+Der Dialog „Listen teilen“ (auf den Seiten Hof-Aufgaben und Alltagsnotizen) teilt die Hof-Aufgaben, die eigenen Alltagsnotizen oder beides – mit jemandem aus dem Team oder per Nutzer-ID (`docs/konto.md`). Für die Hof-Aufgaben kommt eine neue Person als Mitarbeiter mit der Freigabe „Hof- & Stall-Aufgaben“ ins Team (nur Admins). Wer mitmacht, hakt ab und fügt hinzu, löscht aber nichts (`docs/alltagsnotizen.md`).
 
 ## Tierarzt-Zugang
 
-Bei der Vertretung steht der Knopf **„Tierarzt einladen“**. Er füllt das Formular vor: die E-Mail aus dem Kontakt „Tierarzt“, Gast, Ende in 14 Tagen und nur die Freigaben Arzneimittel und Veterinäramt-Export. Die Tiere mit ihrer Krankenakte sieht jedes Mitglied. Die Freigaben werden mit der Einladung gespeichert (`modules` in `POST /farms/:farmId/members`). Einzelheiten: `docs/krankenakte.md`.
+Bei der Vertretung steht der Knopf **„Tierarzt einladen“**. Er füllt das Formular vor: Gast, Ende in 14 Tagen und nur die Freigaben Arzneimittel und Veterinäramt-Export. Die Tiere mit ihrer Krankenakte sieht jedes Mitglied. Die Freigaben werden mit der Einladung gespeichert (`modules` in `POST /farms/:farmId/members`). Einzelheiten: `docs/krankenakte.md`.
 
 ## Modul-Freigaben
 

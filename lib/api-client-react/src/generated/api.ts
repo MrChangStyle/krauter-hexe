@@ -14414,7 +14414,7 @@ export const getAddFarmMemberUrl = (farmId: number,) => {
 }
 
 /**
- * @summary Add an existing account by email (admin only)
+ * @summary Add an existing account by its Nutzer-ID (admin only)
  */
 export const addFarmMember = async (farmId: number,
     addFarmMemberInput: AddFarmMemberInput, options?: RequestInit): Promise<FarmMember[]> => {
@@ -14464,7 +14464,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type AddFarmMemberMutationError = ErrorType<void>
 
     /**
- * @summary Add an existing account by email (admin only)
+ * @summary Add an existing account by its Nutzer-ID (admin only)
  */
 export const useAddFarmMember = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addFarmMember>>, TError,{farmId: number;data: BodyType<AddFarmMemberInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
@@ -16799,7 +16799,7 @@ export const getAddNoteShareUrl = () => {
 }
 
 /**
- * @summary Share the own list with a team member (userId) or any approved account (email)
+ * @summary Share the own list with a team member (userId) or any approved account (Nutzer-ID)
  */
 export const addNoteShare = async (addNoteShareInput: AddNoteShareInput, options?: RequestInit): Promise<NoteShares> => {
 
@@ -16848,7 +16848,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
     export type AddNoteShareMutationError = ErrorType<void>
 
     /**
- * @summary Share the own list with a team member (userId) or any approved account (email)
+ * @summary Share the own list with a team member (userId) or any approved account (Nutzer-ID)
  */
 export const useAddNoteShare = <TError = ErrorType<void>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addNoteShare>>, TError,{data: BodyType<AddNoteShareInput>}, TContext>, request?: SecondParameter<typeof customFetch>}

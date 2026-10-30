@@ -175,14 +175,14 @@ router.get('/farms/:farmId/members', requireFarm('guest'), async (req, res): Pro
 router.post('/farms/:farmId/members', requireFarm('admin'), async (req, res): Promise<void> => {
   const body = AddFarmMemberBody.safeParse(req.body);
   if (!body.success) {
-    res.status(400).json({ error: 'Bitte gib eine E-Mail-Adresse und eine Rolle an.' });
+    res.status(400).json({ error: 'Bitte gib eine Nutzer-ID und eine Rolle an.' });
     return;
   }
   try {
     await addMember(
       req.farm!.farmId,
       req.farm!.userId,
-      body.data.email,
+      body.data.userCode,
       body.data.role,
       body.data.accessUntil,
       body.data.modules === undefined ? null : cleanFarmModules(body.data.modules),

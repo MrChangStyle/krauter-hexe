@@ -93,6 +93,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 
 - **Seitenpasswort** (`SITE_PASSWORD`): Solange es gesetzt ist, zeigt die ganze Seite (Homepage, App, API) erst nach Eingabe des Passworts etwas. Das Passwort ist die Einladung für Tester. Zum öffentlichen Start wird es gelöscht.
 - **Registrierung:** E-Mail und Passwort oder Google, dazu die Zustimmung zu Datenschutz und Nutzungsbedingungen. **Es gibt keinen Einladungscode.**
+- **Nutzer-ID:** Jedes Konto hat eine vierstellige Nummer (später fünfstellig), zu finden unter Mehr → Konto. Mit ihr – nicht mit der E-Mail – holt man jemanden ins Team, als Vertretung oder Tierarzt und teilt Listen (`docs/konto.md`).
 - **Freischaltung:** Die ersten `FREE_TESTER_SLOTS` Konten (Standard 20, der Betreiber zählt nicht, bestehende Konten zählen mit) starten sofort. Danach wartet ein neues Konto auf die Freischaltung unter Verwaltung → Benutzer. Der Betreiber bekommt bei jeder Anmeldung einen Push.
 - **Betreiber:** Das erste Konto wird Betreiber (Owner). Es sieht die Verwaltung (Betrieb, Feedback, Moderation, Entwürfe, Premium, Benutzer, Aufräumen) und hat kein KI-Limit. In der Verwaltung ist alles zu, bis man eine Kachel antippt; dann öffnet sich nur dieser Bereich (`/verwaltung#feedback` öffnet direkt das Feedback).
 - **Höfe und Rollen:** Jedes Konto bekommt einen eigenen Hof („Meine Farm“) und kann weitere anlegen. Auf einem Hof gibt es die Rollen Admin, Mitarbeiter (caretaker) und Gast, dazu Modul-Freigaben und Vertretungen mit Enddatum (`docs/team.md`). Der Tierarzt bekommt per „Tierarzt einladen“ einen Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export (`docs/krankenakte.md`). Geteilte Höfe stehen unter „Wähle deine Farm“. Unter Farm & Team legt der Hof fest, wie er wirtschaftet: konventionell (Standard), naturnah oder bio – jederzeit umschaltbar; naturnah und bio stellen Pflanzendoc und Pflege-Guide auf biologische Mittel um (`docs/bio.md`).
@@ -261,6 +262,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #156 | Nutzer-ID: jedes Konto bekommt eine vierstellige Nummer (später fünf); Team, Vertretung, Tierarzt und Listen-Teilen gehen per Nutzer-ID statt E-Mail; Nummer unter Mehr → Konto zum Kopieren; Hilfe mit drei neuen Fragen, Datenschutz ergänzt |
 | 30.10.2026 | #155 | Hof-Startseite: oberste Zeile mit drei Kästchen nebeneinander – Farm (Auswahl), Pflanzenretter (Rangliste), Bewirtschaftung (Stand, „Auf Bio wechseln“) – statt drei Zeilen untereinander |
 | 30.10.2026 | #154 | Bio sichtbar: Zeile zur Bewirtschaftung auf der Hof-Startseite; in jedem Modul mit Bio-Regeln oben eine Bio-Zeile mit Schalter für diesen Bereich (Futterplaner, Saatgut, Beete, Ernte, Arzneimittel, Gesundheit am Tier, Ertrag, Bienen, Meine Tiere) |
 | 30.10.2026 | #153 | Design D4, Schritt 5: Tiere – Bio-Check als Kachel mit eigener Seite (`/farm/bio-check`); Pflegeplan – Pflege-Guides als Kachel statt offener Liste |

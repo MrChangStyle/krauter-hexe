@@ -242,7 +242,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Wo sehe ich einen Hof, der mit mir geteilt wurde?", a: "Ganz oben auf der Hofseite unter „Wähle deine Farm“: Ein Tipp klappt die Liste auf – oben deine eigenen Farmen, darunter die verknüpften Höfe, die dir freigegeben wurden („Geteilt von …“), und der Demo-Hof. Ein Tipp auf einen Hof wechselt – Wetter, Hof-Aufgaben und Widgets zeigen dann diesen Hof. Die Auswahl erscheint, sobald du zu mehr als einem Hof gehörst, auch auf der Seite Hof-Aufgaben." },
       { q: "Ich sehe eine Farm zu viel – wie werde ich sie los?", a: "„Meine Farm“ legt die App automatisch an, wenn du zum ersten Mal auf den Hof kommst. Hast du danach eine weitere Farm angelegt, z. B. mit eigenem Namen, und brauchst die erste nicht: Wähle sie oben aus, tippe auf „Farmen verwalten“ und unten auf „Farm löschen“. Achtung: Alles auf dieser Farm wird mit gelöscht – schau vorher nach, ob dort Tiere oder Aufgaben stehen. Oder benenne sie einfach um und nutze sie weiter." },
       { q: "Geht „montags und donnerstags“?", a: "Ja. Sag oder schreib es so („Müll rausbringen montags und donnerstags“, „werktags“, „am Wochenende“), oder wähl im Formular unter „Wann?“ die Wochentage. Die Aufgabe ist dann an jedem dieser Tage fällig; ein verpasster Tag bleibt stehen, bis er abgehakt ist." },
-      { q: "Wie teile ich die Liste?", a: "Unten auf der Seite auf „Teilen“ tippen (nur Admins): jemanden aus dem Team wählen oder eine E-Mail-Adresse eingeben und „Hof-Aufgaben“, „Alltagsnotizen“ oder beides ankreuzen. Neue Personen kommen als Mitarbeiter ins Team und sehen nur die Hof-Aufgaben (und die Tiere); mehr gibst du unter „Farm & Team“ frei." },
+      { q: "Wie teile ich die Liste?", a: "Unten auf der Seite auf „Teilen“ tippen (nur Admins): jemanden aus dem Team wählen oder die Nutzer-ID einer anderen Person eingeben und „Hof-Aufgaben“, „Alltagsnotizen“ oder beides ankreuzen. Neue Personen kommen als Mitarbeiter ins Team und sehen nur die Hof-Aufgaben (und die Tiere); mehr gibst du unter „Farm & Team“ frei." },
       { q: "Wer darf Aufgaben löschen?", a: "Nur die Admins des Hofs – sie sind die Besitzer der Liste. Mitarbeiter haken ab, legen neue Aufgaben an, ändern und kommentieren, löschen aber nichts." },
       { q: "Wer bekommt die Erinnerung?", a: "Bei einer Aufgabe für eine Person nur diese, sonst alle Admins und Mitarbeiter des Hofs. Gäste nicht. Ruhezeiten stellst du unter „Mehr → Benachrichtigungen“ ein." },
       { q: "Was ist der Unterschied zu den Stall-Aufgaben?", a: "Es ist dieselbe Liste. Die Stall-Aufgaben unter Tiere zeigen nur den Bereich Tiere, die Hof-Aufgaben alles – dazu deine fälligen Pflanzen und den Garten." },
@@ -396,7 +396,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     intro: "Wer gehört zum Hof und was darf wer: Admins, Mitarbeiter, Gäste, Vertretungen mit Enddatum, Freigaben je Modul und wichtige Kontakte wie Tierarzt und Hufschmied.",
     steps: [
       "Eine Kachel antippen – Team, Vertretung, Übergabe, Kontakte, Bewirtschaftung, Nachhaltigkeit. Jede hat ihre eigene Seite.",
-      "Unter „Team“ Mitglieder per E-Mail einladen und eine Rolle wählen.",
+      "Unter „Team“ Mitglieder mit ihrer Nutzer-ID hinzufügen und eine Rolle wählen. Jede Person braucht ein eigenes Konto; ihre Nutzer-ID steht bei ihr unter Mehr → Konto.",
       "Optional Module freigeben – etwa nur Stall-Aufgaben.",
       "Unter „Vertretung“ mit Enddatum einladen oder „Tierarzt einladen“: Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export.",
       "Kontakte eintragen; sie stehen auch in der Übergabe.",
@@ -427,7 +427,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       },
       {
         q: "Wie gebe ich meinem Tierarzt Einblick?",
-        a: "Unter Vertretung auf „Tierarzt einladen“ tippen. Die E-Mail kommt aus dem Kontakt „Tierarzt“, der Zugang endet nach 14 Tagen (änderbar). Er sieht die Tiere mit Krankenakte, den Arzneimittel-Vorrat und den Export – sonst nichts. Als Gast liest er nur; als Mitarbeiter kann er Behandlungen eintragen. Er braucht ein eigenes Little-Farming-Konto.",
+        a: "Unter Vertretung auf „Tierarzt einladen“ tippen und seine Nutzer-ID eintragen (er nennt sie dir aus seinem Konto). Der Zugang endet nach 14 Tagen (änderbar). Er sieht die Tiere mit Krankenakte, den Arzneimittel-Vorrat und den Export – sonst nichts. Als Gast liest er nur; als Mitarbeiter kann er Behandlungen eintragen. Er braucht ein eigenes Little-Farming-Konto.",
       },
     ],
   },
@@ -501,6 +501,18 @@ export const GENERAL_HELP: HelpTopic[] = [
         a: "Auf der Anmeldeseite auf „Passwort vergessen?“ tippen und die E-Mail-Adresse eingeben. Du bekommst einen Link, mit dem du ein neues Passwort festlegst; er gilt einmal. Solange der Mailversand nicht eingerichtet ist, schickt dir der Betreiber den Link.",
       },
       { q: "Wie ändere ich mein Passwort?", a: "Unter „Mehr → Konto → Passwort ändern“. Danach sind alle anderen Geräte abgemeldet – praktisch, wenn jemand dein Passwort kennen könnte." },
+      {
+        q: "Was ist meine Nutzer-ID?",
+        a: "Eine Zahl mit vier Stellen, die nur zu deinem Konto gehört, z. B. 4821. Du findest sie unter „Mehr → Konto“ (auch auf der Kachel „Konto“) und kannst sie dort kopieren. Wer dich ins Team, als Vertretung oder als Tierarzt auf seinen Hof holen oder eine Liste mit dir teilen will, braucht diese Nummer – nicht deine E-Mail-Adresse.",
+      },
+      {
+        q: "Wie hole ich jemanden auf meinen Hof oder teile eine Liste?",
+        a: "Die Person legt sich zuerst ein eigenes Little-Farming-Konto an und nennt dir ihre Nutzer-ID (Mehr → Konto). Du trägst die Nummer unter Farm & Team → Team bzw. Vertretung ein oder im Dialog „Listen teilen“ unter „Andere Person per Nutzer-ID“. Danach siehst du ihren Namen in der Liste.",
+      },
+      {
+        q: "Kann jemand Fremdes mit meiner Nutzer-ID etwas anfangen?",
+        a: "Mit der Nummer allein sieht niemand etwas von dir. Man kann dich damit nur zu einem Hof oder einer Liste hinzufügen – dann siehst du, wessen Hof oder Liste es ist, und kannst sie jederzeit verlassen. Gib die Nummer deshalb nur Menschen, mit denen du zusammenarbeitest.",
+      },
     ],
   },
   {
@@ -528,7 +540,7 @@ export const GENERAL_HELP: HelpTopic[] = [
       },
       {
         q: "Wie teile ich meine Einkaufsliste?",
-        a: "Auf der Seite der Alltagsnotizen unten auf „Teilen“ tippen und jemanden aus dem Team wählen oder eine E-Mail-Adresse eingeben – zum Beispiel jemanden aus der Familie mit eigenem Konto. Im selben Dialog lassen sich auch die Hof-Aufgaben mitteilen. Setzt jemand etwas auf die geteilte Liste, bekommen die anderen eine Push-Nachricht (abschaltbar unter Mehr → Benachrichtigungen).",
+        a: "Auf der Seite der Alltagsnotizen unten auf „Teilen“ tippen und jemanden aus dem Team wählen oder die Nutzer-ID einer anderen Person eingeben – zum Beispiel jemanden aus der Familie mit eigenem Konto (die Nummer steht bei ihr unter Mehr → Konto). Im selben Dialog lassen sich auch die Hof-Aufgaben mitteilen. Setzt jemand etwas auf die geteilte Liste, bekommen die anderen eine Push-Nachricht (abschaltbar unter Mehr → Benachrichtigungen).",
       },
       {
         q: "Was darf, wer mitmacht?",

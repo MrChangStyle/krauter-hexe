@@ -4478,7 +4478,7 @@ paths:
     post:
       tags: [farm]
       operationId: addFarmMember
-      summary: Add an existing account by email (admin only)
+      summary: Add an existing account by its Nutzer-ID (admin only)
       parameters:
         - name: farmId
           in: path
@@ -5276,7 +5276,7 @@ paths:
     post:
       tags: [notes]
       operationId: addNoteShare
-      summary: Share the own list with a team member (userId) or any approved account (email)
+      summary: Share the own list with a team member (userId) or any approved account (Nutzer-ID)
       requestBody:
         required: true
         content:
@@ -12149,6 +12149,9 @@ components:
           type: [string, 'null']
         leavesCount:
           type: integer
+        userCode:
+          type: [integer, 'null']
+          description: Nutzer-ID (docs/konto.md) – the account passes it on to be added to a farm or a list
         blockedAt:
           type: [string, 'null']
           format: date-time
@@ -13144,9 +13147,11 @@ components:
       properties:
         userId:
           type: [string, 'null']
-        email:
-          type: [string, 'null']
-          maxLength: 200
+        userCode:
+          type: [integer, 'null']
+          description: Nutzer-ID of the account (docs/konto.md)
+          minimum: 1000
+          maximum: 9999999
     PlanFarmTasksInput:
       type: object
       required: [text]
@@ -14309,7 +14314,7 @@ components:
           type: integer
     FarmMember:
       type: object
-      required: [userId, displayName, email, role, isMe, accessUntil, modules]
+      required: [userId, displayName, email, userCode, role, isMe, accessUntil, modules]
       properties:
         userId:
           type: string
@@ -14318,6 +14323,9 @@ components:
         email:
           type: [string, 'null']
           description: Only filled in for admins.
+        userCode:
+          type: [integer, 'null']
+          description: Nutzer-ID of the member
         role:
           $ref: "#/components/schemas/FarmRole"
         isMe:
@@ -14399,11 +14407,13 @@ components:
           type: string
     AddFarmMemberInput:
       type: object
-      required: [email, role]
+      required: [userCode, role]
       properties:
-        email:
-          type: string
-          maxLength: 254
+        userCode:
+          type: integer
+          description: Nutzer-ID of the account to add (docs/konto.md)
+          minimum: 1000
+          maximum: 9999999
         role:
           $ref: "#/components/schemas/FarmRole"
         accessUntil:

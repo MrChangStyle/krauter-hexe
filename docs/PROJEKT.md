@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #143 | Kräuter-Hexe: im Beschwerden-Menü stehen „Übernehmen“ und „Zurücksetzen“ fest unten, die Liste darüber blättert; das Menü bleibt auf dem Handy ganz im Bild |
 | 30.10.2026 | #142 | Design D3: Karten in allen Modulen gleich (große Ecken, gleicher Innenabstand), Listenzeilen und Hinweis-Karten angeglichen, Überschriften in Karten einheitlich |
 | 30.10.2026 | #141 | Meine Pflanzen: Filter nach Art über den Scans wieder da (Alle, Pilze, Heilkräuter … mit Anzahl, nur vorhandene Arten); Hof: die Kacheln Hof-Aufgaben und Alltagsnotizen am PC kompakt statt riesiger Quadrate |
 | 30.10.2026 | #140 | Design D2: Untermenüs von Beet-Architekt, Futterplaner und Grow als Kacheln wie auf den Übersichten |

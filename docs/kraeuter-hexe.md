@@ -16,7 +16,7 @@ Die KI schreibt beim Scan zu jeder Pflanze Schlagwörter wie „Husten“ oder �
 
 ## Filter mit Gruppen
 
-Das Menü „Nach Beschwerden filtern“ zeigt Gruppen, die sich per Tipp aufklappen. Eine Gruppe mit gewählter Beschwerde ist schon offen, gibt es nur eine Gruppe, ebenfalls. Gruppen ohne passende Pflanze fehlen.
+Das Menü „Nach Beschwerden filtern“ zeigt Gruppen, die sich per Tipp aufklappen. Eine Gruppe mit gewählter Beschwerde ist schon offen, gibt es nur eine Gruppe, ebenfalls. Gruppen ohne passende Pflanze fehlen. Unten im Menü stehen fest, auch beim Blättern durch eine lange Liste, „Übernehmen (Anzahl)“ – schließt das Menü – und darunter „Zurücksetzen“.
 
 | Gruppe | Beschwerden |
 |---|---|

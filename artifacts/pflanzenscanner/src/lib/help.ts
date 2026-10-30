@@ -110,7 +110,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     intro: "Der Heilkräuter-Ratgeber: Welche Kräuter bei welchen Beschwerden traditionell verwendet werden – mit Zubereitung und Vorsicht-Hinweisen.",
     steps: [
       "Wählen, für wen: Mensch oder Tier.",
-      "Unter „Nach Beschwerden filtern“ eine Gruppe aufklappen, z. B. „Entzündungen“, und die passende Beschwerde wählen – etwa Haut, Mund und Rachen oder Magen-Darm. Oder oben eintippen.",
+      "Unter „Nach Beschwerden filtern“ eine Gruppe aufklappen, z. B. „Entzündungen“, und die passende Beschwerde wählen – etwa Haut, Mund und Rachen oder Magen-Darm. Mit „Übernehmen“ unten im Menü schließen. Oder oben eintippen.",
       "Anwendung und Gegenanzeigen lesen.",
       "Kräuter aus dem eigenen Garten im Beet-Architekt einplanen.",
     ],

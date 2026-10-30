@@ -6,6 +6,7 @@ import { PeckingChicken } from "@/components/pecking-chicken";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ANIMALS, type AnimalKey, getAnimalInfo } from "@/lib/animals";
+import { HEAL_TARGETS } from "@/lib/heal-targets";
 import type { Plant } from "@workspace/api-client-react";
 import { firstLetter, applyAlpha } from "@/lib/archive-helpers";
 import { AlphaFilter } from "@/components/alpha-filter";
@@ -18,19 +19,29 @@ type Tab = "archive" | "edible";
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const TARGETS: Array<{
-  value: FilterTarget;
-  label: string;
-  emoji: string;
-  description: string;
-}> = [
-  { value: "human",     label: "Mensch",          emoji: "🧑", description: "Essbare Pflanzen für Menschen" },
-  { value: "poultry",   label: "Geflügel",         emoji: "🐔", description: "Sicher für Hühner, Enten & Co." },
-  { value: "rabbit",    label: "Hase",             emoji: "🐇", description: "Sicher für Kaninchen & Hasen" },
-  { value: "guineaPig", label: "Meerschwein",  emoji: "🐹", description: "Sicher für Meerschweinchen" },
-  { value: "cat",       label: "Katze",            emoji: "🐱", description: "Sicher für Katzen" },
-  { value: "horse",     label: "Pferd",            emoji: "🐴", description: "Sicher für Pferde" },
-];
+const DESCRIPTIONS: Record<FilterTarget, string> = {
+  human: "Essbare Pflanzen für Menschen",
+  poultry: "Sicher für Hühner, Enten & Co.",
+  rabbit: "Sicher für Kaninchen & Hasen",
+  guineaPig: "Sicher für Meerschweinchen",
+  cat: "Sicher für Katzen",
+  horse: "Sicher für Pferde",
+  dog: "Sicher für Hunde",
+  goat: "Sicher für Ziegen",
+  sheep: "Sicher für Schafe",
+  cattle: "Sicher für Rinder",
+  pig: "Sicher für Schweine",
+  alpaca: "Sicher für Alpakas & Lamas",
+  donkey: "Sicher für Esel",
+};
+
+// Same order, names and pictures as in the Kräuter-Hexe (lib/heal-targets.ts).
+const TARGETS = HEAL_TARGETS.map((t) => ({
+  value: t.key,
+  label: t.label,
+  emoji: t.emoji,
+  description: DESCRIPTIONS[t.key],
+}));
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
@@ -64,7 +75,7 @@ function EdiblePicker({
       <p className="text-sm text-muted-foreground">
         Wähle aus, für wen du essbare Pflanzen sehen möchtest.
       </p>
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         {TARGETS.map(({ value, label, emoji, description }) => {
           const count = plants.filter((p) => isEdibleFor(p, value)).length;
           return (

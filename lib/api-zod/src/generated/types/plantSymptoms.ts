@@ -7,7 +7,7 @@
  */
 
 /**
- * Treatable complaints/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant's Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the "Kräuter-Hexe" filter, never as a safety signal.
+ * Treatable complaints/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant's Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the "Kräuter-Hexe" filter, never as a safety signal.
  */
 export interface PlantSymptoms {
   human?: string[];
@@ -16,4 +16,11 @@ export interface PlantSymptoms {
   guineaPig?: string[];
   cat?: string[];
   horse?: string[];
+  dog?: string[];
+  goat?: string[];
+  sheep?: string[];
+  cattle?: string[];
+  pig?: string[];
+  alpaca?: string[];
+  donkey?: string[];
 }

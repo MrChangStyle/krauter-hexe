@@ -3656,6 +3656,13 @@ export interface PlantAnimals {
   guineaPig?: AnimalInfo;
   cat?: AnimalInfo;
   horse?: AnimalInfo;
+  dog?: AnimalInfo;
+  goat?: AnimalInfo;
+  sheep?: AnimalInfo;
+  cattle?: AnimalInfo;
+  pig?: AnimalInfo;
+  alpaca?: AnimalInfo;
+  donkey?: AnimalInfo;
 }
 
 /**
@@ -3671,7 +3678,7 @@ export interface BackfillAnimalsResult {
 }
 
 /**
- * Treatable complaints/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant's Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the "Kräuter-Hexe" filter, never as a safety signal.
+ * Treatable complaints/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant's Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the "Kräuter-Hexe" filter, never as a safety signal.
  */
 export interface PlantSymptoms {
   human?: string[];
@@ -3680,6 +3687,13 @@ export interface PlantSymptoms {
   guineaPig?: string[];
   cat?: string[];
   horse?: string[];
+  dog?: string[];
+  goat?: string[];
+  sheep?: string[];
+  cattle?: string[];
+  pig?: string[];
+  alpaca?: string[];
+  donkey?: string[];
 }
 
 /**
@@ -3794,6 +3808,20 @@ export type PlantSymptomApplicationsCat = {[key: string]: string};
 
 export type PlantSymptomApplicationsHorse = {[key: string]: string};
 
+export type PlantSymptomApplicationsDog = {[key: string]: string};
+
+export type PlantSymptomApplicationsGoat = {[key: string]: string};
+
+export type PlantSymptomApplicationsSheep = {[key: string]: string};
+
+export type PlantSymptomApplicationsCattle = {[key: string]: string};
+
+export type PlantSymptomApplicationsPig = {[key: string]: string};
+
+export type PlantSymptomApplicationsAlpaca = {[key: string]: string};
+
+export type PlantSymptomApplicationsDonkey = {[key: string]: string};
+
 /**
  * Per-target map of symptom tag → short German application instruction describing how to prepare/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.
  */
@@ -3804,6 +3832,13 @@ export interface PlantSymptomApplications {
   guineaPig?: PlantSymptomApplicationsGuineaPig;
   cat?: PlantSymptomApplicationsCat;
   horse?: PlantSymptomApplicationsHorse;
+  dog?: PlantSymptomApplicationsDog;
+  goat?: PlantSymptomApplicationsGoat;
+  sheep?: PlantSymptomApplicationsSheep;
+  cattle?: PlantSymptomApplicationsCattle;
+  pig?: PlantSymptomApplicationsPig;
+  alpaca?: PlantSymptomApplicationsAlpaca;
+  donkey?: PlantSymptomApplicationsDonkey;
 }
 
 export interface PlantHealthInput {

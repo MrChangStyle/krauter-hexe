@@ -30,45 +30,75 @@ import { PageHeader } from "@/components/page-header";
 
 // ─── target card metadata ─────────────────────────────────────────────────────
 
+// Colours of the target cards; names and pictures come from HEAL_TARGETS.
 const TARGET_META: Record<
   HealTarget,
-  { emoji: string; activeBg: string; activeRing: string; idleBg: string }
+  { activeBg: string; activeRing: string; idleBg: string }
 > = {
   human: {
-    emoji: "🧑",
     idleBg: "bg-amber-50 border-amber-200 hover:border-amber-400 dark:border-amber-800",
     activeBg: "bg-amber-100 border-amber-500 dark:bg-amber-950/60",
     activeRing: "ring-2 ring-amber-400",
   },
   poultry: {
-    emoji: "🐓",
     idleBg: "bg-yellow-50 border-yellow-200 hover:border-yellow-400 dark:border-yellow-800",
     activeBg: "bg-yellow-100 border-yellow-500 dark:bg-yellow-950/60",
     activeRing: "ring-2 ring-yellow-400",
   },
   rabbit: {
-    emoji: "🐇",
     idleBg: "bg-purple-50 border-purple-200 hover:border-purple-400 dark:border-purple-800",
     activeBg: "bg-purple-100 border-purple-500 dark:bg-purple-950/60",
     activeRing: "ring-2 ring-purple-400",
   },
   guineaPig: {
-    emoji: "🐹",
     idleBg: "bg-pink-50 border-pink-200 hover:border-pink-400 dark:border-pink-800",
     activeBg: "bg-pink-100 border-pink-500 dark:bg-pink-950/60",
     activeRing: "ring-2 ring-pink-400",
   },
   cat: {
-    emoji: "🐱",
     idleBg: "bg-sky-50 border-sky-200 hover:border-sky-400 dark:border-sky-800",
     activeBg: "bg-sky-100 border-sky-500 dark:bg-sky-950/60",
     activeRing: "ring-2 ring-sky-400",
   },
   horse: {
-    emoji: "🐴",
     idleBg: "bg-orange-50 border-orange-200 hover:border-orange-400 dark:border-orange-800",
     activeBg: "bg-orange-100 border-orange-500 dark:bg-orange-950/60",
     activeRing: "ring-2 ring-orange-400",
+  },
+  dog: {
+    idleBg: "bg-stone-50 border-stone-200 hover:border-stone-400 dark:border-stone-700",
+    activeBg: "bg-stone-100 border-stone-500 dark:bg-stone-900/60",
+    activeRing: "ring-2 ring-stone-400",
+  },
+  goat: {
+    idleBg: "bg-lime-50 border-lime-200 hover:border-lime-400 dark:border-lime-800",
+    activeBg: "bg-lime-100 border-lime-500 dark:bg-lime-950/60",
+    activeRing: "ring-2 ring-lime-400",
+  },
+  sheep: {
+    idleBg: "bg-slate-50 border-slate-200 hover:border-slate-400 dark:border-slate-700",
+    activeBg: "bg-slate-100 border-slate-500 dark:bg-slate-900/60",
+    activeRing: "ring-2 ring-slate-400",
+  },
+  cattle: {
+    idleBg: "bg-emerald-50 border-emerald-200 hover:border-emerald-400 dark:border-emerald-800",
+    activeBg: "bg-emerald-100 border-emerald-500 dark:bg-emerald-950/60",
+    activeRing: "ring-2 ring-emerald-400",
+  },
+  pig: {
+    idleBg: "bg-rose-50 border-rose-200 hover:border-rose-400 dark:border-rose-800",
+    activeBg: "bg-rose-100 border-rose-500 dark:bg-rose-950/60",
+    activeRing: "ring-2 ring-rose-400",
+  },
+  alpaca: {
+    idleBg: "bg-teal-50 border-teal-200 hover:border-teal-400 dark:border-teal-800",
+    activeBg: "bg-teal-100 border-teal-500 dark:bg-teal-950/60",
+    activeRing: "ring-2 ring-teal-400",
+  },
+  donkey: {
+    idleBg: "bg-zinc-50 border-zinc-200 hover:border-zinc-400 dark:border-zinc-700",
+    activeBg: "bg-zinc-100 border-zinc-500 dark:bg-zinc-900/60",
+    activeRing: "ring-2 ring-zinc-400",
   },
 };
 
@@ -315,7 +345,7 @@ export default function KraeuterHexePage() {
         <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold shrink-0">1</span>
         <span className="text-sm font-medium text-foreground">Wähle die Art des Patienten</span>
       </div>
-      <div className="mb-6 grid grid-cols-3 gap-2.5 mt-2">
+      <div className="mb-6 grid grid-cols-4 gap-2 mt-2 sm:grid-cols-5">
         {HEAL_TARGETS.map((t) => {
           const meta = TARGET_META[t.key];
           const active = t.key === target;
@@ -332,11 +362,11 @@ export default function KraeuterHexePage() {
               )}
             >
               <span
-                className="text-4xl leading-none"
+                className="text-3xl leading-none"
                 aria-hidden="true"
                 style={{ lineHeight: 1.1 }}
               >
-                {meta.emoji}
+                {t.emoji}
               </span>
               <span
                 className={cn(

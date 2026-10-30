@@ -62,6 +62,15 @@ describe("plant archive bridge", () => {
     expect(statusFor(row, "poultry")).toMatchObject({ status: "poisonous", details: "alt" });
     expect(statusFor(row, "rabbit")).toBeNull();
   });
+
+  it("lets the horse stand in for the donkey until the donkey is filled", () => {
+    const horse = { status: "poisonous" as const, toxicityLevel: "lethal" as const, toxicityDetails: "Taxin", benefits: "" };
+    const base = { id: 1, germanName: "Eibe", botanicalName: "Taxus baccata", poultryStatus: "poisonous" as const, animalToxicityDetails: "alt" };
+    expect(statusFor({ ...base, animals: { horse } }, "donkey")).toMatchObject({ details: "Taxin" });
+    const donkey = { ...horse, toxicityDetails: "Esel" };
+    expect(statusFor({ ...base, animals: { horse, donkey } }, "donkey")).toMatchObject({ details: "Esel" });
+    expect(statusFor({ ...base, animals: { horse } }, "dog")).toBeNull();
+  });
 });
 
 describe("feed analysis", () => {

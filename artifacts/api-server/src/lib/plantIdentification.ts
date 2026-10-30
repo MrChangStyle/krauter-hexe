@@ -10,6 +10,7 @@ import {
   type ToxicityLevel,
   ANIMAL_KINDS,
   HEAL_TARGET_KINDS,
+  type AnimalKind,
   type AnimalsMap,
   type HealTargetKind,
   type SymptomsMap,
@@ -51,6 +52,40 @@ export interface PlantIdentification {
   symptomApplications: SymptomApplicationsMap;
 }
 
+// German names the prompts use for each animal kind; poultry covers every
+// kind of bird kept on the farm.
+const ANIMAL_PROMPT_NAMES: Record<AnimalKind, string> = {
+  poultry: "Geflügel (Hühner, Enten, Gänse, Puten, Wachteln)",
+  rabbit: "Hase/Kaninchen",
+  guineaPig: "Meerschweinchen",
+  cat: "Katze",
+  horse: "Pferd",
+  dog: "Hund",
+  goat: "Ziege",
+  sheep: "Schaf",
+  cattle: "Rind",
+  pig: "Schwein",
+  alpaca: "Alpaka/Lama",
+  donkey: "Esel",
+};
+const TARGET_PROMPT_NAMES: Record<HealTargetKind, string> = {
+  human: "Mensch",
+  ...ANIMAL_PROMPT_NAMES,
+};
+
+/** "poultry"=Geflügel …, for the explanations in the prompts. */
+function promptLegend(keys: readonly HealTargetKind[]): string {
+  return keys.map((k) => `"${k}"=${TARGET_PROMPT_NAMES[k]}`).join(", ");
+}
+
+/** The lines of a JSON shape with one entry per key, e.g. `"cat": string[]`. */
+function promptShape(keys: readonly string[], value: string, indent = "  "): string {
+  const width = Math.max(...keys.map((k) => k.length)) + 3;
+  return keys
+    .map((k) => `${indent}${`"${k}":`.padEnd(width)} ${value}`)
+    .join(",\n");
+}
+
 const SYSTEM_PROMPT = `Du bist ein botanischer Experte, der Pflanzen, Kräuter und Pilze anhand von Fotos bestimmt. \
 Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdown) mit exakt diesen Feldern:
 {
@@ -65,12 +100,8 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
   "activeIngredients": string (Inhaltsstoffe, deutsch),
   "humanBenefits": string (medizinische Wirkung/Nutzen für Menschen, gegen welche Beschwerden, deutsch; falls keine bekannt, "Keine bekannte medizinische Wirkung."),
   "animals": {
-    "poultry":   { "status": "safe" | "poisonous", "toxicityLevel": "intolerant" | "poisonous" | "lethal", "toxicityDetails": string, "benefits": string },
-    "rabbit":    { "status": "safe" | "poisonous", "toxicityLevel": "intolerant" | "poisonous" | "lethal", "toxicityDetails": string, "benefits": string },
-    "guineaPig": { "status": "safe" | "poisonous", "toxicityLevel": "intolerant" | "poisonous" | "lethal", "toxicityDetails": string, "benefits": string },
-    "cat":       { "status": "safe" | "poisonous", "toxicityLevel": "intolerant" | "poisonous" | "lethal", "toxicityDetails": string, "benefits": string },
-    "horse":     { "status": "safe" | "poisonous", "toxicityLevel": "intolerant" | "poisonous" | "lethal", "toxicityDetails": string, "benefits": string }
-  } (Sicherheit und Wirkung je Tierart - "poultry"=Geflügel/Hühner, "rabbit"=Hase/Kaninchen, "guineaPig"=Meerschweinchen, "cat"=Katze, "horse"=Pferd. status: ist die Pflanze für dieses Tier unbedenklich ("safe") oder giftig ("poisonous")? toxicityLevel: Grad der Giftigkeit (nur wenn status="poisonous"): "intolerant"=unverträglich, "poisonous"=giftig, "lethal"=tödlich. toxicityDetails: deutsche Erklärung zur Giftigkeit bzw. Verträglichkeit für genau dieses Tier, inkl. Symptome falls giftig. benefits: medizinische Wirkung/Nutzen für dieses Tier, deutsch; falls keine bekannt, "Keine bekannte medizinische Wirkung."),
+${promptShape(ANIMAL_KINDS, `{ "status": "safe" | "poisonous", "toxicityLevel": "intolerant" | "poisonous" | "lethal", "toxicityDetails": string, "benefits": string }`, "    ")}
+  } (Sicherheit und Wirkung je Tierart - ${promptLegend(ANIMAL_KINDS)}. status: ist die Pflanze für dieses Tier unbedenklich ("safe") oder giftig ("poisonous")? toxicityLevel: Grad der Giftigkeit (nur wenn status="poisonous"): "intolerant"=unverträglich, "poisonous"=giftig, "lethal"=tödlich. toxicityDetails: deutsche Erklärung zur Giftigkeit bzw. Verträglichkeit für genau dieses Tier, inkl. Symptome falls giftig. benefits: medizinische Wirkung/Nutzen für dieses Tier, deutsch; falls keine bekannt, "Keine bekannte medizinische Wirkung." toxicityDetails und benefits je Tier knapp in 1-2 Sätzen.),
   "habitat": string (wo diese Pflanze meistens wächst: typische Lebensräume und Standorte, z.B. Wiesen, Wegränder, Waldränder, Äcker, Ufer, Gärten; deutsch),
   "siteConditions": string (welche Voraussetzungen der Standort erfüllen muss, damit die Pflanze wachsen kann: Lichtbedarf, Bodenart, Feuchtigkeit, Nährstoffbedarf, ggf. Klima; deutsch),
   "otherUses": string (weitere praktische Nutzungsmöglichkeiten jenseits von Verzehr und Heilwirkung, alles Nützliche, was man aus der Pflanze gewinnen kann: z.B. Jauche/Sud als kaliumhaltiger Pflanzendünger wie bei Beinwell oder Brennnessel, Mulch, Gründüngung, Kompost-Beschleuniger, Färbepflanze, Fasern, Bienenweide; deutsch; falls nichts Nennenswertes bekannt, "Keine besonderen weiteren Nutzungsmöglichkeiten bekannt."),
@@ -78,13 +109,8 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
   "hasEdibleFruits": boolean (hat diese Pflanze essbare Früchte, die Menschen essen können? true = ja, z.B. Apfel, Birne, Holunder, Hagebutte; false = keine essbaren Früchte oder Früchte giftig/ungenießbar),
   "preparation": string (NUR für essbare Pflanzen/Pilze mit humanStatus="edible": kurze deutsche Beschreibung wie die Pflanze zubereitet oder verzehrt werden kann, z.B. "Roh als Salat, gekocht als Gemüse oder Suppe, als Tee." – maximal 2-3 Sätze, praxisnah. Für giftige Pflanzen: leerer String ""),
   "symptoms": {
-    "human":     string[],
-    "poultry":   string[],
-    "rabbit":    string[],
-    "guineaPig": string[],
-    "cat":       string[],
-    "horse":     string[]
-  } (konkrete Beschwerden/Symptome, gegen die diese Pflanze bei der jeweiligen Zielgruppe helfen kann - abgeleitet aus ihrer Heilwirkung. "human"=Mensch, "poultry"=Geflügel/Hühner, "rabbit"=Hase/Kaninchen, "guineaPig"=Meerschweinchen, "cat"=Katze, "horse"=Pferd. Jeweils eine Liste kurzer, kanonischer deutscher Schlagwörter im Singular/Grundform, z.B. "Husten", "Entzündungen", "Magen-Darm-Beschwerden", "Wunden", "Durchfall". Wichtig – verwende möglichst genau diese festen Begriffe, ohne Varianten in Einzahl/Mehrzahl: ${SYMPTOM_NAMES.join(", ")}. Nur wenn keiner davon passt, nimm ein eigenes kurzes Schlagwort. Nenne nur Beschwerden, die durch die tatsächliche Heilwirkung gedeckt sind - erfinde nichts. Wenn keine Heilwirkung für eine Zielgruppe bekannt ist, gib eine leere Liste [] an.)
+${promptShape(HEAL_TARGET_KINDS, "string[]", "    ")}
+  } (konkrete Beschwerden/Symptome, gegen die diese Pflanze bei der jeweiligen Zielgruppe helfen kann - abgeleitet aus ihrer Heilwirkung. ${promptLegend(HEAL_TARGET_KINDS)}. Jeweils eine Liste kurzer, kanonischer deutscher Schlagwörter im Singular/Grundform, z.B. "Husten", "Entzündungen", "Magen-Darm-Beschwerden", "Wunden", "Durchfall". Wichtig – verwende möglichst genau diese festen Begriffe, ohne Varianten in Einzahl/Mehrzahl: ${SYMPTOM_NAMES.join(", ")}. Nur wenn keiner davon passt, nimm ein eigenes kurzes Schlagwort. Nenne nur Beschwerden, die durch die tatsächliche Heilwirkung gedeckt sind - erfinde nichts. Wenn keine Heilwirkung für eine Zielgruppe bekannt ist, gib eine leere Liste [] an.)
 }
 Wenn du dir bei der Bestimmung nicht sicher bist, gib trotzdem deine beste Einschätzung ab und erwähne die Unsicherheit im "edibilityDetails"-Feld. \
 Sei im Zweifel vorsichtig: wenn Giftigkeit nicht ausgeschlossen werden kann, setze den jeweiligen Status auf "poisonous". \
@@ -157,10 +183,11 @@ export const TEXT_MODELS: ReadonlyArray<{ name: string; attempts: number }> = [
 ];
 
 const GENERATION_CONFIG = {
-  // 4096 tokens is sufficient for all fields except symptomApplications, which
+  // 8192 tokens covers all fields for twelve animal kinds except
+  // symptomApplications, which
   // is now generated asynchronously after the scan (see plants.ts). Keeping this
   // lower reduces the time-to-first-token and avoids the model padding responses.
-  maxOutputTokens: 4096,
+  maxOutputTokens: 8192,
   responseMimeType: "application/json",
 } as const;
 
@@ -452,13 +479,9 @@ Erkläre für jedes genannte Symptom-Schlagwort in 1-2 knappen, praxisnahen deut
 (z.B. "Als Tee: getrocknete Blätter 10 Min. ziehen lassen und trinken.", "Frische Blätter zerreiben und als Umschlag auflegen.", "Ins Futter mischen.", "Öl äußerlich auftragen."). \
 Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdown) in exakt dieser Form:
 {
-  "human":     { [symptomTag: string]: string },
-  "poultry":   { [symptomTag: string]: string },
-  "rabbit":    { [symptomTag: string]: string },
-  "guineaPig": { [symptomTag: string]: string },
-  "cat":       { [symptomTag: string]: string },
-  "horse":     { [symptomTag: string]: string }
+${promptShape(HEAL_TARGET_KINDS, "{ [symptomTag: string]: string }")}
 }
+Zielgruppen: ${promptLegend(HEAL_TARGET_KINDS)}. \
 Die Schlüssel innerhalb jedes Ziels müssen exakt den angegebenen Symptom-Schlagwörtern entsprechen. \
 Wenn für ein Ziel keine Symptome angegeben sind, gib {} zurück.`;
 
@@ -881,18 +904,15 @@ export async function reviewEdibleForMedicinal(
 
 const ANIMALS_BACKFILL_PROMPT = `Du bist ein botanischer und tiermedizinischer Experte. \
 Erstelle für die unten genannte Pflanze eine Einschätzung für jede dieser Tierarten: \
-Geflügel/Hühner ("poultry"), Hase/Kaninchen ("rabbit"), Meerschweinchen ("guineaPig"), Katze ("cat"), Pferd ("horse"). \
+${promptLegend(ANIMAL_KINDS)}. \
 Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdown) in exakt dieser Form:
 {
-  "poultry":   { "status": "safe" | "poisonous", "toxicityDetails": string, "benefits": string },
-  "rabbit":    { "status": "safe" | "poisonous", "toxicityDetails": string, "benefits": string },
-  "guineaPig": { "status": "safe" | "poisonous", "toxicityDetails": string, "benefits": string },
-  "cat":       { "status": "safe" | "poisonous", "toxicityDetails": string, "benefits": string },
-  "horse":     { "status": "safe" | "poisonous", "toxicityDetails": string, "benefits": string }
+${promptShape(ANIMAL_KINDS, `{ "status": "safe" | "poisonous", "toxicityDetails": string, "benefits": string }`)}
 }
 status: ist die Pflanze für dieses Tier unbedenklich ("safe") oder giftig ("poisonous")? \
 toxicityDetails: deutsche Erklärung zur Giftigkeit bzw. Verträglichkeit für genau dieses Tier, inkl. Symptome falls giftig. \
 benefits: medizinische Wirkung/Nutzen für dieses Tier, deutsch; falls keine bekannt, "Keine bekannte medizinische Wirkung.". \
+toxicityDetails und benefits je Tier knapp in 1-2 Sätzen. \
 Sei im Zweifel vorsichtig: wenn Giftigkeit nicht ausgeschlossen werden kann, setze status auf "poisonous".`;
 
 // Text-only generation (no image) used to backfill per-animal fact sheets for
@@ -919,15 +939,10 @@ export async function generateAnimalsForPlant(
 const SYMPTOMS_BACKFILL_PROMPT = `Du bist ein botanischer und medizinischer Experte. \
 Unten stehen der Name einer Pflanze und Beschreibungen ihrer bekannten Heilwirkung für Menschen und verschiedene Tiere. \
 Leite daraus für jede Zielgruppe die konkreten Beschwerden/Symptome ab, gegen die die Pflanze helfen kann. \
-Zielgruppen: Mensch ("human"), Geflügel/Hühner ("poultry"), Hase/Kaninchen ("rabbit"), Meerschweinchen ("guineaPig"), Katze ("cat"), Pferd ("horse"). \
+Zielgruppen: ${promptLegend(HEAL_TARGET_KINDS)}. \
 Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdown) in exakt dieser Form:
 {
-  "human":     string[],
-  "poultry":   string[],
-  "rabbit":    string[],
-  "guineaPig": string[],
-  "cat":       string[],
-  "horse":     string[]
+${promptShape(HEAL_TARGET_KINDS, "string[]")}
 }
 Jeweils eine Liste kurzer, kanonischer deutscher Schlagwörter im Singular/Grundform, z.B. "Husten", "Entzündungen", "Magen-Darm-Beschwerden", "Wunden", "Durchfall". \
 Wichtig – verwende möglichst genau diese festen Begriffe, ohne Varianten in Einzahl/Mehrzahl: ${SYMPTOM_NAMES.join(", ")}. Nur wenn keiner davon passt, nimm ein eigenes kurzes Schlagwort. \
@@ -947,13 +962,10 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
 {
   "humanToxicityLevel": "intolerant" | "poisonous" | "lethal" | null,
   "animals": {
-    "poultry":   "intolerant" | "poisonous" | "lethal" | null,
-    "rabbit":    "intolerant" | "poisonous" | "lethal" | null,
-    "guineaPig": "intolerant" | "poisonous" | "lethal" | null,
-    "cat":       "intolerant" | "poisonous" | "lethal" | null,
-    "horse":     "intolerant" | "poisonous" | "lethal" | null
+${promptShape(ANIMAL_KINDS, `"intolerant" | "poisonous" | "lethal" | null`, "    ")}
   }
 }
+Tierarten: ${promptLegend(ANIMAL_KINDS)}.
 Gib null zurück wenn die Zielgruppe nicht betroffen ist (also essbar/unbedenklich). \
 Sei im Zweifel vorsichtig: im Zweifelsfall eher "poisonous" als "intolerant".`;
 

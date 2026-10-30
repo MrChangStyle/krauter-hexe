@@ -55,7 +55,7 @@ describe("Esel", () => {
   it("are a species with names, eating like horses", () => {
     expect(FARM_SPECIES).toContain("donkey");
     expect(NAMES.donkey.group).toBe("Esel");
-    expect(archiveKindFor("donkey")).toBe("horse");
+    expect(archiveKindFor("donkey")).toBe("donkey");
     expect(isPoultry("donkey")).toBe(false);
   });
 

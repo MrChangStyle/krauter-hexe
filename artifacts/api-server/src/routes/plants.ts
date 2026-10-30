@@ -629,14 +629,11 @@ export async function handlePlantScan(
         void generateSymptomApplicationsForPlant({
           germanName: identification.germanName,
           botanicalName: identification.botanicalName,
-          benefits: {
-            human: identification.humanBenefits,
-            poultry: identification.poultryBenefits,
-            rabbit: identification.animals.rabbit?.benefits,
-            guineaPig: identification.animals.guineaPig?.benefits,
-            cat: identification.animals.cat?.benefits,
-            horse: identification.animals.horse?.benefits,
-          },
+          benefits: benefitsByTarget(
+            identification.humanBenefits,
+            identification.poultryBenefits,
+            identification.animals,
+            ),
           symptoms: identification.symptoms,
         }).then((symptomApplications) =>
           db
@@ -717,14 +714,11 @@ export async function handlePlantScan(
   void generateSymptomApplicationsForPlant({
     germanName: identification.germanName,
     botanicalName: identification.botanicalName,
-    benefits: {
-      human: identification.humanBenefits,
-      poultry: identification.poultryBenefits,
-      rabbit: identification.animals.rabbit?.benefits,
-      guineaPig: identification.animals.guineaPig?.benefits,
-      cat: identification.animals.cat?.benefits,
-      horse: identification.animals.horse?.benefits,
-    },
+    benefits: benefitsByTarget(
+      identification.humanBenefits,
+      identification.poultryBenefits,
+      identification.animals,
+      ),
     symptoms: identification.symptoms,
   }).then((symptomApplications) =>
     db
@@ -978,6 +972,20 @@ router.post(
 // timeout even when every plant needs a fresh (text-only) AI generation.
 const SYMPTOM_APPLICATIONS_BACKFILL_BATCH_SIZE = 3;
 
+// The benefit text per heal target that grounds the symptom generation.
+// Poultry falls back to the legacy column for plants scanned before the
+// per-animal fact sheets existed.
+function benefitsByTarget(
+  humanBenefits: string,
+  poultryBenefits: string,
+  animals: AnimalsMap,
+): Partial<Record<HealTargetKind, string>> {
+  const benefits: Partial<Record<HealTargetKind, string>> = { human: humanBenefits };
+  for (const kind of ANIMAL_KINDS) benefits[kind] = animals[kind]?.benefits;
+  benefits.poultry ??= poultryBenefits;
+  return benefits;
+}
+
 // One-time (idempotent) backfill of per-symptom application instructions for
 // plants scanned before the feature existed. The client calls repeatedly until
 // `done` is true. Owner-only: triggers AI generation + DB writes.
@@ -1000,12 +1008,13 @@ router.post(
       .from(plantsTable)
       .orderBy(desc(plantsTable.createdAt));
 
-    // A plant needs backfill if its symptomApplications has no keys at all
-    // (= not yet processed). After backfill every target key is present.
-    const needsBackfill = rows.filter(
-      (r) =>
-        Object.keys((r.symptomApplications as SymptomApplicationsMap) ?? {})
-          .length === 0,
+    // A plant needs backfill if its symptomApplications misses a target (none
+    // at all = not yet processed; some = a newly added animal kind). After
+    // backfill every target key is present.
+    const needsBackfill = rows.filter((r) =>
+      HEAL_TARGET_KINDS.some(
+        (t) => !(r.symptomApplications as SymptomApplicationsMap)?.[t],
+      ),
     );
 
     // Only process plants whose symptom tags are already filled in; otherwise
@@ -1019,20 +1028,18 @@ router.post(
     for (const plant of batch) {
       try {
         const animals = (plant.animals as AnimalsMap) ?? {};
-        const benefits: Partial<Record<HealTargetKind, string>> = {
-          human: plant.humanBenefits,
-          poultry: animals.poultry?.benefits ?? plant.poultryBenefits,
-          rabbit: animals.rabbit?.benefits,
-          guineaPig: animals.guineaPig?.benefits,
-          cat: animals.cat?.benefits,
-          horse: animals.horse?.benefits,
-        };
-        const symptomApplications = await generateSymptomApplicationsForPlant({
+        const benefits = benefitsByTarget(plant.humanBenefits, plant.poultryBenefits, animals);
+        const generated = await generateSymptomApplicationsForPlant({
           germanName: plant.germanName,
           botanicalName: plant.botanicalName,
           benefits,
           symptoms: (plant.symptoms as SymptomsMap) ?? {},
         });
+        // Instructions already stored stay as they are; only missing targets are added.
+        const symptomApplications = {
+          ...generated,
+          ...((plant.symptomApplications as SymptomApplicationsMap) ?? {}),
+        };
         await db
           .update(plantsTable)
           .set({ symptomApplications })
@@ -1090,10 +1097,12 @@ router.post(
     let processed = 0;
     for (const plant of batch) {
       try {
-        const animals = await generateAnimalsForPlant(
-          plant.germanName,
-          plant.botanicalName,
-        );
+        // Fact sheets already stored (with their toxicity level) stay as they
+        // are; only the missing kinds are added.
+        const animals: AnimalsMap = {
+          ...(await generateAnimalsForPlant(plant.germanName, plant.botanicalName)),
+          ...((plant.animals as AnimalsMap) ?? {}),
+        };
         const poultry = animals.poultry!;
         await db
           .update(plantsTable)
@@ -1182,19 +1191,16 @@ router.post(
         // Ground the generation in whatever benefit text the plant already has.
         // Poultry falls back to the legacy column for plants scanned before the
         // per-animal fact sheets existed.
-        const benefits: Partial<Record<HealTargetKind, string>> = {
-          human: plant.humanBenefits,
-          poultry: animals.poultry?.benefits ?? plant.poultryBenefits,
-          rabbit: animals.rabbit?.benefits,
-          guineaPig: animals.guineaPig?.benefits,
-          cat: animals.cat?.benefits,
-          horse: animals.horse?.benefits,
+        const benefits = benefitsByTarget(plant.humanBenefits, plant.poultryBenefits, animals);
+        // Tags already stored stay as they are; only missing targets are added.
+        const symptoms: SymptomsMap = {
+          ...(await generateSymptomsForPlant({
+            germanName: plant.germanName,
+            botanicalName: plant.botanicalName,
+            benefits,
+          })),
+          ...((plant.symptoms as SymptomsMap) ?? {}),
         };
-        const symptoms = await generateSymptomsForPlant({
-          germanName: plant.germanName,
-          botanicalName: plant.botanicalName,
-          benefits,
-        });
         await db
           .update(plantsTable)
           .set({ symptoms })

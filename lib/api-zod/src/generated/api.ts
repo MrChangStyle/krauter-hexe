@@ -117,6 +117,48 @@ export const ScanPlantResponse = zod.object({
   "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
   "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "dog": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "goat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "sheep": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cattle": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "pig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "alpaca": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "donkey": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
 }).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
 }).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
   "symptoms": zod.object({
@@ -125,15 +167,29 @@ export const ScanPlantResponse = zod.object({
   "rabbit": zod.array(zod.string()).optional(),
   "guineaPig": zod.array(zod.string()).optional(),
   "cat": zod.array(zod.string()).optional(),
-  "horse": zod.array(zod.string()).optional()
-}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "horse": zod.array(zod.string()).optional(),
+  "dog": zod.array(zod.string()).optional(),
+  "goat": zod.array(zod.string()).optional(),
+  "sheep": zod.array(zod.string()).optional(),
+  "cattle": zod.array(zod.string()).optional(),
+  "pig": zod.array(zod.string()).optional(),
+  "alpaca": zod.array(zod.string()).optional(),
+  "donkey": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
   "symptomApplications": zod.object({
   "human": zod.record(zod.string(), zod.string()).optional(),
   "poultry": zod.record(zod.string(), zod.string()).optional(),
   "rabbit": zod.record(zod.string(), zod.string()).optional(),
   "guineaPig": zod.record(zod.string(), zod.string()).optional(),
   "cat": zod.record(zod.string(), zod.string()).optional(),
-  "horse": zod.record(zod.string(), zod.string()).optional()
+  "horse": zod.record(zod.string(), zod.string()).optional(),
+  "dog": zod.record(zod.string(), zod.string()).optional(),
+  "goat": zod.record(zod.string(), zod.string()).optional(),
+  "sheep": zod.record(zod.string(), zod.string()).optional(),
+  "cattle": zod.record(zod.string(), zod.string()).optional(),
+  "pig": zod.record(zod.string(), zod.string()).optional(),
+  "alpaca": zod.record(zod.string(), zod.string()).optional(),
+  "donkey": zod.record(zod.string(), zod.string()).optional()
 }).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
   "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
@@ -210,6 +266,48 @@ export const ListPlantsResponseItem = zod.object({
   "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
   "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "dog": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "goat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "sheep": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cattle": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "pig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "alpaca": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "donkey": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
 }).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
 }).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
   "symptoms": zod.object({
@@ -218,15 +316,29 @@ export const ListPlantsResponseItem = zod.object({
   "rabbit": zod.array(zod.string()).optional(),
   "guineaPig": zod.array(zod.string()).optional(),
   "cat": zod.array(zod.string()).optional(),
-  "horse": zod.array(zod.string()).optional()
-}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "horse": zod.array(zod.string()).optional(),
+  "dog": zod.array(zod.string()).optional(),
+  "goat": zod.array(zod.string()).optional(),
+  "sheep": zod.array(zod.string()).optional(),
+  "cattle": zod.array(zod.string()).optional(),
+  "pig": zod.array(zod.string()).optional(),
+  "alpaca": zod.array(zod.string()).optional(),
+  "donkey": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
   "symptomApplications": zod.object({
   "human": zod.record(zod.string(), zod.string()).optional(),
   "poultry": zod.record(zod.string(), zod.string()).optional(),
   "rabbit": zod.record(zod.string(), zod.string()).optional(),
   "guineaPig": zod.record(zod.string(), zod.string()).optional(),
   "cat": zod.record(zod.string(), zod.string()).optional(),
-  "horse": zod.record(zod.string(), zod.string()).optional()
+  "horse": zod.record(zod.string(), zod.string()).optional(),
+  "dog": zod.record(zod.string(), zod.string()).optional(),
+  "goat": zod.record(zod.string(), zod.string()).optional(),
+  "sheep": zod.record(zod.string(), zod.string()).optional(),
+  "cattle": zod.record(zod.string(), zod.string()).optional(),
+  "pig": zod.record(zod.string(), zod.string()).optional(),
+  "alpaca": zod.record(zod.string(), zod.string()).optional(),
+  "donkey": zod.record(zod.string(), zod.string()).optional()
 }).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
   "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
@@ -305,6 +417,48 @@ export const SetPlantImageLockResponse = zod.object({
   "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
   "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "dog": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "goat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "sheep": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cattle": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "pig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "alpaca": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "donkey": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
 }).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
 }).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
   "symptoms": zod.object({
@@ -313,15 +467,29 @@ export const SetPlantImageLockResponse = zod.object({
   "rabbit": zod.array(zod.string()).optional(),
   "guineaPig": zod.array(zod.string()).optional(),
   "cat": zod.array(zod.string()).optional(),
-  "horse": zod.array(zod.string()).optional()
-}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "horse": zod.array(zod.string()).optional(),
+  "dog": zod.array(zod.string()).optional(),
+  "goat": zod.array(zod.string()).optional(),
+  "sheep": zod.array(zod.string()).optional(),
+  "cattle": zod.array(zod.string()).optional(),
+  "pig": zod.array(zod.string()).optional(),
+  "alpaca": zod.array(zod.string()).optional(),
+  "donkey": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
   "symptomApplications": zod.object({
   "human": zod.record(zod.string(), zod.string()).optional(),
   "poultry": zod.record(zod.string(), zod.string()).optional(),
   "rabbit": zod.record(zod.string(), zod.string()).optional(),
   "guineaPig": zod.record(zod.string(), zod.string()).optional(),
   "cat": zod.record(zod.string(), zod.string()).optional(),
-  "horse": zod.record(zod.string(), zod.string()).optional()
+  "horse": zod.record(zod.string(), zod.string()).optional(),
+  "dog": zod.record(zod.string(), zod.string()).optional(),
+  "goat": zod.record(zod.string(), zod.string()).optional(),
+  "sheep": zod.record(zod.string(), zod.string()).optional(),
+  "cattle": zod.record(zod.string(), zod.string()).optional(),
+  "pig": zod.record(zod.string(), zod.string()).optional(),
+  "alpaca": zod.record(zod.string(), zod.string()).optional(),
+  "donkey": zod.record(zod.string(), zod.string()).optional()
 }).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
   "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
@@ -398,6 +566,48 @@ export const SetPlantEdibleReleaseResponse = zod.object({
   "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
   "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "dog": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "goat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "sheep": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cattle": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "pig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "alpaca": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "donkey": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
 }).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
 }).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
   "symptoms": zod.object({
@@ -406,15 +616,29 @@ export const SetPlantEdibleReleaseResponse = zod.object({
   "rabbit": zod.array(zod.string()).optional(),
   "guineaPig": zod.array(zod.string()).optional(),
   "cat": zod.array(zod.string()).optional(),
-  "horse": zod.array(zod.string()).optional()
-}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "horse": zod.array(zod.string()).optional(),
+  "dog": zod.array(zod.string()).optional(),
+  "goat": zod.array(zod.string()).optional(),
+  "sheep": zod.array(zod.string()).optional(),
+  "cattle": zod.array(zod.string()).optional(),
+  "pig": zod.array(zod.string()).optional(),
+  "alpaca": zod.array(zod.string()).optional(),
+  "donkey": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
   "symptomApplications": zod.object({
   "human": zod.record(zod.string(), zod.string()).optional(),
   "poultry": zod.record(zod.string(), zod.string()).optional(),
   "rabbit": zod.record(zod.string(), zod.string()).optional(),
   "guineaPig": zod.record(zod.string(), zod.string()).optional(),
   "cat": zod.record(zod.string(), zod.string()).optional(),
-  "horse": zod.record(zod.string(), zod.string()).optional()
+  "horse": zod.record(zod.string(), zod.string()).optional(),
+  "dog": zod.record(zod.string(), zod.string()).optional(),
+  "goat": zod.record(zod.string(), zod.string()).optional(),
+  "sheep": zod.record(zod.string(), zod.string()).optional(),
+  "cattle": zod.record(zod.string(), zod.string()).optional(),
+  "pig": zod.record(zod.string(), zod.string()).optional(),
+  "alpaca": zod.record(zod.string(), zod.string()).optional(),
+  "donkey": zod.record(zod.string(), zod.string()).optional()
 }).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
   "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
@@ -487,6 +711,48 @@ export const GetPlantResponse = zod.object({
   "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
   "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "dog": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "goat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "sheep": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cattle": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "pig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "alpaca": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "donkey": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
 }).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
 }).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
   "symptoms": zod.object({
@@ -495,15 +761,29 @@ export const GetPlantResponse = zod.object({
   "rabbit": zod.array(zod.string()).optional(),
   "guineaPig": zod.array(zod.string()).optional(),
   "cat": zod.array(zod.string()).optional(),
-  "horse": zod.array(zod.string()).optional()
-}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "horse": zod.array(zod.string()).optional(),
+  "dog": zod.array(zod.string()).optional(),
+  "goat": zod.array(zod.string()).optional(),
+  "sheep": zod.array(zod.string()).optional(),
+  "cattle": zod.array(zod.string()).optional(),
+  "pig": zod.array(zod.string()).optional(),
+  "alpaca": zod.array(zod.string()).optional(),
+  "donkey": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
   "symptomApplications": zod.object({
   "human": zod.record(zod.string(), zod.string()).optional(),
   "poultry": zod.record(zod.string(), zod.string()).optional(),
   "rabbit": zod.record(zod.string(), zod.string()).optional(),
   "guineaPig": zod.record(zod.string(), zod.string()).optional(),
   "cat": zod.record(zod.string(), zod.string()).optional(),
-  "horse": zod.record(zod.string(), zod.string()).optional()
+  "horse": zod.record(zod.string(), zod.string()).optional(),
+  "dog": zod.record(zod.string(), zod.string()).optional(),
+  "goat": zod.record(zod.string(), zod.string()).optional(),
+  "sheep": zod.record(zod.string(), zod.string()).optional(),
+  "cattle": zod.record(zod.string(), zod.string()).optional(),
+  "pig": zod.record(zod.string(), zod.string()).optional(),
+  "alpaca": zod.record(zod.string(), zod.string()).optional(),
+  "donkey": zod.record(zod.string(), zod.string()).optional()
 }).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
   "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
@@ -602,6 +882,48 @@ export const UpdatePlantResponse = zod.object({
   "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
   "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "dog": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "goat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "sheep": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cattle": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "pig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "alpaca": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "donkey": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
 }).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
 }).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
   "symptoms": zod.object({
@@ -610,15 +932,29 @@ export const UpdatePlantResponse = zod.object({
   "rabbit": zod.array(zod.string()).optional(),
   "guineaPig": zod.array(zod.string()).optional(),
   "cat": zod.array(zod.string()).optional(),
-  "horse": zod.array(zod.string()).optional()
-}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "horse": zod.array(zod.string()).optional(),
+  "dog": zod.array(zod.string()).optional(),
+  "goat": zod.array(zod.string()).optional(),
+  "sheep": zod.array(zod.string()).optional(),
+  "cattle": zod.array(zod.string()).optional(),
+  "pig": zod.array(zod.string()).optional(),
+  "alpaca": zod.array(zod.string()).optional(),
+  "donkey": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
   "symptomApplications": zod.object({
   "human": zod.record(zod.string(), zod.string()).optional(),
   "poultry": zod.record(zod.string(), zod.string()).optional(),
   "rabbit": zod.record(zod.string(), zod.string()).optional(),
   "guineaPig": zod.record(zod.string(), zod.string()).optional(),
   "cat": zod.record(zod.string(), zod.string()).optional(),
-  "horse": zod.record(zod.string(), zod.string()).optional()
+  "horse": zod.record(zod.string(), zod.string()).optional(),
+  "dog": zod.record(zod.string(), zod.string()).optional(),
+  "goat": zod.record(zod.string(), zod.string()).optional(),
+  "sheep": zod.record(zod.string(), zod.string()).optional(),
+  "cattle": zod.record(zod.string(), zod.string()).optional(),
+  "pig": zod.record(zod.string(), zod.string()).optional(),
+  "alpaca": zod.record(zod.string(), zod.string()).optional(),
+  "donkey": zod.record(zod.string(), zod.string()).optional()
 }).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
   "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
@@ -810,6 +1146,48 @@ export const ListMyScansResponseItem = zod.object({
   "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
   "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "dog": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "goat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "sheep": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cattle": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "pig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "alpaca": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "donkey": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
 }).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
 }).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
   "symptoms": zod.object({
@@ -818,15 +1196,29 @@ export const ListMyScansResponseItem = zod.object({
   "rabbit": zod.array(zod.string()).optional(),
   "guineaPig": zod.array(zod.string()).optional(),
   "cat": zod.array(zod.string()).optional(),
-  "horse": zod.array(zod.string()).optional()
-}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "horse": zod.array(zod.string()).optional(),
+  "dog": zod.array(zod.string()).optional(),
+  "goat": zod.array(zod.string()).optional(),
+  "sheep": zod.array(zod.string()).optional(),
+  "cattle": zod.array(zod.string()).optional(),
+  "pig": zod.array(zod.string()).optional(),
+  "alpaca": zod.array(zod.string()).optional(),
+  "donkey": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
   "symptomApplications": zod.object({
   "human": zod.record(zod.string(), zod.string()).optional(),
   "poultry": zod.record(zod.string(), zod.string()).optional(),
   "rabbit": zod.record(zod.string(), zod.string()).optional(),
   "guineaPig": zod.record(zod.string(), zod.string()).optional(),
   "cat": zod.record(zod.string(), zod.string()).optional(),
-  "horse": zod.record(zod.string(), zod.string()).optional()
+  "horse": zod.record(zod.string(), zod.string()).optional(),
+  "dog": zod.record(zod.string(), zod.string()).optional(),
+  "goat": zod.record(zod.string(), zod.string()).optional(),
+  "sheep": zod.record(zod.string(), zod.string()).optional(),
+  "cattle": zod.record(zod.string(), zod.string()).optional(),
+  "pig": zod.record(zod.string(), zod.string()).optional(),
+  "alpaca": zod.record(zod.string(), zod.string()).optional(),
+  "donkey": zod.record(zod.string(), zod.string()).optional()
 }).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
   "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
@@ -7371,6 +7763,48 @@ export const ScanAutoResponse = zod.union([zod.object({
   "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
   "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "dog": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "goat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "sheep": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cattle": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "pig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "alpaca": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "donkey": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
 }).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
 }).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
   "symptoms": zod.object({
@@ -7379,15 +7813,29 @@ export const ScanAutoResponse = zod.union([zod.object({
   "rabbit": zod.array(zod.string()).optional(),
   "guineaPig": zod.array(zod.string()).optional(),
   "cat": zod.array(zod.string()).optional(),
-  "horse": zod.array(zod.string()).optional()
-}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "horse": zod.array(zod.string()).optional(),
+  "dog": zod.array(zod.string()).optional(),
+  "goat": zod.array(zod.string()).optional(),
+  "sheep": zod.array(zod.string()).optional(),
+  "cattle": zod.array(zod.string()).optional(),
+  "pig": zod.array(zod.string()).optional(),
+  "alpaca": zod.array(zod.string()).optional(),
+  "donkey": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + every animal kind), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
   "symptomApplications": zod.object({
   "human": zod.record(zod.string(), zod.string()).optional(),
   "poultry": zod.record(zod.string(), zod.string()).optional(),
   "rabbit": zod.record(zod.string(), zod.string()).optional(),
   "guineaPig": zod.record(zod.string(), zod.string()).optional(),
   "cat": zod.record(zod.string(), zod.string()).optional(),
-  "horse": zod.record(zod.string(), zod.string()).optional()
+  "horse": zod.record(zod.string(), zod.string()).optional(),
+  "dog": zod.record(zod.string(), zod.string()).optional(),
+  "goat": zod.record(zod.string(), zod.string()).optional(),
+  "sheep": zod.record(zod.string(), zod.string()).optional(),
+  "cattle": zod.record(zod.string(), zod.string()).optional(),
+  "pig": zod.record(zod.string(), zod.string()).optional(),
+  "alpaca": zod.record(zod.string(), zod.string()).optional(),
+  "donkey": zod.record(zod.string(), zod.string()).optional()
 }).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
   "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),

@@ -5,12 +5,19 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { PlantSymptomApplicationsAlpaca } from './plantSymptomApplicationsAlpaca';
 import type { PlantSymptomApplicationsCat } from './plantSymptomApplicationsCat';
+import type { PlantSymptomApplicationsCattle } from './plantSymptomApplicationsCattle';
+import type { PlantSymptomApplicationsDog } from './plantSymptomApplicationsDog';
+import type { PlantSymptomApplicationsDonkey } from './plantSymptomApplicationsDonkey';
+import type { PlantSymptomApplicationsGoat } from './plantSymptomApplicationsGoat';
 import type { PlantSymptomApplicationsGuineaPig } from './plantSymptomApplicationsGuineaPig';
 import type { PlantSymptomApplicationsHorse } from './plantSymptomApplicationsHorse';
 import type { PlantSymptomApplicationsHuman } from './plantSymptomApplicationsHuman';
+import type { PlantSymptomApplicationsPig } from './plantSymptomApplicationsPig';
 import type { PlantSymptomApplicationsPoultry } from './plantSymptomApplicationsPoultry';
 import type { PlantSymptomApplicationsRabbit } from './plantSymptomApplicationsRabbit';
+import type { PlantSymptomApplicationsSheep } from './plantSymptomApplicationsSheep';
 
 /**
  * Per-target map of symptom tag → short German application instruction describing how to prepare/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.
@@ -22,4 +29,11 @@ export interface PlantSymptomApplications {
   guineaPig?: PlantSymptomApplicationsGuineaPig;
   cat?: PlantSymptomApplicationsCat;
   horse?: PlantSymptomApplicationsHorse;
+  dog?: PlantSymptomApplicationsDog;
+  goat?: PlantSymptomApplicationsGoat;
+  sheep?: PlantSymptomApplicationsSheep;
+  cattle?: PlantSymptomApplicationsCattle;
+  pig?: PlantSymptomApplicationsPig;
+  alpaca?: PlantSymptomApplicationsAlpaca;
+  donkey?: PlantSymptomApplicationsDonkey;
 }

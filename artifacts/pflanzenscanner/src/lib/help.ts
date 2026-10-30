@@ -187,6 +187,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     steps: [
       "„Schnellstart“: eine Gruppe mit nummerierten Tieren, Startration und Erinnerungen in einem Rutsch.",
       "Oder ein Tier einzeln anlegen – Foto, Name und Ring-/Ohrmarke sind optional (ohne Namen heißt es z. B. „Ziege 1“).",
+      "Ein Tier antippen: oben der Steckbrief, darunter Kacheln für Gesundheit, Gewicht, Futter, Abstammung, Heil- & Futterpflanzen und Haltung – jede mit eigener Seite.",
       "In der Gesundheitsakte Behandlungen mit Wartezeit eintragen – bei mehreren Tagen mit „Behandlung bis“; Entwurmen und Impfen erinnern auf Wunsch an die Wiederholung.",
       "Gewicht eintragen – die App warnt bei mehr als 5 % Abnahme in 14 Tagen.",
     ],

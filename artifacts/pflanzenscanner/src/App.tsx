@@ -220,6 +220,7 @@ function Router() {
         <Route path="/grow/wissen" component={GrowWissenPage} />
         <Route path="/grow/recht" component={GrowRechtPage} />
         <Route path="/farm/:farmId/tier/:animalId" component={FarmAnimalPage} />
+        <Route path="/farm/:farmId/tier/:animalId/:section" component={FarmAnimalPage} />
         <Route path="/beete" component={BeetePage} />
         <Route path="/beete/kalender" component={GartenKalenderPage} />
         <Route path="/beete/assistent" component={GartenAssistentPage} />

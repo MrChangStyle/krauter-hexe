@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Link, useLocation, useParams } from "wouter";
+import { useEffect, useRef, useState, type ComponentType, type FormEvent } from "react";
+import { Link, Redirect, useLocation, useParams } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { Archive, ArchiveRestore, ArrowLeft, Camera, Loader2, PawPrint, Pencil } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowLeft, Camera, GitFork, Home, Leaf, Loader2, PawPrint, Pencil, Scale, Stethoscope, Wheat } from "lucide-react";
 import {
   getGetFarmAnimalQueryKey,
   getListFarmAnimalsQueryKey,
@@ -25,7 +25,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { MedicalSection, WeightSection } from "@/components/farm-animal-health";
 import { LineageSection } from "@/components/farm-animal-lineage";
-import { FeedSection, HelpfulPlantsSection, HusbandrySection, SpeciesSuggestionBox } from "@/components/farm-ai";
+import { ARCHIVE_SPECIES, FeedSection, HelpfulPlantsSection, HusbandrySection, SpeciesSuggestionBox } from "@/components/farm-ai";
+import { HubGrid, HubTile } from "@/components/hub-tile";
+import { TONES } from "@/lib/module-look";
+import { cn } from "@/lib/utils";
 import { SpeciesRequestLink } from "@/components/species-request";
 import { downscaleFile } from "@/lib/image";
 import { SEX_LABELS, SPECIES_LABELS, SPECIES_ORDER, ageText, todayIso } from "@/lib/farm-labels";
@@ -359,7 +362,24 @@ function NewAnimalPage({ farmId }: { farmId: number }) {
   );
 }
 
-function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: number }) {
+/** The topics of one animal, each on its own page /farm/:farmId/tier/:animalId/:key. */
+const ANIMAL_SECTIONS: ReadonlyArray<{
+  key: string;
+  label: string;
+  hint: string;
+  icon: ComponentType<{ className?: string; strokeWidth?: number }>;
+  tone: string;
+  shows: (species: FarmSpecies) => boolean;
+}> = [
+  { key: "gesundheit", label: "Gesundheit", hint: "Behandlungen, Wartezeit, Impfungen", icon: Stethoscope, tone: TONES.red, shows: () => true },
+  { key: "gewicht", label: "Gewicht", hint: "Wiegen und Verlauf", icon: Scale, tone: TONES.sky, shows: () => true },
+  { key: "futter", label: "Futter", hint: "Ration und Futter-Check", icon: Wheat, tone: TONES.yellow, shows: () => true },
+  { key: "abstammung", label: "Abstammung", hint: "Mutter, Vater, Nachwuchs", icon: GitFork, tone: TONES.pink, shows: () => true },
+  { key: "pflanzen", label: "Heil- & Futterpflanzen", hint: "Was hilft, was ist giftig", icon: Leaf, tone: TONES.green, shows: (s) => ARCHIVE_SPECIES.has(s) },
+  { key: "haltung", label: "Haltung", hint: "Platz, Stall, Pflege", icon: Home, tone: TONES.amber, shows: (s) => s !== "other" },
+];
+
+function AnimalDetailPage({ farmId, animalId, section }: { farmId: number; animalId: number; section?: string }) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const refresh = useRefreshFarmData(farmId);
@@ -435,6 +455,34 @@ function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: numb
     );
   }
 
+  const topic = section ? ANIMAL_SECTIONS.find((t) => t.key === section && t.shows(a.species)) : undefined;
+  if (section) {
+    if (!topic) return <Redirect to={`/farm/${farmId}/tier/${animalId}`} replace />;
+    return (
+      <div className="space-y-5 px-4 pb-6 pt-6">
+        <Link href={`/farm/${farmId}/tier/${animalId}`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+          <ArrowLeft className="h-4 w-4" />
+          {a.name}
+        </Link>
+        <div className="flex items-center gap-3">
+          <span className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-xl", topic.tone)}>
+            <topic.icon className="h-5 w-5" />
+          </span>
+          <div className="min-w-0">
+            <h1 className="truncate font-serif text-2xl font-semibold">{topic.label}</h1>
+            <p className="text-sm text-muted-foreground">{a.name} · {SPECIES_LABELS[a.species]}</p>
+          </div>
+        </div>
+        {topic.key === "gesundheit" && <MedicalSection farmId={farmId} animalId={animalId} canWrite={canWrite} />}
+        {topic.key === "gewicht" && <WeightSection farmId={farmId} animalId={animalId} canWrite={canWrite} />}
+        {topic.key === "futter" && <FeedSection farmId={farmId} animalId={animalId} canWrite={canWrite} />}
+        {topic.key === "abstammung" && <LineageSection key={animalId} farmId={farmId} animal={a} canWrite={canWrite} />}
+        {topic.key === "pflanzen" && <HelpfulPlantsSection farmId={farmId} species={a.species} />}
+        {topic.key === "haltung" && <HusbandrySection farmId={farmId} species={a.species} />}
+      </div>
+    );
+  }
+
   const facts: Array<[string, string]> = [
     ["Tierart", SPECIES_LABELS[a.species]],
     ["Rasse", a.breed ?? "–"],
@@ -484,12 +532,12 @@ function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: numb
           </section>
         )}
 
-        <LineageSection key={animalId} farmId={farmId} animal={a} canWrite={canWrite} />
-        <MedicalSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
-        <WeightSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
-        <FeedSection farmId={farmId} animalId={animalId} canWrite={canWrite} />
-        <HelpfulPlantsSection farmId={farmId} species={a.species} />
-        <HusbandrySection farmId={farmId} species={a.species} />
+        {/* Each topic on its own page (docs/DESIGN.md, D4). */}
+        <HubGrid>
+          {ANIMAL_SECTIONS.filter((t) => t.shows(a.species)).map((t) => (
+            <HubTile key={t.key} href={`/farm/${farmId}/tier/${animalId}/${t.key}`} icon={t.icon} label={t.label} hint={t.hint} tone={t.tone} />
+          ))}
+        </HubGrid>
 
         {canWrite && (
           <Button
@@ -516,13 +564,13 @@ function AnimalDetailPage({ farmId, animalId }: { farmId: number; animalId: numb
   );
 }
 
-/** /farm/:farmId/tier/neu and /farm/:farmId/tier/:animalId */
+/** /farm/:farmId/tier/neu, /farm/:farmId/tier/:animalId and its topics /farm/:farmId/tier/:animalId/:section */
 export default function FarmAnimalPage() {
-  const params = useParams<{ farmId: string; animalId: string }>();
+  const params = useParams<{ farmId: string; animalId: string; section?: string }>();
   const farmId = Number(params.farmId);
   if (!Number.isInteger(farmId) || farmId <= 0) return null;
   if (params.animalId === "neu") return <NewAnimalPage farmId={farmId} />;
   const animalId = Number(params.animalId);
   if (!Number.isInteger(animalId) || animalId <= 0) return null;
-  return <AnimalDetailPage farmId={farmId} animalId={animalId} />;
+  return <AnimalDetailPage farmId={farmId} animalId={animalId} section={params.section} />;
 }

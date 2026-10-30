@@ -11255,6 +11255,7 @@ export const getSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 
 export const GetSettingsResponse = zod.object({
+  "hiddenAnimals": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'donkey']).describe('An animal kind of the plant archive (ANIMAL_KINDS in lib\/db schema\/plants.ts)')).describe('Meine Tierarten (docs\/module.md) – animal kinds hidden in \"Essbar für\" and the Kräuter-Hexe'),
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
   "organicTips": zod.boolean().describe('Bio (docs\/bio.md) – the account\'s own switch for organic plant advice only'),
   "organicFarm": zod.string().nullable().describe('Name of a farm of the account that farms naturally or organically – its plant advice is organic anyway'),
@@ -11277,6 +11278,8 @@ export const setSettingsBodyPushOffMax = 20;
 
 export const setSettingsBodyQuietHoursOneFromRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
 export const setSettingsBodyQuietHoursOneToRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
+export const setSettingsBodyHiddenAnimalsMax = 20;
+
 
 
 export const SetSettingsBody = zod.object({
@@ -11288,7 +11291,8 @@ export const SetSettingsBody = zod.object({
   "to": zod.string().regex(setSettingsBodyQuietHoursOneToRegExp)
 }).describe('No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes'),zod.null()]).optional(),
   "seasonalCare": zod.boolean().optional(),
-  "organicTips": zod.boolean().optional()
+  "organicTips": zod.boolean().optional(),
+  "hiddenAnimals": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'donkey']).describe('An animal kind of the plant archive (ANIMAL_KINDS in lib\/db schema\/plants.ts)')).max(setSettingsBodyHiddenAnimalsMax).optional()
 })
 
 export const setSettingsResponseQuietHoursOneFromRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
@@ -11296,6 +11300,7 @@ export const setSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 
 export const SetSettingsResponse = zod.object({
+  "hiddenAnimals": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'donkey']).describe('An animal kind of the plant archive (ANIMAL_KINDS in lib\/db schema\/plants.ts)')).describe('Meine Tierarten (docs\/module.md) – animal kinds hidden in \"Essbar für\" and the Kräuter-Hexe'),
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
   "organicTips": zod.boolean().describe('Bio (docs\/bio.md) – the account\'s own switch for organic plant advice only'),
   "organicFarm": zod.string().nullable().describe('Name of a farm of the account that farms naturally or organically – its plant advice is organic anyway'),

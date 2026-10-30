@@ -34,6 +34,8 @@ vi.mock("@workspace/api-client-react", () => ({
   }),
   useListCareGuides: () => ({ data: [], isLoading: false }),
   useGetLeaderboard: () => ({ data: null, isLoading: false }),
+  // Meine Tierarten: nothing hidden.
+  useGetSettings: () => ({ data: { hiddenAnimals: [] } }),
 }));
 
 // wouter – stub useLocation so navigation calls don't throw.

@@ -9860,8 +9860,13 @@ components:
       enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members, bees, pantry, pasture]
     UserSettings:
       type: object
-      required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare, organicTips, organicFarm]
+      required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare, organicTips, organicFarm, hiddenAnimals]
       properties:
+        hiddenAnimals:
+          type: array
+          description: Meine Tierarten (docs/module.md) – animal kinds hidden in "Essbar für" and the Kräuter-Hexe
+          items:
+            $ref: "#/components/schemas/AnimalKind"
         seasonalCare:
           type: boolean
           description: Winter – water less often, no fertilising (docs/pflege-wetter.md)
@@ -9909,6 +9914,15 @@ components:
           type: boolean
         organicTips:
           type: boolean
+        hiddenAnimals:
+          type: array
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/AnimalKind"
+    AnimalKind:
+      type: string
+      description: An animal kind of the plant archive (ANIMAL_KINDS in lib/db schema/plants.ts)
+      enum: [poultry, rabbit, guineaPig, cat, horse, dog, goat, sheep, cattle, pig, alpaca, donkey]
     PushTopic:
       type: string
       description: What a push is about – each can be switched off (docs/benachrichtigungen.md)

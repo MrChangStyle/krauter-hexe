@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
-import { useLocation } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useListPlants, type Plant } from "@workspace/api-client-react";
 import { X, ChevronDown, Search, Share2, Check, ChevronRight } from "lucide-react";
 import { PlantCard } from "@/components/plant-card";
@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import { HEAL_TARGETS, canonicalizeSymptom, type HealTarget } from "@/lib/heal-targets";
+import { canonicalizeSymptom, type HealTarget } from "@/lib/heal-targets";
 import { SYMPTOM_NAMES } from "@/lib/symptom-vocabulary";
 import {
   availableSymptomsFor,
@@ -27,6 +27,7 @@ import {
 } from "@/lib/ailment-filter";
 import { parseUrlState, buildSearchString, canonicaliseSymptoms } from "@/lib/url-state";
 import { PageHeader } from "@/components/page-header";
+import { useHealTargets } from "@/hooks/use-animal-kinds";
 
 // ─── target card metadata ─────────────────────────────────────────────────────
 
@@ -121,6 +122,8 @@ export default function KraeuterHexePage() {
   // beschwerden") – map it to today's fixed name.
   const initialUrlState = useRef(withCanonicalSymptoms(parseUrlState(window.location.search)));
   const [target, setTarget] = useState<HealTarget>(() => initialUrlState.current.target);
+  // Meine Tierarten: only the kinds the account keeps (plus the one on screen).
+  const { targets } = useHealTargets(target);
   const [query, setQuery] = useState(() => initialUrlState.current.query);
   const [selectedByTarget, setSelectedByTarget] = useState<
     Record<string, Set<string>>
@@ -346,7 +349,7 @@ export default function KraeuterHexePage() {
         <span className="text-sm font-medium text-foreground">Wähle die Art des Patienten</span>
       </div>
       <div className="mb-6 grid grid-cols-4 gap-2 mt-2 sm:grid-cols-5">
-        {HEAL_TARGETS.map((t) => {
+        {targets.map((t) => {
           const meta = TARGET_META[t.key];
           const active = t.key === target;
           return (
@@ -380,6 +383,11 @@ export default function KraeuterHexePage() {
           );
         })}
       </div>
+      <p className="-mt-4 mb-6 text-right text-xs">
+        <Link href="/module" className="text-muted-foreground underline-offset-2 hover:text-foreground hover:underline">
+          Tierarten auswählen
+        </Link>
+      </p>
 
       {/* ── Step 2 label ───────────────────────────────────────────── */}
       {relevantPlants.length > 0 && (

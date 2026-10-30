@@ -217,7 +217,7 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 
 ## Module
 
-Details in `docs/module.md`. Every account can hide areas (Pflanzen, Tiere) and single modules under Mehr → „Meine Module“ (`/module`); hidden ones leave the hub tiles, the dashboard and the bottom bar, the data stays. Registry `lib/modules.ts` (ids = `ModuleId` in the API, tier `base` or `lite` → label Lite/Premium), stored per account in `user_settings` (`GET/PUT /settings`, in `PERSONAL_TABLES`, also `onboarded_at` for the first-start assistant).
+Details in `docs/module.md`. Every account can hide areas (Pflanzen, Tiere) and single modules under Mehr → „Meine Module“ (`/module`); hidden ones leave the hub tiles, the dashboard and the bottom bar, the data stays. Registry `lib/modules.ts` (ids = `ModuleId` in the API, tier `base` or `lite` → label Lite/Premium), stored per account in `user_settings` (`GET/PUT /settings`, in `PERSONAL_TABLES`, also `onboarded_at` for the first-start assistant). The same page holds „Meine Tierarten“: `user_settings.hidden_animals` (`hiddenAnimals`, default all shown) limits the animal kinds in „Essbar für“ and the Kräuter-Hexe (`hooks/use-animal-kinds.ts`).
 
 Demo-Daten (`docs/demo.md`): „Demo-Daten laden“ on `/module` creates a separate farm „Demo-Hof“ (`farms.is_demo`) with two examples per module, plus a demo grow (`grows.is_demo`) for accounts that confirmed their age; „Demo-Daten löschen“ deletes both, real data stays. `lib/demoData.ts`, `GET/POST/DELETE /demo`, client `components/demo-card.tsx`.
 

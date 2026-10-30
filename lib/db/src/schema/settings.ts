@@ -20,4 +20,7 @@ export const userSettingsTable = pgTable("user_settings", {
   // Bio (docs/bio.md): only organic advice in Pflanzendoc and Pflege-Guide,
   // for accounts without a farm that farms naturally or organically.
   organicTips: boolean("organic_tips").notNull().default(false),
+  // Meine Tierarten (docs/module.md): animal kinds hidden in "Essbar für" and
+  // the Kräuter-Hexe; empty = every kind shows.
+  hiddenAnimals: jsonb("hidden_animals").$type<string[]>().notNull().default([]),
 });

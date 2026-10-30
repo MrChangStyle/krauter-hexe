@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { ANIMALS, type AnimalKey, getAnimalInfo } from "@/lib/animals";
 import { HEAL_TARGETS } from "@/lib/heal-targets";
+import { useHealTargets } from "@/hooks/use-animal-kinds";
 import type { Plant } from "@workspace/api-client-react";
 import { firstLetter, applyAlpha } from "@/lib/archive-helpers";
 import { AlphaFilter } from "@/components/alpha-filter";
@@ -70,13 +71,19 @@ function EdiblePicker({
   plants: Plant[];
   onSelect: (target: FilterTarget) => void;
 }) {
+  // Meine Tierarten: only the kinds the account keeps.
+  const { targets } = useHealTargets();
+  const shown = TARGETS.filter((t) => targets.some((v) => v.key === t.value));
   return (
     <div className="space-y-4">
       <p className="text-sm text-muted-foreground">
-        Wähle aus, für wen du essbare Pflanzen sehen möchtest.
+        Wähle aus, für wen du essbare Pflanzen sehen möchtest.{" "}
+        <Link href="/module" className="underline underline-offset-2 hover:text-foreground">
+          Tierarten auswählen
+        </Link>
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        {TARGETS.map(({ value, label, emoji, description }) => {
+        {shown.map(({ value, label, emoji, description }) => {
           const count = plants.filter((p) => isEdibleFor(p, value)).length;
           return (
             <button

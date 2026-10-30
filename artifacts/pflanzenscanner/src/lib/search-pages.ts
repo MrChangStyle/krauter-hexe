@@ -44,7 +44,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Übergabe", hint: "Für die Vertretung", href: "/farm/uebergabe", module: "handover", words: "urlaub vertretung" },
   { title: "Farm & Team", hint: "Team, Rollen, Kontakte", href: "/team", module: "members", words: "mitglieder vertretung kontakte freigaben tierarzt einladen zugang" },
   { title: "Veterinäramt-Export", hint: "Bestandsliste als PDF", href: "/farm/export", module: "export", words: "pdf veterinäramt liste bio-dokumentation öko-kontrolle kontrollstelle" },
-  { title: "Meine Module", hint: "Ein- und ausblenden, Demo-Daten", href: "/module", words: "module demo einrichtung tour" },
+  { title: "Meine Module", hint: "Ein- und ausblenden, Demo-Daten", href: "/module", words: "module demo einrichtung tour tierarten tiere auswählen" },
   { title: "Hilfe & FAQ", hint: "Alle Module erklärt, häufige Fragen", href: "/hilfe", words: "hilfe faq fragen anleitung erklärung wie geht" },
   { title: "Benachrichtigungen", hint: "Was kommt, Ruhezeit", href: "/mehr#push", words: "push erinnerungen ruhezeit" },
   { title: "Konto", hint: "Name, Passwort, Daten", href: "/mehr#konto", words: "passwort ändern vergessen zurücksetzen löschen konto daten" },

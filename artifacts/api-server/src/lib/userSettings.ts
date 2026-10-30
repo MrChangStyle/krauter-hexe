@@ -6,7 +6,7 @@
  */
 
 import { ModuleId, PushTopic, type ModuleId as Module, type PushTopic as Topic, type QuietHours } from '@workspace/api-zod';
-import { db, userSettingsTable } from '@workspace/db';
+import { ANIMAL_KINDS, db, userSettingsTable, type AnimalKind } from '@workspace/db';
 import { eq } from 'drizzle-orm';
 import { organicTipsFor } from './farming';
 
@@ -24,11 +24,18 @@ export interface UserSettings {
   organicTips: boolean;
   /** A farm of the account farms naturally or organically – its advice is organic anyway. */
   organicFarm: string | null;
+  /** Meine Tierarten: animal kinds hidden in "Essbar für" and the Kräuter-Hexe. */
+  hiddenAnimals: AnimalKind[];
 }
 
 /** Known ids only, each once – a module the app no longer has drops out. */
 export function cleanModules(ids: readonly string[]): Module[] {
   return [...new Set(ids)].filter((m): m is Module => KNOWN.has(m));
+}
+
+/** Known animal kinds only, each once. */
+export function cleanAnimals(ids: readonly string[]): AnimalKind[] {
+  return [...new Set(ids)].filter((k): k is AnimalKind => (ANIMAL_KINDS as readonly string[]).includes(k));
 }
 
 export function cleanTopics(ids: readonly string[]): Topic[] {
@@ -49,12 +56,13 @@ export async function getSettings(userId: string): Promise<UserSettings> {
     seasonalCare: row?.seasonalCare ?? true,
     organicTips: row?.organicTips ?? false,
     organicFarm: (await organicTipsFor(userId)).farmName,
+    hiddenAnimals: cleanAnimals(row?.hiddenAnimals ?? []),
   };
 }
 
 export async function setSettings(
   userId: string,
-  input: { hiddenModules?: readonly string[]; onboarded?: boolean; pushOff?: readonly string[]; quietHours?: QuietHours | null; seasonalCare?: boolean; organicTips?: boolean },
+  input: { hiddenModules?: readonly string[]; onboarded?: boolean; pushOff?: readonly string[]; quietHours?: QuietHours | null; seasonalCare?: boolean; organicTips?: boolean; hiddenAnimals?: readonly string[] },
 ): Promise<UserSettings> {
   const set: Partial<typeof userSettingsTable.$inferInsert> = { updatedAt: new Date() };
   if (input.hiddenModules !== undefined) set.hiddenModules = cleanModules(input.hiddenModules);
@@ -62,6 +70,7 @@ export async function setSettings(
   if (input.pushOff !== undefined) set.pushOff = cleanTopics(input.pushOff);
   if (input.seasonalCare !== undefined) set.seasonalCare = input.seasonalCare;
   if (input.organicTips !== undefined) set.organicTips = input.organicTips;
+  if (input.hiddenAnimals !== undefined) set.hiddenAnimals = cleanAnimals(input.hiddenAnimals);
   if (input.quietHours !== undefined) {
     const q = input.quietHours && quiet(input.quietHours.from, input.quietHours.to);
     set.quietStart = q ? q.from : null;

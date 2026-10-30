@@ -2195,6 +2195,27 @@ export const ModuleId = {
 } as const;
 
 /**
+ * An animal kind of the plant archive (ANIMAL_KINDS in lib/db schema/plants.ts)
+ */
+export type AnimalKind = typeof AnimalKind[keyof typeof AnimalKind];
+
+
+export const AnimalKind = {
+  poultry: 'poultry',
+  rabbit: 'rabbit',
+  guineaPig: 'guineaPig',
+  cat: 'cat',
+  horse: 'horse',
+  dog: 'dog',
+  goat: 'goat',
+  sheep: 'sheep',
+  cattle: 'cattle',
+  pig: 'pig',
+  alpaca: 'alpaca',
+  donkey: 'donkey',
+} as const;
+
+/**
  * What a push is about – each can be switched off (docs/benachrichtigungen.md)
  */
 export type PushTopic = typeof PushTopic[keyof typeof PushTopic];
@@ -2229,6 +2250,8 @@ export interface QuietHours {
 }
 
 export interface UserSettings {
+  /** Meine Tierarten (docs/module.md) – animal kinds hidden in "Essbar für" and the Kräuter-Hexe */
+  hiddenAnimals: AnimalKind[];
   /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */
   seasonalCare: boolean;
   /** Bio (docs/bio.md) – the account's own switch for organic plant advice only */
@@ -2254,6 +2277,8 @@ export interface UserSettingsInput {
   quietHours?: QuietHours | null;
   seasonalCare?: boolean;
   organicTips?: boolean;
+  /** @maxItems 20 */
+  hiddenAnimals?: AnimalKind[];
 }
 
 export interface SearchItem {

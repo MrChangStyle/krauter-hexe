@@ -10,6 +10,7 @@ export * from './addFarmMemberInput';
 export * from './addFarmTaskCommentInput';
 export * from './addNoteShareInput';
 export * from './animalInfo';
+export * from './animalKind';
 export * from './animalSex';
 export * from './appStatus';
 export * from './appStatusInput';

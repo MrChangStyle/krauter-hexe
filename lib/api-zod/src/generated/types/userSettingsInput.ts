@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AnimalKind } from './animalKind';
 import type { ModuleId } from './moduleId';
 import type { PushTopic } from './pushTopic';
 import type { QuietHours } from './quietHours';
@@ -18,4 +19,6 @@ export interface UserSettingsInput {
   quietHours?: QuietHours | null;
   seasonalCare?: boolean;
   organicTips?: boolean;
+  /** @maxItems 20 */
+  hiddenAnimals?: AnimalKind[];
 }

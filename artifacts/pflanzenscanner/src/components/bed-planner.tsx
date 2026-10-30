@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { Check, ChevronLeft, ChevronRight, History, Loader2, Search, Sparkles, Sun, Trash2, X } from "lucide-react";
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Check, ChevronLeft, ChevronRight, History, Loader2, Move, Search, Sparkles, Sun, Trash2, X } from "lucide-react";
 import {
   getGetBedHistoryQueryKey,
   getGetGardenCalendarQueryKey,
@@ -10,14 +10,16 @@ import {
   useGetBedHistory,
   useGetGardenCatalog,
   useListPlantings,
+  useMovePlanting,
   useListPlants,
   useRemovePlanting,
   useRequestCrop,
-  useSuggestPlanting,
+  suggestPlanting,
   useGetGardenGoals,
   getGetGardenGoalsQueryKey,
   type BedPlanting,
   type PlantingProposal,
+  type PlantingSuggestionInput,
   type Crop,
   type GardenBed,
 } from "@workspace/api-client-react";
@@ -34,6 +36,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { rotationIssues, rotationText, seasonSummary, type RotationIssue } from "@/lib/garden-calendar";
 import { useToast } from "@/hooks/use-toast";
+import { AI_SUGGEST_WAIT_MS, withPlanTimeout } from "@/lib/ai-plan";
+import { fitsAt, grabbedCell } from "@/lib/bed-move";
 import { cn } from "@/lib/utils";
 import {
   CELL_CM,
@@ -275,6 +279,7 @@ function PlantingDialog({
   canWrite,
   busy,
   onRemove,
+  onMove,
   onClose,
 }: {
   farmId: number;
@@ -286,6 +291,8 @@ function PlantingDialog({
   canWrite: boolean;
   busy: boolean;
   onRemove: () => void;
+  /** Verschieben: pick a new spot on the grid. */
+  onMove?: () => void;
   onClose: () => void;
 }) {
   const hints = neighbourHints(plantings, crops);
@@ -331,6 +338,12 @@ function PlantingDialog({
           </p>
         ))}
         <HarvestLog farmId={farmId} planting={planting} canWrite={canWrite} />
+        {canWrite && onMove && (
+          <Button variant="outline" className="gap-1.5" disabled={busy} onClick={onMove}>
+            <Move className="h-4 w-4" />
+            Verschieben
+          </Button>
+        )}
         {canWrite && (
           <Button variant="outline" className="gap-1.5 text-destructive hover:text-destructive" disabled={busy} onClick={onRemove}>
             {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
@@ -349,6 +362,10 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
   const [season, setSeason] = useState(new Date().getFullYear());
   const [cell, setCell] = useState<{ x: number; y: number } | null>(null);
   const [selected, setSelected] = useState<BedPlanting | null>(null);
+  // Verschieben: tap mode (from the planting's dialog) and dragging with the finger.
+  const [moving, setMoving] = useState<BedPlanting | null>(null);
+  const [drag, setDrag] = useState<{ planting: BedPlanting; x: number; y: number } | null>(null);
+  const dragStart = useRef<{ planting: BedPlanting; px: number; py: number; dx: number; dy: number; active: boolean } | null>(null);
   const [view, setView] = useState<"grid" | "photo">(bed.photoCorners ? "photo" : "grid");
   const [asking, setAsking] = useState(false);
   const [wishes, setWishes] = useState("");
@@ -389,15 +406,16 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
       onError: (err) => toast({ title: "Nicht gesetzt", description: errorText(err, "Bitte versuche es noch einmal."), variant: "destructive" }),
     },
   });
-  const suggest = useSuggestPlanting({
-    mutation: {
-      onSuccess(result) {
-        setAsking(false);
-        setView("grid");
-        setProposal(result);
-      },
-      onError: (err) => toast({ title: "Kein Vorschlag", description: errorText(err, "Die KI ist gerade nicht erreichbar."), variant: "destructive" }),
+  // Never spins for ever: the server has a time budget, the app stops waiting after it.
+  const suggest = useMutation({
+    mutationFn: (v: { farmId: number; bedId: number; season: number; data: PlantingSuggestionInput }) =>
+      withPlanTimeout(suggestPlanting(v.farmId, v.bedId, v.season, v.data), AI_SUGGEST_WAIT_MS),
+    onSuccess(result: PlantingProposal) {
+      setAsking(false);
+      setView("grid");
+      setProposal(result);
     },
+    onError: (err) => toast({ title: "Kein Vorschlag", description: errorText(err, "Die KI ist gerade nicht erreichbar."), variant: "destructive" }),
   });
   const addOne = useAddPlanting();
   async function applyProposal(items: PlantingProposal["items"]) {
@@ -418,6 +436,21 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
       description: failed > 0 ? `${failed} passten inzwischen nicht mehr.` : undefined,
     });
   }
+  const move = useMovePlanting({
+    mutation: {
+      onSuccess() {
+        setMoving(null);
+        void refresh();
+      },
+      onError: (err) => toast({ title: "Nicht verschoben", description: errorText(err, "Bitte versuche es noch einmal."), variant: "destructive" }),
+    },
+  });
+  const moveTo = (p: BedPlanting, x: number, y: number) => {
+    if (p.x === x && p.y === y) return setMoving(null);
+    // Shown at once; the list reloads after the server agreed.
+    queryClient.setQueryData<BedPlanting[]>(getListPlantingsQueryKey(farmId, bed.id, season), (old) => old?.map((o) => (o.id === p.id ? { ...o, x, y } : o)));
+    move.mutate({ farmId, plantingId: p.id, data: { x, y } });
+  };
   const remove = useRemovePlanting({
     mutation: {
       onSuccess() {
@@ -449,6 +482,41 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
   const earlier = seasonSummary(history, crops, season).filter((s) => s.labels.length > 0);
   const occupied = (x: number, y: number) => inside.some((p) => x >= p.x && x < p.x + p.w && y >= p.y && y < p.y + p.h);
   const cellPx = cols > 10 ? 34 : undefined;
+
+  // Dragging: the cell under the finger, minus the cell of the planting it holds.
+  const cellAt = (clientX: number, clientY: number) => {
+    const el = document.elementFromPoint(clientX, clientY)?.closest<HTMLElement>("[data-cell]");
+    return el ? { x: Number(el.dataset.x), y: Number(el.dataset.y) } : null;
+  };
+  const onPlantingDown = (p: BedPlanting, e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!canWrite || proposal || moving) return;
+    const g = grabbedCell(p, e.currentTarget.getBoundingClientRect(), { x: e.clientX, y: e.clientY });
+    dragStart.current = { planting: p, px: e.clientX, py: e.clientY, ...g, active: false };
+  };
+  const onPlantingMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    const d = dragStart.current;
+    if (!d) return;
+    if (!d.active) {
+      if (Math.hypot(e.clientX - d.px, e.clientY - d.py) < 8) return;
+      d.active = true;
+      e.currentTarget.setPointerCapture(e.pointerId);
+    }
+    const c = cellAt(e.clientX, e.clientY);
+    if (c) setDrag({ planting: d.planting, x: c.x - d.dx, y: c.y - d.dy });
+  };
+  const onPlantingUp = (p: BedPlanting) => {
+    const d = dragStart.current;
+    dragStart.current = null;
+    if (!d?.active) {
+      if (moving) return;
+      return setSelected(p);
+    }
+    const target = drag;
+    setDrag(null);
+    if (target && fitsAt(p, target.x, target.y, inside, cols, rows)) moveTo(p, target.x, target.y);
+    else if (target) toast({ title: "Passt dort nicht hin", description: "Das Feld ist belegt oder liegt am Rand.", variant: "destructive" });
+  };
+  const dropOk = drag ? fitsAt(drag.planting, drag.x, drag.y, inside, cols, rows) : false;
 
   return (
     <section className="space-y-3">
@@ -491,6 +559,16 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
       )}
       </div>
 
+      {moving && (
+        <div role="status" className="flex items-center justify-between gap-2 rounded-xl border border-primary/40 bg-primary/10 p-3 text-sm" data-testid="moving-banner">
+          <span>
+            <span className="font-medium">„{moving.label}“ verschieben:</span> Tippe auf das Feld, wo sie hin soll{moving.w > 1 ? " (linke obere Ecke)" : ""}.
+          </span>
+          <Button size="sm" variant="ghost" onClick={() => setMoving(null)}>
+            Abbrechen
+          </Button>
+        </div>
+      )}
       {plantingsQuery.isLoading || catalog.isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       ) : view === "photo" ? (
@@ -509,10 +587,20 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
                 <button
                   key={`${x}-${y}`}
                   type="button"
-                  aria-label={`Feld ${x + 1}/${y + 1}${occupied(x, y) ? "" : " – frei"}`}
-                  disabled={!canWrite || occupied(x, y)}
-                  onClick={() => setCell({ x, y })}
-                  className="aspect-square rounded-sm border border-dashed border-white/25 bg-[#6B5039] transition-colors enabled:hover:bg-[#7A5D44]"
+                  data-cell=""
+                  data-x={x}
+                  data-y={y}
+                  aria-label={
+                    moving
+                      ? `${moving.label} nach Feld ${x + 1}/${y + 1}${fitsAt(moving, x, y, inside, cols, rows) ? "" : " – passt nicht"}`
+                      : `Feld ${x + 1}/${y + 1}${occupied(x, y) ? "" : " – frei"}`
+                  }
+                  disabled={!canWrite || (moving ? !fitsAt(moving, x, y, inside, cols, rows) : occupied(x, y))}
+                  onClick={() => (moving ? moveTo(moving, x, y) : setCell({ x, y }))}
+                  className={cn(
+                    "aspect-square rounded-sm border border-dashed border-white/25 bg-[#6B5039] transition-colors enabled:hover:bg-[#7A5D44]",
+                    moving && fitsAt(moving, x, y, inside, cols, rows) && "border-solid border-white/70 bg-[#7A5D44]",
+                  )}
                   style={{ gridColumn: x + 1, gridRow: y + 1 }}
                 />
               )),
@@ -523,9 +611,18 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
                 <button
                   key={p.id}
                   type="button"
-                  onClick={() => setSelected(p)}
+                  onPointerDown={(e) => onPlantingDown(p, e)}
+                  onPointerMove={onPlantingMove}
+                  onPointerUp={() => onPlantingUp(p)}
+                  onPointerCancel={() => {
+                    dragStart.current = null;
+                    setDrag(null);
+                  }}
+                  onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), setSelected(p))}
                   className={cn(
-                    "z-10 flex items-center justify-center rounded-md p-0.5 shadow-sm",
+                    "z-10 flex touch-none select-none items-center justify-center rounded-md p-0.5 shadow-sm",
+                    canWrite && "cursor-grab",
+                    (drag?.planting.id === p.id || moving?.id === p.id) && "pointer-events-none opacity-40",
                     badIds.has(p.id)
                       ? "ring-2 ring-destructive ring-offset-1 ring-offset-[#5C4330]"
                       : (rotationOf.get(p.id)?.length ?? 0) > 0 && "ring-2 ring-amber-400 ring-offset-1 ring-offset-[#5C4330]",
@@ -537,6 +634,13 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
                 </button>
               );
             })}
+            {drag && (
+              <span
+                className={cn("pointer-events-none z-30 rounded-md border-2 border-dashed", dropOk ? "border-white bg-white/30" : "border-red-400 bg-red-500/30")}
+                style={{ gridColumn: `${Math.max(0, drag.x) + 1} / span ${drag.planting.w}`, gridRow: `${Math.max(0, drag.y) + 1} / span ${drag.planting.h}` }}
+                aria-hidden="true"
+              />
+            )}
             {proposal?.items.map((item) => (
               <span
                 key={`p-${item.x}-${item.y}`}
@@ -696,6 +800,11 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
           canWrite={canWrite}
           busy={remove.isPending}
           onRemove={() => remove.mutate({ farmId, plantingId: selected.id })}
+          onMove={() => {
+            setMoving(selected);
+            setSelected(null);
+            setView("grid");
+          }}
           onClose={() => setSelected(null)}
         />
       )}

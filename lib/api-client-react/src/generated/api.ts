@@ -209,6 +209,7 @@ import type {
   PlantHealthResult,
   PlantScanInput,
   PlantScanResult,
+  PlantingMoveInput,
   PlantingProposal,
   PlantingSuggestionInput,
   Premium,
@@ -19327,6 +19328,80 @@ export const useAddPlanting = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getAddPlantingMutationOptions(options));
+    }
+
+export const getMovePlantingUrl = (farmId: number,
+    plantingId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/plantings/${plantingId}`
+}
+
+/**
+ * @summary Verschieben – the same planting to another spot of its bed; it keeps its harvests and checks (caretaker or admin)
+ */
+export const movePlanting = async (farmId: number,
+    plantingId: number,
+    plantingMoveInput: PlantingMoveInput, options?: RequestInit): Promise<BedPlanting> => {
+
+  return customFetch<BedPlanting>(getMovePlantingUrl(farmId,plantingId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(plantingMoveInput)
+  }
+);}
+
+
+
+
+
+export const getMovePlantingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof movePlanting>>, TError,{farmId: number;plantingId: number;data: BodyType<PlantingMoveInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof movePlanting>>, TError,{farmId: number;plantingId: number;data: BodyType<PlantingMoveInput>}, TContext> => {
+
+const mutationKey = ['movePlanting'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof movePlanting>>, {farmId: number;plantingId: number;data: BodyType<PlantingMoveInput>}> = (props) => {
+          const {farmId,plantingId,data} = props ?? {};
+
+          return  movePlanting(farmId,plantingId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type MovePlantingMutationResult = NonNullable<Awaited<ReturnType<typeof movePlanting>>>
+    export type MovePlantingMutationBody = BodyType<PlantingMoveInput>
+    export type MovePlantingMutationError = ErrorType<void>
+
+    /**
+ * @summary Verschieben – the same planting to another spot of its bed; it keeps its harvests and checks (caretaker or admin)
+ */
+export const useMovePlanting = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof movePlanting>>, TError,{farmId: number;plantingId: number;data: BodyType<PlantingMoveInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof movePlanting>>,
+        TError,
+        {farmId: number;plantingId: number;data: BodyType<PlantingMoveInput>},
+        TContext
+      > => {
+      return useMutation(getMovePlantingMutationOptions(options));
     }
 
 export const getRemovePlantingUrl = (farmId: number,

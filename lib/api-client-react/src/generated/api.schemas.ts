@@ -5553,6 +5553,19 @@ export interface GardenBedInput {
   notes?: string | null;
 }
 
+export interface PlantingMoveInput {
+  /**
+     * New column of the top left cell
+     * @minimum 0
+     */
+  x: number;
+  /**
+     * New row of the top left cell
+     * @minimum 0
+     */
+  y: number;
+}
+
 export interface BedPlanting {
   id: number;
   season: number;

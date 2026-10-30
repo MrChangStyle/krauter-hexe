@@ -6117,6 +6117,38 @@ paths:
         "409":
           description: The cells are taken.
   /farms/{farmId}/plantings/{plantingId}:
+    patch:
+      tags: [garden]
+      operationId: movePlanting
+      summary: Verschieben – the same planting to another spot of its bed; it keeps its harvests and checks (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: plantingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlantingMoveInput"
+      responses:
+        "200":
+          description: The moved planting.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BedPlanting"
+        "400":
+          description: Outside the bed.
+        "409":
+          description: Taken by another planting.
     delete:
       tags: [garden]
       operationId: removePlanting
@@ -13707,6 +13739,18 @@ components:
             type: string
         color:
           type: string
+    PlantingMoveInput:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: integer
+          minimum: 0
+          description: New column of the top left cell
+        y:
+          type: integer
+          minimum: 0
+          description: New row of the top left cell
     BedPlanting:
       type: object
       required: [id, season, cropKey, plantId, label, x, y, w, h]

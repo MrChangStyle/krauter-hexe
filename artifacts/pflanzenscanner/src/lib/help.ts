@@ -123,12 +123,17 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     steps: [
       "Ein Beet anlegen (Größe, Standort mit Postleitzahl für Frosttermine).",
       "Kulturen ins Raster setzen – die App warnt bei schlechten Nachbarn und zu wenig Platz.",
+      "Umstellen: eine Pflanze mit dem Finger auf ein freies Feld ziehen – oder antippen, „Verschieben“ und das neue Feld tippen. Ernten und Häkchen bleiben dabei erhalten.",
       "Optional ein Foto des Beets: Die KI schätzt Schatten, Boden und Unkraut ein.",
       "Im Gartenkalender sehen, wann gesät, gepflanzt und geerntet wird.",
       "Ernten eintragen – die Ernte-Auswertung zeigt, was sich gelohnt hat.",
       "Gartenausgaben und Stunden eintragen – unter „Wirtschaftlichkeit“ steht, was nach Abzug der Kosten übrig bleibt und was eine Stunde gebracht hat.",
     ],
     faq: [
+      {
+        q: "Der KI-Vorschlag kommt nicht – was tun?",
+        a: "Die KI hat höchstens 45 Sekunden. Braucht sie länger, kommt „Die KI hat zu lange gebraucht“ und die Anfrage zählt nicht gegen dein Tageslimit. Einfach noch einmal tippen; kürzere Wünsche helfen.",
+      },
       { q: "Woher kennt die App meine Frosttermine?", a: "Aus Wetterdaten des Deutschen Wetterdienstes für deine Postleitzahl (auf etwa 10 km gerundet)." },
       { q: "Was ist mit dem Saatgut?", a: "Unter „Saatgut“ führst du deine Tüten. Die App sagt, wie lange sie keimen, und bucht beim Säen ab." },
       {

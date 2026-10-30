@@ -139,6 +139,45 @@ export async function addPlanting(farmId: number, bedId: number, season: number,
   });
 }
 
+/**
+ * Verschieben (docs/beet-architekt.md): the same planting to another spot of
+ * its bed – it keeps its id, so harvests and checks stay with it. It may
+ * overlap its own old spot, never another planting or the edge.
+ */
+export async function movePlanting(farmId: number, plantingId: number, input: { x: number; y: number }) {
+  return db.transaction(async (tx) => {
+    const [p] = await tx
+      .select({ ...plantingColumns, bedId: bedPlantingsTable.bedId })
+      .from(bedPlantingsTable)
+      .where(and(eq(bedPlantingsTable.id, plantingId), eq(bedPlantingsTable.farmId, farmId)));
+    if (!p) throw notFound();
+    // Same lock as adding: two moves cannot take the same cell.
+    await tx.execute(sql`SELECT pg_advisory_xact_lock(hashtext('bed-plantings'), ${p.bedId})`);
+    const [bed] = await tx
+      .select({ lengthCm: gardenBedsTable.lengthCm, widthCm: gardenBedsTable.widthCm })
+      .from(gardenBedsTable)
+      .where(and(eq(gardenBedsTable.id, p.bedId), eq(gardenBedsTable.farmId, farmId)));
+    if (!bed) throw notFound();
+    const { cols, rows } = gridSize(bed);
+    const rect = { x: input.x, y: input.y, w: p.w, h: p.h };
+    if (!Number.isInteger(rect.x) || !Number.isInteger(rect.y) || rect.x < 0 || rect.y < 0 || rect.x + rect.w > cols || rect.y + rect.h > rows) {
+      throw new FarmDataError(400, p.w > 1 ? `${p.label} braucht ${p.w} × ${p.h} Felder – so viel Platz ist dort nicht.` : 'Dieses Feld liegt außerhalb des Beetes.');
+    }
+    const others = await tx
+      .select(plantingColumns)
+      .from(bedPlantingsTable)
+      .where(and(eq(bedPlantingsTable.farmId, farmId), eq(bedPlantingsTable.bedId, p.bedId), eq(bedPlantingsTable.season, p.season)));
+    const clash = others.find((o) => o.id !== p.id && overlaps(o, rect));
+    if (clash) throw new FarmDataError(409, `Dort steht schon ${clash.label}.`);
+    const [row] = await tx
+      .update(bedPlantingsTable)
+      .set({ x: rect.x, y: rect.y })
+      .where(eq(bedPlantingsTable.id, p.id))
+      .returning(plantingColumns);
+    return row!;
+  });
+}
+
 export async function removePlanting(farmId: number, plantingId: number): Promise<void> {
   const deleted = await db
     .delete(bedPlantingsTable)

@@ -40,6 +40,8 @@ async function photoOf(bed: GardenBed): Promise<{ mimeType: string; data: string
 }
 
 const JSON_CONFIG = (maxOutputTokens: number) => ({ maxOutputTokens, responseMimeType: 'application/json' });
+/** Photo jobs are waited for on screen too: never longer than 45 s (room for thinking in the tokens). */
+const PHOTO_BUDGET = { timeoutMs: 45_000, attemptTimeoutMs: 25_000 };
 
 function text(value: unknown, max: number): string | null {
   if (typeof value !== 'string') return null;
@@ -95,7 +97,7 @@ Antworte nur mit einem JSON-Objekt:
   "ecken": [ {"x": Zahl, "y": Zahl}, … vier Punkte ]
 }
 x und y sind Anteile von Bildbreite und -höhe (0 bis 1, x von links, y von oben).`;
-  const parsed = (await runModelChain([{ role: 'user', parts: [{ text: prompt }, { inlineData: image }] }], MODELS, JSON_CONFIG(512))) as Record<
+  const parsed = (await runModelChain([{ role: 'user', parts: [{ text: prompt }, { inlineData: image }] }], MODELS, JSON_CONFIG(4096), PHOTO_BUDGET)) as Record<
     string,
     unknown
   > | null;
@@ -129,7 +131,7 @@ Beurteile nur, was auf dem Foto zu sehen ist, auf Deutsch, je 1–3 Sätze, ohne
   "tipps": ["bis zu 3 kurze, konkrete Tipps für die nächsten Wochen"]
 }
 Wenn auf dem Foto kein Beet zu erkennen ist, sag das in allen drei Feldern.`;
-  const parsed = (await runModelChain([{ role: 'user', parts: [{ text: prompt }, { inlineData: image }] }], MODELS, JSON_CONFIG(1024))) as Record<
+  const parsed = (await runModelChain([{ role: 'user', parts: [{ text: prompt }, { inlineData: image }] }], MODELS, JSON_CONFIG(4096), PHOTO_BUDGET)) as Record<
     string,
     unknown
   > | null;
@@ -329,8 +331,15 @@ Antworte nur mit einem JSON-Objekt:
   "pflanzen": [ {"cropKey": "Schlüssel", "x": Spalte der linken oberen Ecke, "y": Zeile der linken oberen Ecke${fodder ? ', "zweck": "futter" oder "kueche"' : ''}}, … ],
   "hinweis": "2–3 Sätze auf Deutsch: Idee des Plans"
 }`;
-  const { TEXT_MODELS, runModelChain } = await ai();
-  const parsed = (await runModelChain([{ role: 'user', parts: [{ text: prompt }] }], TEXT_MODELS, JSON_CONFIG(2048))) as Record<
+  // Before: no time limit and 2048 tokens – a thinking model used them up and
+  // answered empty, the chain started over, and the planner spun for minutes.
+  // Now: minimal thinking, room for the answer, and a time budget.
+  const { AI_PLAN_OUTPUT_TOKENS, AI_SUGGEST_ATTEMPT_MS, AI_SUGGEST_TIMEOUT_MS, TEXT_MODELS, runModelChain } = await ai();
+  const parsed = (await runModelChain([{ role: 'user', parts: [{ text: prompt }] }], TEXT_MODELS, JSON_CONFIG(AI_PLAN_OUTPUT_TOKENS), {
+    timeoutMs: AI_SUGGEST_TIMEOUT_MS,
+    attemptTimeoutMs: AI_SUGGEST_ATTEMPT_MS,
+    quick: true,
+  })) as Record<
     string,
     unknown
   > | null;

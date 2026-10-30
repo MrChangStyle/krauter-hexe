@@ -39,6 +39,8 @@ import {
   SetBedPhotoResponse,
   UpdateBedBody,
   UpdateBedResponse,
+  MovePlantingBody,
+  MovePlantingResponse,
 } from '@workspace/api-zod';
 
 import { requireApproved, requireOwner } from '../middlewares/requireApproved';
@@ -56,7 +58,7 @@ import {
 import { fullCatalog } from '../lib/gardenCatalog';
 import { approveCrop, listCropDrafts, loadApprovedCrops, rejectCrop, requestCrop } from '../lib/gardenCrops';
 import { analyzeBedPhoto, suggestCorners, suggestPlanting } from '../lib/gardenAi';
-import { addPlanting, listPlantings, removePlanting } from '../lib/gardenPlanner';
+import { addPlanting, listPlantings, movePlanting, removePlanting } from '../lib/gardenPlanner';
 import { bedHistory, farmCalendar, farmFrostWarnings, setCheck } from '../lib/gardenCalendar';
 import { berlinTodayKey } from '../lib/pushScheduler';
 import { gardenPlan, getGoals, saveGoals } from '../lib/gardenAssistant';
@@ -271,6 +273,19 @@ router.post(
     await getBed(farmId, bedId);
     const proposal = await withAiQuota(req, res, 'garden', () => suggestPlanting(farmId, bedId, season, body.data.wishes, body.data.animalShare ?? null));
     if (proposal) res.json(SuggestPlantingResponse.parse(proposal));
+  }),
+);
+
+// Verschieben: the same planting to another spot of its bed.
+router.patch(
+  '/farms/:farmId/plantings/:plantingId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const plantingId = idParam(req, 'plantingId');
+    if (plantingId === null) return notFound(res);
+    const body = MovePlantingBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(MovePlantingResponse.parse(await movePlanting(req.farm!.farmId, plantingId, body.data)));
   }),
 );
 

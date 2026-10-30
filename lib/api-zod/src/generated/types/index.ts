@@ -397,6 +397,7 @@ export * from './plantCategory';
 export * from './plantHealthInput';
 export * from './plantHealthRemedy';
 export * from './plantHealthResult';
+export * from './plantingMoveInput';
 export * from './plantingProposal';
 export * from './plantingProposalDroppedItem';
 export * from './plantingProposalItemsItem';

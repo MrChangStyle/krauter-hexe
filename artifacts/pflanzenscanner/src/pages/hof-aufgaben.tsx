@@ -489,7 +489,7 @@ function TeamCard({ farm, team }: { farm: FarmSummary; team: ReturnType<typeof u
         <span className="block font-medium">{count > 1 ? `Geteilt mit ${count - 1} ${count === 2 ? "Person" : "Personen"}` : "Liste teilen"}</span>
         <span className="block text-xs text-muted-foreground">
           Mitarbeiter haken ab, legen an und kommentieren – löschen kannst nur du.{" "}
-          <Link href="/team" className="underline">Farm & Team</Link>
+          <Link href="/team/mitglieder" className="underline">Farm & Team</Link>
         </span>
       </span>
       <Button size="sm" variant="outline" onClick={() => setOpen(true)}>Teilen</Button>

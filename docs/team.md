@@ -4,7 +4,19 @@ Unter Mehr → **„Farm & Team“** (`/team`) steht alles über die Menschen au
 
 ## Aufbau
 
-- **Übersicht**: wie viele im Team sind, wie viele vertreten und wie viele Kontakte eingetragen sind. Darunter steht aufklappbar, was die Rollen dürfen.
+Die Seite zeigt nur Kacheln (Design D4, `docs/DESIGN.md`); jedes Thema hat eine eigene Seite unter `/team/…`. Auf den Kacheln stehen die Zahlen: Personen im Team, Vertretungen, Kontakte und die Stufe der Bewirtschaftung. Die Hof-Auswahl und „du bist …“ stehen auf der Übersicht und auf jeder Unterseite.
+
+| Kachel | Seite |
+|---|---|
+| Team | `/team/mitglieder` – aufklappbar, was die Rollen dürfen, darunter die Mitglieder |
+| Vertretung | `/team/vertretung` |
+| Übergabe | `/farm/uebergabe` |
+| Kontakte | `/team/kontakte` |
+| Bewirtschaftung | `/team/bewirtschaftung` (`docs/bio.md`) |
+| Nachhaltigkeit | `/team/nachhaltigkeit` |
+
+Eine unbekannte Unterseite führt zurück auf `/team`.
+
 - **Team**: Mitglieder ohne Enddatum.
 - **Vertretung**: Mitglieder mit einem letzten Tag. Sie ist gleich aufgebaut wie das Team, nur anders benannt:
   - Das Datum ist Pflicht.
@@ -29,7 +41,7 @@ Unter Mehr → **„Farm & Team“** (`/team`) steht alles über die Menschen au
   - Höchstens 200 Kontakte je Farm.
   - Telefon und E-Mail werden geprüft.
 - Client:
-  - `pages/team.tsx`
+  - `pages/team.tsx` (Übersicht `TeamPage`, Unterseiten `TeamSectionPage`, Kachel-Aussehen in `lib/module-look.ts`)
   - `components/farm-members-card.tsx` mit `kind="team" | "substitute"`
   - `components/farm-contacts-card.tsx`
   - `lib/contact-labels.ts`

@@ -394,9 +394,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     href: "/team",
     intro: "Wer gehört zum Hof und was darf wer: Admins, Mitarbeiter, Gäste, Vertretungen mit Enddatum, Freigaben je Modul und wichtige Kontakte wie Tierarzt und Hufschmied.",
     steps: [
-      "Mitglieder per E-Mail einladen und eine Rolle wählen.",
+      "Eine Kachel antippen – Team, Vertretung, Übergabe, Kontakte, Bewirtschaftung, Nachhaltigkeit. Jede hat ihre eigene Seite.",
+      "Unter „Team“ Mitglieder per E-Mail einladen und eine Rolle wählen.",
       "Optional Module freigeben – etwa nur Stall-Aufgaben.",
-      "Bei der Vertretung „Tierarzt einladen“: Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export.",
+      "Unter „Vertretung“ mit Enddatum einladen oder „Tierarzt einladen“: Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export.",
       "Kontakte eintragen; sie stehen auch in der Übergabe.",
       "Unter „Bewirtschaftung“ festlegen, wie ihr wirtschaftet: konventionell, naturnah oder bio – jederzeit umschaltbar. Darunter Bio je Bereich an- oder ausschalten, z. B. Garten bio, Fütterung konventionell.",
       "Unter „Nachhaltigkeit“ abhaken, was ihr für Natur und Klima tut – daraus wird der Hof-Steckbrief.",

@@ -12,6 +12,7 @@ Vorbild sind die Übersichten **Hof, Pflanzen und Tiere**: Kacheln mit farbigem 
   - darunter eine Zeile, wofür die Seite da ist;
   - rechts Platz für eine Aktion („Neue Aufgabe“, „Teilen“).
 - **Untermenüs** eines Moduls als Kacheln im selben Raster (`HubGrid`, `HubTile`), nicht als Textlinks oder Listenzeilen.
+- **Nichts offen** (D4): Eine Übersicht zeigt keine aufgeklappten Karten untereinander, sondern Kacheln; ein Tipp öffnet das Thema auf einer eigenen Seite mit Zurück-Link. Zahlen und Stand gehören auf die Kachel (z. B. „3 Kontakte“, „Konventionell“), nicht als eigene Karte darüber.
 - **Karten** mit `rounded-2xl border bg-card p-4`, Überschrift `flex items-center gap-2 font-semibold` mit kleinem Symbol. **Listenzeilen** in einer Karte oder Liste: `rounded-xl border bg-card p-3`. Abschnitts-Überzeilen: `text-sm font-semibold uppercase tracking-wider text-muted-foreground`.
 - **Seitlich wischbare Leisten** (Filter-Chips, ABC): `components/scroll-row.tsx` (`ScrollRow`) – kein Scrollbalken, am PC Pfeile links und rechts, nur solange es in die Richtung weitergeht; Innenabstand oben und unten, damit der Ring des gewählten Chips nicht abgeschnitten wird.
 - Bewusst anders: Vollbild-Hinweise (Umzug, Freigabe, Scan-Ergebnis) mit größerem Titel; „Am Stall“ mit größerer Schrift für die Hand im Stall.
@@ -22,6 +23,7 @@ Vorbild sind die Übersichten **Hof, Pflanzen und Tiere**: Kacheln mit farbigem 
 |---|---|---|
 | **D1** | Modul-Aussehen an einer Stelle, Seitenkopf für alle Modulseiten (32 Seiten), Übersichten Pflanzen und Tiere lesen daraus | ✅ (#139) |
 | **D2** | Untermenüs als Kacheln: Beet-Architekt (Assistent, Kalender, Saatgut, Ernte), Futterplaner (Vorrat & Kosten, Tipps & Rezepte), Grow (Wissen, Rechtliches); jede Unterseite mit eigener Farbe | ✅ (#140) |
+| **D4** | Nichts offen, alles hinter Kacheln: Übersichtsseiten zeigen nur Kacheln, jedes Thema bekommt eine eigene Seite. Schritt 1: Farm & Team (Team, Vertretung, Übergabe, Kontakte, Bewirtschaftung, Nachhaltigkeit). Danach: einzelnes Tier, Mehr, Grow, Pflegeplan, Tiere | Farm & Team ✅ (#149), Rest offen |
 | **D3** | Karten vereinheitlicht: Karten `rounded-2xl border bg-card p-4` (79), Listenzeilen `rounded-xl border bg-card p-3` (45), farbige Hinweis-Karten mit großen Ecken (12); Überschriften in Karten einheitlich `flex items-center gap-2 font-semibold` mit Symbol | ✅ (#142) |
 
 ## Bewusst so gelassen

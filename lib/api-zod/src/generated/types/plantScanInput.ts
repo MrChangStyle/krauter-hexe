@@ -11,6 +11,8 @@ export interface PlantScanInput {
   image: string;
   /** Optional second photo as a base64 data URL - the side view of the two-photo mushroom scan (whole mushroom with stem, gills and stem base). Same format rules as `image`. A mushroom is only ever listed as edible when this side view was provided AND the model confirmed a confident identification; otherwise it is stored as not edible with an explanation. */
   imageSide?: string;
+  /** Optional third photo of the Pilz-Scan as a base64 data URL - the gills (or the underside) from below. Only counts together with imageSide. Since three photos are required, a mushroom is only rated edible when all three views were provided and the model confirmed a confident identification (docs/scannen.md). */
+  imageGills?: string;
   /** Client-generated UUID (crypto.randomUUID()) identifying the photo in the device's local IndexedDB image store. Stored server-side so the client can resolve the local image when displaying the entry. For two-photo mushroom scans, the side image is stored under the derived key "${localImageId}-side" in the same store. Omit for legacy clients that still embed image bytes in the response. */
   localImageId?: string;
   /** Optional coarse location region where the scan was taken (e.g. "München", "Bayern"). Max 80 characters. The client derives this from GPS coordinates via the /geo/reverse endpoint; only the plain text name reaches the server — no coordinates are stored. */

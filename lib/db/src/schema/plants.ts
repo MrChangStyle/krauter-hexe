@@ -106,6 +106,13 @@ export const plantsTable = pgTable("plants", {
   // two-photo mushroom scan. Replaces the `imageDataSide IS NOT NULL` check for
   // new rows that no longer store image bytes in the database.
   hasSideImage: boolean("has_side_image").notNull().default(false),
+  // Pilz-Scan with three photos (docs/scannen.md): the gills from below. Only
+  // a mushroom scanned with all three may be rated edible.
+  imageUrlGills: text("image_url_gills"),
+  hasGillsImage: boolean("has_gills_image").notNull().default(false),
+  // The app owner checked the photos and released the mushroom as edible
+  // (or took it back). A later scan never changes a released entry.
+  edibleReleasedAt: timestamp("edible_released_at", { withTimezone: true }),
   // Client-generated UUID that identifies the photo in the device's local
   // IndexedDB image store. Null for rows created before the local-first migration.
   localImageId: text("local_image_id"),

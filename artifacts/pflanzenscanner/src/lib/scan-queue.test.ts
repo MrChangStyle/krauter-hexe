@@ -45,6 +45,13 @@ describe("addPendingScan", () => {
     expect(item.imageSide).toBe("data:side");
   });
 
+  it("keeps the gills photo only together with the side view (Pilz-Scan, 3 Fotos)", async () => {
+    const three = await m.addPendingScan("data:top", "data:side", undefined, undefined, "plant", "data:gills");
+    expect(three.imageGills).toBe("data:gills");
+    const noSide = await m.addPendingScan("data:top", undefined, undefined, undefined, "plant", "data:gills");
+    expect(noSide.imageGills).toBeUndefined();
+  });
+
   it("omits imageSide when not provided", async () => {
     const item = await m.addPendingScan("data:top");
     expect(item.imageSide).toBeUndefined();

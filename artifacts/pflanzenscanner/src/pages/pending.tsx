@@ -251,7 +251,7 @@ export default function PendingPage() {
                   <div className="flex flex-wrap gap-1.5">
                     <StatusBadge status={status} />
                     {item.imageSide && (
-                      <Badge variant="secondary">🍄 2 Fotos</Badge>
+                      <Badge variant="secondary">🍄 {item.imageGills ? 3 : 2} Fotos</Badge>
                     )}
                     <StaleBadge createdAt={item.createdAt} now={now} />
                   </div>

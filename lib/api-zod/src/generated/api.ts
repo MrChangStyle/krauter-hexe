@@ -65,6 +65,7 @@ export const CheckPlantHealthResponse = zod.object({
 export const ScanPlantBody = zod.object({
   "image": zod.string().describe('Base64-encoded data URL of the captured\/uploaded photo (e.g. \"data:image\/jpeg;base64,...\"). Must be an image data URL (data:image\/\*;base64,...); other payloads are rejected with 400. The image is used for AI identification but is NOT stored server-side; use localImageId to identify the photo in the device\'s local store.\n'),
   "imageSide": zod.string().optional().describe('Optional second photo as a base64 data URL - the side view of the two-photo mushroom scan (whole mushroom with stem, gills and stem base). Same format rules as `image`. A mushroom is only ever listed as edible when this side view was provided AND the model confirmed a confident identification; otherwise it is stored as not edible with an explanation.\n'),
+  "imageGills": zod.string().optional().describe('Optional third photo of the Pilz-Scan as a base64 data URL - the gills (or the underside) from below. Only counts together with imageSide. Since three photos are required, a mushroom is only rated edible when all three views were provided and the model confirmed a confident identification (docs\/scannen.md).\n'),
   "localImageId": zod.string().optional().describe('Client-generated UUID (crypto.randomUUID()) identifying the photo in the device\'s local IndexedDB image store. Stored server-side so the client can resolve the local image when displaying the entry. For two-photo mushroom scans, the side image is stored under the derived key \"${localImageId}-side\" in the same store. Omit for legacy clients that still embed image bytes in the response.\n'),
   "locationRegion": zod.string().optional().describe('Optional coarse location region where the scan was taken (e.g. \"München\", \"Bayern\"). Max 80 characters. The client derives this from GPS coordinates via the \/geo\/reverse endpoint; only the plain text name reaches the server — no coordinates are stored.\n')
 })
@@ -138,6 +139,9 @@ export const ScanPlantResponse = zod.object({
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
   "preparation": zod.string().optional().describe('Short German description of how the edible plant can be prepared (e.g. \"Roh, gekocht, als Tee oder Salat\"). Only meaningful for edible plants; empty string for poisonous\/legacy entries.\n'),
   "scannedByUserId": zod.string().nullish().describe('ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced.\n'),
+  "hasGillsImage": zod.boolean().optional().describe('True when the entry was scanned with all three mushroom photos (top, side, gills from below).'),
+  "imageUrlGills": zod.string().nullish().describe('CDN URL of the gills photo of the Pilz-Scan, if any.'),
+  "edibleReleasedAt": zod.coerce.date().nullish().describe('The app owner checked the photos and released this mushroom as edible (docs\/scannen.md); a later scan never changes it.'),
   "hasSideImage": zod.boolean().describe('True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses.\n'),
   "localImageId": zod.string().nullish().describe('UUID that identifies the main photo in the client\'s local IndexedDB image store. Null for entries created before the local-first migration (those use the GET \/plants\/{id}\/image endpoint instead). When a mushroom side image exists, it is stored under the derived key \"${localImageId}-side\" in the same IndexedDB store.\n'),
   "imageQuality": zod.number().nullish().describe('AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated.\n'),
@@ -228,6 +232,9 @@ export const ListPlantsResponseItem = zod.object({
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
   "preparation": zod.string().optional().describe('Short German description of how the edible plant can be prepared (e.g. \"Roh, gekocht, als Tee oder Salat\"). Only meaningful for edible plants; empty string for poisonous\/legacy entries.\n'),
   "scannedByUserId": zod.string().nullish().describe('ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced.\n'),
+  "hasGillsImage": zod.boolean().optional().describe('True when the entry was scanned with all three mushroom photos (top, side, gills from below).'),
+  "imageUrlGills": zod.string().nullish().describe('CDN URL of the gills photo of the Pilz-Scan, if any.'),
+  "edibleReleasedAt": zod.coerce.date().nullish().describe('The app owner checked the photos and released this mushroom as edible (docs\/scannen.md); a later scan never changes it.'),
   "hasSideImage": zod.boolean().describe('True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses.\n'),
   "localImageId": zod.string().nullish().describe('UUID that identifies the main photo in the client\'s local IndexedDB image store. Null for entries created before the local-first migration (those use the GET \/plants\/{id}\/image endpoint instead). When a mushroom side image exists, it is stored under the derived key \"${localImageId}-side\" in the same IndexedDB store.\n'),
   "imageQuality": zod.number().nullish().describe('AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated.\n'),
@@ -320,6 +327,102 @@ export const SetPlantImageLockResponse = zod.object({
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
   "preparation": zod.string().optional().describe('Short German description of how the edible plant can be prepared (e.g. \"Roh, gekocht, als Tee oder Salat\"). Only meaningful for edible plants; empty string for poisonous\/legacy entries.\n'),
   "scannedByUserId": zod.string().nullish().describe('ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced.\n'),
+  "hasGillsImage": zod.boolean().optional().describe('True when the entry was scanned with all three mushroom photos (top, side, gills from below).'),
+  "imageUrlGills": zod.string().nullish().describe('CDN URL of the gills photo of the Pilz-Scan, if any.'),
+  "edibleReleasedAt": zod.coerce.date().nullish().describe('The app owner checked the photos and released this mushroom as edible (docs\/scannen.md); a later scan never changes it.'),
+  "hasSideImage": zod.boolean().describe('True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses.\n'),
+  "localImageId": zod.string().nullish().describe('UUID that identifies the main photo in the client\'s local IndexedDB image store. Null for entries created before the local-first migration (those use the GET \/plants\/{id}\/image endpoint instead). When a mushroom side image exists, it is stored under the derived key \"${localImageId}-side\" in the same IndexedDB store.\n'),
+  "imageQuality": zod.number().nullish().describe('AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated.\n'),
+  "imageLocked": zod.boolean().optional().describe('Set by the admin: the shared photo is never replaced automatically.\n'),
+  "imageUrl": zod.string().nullish().describe('Public https URL of the main photo on the image CDN (Cloudinary). Use it directly as an <img> source. Takes priority over localImageId and the legacy image endpoint. Rows scanned before the CDN switch may still hold an internal \"\/objects\/...\" path, which is no longer servable and must be ignored by clients.\n'),
+  "imageUrlSide": zod.string().nullish().describe('Public https URL of the mushroom side-view photo, same rules as imageUrl.\n'),
+  "locationRegion": zod.string().nullish().describe('Coarse location region where the scan was taken (e.g. \"München\"). Null when the user did not grant location permission.\n'),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary App owner only – release a mushroom as edible after checking its photos, or take the release back
+ */
+export const SetPlantEdibleReleaseParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const SetPlantEdibleReleaseBody = zod.object({
+  "released": zod.boolean().describe('true = edible after the owner\'s check; false = take the release back (not edible)')
+})
+
+export const SetPlantEdibleReleaseResponse = zod.object({
+  "id": zod.number(),
+  "germanName": zod.string().describe('Common German name of the plant.'),
+  "botanicalName": zod.string().describe('Scientific\/botanical (Latin) name of the plant.'),
+  "category": zod.enum(['poisonous', 'edible', 'medicinal', 'mushroom', 'tree', 'shrub', 'moss', 'cactus']).describe('Auto-categorization bucket used to sort the archive: poisonous (Giftige Pflanzen), edible (Essbare Pflanzen), medicinal (Heilkräuter), mushroom (Pilze), tree (Bäume), shrub (Sträucher), moss (Moose), cactus (Kakteen und Sukkulenten).\n'),
+  "humanStatus": zod.enum(['edible', 'poisonous']).describe('Deterministic human edibility status driving the \"Status Mensch\" badge.'),
+  "poultryStatus": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "edibilityDetails": zod.string().describe('German-language explanation of edibility\/toxicity for humans.'),
+  "animalToxicityDetails": zod.string().describe('German-language explanation of toxicity for poultry\/chickens and general animals.'),
+  "activeIngredients": zod.string().describe('Inhaltsstoffe - active ingredients\/compounds, in German.'),
+  "humanBenefits": zod.string().describe('Medical benefits for humans (illnesses\/symptoms it helps against), in German.'),
+  "poultryBenefits": zod.string().describe('Medical benefits for poultry (e.g. respiratory health, digestion), in German.'),
+  "habitat": zod.string().describe('Where the plant usually grows - typical habitats and locations (e.g. Wiesen, Wegränder, Waldränder), in German. Empty string when unknown for legacy entries.\n'),
+  "siteConditions": zod.string().describe('Site requirements the location must fulfil for the plant to grow (light, soil, moisture, nutrients), in German. Empty string when unknown for legacy entries.\n'),
+  "otherUses": zod.string().describe('\"Weitere Nutzung\" - practical uses beyond eating\/medicine, e.g. fertilizer brew (Jauche\/Sud) as with comfrey or nettle, mulch, dye plant, fibres; in German. Empty string for legacy entries.\n'),
+  "fertilizerTips": zod.string().describe('How to fertilize this plant when growing it yourself (suitable fertilizer, frequency, caveats), in German. Empty string for legacy entries.\n'),
+  "animals": zod.object({
+  "poultry": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "rabbit": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "guineaPig": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "cat": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n'),
+  "horse": zod.object({
+  "status": zod.enum(['safe', 'poisonous']).describe('Deterministic poultry safety status driving the \"Status Geflügel\" badge.'),
+  "toxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "toxicityDetails": zod.string().describe('German explanation of toxicity\/tolerance for this animal.'),
+  "benefits": zod.string().describe('German medicinal benefits for this animal.')
+}).optional().describe('Per-animal fact sheet: safety status plus the German toxicity explanation and medicinal benefits for one specific animal.\n')
+}).describe('Per-animal fact sheets keyed by animal. All keys are optional so legacy rows (empty object) stay valid; the UI falls back to the legacy poultry columns when a key is missing.\n'),
+  "symptoms": zod.object({
+  "human": zod.array(zod.string()).optional(),
+  "poultry": zod.array(zod.string()).optional(),
+  "rabbit": zod.array(zod.string()).optional(),
+  "guineaPig": zod.array(zod.string()).optional(),
+  "cat": zod.array(zod.string()).optional(),
+  "horse": zod.array(zod.string()).optional()
+}).describe('Treatable complaints\/symptoms per target (human + 5 animals), as short canonical German tags derived from the plant\'s Heilwirkung. Each target is optional; a missing key means the plant has not been processed yet, while an empty array means nothing treatable for that target. Used only for the \"Kräuter-Hexe\" filter, never as a safety signal.\n'),
+  "symptomApplications": zod.object({
+  "human": zod.record(zod.string(), zod.string()).optional(),
+  "poultry": zod.record(zod.string(), zod.string()).optional(),
+  "rabbit": zod.record(zod.string(), zod.string()).optional(),
+  "guineaPig": zod.record(zod.string(), zod.string()).optional(),
+  "cat": zod.record(zod.string(), zod.string()).optional(),
+  "horse": zod.record(zod.string(), zod.string()).optional()
+}).describe('Per-target map of symptom tag → short German application instruction describing how to prepare\/use the herb to treat that specific complaint. Each target is optional (missing = not yet processed; empty object = nothing applicable). Keys within each target match the canonical symptom tags from PlantSymptoms.\n'),
+  "humanToxicityLevel": zod.enum(['intolerant', 'poisonous', 'lethal']).describe('Degree of toxicity shown as a sublabel under the \"GIFTIG\" badge. intolerant = unverträglich (mild, digestive upset), poisonous = giftig (toxic, systemic effects), lethal = tödlich (potentially fatal). Only present when the status is \"poisonous\".\n').nullish(),
+  "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
+  "preparation": zod.string().optional().describe('Short German description of how the edible plant can be prepared (e.g. \"Roh, gekocht, als Tee oder Salat\"). Only meaningful for edible plants; empty string for poisonous\/legacy entries.\n'),
+  "scannedByUserId": zod.string().nullish().describe('ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced.\n'),
+  "hasGillsImage": zod.boolean().optional().describe('True when the entry was scanned with all three mushroom photos (top, side, gills from below).'),
+  "imageUrlGills": zod.string().nullish().describe('CDN URL of the gills photo of the Pilz-Scan, if any.'),
+  "edibleReleasedAt": zod.coerce.date().nullish().describe('The app owner checked the photos and released this mushroom as edible (docs\/scannen.md); a later scan never changes it.'),
   "hasSideImage": zod.boolean().describe('True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses.\n'),
   "localImageId": zod.string().nullish().describe('UUID that identifies the main photo in the client\'s local IndexedDB image store. Null for entries created before the local-first migration (those use the GET \/plants\/{id}\/image endpoint instead). When a mushroom side image exists, it is stored under the derived key \"${localImageId}-side\" in the same IndexedDB store.\n'),
   "imageQuality": zod.number().nullish().describe('AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated.\n'),
@@ -406,6 +509,9 @@ export const GetPlantResponse = zod.object({
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
   "preparation": zod.string().optional().describe('Short German description of how the edible plant can be prepared (e.g. \"Roh, gekocht, als Tee oder Salat\"). Only meaningful for edible plants; empty string for poisonous\/legacy entries.\n'),
   "scannedByUserId": zod.string().nullish().describe('ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced.\n'),
+  "hasGillsImage": zod.boolean().optional().describe('True when the entry was scanned with all three mushroom photos (top, side, gills from below).'),
+  "imageUrlGills": zod.string().nullish().describe('CDN URL of the gills photo of the Pilz-Scan, if any.'),
+  "edibleReleasedAt": zod.coerce.date().nullish().describe('The app owner checked the photos and released this mushroom as edible (docs\/scannen.md); a later scan never changes it.'),
   "hasSideImage": zod.boolean().describe('True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses.\n'),
   "localImageId": zod.string().nullish().describe('UUID that identifies the main photo in the client\'s local IndexedDB image store. Null for entries created before the local-first migration (those use the GET \/plants\/{id}\/image endpoint instead). When a mushroom side image exists, it is stored under the derived key \"${localImageId}-side\" in the same IndexedDB store.\n'),
   "imageQuality": zod.number().nullish().describe('AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated.\n'),
@@ -518,6 +624,9 @@ export const UpdatePlantResponse = zod.object({
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
   "preparation": zod.string().optional().describe('Short German description of how the edible plant can be prepared (e.g. \"Roh, gekocht, als Tee oder Salat\"). Only meaningful for edible plants; empty string for poisonous\/legacy entries.\n'),
   "scannedByUserId": zod.string().nullish().describe('ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced.\n'),
+  "hasGillsImage": zod.boolean().optional().describe('True when the entry was scanned with all three mushroom photos (top, side, gills from below).'),
+  "imageUrlGills": zod.string().nullish().describe('CDN URL of the gills photo of the Pilz-Scan, if any.'),
+  "edibleReleasedAt": zod.coerce.date().nullish().describe('The app owner checked the photos and released this mushroom as edible (docs\/scannen.md); a later scan never changes it.'),
   "hasSideImage": zod.boolean().describe('True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses.\n'),
   "localImageId": zod.string().nullish().describe('UUID that identifies the main photo in the client\'s local IndexedDB image store. Null for entries created before the local-first migration (those use the GET \/plants\/{id}\/image endpoint instead). When a mushroom side image exists, it is stored under the derived key \"${localImageId}-side\" in the same IndexedDB store.\n'),
   "imageQuality": zod.number().nullish().describe('AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated.\n'),
@@ -723,6 +832,9 @@ export const ListMyScansResponseItem = zod.object({
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
   "preparation": zod.string().optional().describe('Short German description of how the edible plant can be prepared (e.g. \"Roh, gekocht, als Tee oder Salat\"). Only meaningful for edible plants; empty string for poisonous\/legacy entries.\n'),
   "scannedByUserId": zod.string().nullish().describe('ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced.\n'),
+  "hasGillsImage": zod.boolean().optional().describe('True when the entry was scanned with all three mushroom photos (top, side, gills from below).'),
+  "imageUrlGills": zod.string().nullish().describe('CDN URL of the gills photo of the Pilz-Scan, if any.'),
+  "edibleReleasedAt": zod.coerce.date().nullish().describe('The app owner checked the photos and released this mushroom as edible (docs\/scannen.md); a later scan never changes it.'),
   "hasSideImage": zod.boolean().describe('True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses.\n'),
   "localImageId": zod.string().nullish().describe('UUID that identifies the main photo in the client\'s local IndexedDB image store. Null for entries created before the local-first migration (those use the GET \/plants\/{id}\/image endpoint instead). When a mushroom side image exists, it is stored under the derived key \"${localImageId}-side\" in the same IndexedDB store.\n'),
   "imageQuality": zod.number().nullish().describe('AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated.\n'),
@@ -7174,6 +7286,9 @@ export const ScanAutoResponse = zod.union([zod.object({
   "hasEdibleFruits": zod.boolean().nullish().describe('Whether the plant produces edible fruits. Relevant primarily for trees and shrubs. Null for legacy entries not yet backfilled.\n'),
   "preparation": zod.string().optional().describe('Short German description of how the edible plant can be prepared (e.g. \"Roh, gekocht, als Tee oder Salat\"). Only meaningful for edible plants; empty string for poisonous\/legacy entries.\n'),
   "scannedByUserId": zod.string().nullish().describe('ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced.\n'),
+  "hasGillsImage": zod.boolean().optional().describe('True when the entry was scanned with all three mushroom photos (top, side, gills from below).'),
+  "imageUrlGills": zod.string().nullish().describe('CDN URL of the gills photo of the Pilz-Scan, if any.'),
+  "edibleReleasedAt": zod.coerce.date().nullish().describe('The app owner checked the photos and released this mushroom as edible (docs\/scannen.md); a later scan never changes it.'),
   "hasSideImage": zod.boolean().describe('True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses.\n'),
   "localImageId": zod.string().nullish().describe('UUID that identifies the main photo in the client\'s local IndexedDB image store. Null for entries created before the local-first migration (those use the GET \/plants\/{id}\/image endpoint instead). When a mushroom side image exists, it is stored under the derived key \"${localImageId}-side\" in the same IndexedDB store.\n'),
   "imageQuality": zod.number().nullish().describe('AI rating 1-10 of how well the shared photo shows the species. A later scan with a clearly better photo replaces it, unless imageLocked is set. Null for photos never rated.\n'),

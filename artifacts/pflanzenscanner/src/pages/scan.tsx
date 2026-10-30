@@ -34,13 +34,15 @@ import { recordScanPhoto } from "@/lib/my-photos";
 // Which capture the hidden file input is currently serving: the universal
 // scan ("auto": the server decides plant or insect), the normal single-photo
 // plant scan, the insect scan, or one of the two steps of the Pilz-Scan
-// (Bild 1: von oben, Bild 2: von der Seite).
-type CaptureMode = "auto" | "plant" | "insect" | "mushroomTop" | "mushroomSide";
+// (Bild 1: von oben, Bild 2: von der Seite, Bild 3: Lamellen von unten).
+type CaptureMode = "auto" | "plant" | "insect" | "mushroomTop" | "mushroomSide" | "mushroomGills";
 
 // Prepared scan waiting for the user to confirm (preview step).
 type ScanPreview = {
   image: string;
   topImage: string | null;
+  /** Pilz-Scan: Bild 2 (von der Seite); `image` is then Bild 3 (Lamellen). */
+  sideImage: string | null;
   localImageId: string | undefined;
   mode: CaptureMode;
   phase: "idle" | "counting";
@@ -100,6 +102,8 @@ export default function ScanPage() {
   // Bild 1 of a Pilz-Scan in progress; mirrored in IndexedDB so it survives
   // the page reload low-memory phones do right after the camera closes.
   const [mushroomTop, setMushroomTop] = useState<string | null>(null);
+  // Bild 2 (von der Seite), once taken – the scan then waits for Bild 3.
+  const [mushroomSide, setMushroomSide] = useState<string | null>(null);
   // True while the "Erstes Foto von oben" hint card is shown (before the
   // camera opens for step 1 of a Pilz-Scan).
   const [showMushroomTopHint, setShowMushroomTopHint] = useState(false);
@@ -111,9 +115,11 @@ export default function ScanPage() {
   // (changes the spinner label: the subject is not known yet).
   const [waitingIsAuto, setWaitingIsAuto] = useState(false);
   const mushroomTopRef = useRef<string | null>(null);
+  const mushroomSideRef = useRef<string | null>(null);
   useEffect(() => {
     mushroomTopRef.current = mushroomTop;
-  }, [mushroomTop]);
+    mushroomSideRef.current = mushroomSide;
+  }, [mushroomTop, mushroomSide]);
 
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -190,8 +196,9 @@ export default function ScanPage() {
     void (async () => {
       let itemId: string;
       try {
+        // Pilz-Scan: Bild 1 von oben, Bild 2 von der Seite, Bild 3 die Lamellen.
         itemId = p.topImage
-          ? await enqueue(p.topImage, p.image, p.localImageId, p.locationRegion)
+          ? await enqueue(p.topImage, p.sideImage ?? p.image, p.localImageId, p.locationRegion, "plant", p.sideImage ? p.image : undefined)
           : await enqueue(
               p.image,
               undefined,
@@ -209,6 +216,7 @@ export default function ScanPage() {
       if (p.topImage) {
         captureModeRef.current = "plant";
         setMushroomTop(null);
+        setMushroomSide(null);
         void clearMushroomDraft().catch(() => {});
       }
       // Use the live navigator.onLine check (not the potentially stale React
@@ -458,7 +466,10 @@ export default function ScanPage() {
   useEffect(() => {
     getMushroomDraft()
       .then((draft) => {
-        if (draft) setMushroomTop(draft.image);
+        if (draft) {
+          setMushroomTop(draft.image);
+          setMushroomSide(draft.side ?? null);
+        }
       })
       .catch(() => {
         // No draft available (e.g. private mode): the Pilz-Scan starts fresh.
@@ -542,6 +553,7 @@ export default function ScanPage() {
         setPreview({
           image,
           topImage: null,
+          sideImage: null,
           localImageId,
           mode: "insect",
           phase: "idle",
@@ -564,8 +576,29 @@ export default function ScanPage() {
         return;
       }
 
-      const topImage = mode === "mushroomSide" ? mushroomTopRef.current : null;
-      if (mode === "mushroomSide" && !topImage) {
+      if (mode === "mushroomSide") {
+        const top = mushroomTopRef.current;
+        if (!top) {
+          captureModeRef.current = "plant";
+          setIsPreparing(false);
+          setErrorKind("plant");
+          setErrorMsg("Das erste Pilz-Foto fehlt. Bitte starte den Pilz-Scan neu.");
+          return;
+        }
+        try {
+          await putMushroomDraft(top, image);
+        } catch {
+          // Draft not persistable (e.g. private mode): continue in memory.
+        }
+        if (isStale()) return;
+        setIsPreparing(false);
+        setMushroomSide(image);
+        return;
+      }
+
+      const topImage = mode === "mushroomGills" ? mushroomTopRef.current : null;
+      const sideImage = mode === "mushroomGills" ? mushroomSideRef.current : null;
+      if (mode === "mushroomGills" && (!topImage || !sideImage)) {
         captureModeRef.current = "plant";
         setIsPreparing(false);
         setErrorKind("plant");
@@ -579,7 +612,7 @@ export default function ScanPage() {
       try {
         const id = crypto.randomUUID();
         await putImage(id, topImage ?? image);
-        if (topImage) await putImage(`${id}-side`, image);
+        if (sideImage) await putImage(`${id}-side`, sideImage);
         localImageId = id;
       } catch { /* local write failed – server falls back to imageData */ }
 
@@ -590,6 +623,7 @@ export default function ScanPage() {
       setPreview({
         image,
         topImage: topImage ?? null,
+        sideImage: sideImage ?? null,
         localImageId,
         mode,
         phase: "idle",
@@ -620,6 +654,7 @@ export default function ScanPage() {
   const cancelMushroomScan = () => {
     captureModeRef.current = "plant";
     setMushroomTop(null);
+    setMushroomSide(null);
     setShowMushroomTopHint(false);
     void clearMushroomDraft().catch(() => {});
   };
@@ -776,6 +811,46 @@ export default function ScanPage() {
             </div>
           </CardContent>
         </Card>
+      ) : mushroomTop && mushroomSide ? (
+        /* Step 3: top and side taken, prompt for the gills from below */
+        <Card className="w-full max-w-sm overflow-hidden border-none shadow-xl animate-in fade-in zoom-in-95" data-testid="mushroom-step-3">
+          <div className="relative grid aspect-[4/3] grid-cols-2 gap-0.5 bg-black/5">
+            <img src={mushroomTop} alt="Pilz von oben" className="h-full w-full object-cover" />
+            <img src={mushroomSide} alt="Pilz von der Seite" className="h-full w-full object-cover" />
+            <div className="absolute top-3 left-3 flex flex-col gap-1.5">
+              <Badge className="bg-black/60 text-white border-none backdrop-blur-sm">
+                Bild 2 von 3 · ✓ oben · ✓ Seite
+              </Badge>
+              <Badge className="bg-amber-600 text-white border-none">
+                Nächstes Bild: Lamellen von unten
+              </Badge>
+            </div>
+          </div>
+          <CardContent className="p-5 space-y-4">
+            <div className="space-y-1">
+              <h2 className="font-serif text-2xl text-foreground">
+                🍄 Jetzt die Lamellen von unten
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Dreh den Pilz um oder fotografiere schräg von unten: <strong>Lamellen bzw. Röhren</strong>, ihre Farbe und wie sie am Stiel ansetzen. Erst mit allen
+                drei Ansichten prüft die App, ob der Pilz essbar ist.
+              </p>
+            </div>
+            <div className="flex flex-col gap-2">
+              <Button onClick={() => openCamera("mushroomGills")}>
+                <Camera className="w-5 h-5 mr-2" />
+                Lamellen fotografieren
+              </Button>
+              <Button variant="outline" onClick={() => openGallery("mushroomGills")}>
+                <ImageIcon className="w-5 h-5 mr-2" />
+                Aus Galerie wählen
+              </Button>
+              <Button variant="ghost" onClick={cancelMushroomScan}>
+                Abbrechen
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       ) : mushroomTop ? (
         /* Step 2: first photo taken, prompt for side view */
         <Card className="w-full max-w-sm overflow-hidden border-none shadow-xl animate-in fade-in zoom-in-95">
@@ -787,7 +862,7 @@ export default function ScanPage() {
             />
             <div className="absolute top-3 left-3 flex flex-col gap-1.5">
               <Badge className="bg-black/60 text-white border-none backdrop-blur-sm">
-                Bild 1 von 2 · ✓ von oben
+                Bild 1 von 3 · ✓ von oben
               </Badge>
               <Badge className="bg-amber-600 text-white border-none">
                 Nächstes Bild von der Seite
@@ -801,8 +876,8 @@ export default function ScanPage() {
               </h2>
               <p className="text-sm text-muted-foreground">
                 Fotografiere denselben Pilz jetzt <strong>von der Seite</strong>{" "}
-                – mit Stiel, Lamellen und Stielansatz. Nur mit beiden Ansichten
-                kann die Essbarkeit sicher geprüft werden.
+                – mit Stiel, Ring und Stielbasis. Danach kommen die Lamellen von
+                unten; erst mit allen drei Ansichten prüft die App die Essbarkeit.
               </p>
             </div>
             <div className="flex flex-col gap-2">
@@ -931,7 +1006,7 @@ export default function ScanPage() {
             <div className="flex items-center gap-3">
               <span className="text-4xl" aria-hidden="true">🍄</span>
               <Badge className="bg-amber-600 text-white border-none text-sm px-3 py-1">
-                Schritt 1 von 2
+                Schritt 1 von 3
               </Badge>
             </div>
             <div className="space-y-1.5">
@@ -940,8 +1015,8 @@ export default function ScanPage() {
               </h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Fotografiere den Pilz <strong>von oben</strong> – möglichst
-                senkrecht auf den Hut. Im nächsten Schritt folgt dann ein Foto
-                von der Seite.
+                senkrecht auf den Hut. Danach folgen ein Foto von der Seite und
+                eins von den Lamellen unten.
               </p>
             </div>
             <div className="flex flex-col gap-2">

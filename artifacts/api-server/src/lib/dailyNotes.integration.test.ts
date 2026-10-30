@@ -58,9 +58,10 @@ describe.skipIf(!enabled)("Alltagsnotizen (real database)", () => {
   afterAll(() => server?.close());
 
   beforeEach(async () => {
+    (await import("./dailyNotes")).resetShareCounters();
     await q("TRUNCATE daily_notes, note_shares, farms, farm_memberships, users, scan_attempts RESTART IDENTITY CASCADE");
     await q(
-      `INSERT INTO users (id, email, approved, first_name) VALUES ('stefan', 's@x.de', true, 'Stefan'), ('maria', 'm@x.de', true, 'Maria'), ('oma', 'Oma@X.de', true, 'Oma'), ('neu', 'n@x.de', false, 'Neu'), ('bert', 'b@x.de', true, 'Bert')`,
+      `INSERT INTO users (id, email, approved, first_name, user_code) VALUES ('stefan', 's@x.de', true, 'Stefan', 1001), ('maria', 'm@x.de', true, 'Maria', 1002), ('oma', 'Oma@X.de', true, 'Oma', 4821), ('neu', 'n@x.de', false, 'Neu', 1004), ('bert', 'b@x.de', true, 'Bert', 1005)`,
     );
     const [f] = await q<{ id: number }>("INSERT INTO farms (name) VALUES ('Hof Auberg') RETURNING id");
     await q(`INSERT INTO farm_memberships (farm_id, user_id, role) VALUES ($1, 'stefan', 'admin'), ($1, 'maria', 'caretaker')`, [f!.id]);
@@ -96,7 +97,7 @@ describe.skipIf(!enabled)("Alltagsnotizen (real database)", () => {
     expect((await api("POST", "/notes", { text: "x".repeat(121) })).status).toBe(400);
   });
 
-  it("shares the list with a team member and by e-mail; who it is shared with ticks off and adds but never deletes", async () => {
+  it("shares the list with a team member and by Nutzer-ID; who it is shared with ticks off and adds but never deletes", async () => {
     const { data: brush } = await api("POST", "/notes", { text: "Zahnbürsten" });
     // Not yet shared: Maria sees nothing and cannot add to it.
     as = "maria";
@@ -107,12 +108,13 @@ describe.skipIf(!enabled)("Alltagsnotizen (real database)", () => {
     as = "stefan";
     let r = await api("POST", "/notes/shares", { userId: "maria" });
     expect(r.data.sharedWith).toEqual([{ userId: "maria", name: "Maria" }]);
-    // Family off the farm, by e-mail (any case).
-    r = await api("POST", "/notes/shares", { email: " oma@x.de " });
+    // Family off the farm, by Nutzer-ID.
+    r = await api("POST", "/notes/shares", { userCode: 4821 });
     expect(r.data.sharedWith.map((p: { name: string }) => p.name)).toEqual(["Maria", "Oma"]);
     // No account, not approved, not on a farm of mine, myself.
-    expect((await api("POST", "/notes/shares", { email: "fremd@x.de" })).status).toBe(400);
-    expect((await api("POST", "/notes/shares", { email: "n@x.de" })).status).toBe(400);
+    expect((await api("POST", "/notes/shares", { userCode: 9999 })).status).toBe(400);
+    expect((await api("POST", "/notes/shares", { userCode: 1004 })).status).toBe(400);
+    expect((await api("POST", "/notes/shares", { email: "oma@x.de" })).status).toBe(400);
     expect((await api("POST", "/notes/shares", { userId: "bert" })).status).toBe(400);
     expect((await api("POST", "/notes/shares", { userId: "stefan" })).status).toBe(400);
 
@@ -185,7 +187,7 @@ describe.skipIf(!enabled)("Alltagsnotizen (real database)", () => {
     expect(pendingNotesPushes()).toEqual([]);
 
     await api("POST", "/notes/shares", { userId: "maria" });
-    await api("POST", "/notes/shares", { email: "oma@x.de" });
+    await api("POST", "/notes/shares", { userCode: 4821 });
     as = "maria";
     for (const t of ["Hafer", "Milch", "Eier"]) await api("POST", "/notes", { text: t, listOwnerId: "stefan" });
     expect(pendingNotesPushes()).toEqual(["stefan|maria"]);

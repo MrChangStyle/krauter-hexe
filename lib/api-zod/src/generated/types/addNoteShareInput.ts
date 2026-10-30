@@ -10,8 +10,10 @@ export interface AddNoteShareInput {
   /** @nullable */
   userId?: string | null;
   /**
-     * @maxLength 200
+     * Nutzer-ID of the account (docs/konto.md)
+     * @minimum 1000
+     * @maximum 9999999
      * @nullable
      */
-  email?: string | null;
+  userCode?: number | null;
 }

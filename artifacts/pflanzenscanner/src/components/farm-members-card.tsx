@@ -2,11 +2,9 @@ import { useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Handshake, Loader2, LogOut, Stethoscope, UserPlus, Users, X } from "lucide-react";
 import {
-  getListFarmContactsQueryKey,
   getListFarmMembersQueryKey,
   useAddFarmMember,
   useChangeFarmMemberRole,
-  useListFarmContacts,
   useListFarmMembers,
   useRemoveFarmMember,
   type FarmMember,
@@ -44,7 +42,8 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
   const queryClient = useQueryClient();
   const isAdmin = farm.role === "admin";
   const members = useListFarmMembers(farm.id);
-  const [email, setEmail] = useState("");
+  // Nutzer-ID of the person to add (docs/konto.md).
+  const [code, setCode] = useState("");
   const [role, setRole] = useState<FarmRole>("caretaker");
   // Vertretung: last day of access (empty: no end). Not for admins.
   const [until, setUntil] = useState("");
@@ -52,14 +51,12 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
   const [grants, setGrants] = useState<FarmMember | null>(null);
   // Tierarzt-Zugang: the Vertretung form preset for the vet (docs/team.md).
   const [vet, setVet] = useState(false);
-  const contacts = useListFarmContacts(farm.id, { query: { queryKey: getListFarmContactsQueryKey(farm.id), enabled: substitute && isAdmin } });
 
   function startVet() {
-    const preset = vetInviteDefaults(berlinToday(), contacts.data);
+    const preset = vetInviteDefaults(berlinToday());
     setVet(true);
     setRole("guest");
     setUntil(preset.until);
-    if (!email.trim()) setEmail(preset.email);
     setAddError(null);
   }
 
@@ -70,7 +67,7 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
     mutation: {
       onSuccess(list) {
         setList(list);
-        setEmail("");
+        setCode("");
         setUntil("");
         setAddError(null);
         toast({ title: vet ? "Tierarzt eingeladen" : "Mitglied hinzugefügt" });
@@ -104,14 +101,18 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
 
   function submitAdd(event: FormEvent) {
     event.preventDefault();
-    if (!email.trim()) return;
+    const userCode = Number(code.trim());
+    if (!/^\d{4,7}$/.test(code.trim())) {
+      setAddError("Bitte gib die Nutzer-ID ein – eine Zahl mit mindestens vier Stellen. Die Person findet sie unter Mehr → Konto.");
+      return;
+    }
     if (substitute && !until) {
       setAddError("Bis wann vertritt die Person? Bitte das Datum angeben.");
       return;
     }
     add.mutate({
       farmId: farm.id,
-      data: { email: email.trim(), role, accessUntil: substitute ? until : null, ...(vet && { modules: VET_MODULES }) },
+      data: { userCode, role, accessUntil: substitute ? until : null, ...(vet && { modules: VET_MODULES }) },
     });
   }
 
@@ -144,7 +145,13 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
                   {m.displayName}
                   {m.isMe && <span className="font-normal text-muted-foreground"> (du)</span>}
                 </p>
-                {m.email && <p className="truncate text-xs text-muted-foreground">{m.email}</p>}
+                {(m.userCode || m.email) && (
+                  <p className="truncate text-xs text-muted-foreground">
+                    {m.userCode ? `Nutzer-ID ${m.userCode}` : ""}
+                    {m.userCode && m.email ? " · " : ""}
+                    {m.email}
+                  </p>
+                )}
                 {isAdmin && m.role !== "admin" && (
                   <button type="button" className="text-xs text-primary underline underline-offset-4" onClick={() => setGrants(m)}>
                     Freigaben: {isVetGrant(m.modules) ? "Tierarzt-Zugang" : grantSummary(m.modules)}
@@ -220,17 +227,21 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
 
       {isAdmin && (
         <form onSubmit={submitAdd} className="min-w-0 space-y-2 rounded-lg bg-muted/40 p-3" data-testid={vet ? "vet-invite" : undefined}>
-          <Label htmlFor={`member-email-${kind}`} className="text-xs">
-            {vet ? "Tierarzt einladen" : substitute ? "Vertretung eintragen" : "Ins Team holen"} (die Person braucht ein Little-Farming-Konto)
+          <Label htmlFor={`member-code-${kind}`} className="text-xs">
+            {vet ? "Tierarzt einladen" : substitute ? "Vertretung eintragen" : "Ins Team holen"} – mit der Nutzer-ID der Person
           </Label>
           <Input
-            id={`member-email-${kind}`}
-            type="email"
-            inputMode="email"
-            placeholder="name@beispiel.de"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            id={`member-code-${kind}`}
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={7}
+            placeholder="z. B. 4821"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
           />
+          <p className="text-[11px] text-muted-foreground">
+            Jede Person braucht ein eigenes Little-Farming-Konto. Ihre Nutzer-ID steht bei ihr unter Mehr → Konto – sie nennt sie dir.
+          </p>
           <div className="flex min-w-0 gap-2">
             <select
               aria-label={substitute ? "Rolle der Vertretung" : "Rolle für das neue Mitglied"}
@@ -244,7 +255,7 @@ export function MembersCard({ farm, onLeft, kind = "team" }: { farm: FarmSummary
                 </option>
               ))}
             </select>
-            <Button type="submit" size="sm" className="gap-1.5" disabled={add.isPending || !email.trim()}>
+            <Button type="submit" size="sm" className="gap-1.5" disabled={add.isPending || !code.trim()}>
               {add.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <UserPlus className="h-4 w-4" />}
               Hinzufügen
             </Button>

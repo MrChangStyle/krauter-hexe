@@ -18,7 +18,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { useToast } from "@/hooks/use-toast";
 import { errorText } from "@/components/hof-tasks";
 
-const EMAIL = "email";
+// "Mit wem?": someone outside the team, by Nutzer-ID (docs/konto.md).
+const BY_CODE = "code";
 
 /**
  * Share the Hof-Aufgaben, the own Alltagsnotizen, or both (docs/alltagsnotizen.md):
@@ -45,8 +46,8 @@ export function ShareListsDialog({
   const { toast } = useToast();
   const isAdmin = farm?.role === "admin";
   const others = team.filter((m) => !m.isMe);
-  const [who, setWho] = useState<string>(others[0]?.userId ?? EMAIL);
-  const [email, setEmail] = useState("");
+  const [who, setWho] = useState<string>(others[0]?.userId ?? BY_CODE);
+  const [code, setCode] = useState("");
   const [hof, setHof] = useState(initial.hof && isAdmin);
   const [notes, setNotes] = useState(initial.notes);
   const [busy, setBusy] = useState(false);
@@ -58,9 +59,9 @@ export function ShareListsDialog({
 
   async function shareHof(): Promise<void> {
     if (!farm) return;
-    if (who === EMAIL) {
-      const list = await addMember.mutateAsync({ farmId: farm.id, data: { email: email.trim(), role: "caretaker" } });
-      const added = list.find((m) => m.email?.toLowerCase() === email.trim().toLowerCase());
+    if (who === BY_CODE) {
+      const list = await addMember.mutateAsync({ farmId: farm.id, data: { userCode: Number(code), role: "caretaker" } });
+      const added = list.find((m) => m.userCode === Number(code));
       // A new person sees only the Hof-Aufgaben – more under Farm & Team.
       if (added && added.role !== "admin") await setModules.mutateAsync({ farmId: farm.id, userId: added.userId, data: { modules: ["farm-tasks"] } });
     } else {
@@ -75,11 +76,11 @@ export function ShareListsDialog({
     e.preventDefault();
     setError(null);
     if (!hof && !notes) return setError("Bitte wähle mindestens eine Liste.");
-    if (who === EMAIL && !email.trim()) return setError("Bitte gib die E-Mail-Adresse an.");
+    if (who === BY_CODE && !/^\d{4,7}$/.test(code)) return setError("Bitte gib die Nutzer-ID an – eine Zahl mit mindestens vier Stellen.");
     setBusy(true);
     try {
       if (hof) await shareHof();
-      if (notes) await addShare.mutateAsync({ data: who === EMAIL ? { email: email.trim() } : { userId: who } });
+      if (notes) await addShare.mutateAsync({ data: who === BY_CODE ? { userCode: Number(code) } : { userId: who } });
       void queryClient.invalidateQueries({ queryKey: getListNoteSharesQueryKey() });
       if (farm) void queryClient.invalidateQueries({ queryKey: getListFarmMembersQueryKey(farm.id) });
       toast({ title: "Geteilt", description: [hof && "Hof-Aufgaben", notes && "Alltagsnotizen"].filter(Boolean).join(" und ") + " – abhaken und hinzufügen ja, löschen nein." });
@@ -109,12 +110,22 @@ export function ShareListsDialog({
               {others.map((m) => (
                 <option key={m.userId} value={m.userId}>{m.displayName}</option>
               ))}
-              <option value={EMAIL}>Andere Person per E-Mail …</option>
+              <option value={BY_CODE}>Andere Person per Nutzer-ID …</option>
             </select>
-            {who === EMAIL && (
-              <Input aria-label="E-Mail-Adresse" type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@beispiel.de" autoComplete="off" />
+            {who === BY_CODE && (
+              <Input
+                aria-label="Nutzer-ID"
+                inputMode="numeric"
+                maxLength={7}
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                placeholder="z. B. 4821"
+                autoComplete="off"
+              />
             )}
-            <p className="text-xs text-muted-foreground">Die Person braucht ein eigenes Konto in der App – zum Beispiel jemand aus der Familie.</p>
+            <p className="text-xs text-muted-foreground">
+              Die Person braucht ein eigenes Konto in der App – zum Beispiel jemand aus der Familie. Ihre Nutzer-ID steht bei ihr unter Mehr → Konto.
+            </p>
           </div>
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">Was teilen?</legend>

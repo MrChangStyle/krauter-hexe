@@ -20,6 +20,7 @@ export const publicUserColumns = {
   username: usersTable.username,
   leavesCount: usersTable.leavesCount,
   blockedAt: usersTable.blockedAt,
+  userCode: usersTable.userCode,
 };
 
 /**

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Download, Loader2, Trash2, UserRound } from "lucide-react";
+import { Check, Copy, Download, Loader2, Trash2, UserRound } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -136,6 +136,7 @@ export function AccountCard() {
       {user.email && (
         <p className="text-sm text-muted-foreground break-all">{user.email}</p>
       )}
+      {user.userCode && <UserCodeBox code={user.userCode} />}
 
       <nav className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <a href={legalHref(LEGAL_PATHS.impressum)} className="underline underline-offset-4">
@@ -261,5 +262,34 @@ export function AccountCard() {
         </AlertDialog>
       )}
     </section>
+  );
+}
+
+/**
+ * Nutzer-ID (docs/konto.md): the number the account passes on, so an admin
+ * adds it to a farm (Team, Vertretung, Tierarzt) or someone shares a list.
+ */
+function UserCodeBox({ code }: { code: number }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3" data-testid="user-code">
+      <span className="min-w-0 flex-1">
+        <span className="block text-xs text-muted-foreground">Deine Nutzer-ID</span>
+        <span className="block font-mono text-2xl font-semibold tracking-widest">{code}</span>
+        <span className="block text-xs text-muted-foreground">Gib sie weiter, damit man dich ins Team, als Vertretung oder zu einer Liste holen kann.</span>
+      </span>
+      <Button
+        type="button"
+        size="sm"
+        variant="outline"
+        className="shrink-0 gap-1.5"
+        onClick={() => {
+          void navigator.clipboard?.writeText(String(code)).then(() => setCopied(true));
+        }}
+      >
+        {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+        {copied ? "Kopiert" : "Kopieren"}
+      </Button>
+    </div>
   );
 }

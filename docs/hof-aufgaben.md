@@ -41,13 +41,13 @@ Die Eingabekarte ist auf Hof-Aufgaben und Alltagsnotizen gleich aufgebaut (`comp
 6. **Alle Aufgaben verwalten:** auch spätere und pausierte, zum Ändern oder Löschen.
 7. **Pflanzenpflege:** die eigenen fälligen Pflegeaufgaben aus dem Pflegeplan, mit „Erledigt“. Sie sind persönlich und nur für einen selbst sichtbar.
 8. **Im Garten:** Säen, Pflanzen, Ernten aus dem Beet-Architekten.
-9. **Liste teilen** (nur Admins): öffnet den Teilen-Dialog – Person aus dem Team oder per E-Mail, „Hof-Aufgaben“, „Alltagsnotizen“ oder beides (`docs/alltagsnotizen.md`).
+9. **Liste teilen** (nur Admins): öffnet den Teilen-Dialog – Person aus dem Team oder per Nutzer-ID, „Hof-Aufgaben“, „Alltagsnotizen“ oder beides (`docs/alltagsnotizen.md`).
 
 Jede Aufgabe hat eine **Sprechblase** mit der Zahl der Kommentare. Darin stehen die Kommentare mit Name und Zeit, darunter ein Feld (auch mit „Sprechen“). Eigene Kommentare lassen sich löschen; Admins können jeden löschen.
 
 ## Teilen und Rechte
 
-- Geteilt wird über **Farm & Team** (`docs/team.md`): ein Konto per E-Mail hinzufügen.
+- Geteilt wird über **Farm & Team** (`docs/team.md`): ein Konto per Nutzer-ID hinzufügen.
   - **Mitarbeiter** legen an, ändern, haken ab und kommentieren – **löschen dürfen nur Admins**, die Besitzer der Liste (`DELETE /farms/:farmId/tasks/:taskId` verlangt Admin; im Formular fehlt „Löschen“ sonst).
   - **Gäste** sehen die Liste nur.
 - Die Liste gehört zur Modul-Freigabe **„Hof- & Stall-Aufgaben“** (früher „Stall-Aufgaben“). Wer sie nicht hat, sieht weder Balken noch Seite.

@@ -1,8 +1,17 @@
-# Konto: Passwort vergessen und ändern
+# Konto: Nutzer-ID, Passwort vergessen und ändern
 
 Schritt 2 des Launch-Plans (`docs/LAUNCH-PLAN.md`). Wer sein Passwort vergisst, kommt ohne fremde Hilfe wieder ins Konto. Wer es ändern will, kann das in der App.
 
 ## So funktioniert’s
+
+### Nutzer-ID
+
+- Jedes Konto bekommt eine eigene **Nutzer-ID**: eine Zahl mit vier Stellen (1000–9999), z. B. 4821. Sie steht unter Mehr → Konto (mit „Kopieren“) und auf der Kachel „Konto“.
+- Mit ihr – nicht mit der E-Mail-Adresse – holt ein Admin jemanden ins **Team**, als **Vertretung** oder als **Tierarzt** (`docs/team.md`), und mit ihr teilt man **Listen** (Hof-Aufgaben, Alltagsnotizen; `docs/alltagsnotizen.md`).
+- Jede Person braucht dafür ein eigenes Konto, auch eine Vertretung oder ein Mitarbeiter.
+- Sind 80 % der vierstelligen Nummern vergeben, bekommen neue Konten fünf Stellen (dann sechs …); bestehende Nummern ändern sich nie.
+- Die Nummer allein zeigt nichts von der Person. Wer sie kennt, kann sie zu einem Hof oder einer Liste hinzufügen; die Person sieht dann, wessen Hof oder Liste es ist, und kann sie verlassen. Gegen Durchprobieren: höchstens 30 Hof-Einladungen und 20 Teilen-Versuche je Konto und Tag.
+
 
 ### Passwort vergessen
 
@@ -39,6 +48,8 @@ Mehr → Konto → „Passwort ändern“: Man gibt das bisherige und das neue P
 Die Anleitung für den Betreiber steht in `docs/TODO-CHANG.md`. Resend ist in der Datenschutzerklärung unter „Dienstleister“ aufgeführt (Stand der Rechtstexte jetzt 2026-10-29).
 
 ## Technik
+
+- **Nutzer-ID:** Spalte `users.user_code` (integer, eindeutig). `lib/userCode.ts`: `assignUserCode` zieht eine freie Zufallszahl in der aktuellen Länge (`digitsFor`), `assignMissingUserCodes` beim Start für ältere Konten, neue Konten bekommen sie beim ersten `GET /auth/user`; `accountByCode` findet nur freigeschaltete, nicht gesperrte Konten. `POST /farms/:farmId/members` nimmt `userCode` statt `email`, `POST /notes/shares` `userId` (Team) oder `userCode`. App: `UserCodeBox` in `components/account-card.tsx`, Formulare in `farm-members-card.tsx` und `share-lists-dialog.tsx`. Tests: `userCode.test.ts`, `userCode.integration.test.ts`, `farmMembers`, `farmHandover`, `dailyNotes` (echtes Postgres).
 
 - **Server:**
   - `lib/mail.ts` (Versand)

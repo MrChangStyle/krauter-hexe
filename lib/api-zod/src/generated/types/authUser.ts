@@ -24,6 +24,11 @@ export interface AuthUser {
   username: string | null;
   leavesCount: number;
   /**
+     * Nutzer-ID (docs/konto.md) – the account passes it on to be added to a farm or a list
+     * @nullable
+     */
+  userCode?: number | null;
+  /**
      * Set when the owner blocked the account through moderation; the app then says "gesperrt" instead of "warte auf Freigabe".
      * @nullable
      */

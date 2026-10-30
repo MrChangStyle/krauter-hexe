@@ -272,6 +272,9 @@ const STATEMENTS = [
   `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "cancel_at_period_end" boolean DEFAULT false NOT NULL`,
   // Passwort vergessen (docs/konto.md).
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamp with time zone",
+  // Nutzer-ID (docs/konto.md); codes for older accounts are handed out at start (lib/userCode.ts).
+  "ALTER TABLE users ADD COLUMN IF NOT EXISTS user_code integer",
+  "CREATE UNIQUE INDEX IF NOT EXISTS users_user_code_unique ON users (user_code)",
   `CREATE TABLE IF NOT EXISTS "password_resets" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,

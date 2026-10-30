@@ -1,4 +1,4 @@
-import type { FarmContact, ModuleId } from "@workspace/api-client-react";
+import type { ModuleId } from "@workspace/api-client-react";
 
 /**
  * Tierarzt-Zugang (docs/team.md): a stand-in with an end date who sees the
@@ -16,10 +16,9 @@ function addDays(isoDate: string, days: number): string {
   return d.toISOString().slice(0, 10);
 }
 
-/** The form preset: the vet's email from the farm contacts (if there is one) and the end date. */
-export function vetInviteDefaults(today: string, contacts: readonly FarmContact[] | undefined): { email: string; until: string } {
-  const vet = contacts?.find((c) => c.kind === "vet" && c.email);
-  return { email: vet?.email ?? "", until: addDays(today, VET_ACCESS_DAYS) };
+/** The form preset: the end date. The vet is added by Nutzer-ID (docs/konto.md), which the contacts do not know. */
+export function vetInviteDefaults(today: string): { until: string } {
+  return { until: addDays(today, VET_ACCESS_DAYS) };
 }
 
 /** True when the member's grants are exactly the vet's. */

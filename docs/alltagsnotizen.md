@@ -29,11 +29,11 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
 ## Teilen und Rechte
 
 - **Jede Person hat eine eigene Liste und ist ihr Besitzer.**
-- Geteilt wird gezielt mit einzelnen Personen: aus dem Team des Hofs oder per E-Mail mit jedem freigeschalteten Konto – auch Familie, die nicht im Team ist (`note_shares`).
+- Geteilt wird gezielt mit einzelnen Personen: aus dem Team des Hofs oder per Nutzer-ID (`docs/konto.md`) mit jedem freigeschalteten Konto – auch Familie, die nicht im Team ist (`note_shares`).
 - **Wer mitmacht:** sieht die Liste (als Reiter „Liste von Stefan“), hakt ab, fügt hinzu und ändert, was er selbst geschrieben hat – **löscht aber nichts**. Er kann die Liste verlassen.
 - **Der Besitzer:** alles, auch löschen, „Erledigte entfernen“ und das Teilen beenden.
 - Höchstens 10 Personen je Liste, 300 offene Notizen je Liste, eine Notiz höchstens 120 Zeichen.
-- **Ein Dialog für beides** (`components/share-lists-dialog.tsx`): Person wählen oder E-Mail eingeben, dann „Hof-Aufgaben“, „Meine Alltagsnotizen“ oder beides ankreuzen.
+- **Ein Dialog für beides** (`components/share-lists-dialog.tsx`): Person wählen oder Nutzer-ID eingeben, dann „Hof-Aufgaben“, „Meine Alltagsnotizen“ oder beides ankreuzen.
   - Hof-Aufgaben teilen dürfen nur Admins des Hofs: eine neue Person kommt als Mitarbeiter ins Team und bekommt nur die Freigabe „Hof- & Stall-Aufgaben“ (die Tiere sind für Mitglieder immer sichtbar, `docs/team.md`); ein Mitglied mit eingeschränkten Freigaben bekommt sie dazu.
   - Dieselbe Regel gilt dort: Mitarbeiter haken ab, legen an und kommentieren – löschen dürfen nur Admins (`docs/hof-aufgaben.md`).
 

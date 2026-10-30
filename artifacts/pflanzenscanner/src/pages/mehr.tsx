@@ -985,7 +985,7 @@ export default function MehrPage() {
         <HubTile href="/module" icon={LayoutGrid} label="Meine Module" hint="Ein- und ausblenden, Demo-Daten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />
         <HubTile href="/hilfe" icon={CircleHelp} label="Hilfe & FAQ" hint="Alle Module erklärt" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />
         <HubTile {...tileOf("darstellung")} />
-        <HubTile {...tileOf("konto")} />
+        <HubTile {...tileOf("konto")} hint={me?.userCode ? `Nutzer-ID ${me.userCode}` : tileOf("konto").hint} />
         {me?.isOwner && (
           <HubTile
             href="/verwaltung"

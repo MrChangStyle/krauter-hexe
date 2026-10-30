@@ -52,12 +52,12 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
     const { resetInviteCounters } = await import("./farmMembers");
     resetInviteCounters();
     await q("TRUNCATE farms, farm_memberships, users RESTART IDENTITY CASCADE");
-    await q(`INSERT INTO users (id, email, first_name, approved, blocked_at) VALUES
-      ('anna', 'anna@example.org', 'Anna', true, null),
-      ('bert', 'Bert@Example.org', 'Bert', true, null),
-      ('cleo', 'cleo@example.org', 'Cleo', true, null),
-      ('wait', 'wait@example.org', null, false, null),
-      ('troll', 'troll@example.org', null, false, now())`);
+    await q(`INSERT INTO users (id, email, first_name, approved, blocked_at, user_code) VALUES
+      ('anna', 'anna@example.org', 'Anna', true, null, 1001),
+      ('bert', 'Bert@Example.org', 'Bert', true, null, 2002),
+      ('cleo', 'cleo@example.org', 'Cleo', true, null, 3003),
+      ('wait', 'wait@example.org', null, false, null, 4004),
+      ('troll', 'troll@example.org', null, false, now(), 5005)`);
     as = "anna";
   });
 
@@ -84,26 +84,29 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
     ]);
   });
 
-  it("adds members by email (case-insensitive) and refuses unknown, unapproved and blocked accounts", async () => {
+  it("adds members by Nutzer-ID and refuses unknown, unapproved and blocked accounts", async () => {
     const farm = await ownFarmId();
-    const added = await api("POST", `/farms/${farm}/members`, { email: " bert@EXAMPLE.org ", role: "caretaker" });
+    const added = await api("POST", `/farms/${farm}/members`, { userCode: 2002, role: "caretaker" });
     expect(added.status).toBe(200);
-    expect((await json(added)).map((m: any) => m.displayName)).toEqual(["Anna", "Bert"]);
+    expect((await json(added)).map((m: any) => [m.displayName, m.userCode])).toEqual([["Anna", 1001], ["Bert", 2002]]);
 
-    for (const email of ["nobody@example.org", "wait@example.org", "troll@example.org"]) {
-      expect((await api("POST", `/farms/${farm}/members`, { email, role: "guest" })).status).toBe(404);
+    for (const userCode of [9999, 4004, 5005]) {
+      expect((await api("POST", `/farms/${farm}/members`, { userCode, role: "guest" })).status).toBe(404);
     }
-    expect((await api("POST", `/farms/${farm}/members`, { email: "bert@example.org", role: "guest" })).status).toBe(409);
+    expect((await api("POST", `/farms/${farm}/members`, { userCode: 2002, role: "guest" })).status).toBe(409);
+    // No more by e-mail, and no short numbers.
+    expect((await api("POST", `/farms/${farm}/members`, { email: "cleo" + "@example.org", role: "guest" })).status).toBe(400);
+    expect((await api("POST", `/farms/${farm}/members`, { userCode: 42, role: "guest" })).status).toBe(400);
   });
 
   it("invites the vet with an end date and only the grants given", async () => {
     const farm = await ownFarmId();
     const until = new Date(Date.now() + 14 * 86_400_000).toISOString().slice(0, 10);
-    const res = await api("POST", `/farms/${farm}/members`, { email: "bert@example.org", role: "guest", accessUntil: until, modules: ["medicines", "export"] });
+    const res = await api("POST", `/farms/${farm}/members`, { userCode: 2002, role: "guest", accessUntil: until, modules: ["medicines", "export"] });
     expect(res.status).toBe(200);
     expect((await json(res)).find((m: any) => m.userId === "bert")).toMatchObject({ role: "guest", accessUntil: until, modules: ["medicines", "export"] });
     // Without grants: all modules, as before.
-    const all = await json(await api("POST", `/farms/${farm}/members`, { email: "cleo@example.org", role: "caretaker" }));
+    const all = await json(await api("POST", `/farms/${farm}/members`, { userCode: 3003, role: "caretaker" }));
     expect(all.find((m: any) => m.userId === "cleo").modules).toBeNull();
     as = "bert";
     expect((await json(await api("GET", "/farms"))).find((f: any) => f.id === farm)).toMatchObject({ role: "guest", accessUntil: until, modules: ["medicines", "export"] });
@@ -111,7 +114,7 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
 
   it("shows email addresses to admins only", async () => {
     const farm = await ownFarmId();
-    await api("POST", `/farms/${farm}/members`, { email: "bert@example.org", role: "guest" });
+    await api("POST", `/farms/${farm}/members`, { userCode: 2002, role: "guest" });
     expect((await json(await api("GET", `/farms/${farm}/members`)))[1].email).toBe("Bert@Example.org");
     as = "bert";
     const seenByGuest = await json(await api("GET", `/farms/${farm}/members`));
@@ -121,10 +124,10 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
 
   it("lets only admins manage members, rename and delete", async () => {
     const farm = await ownFarmId();
-    await api("POST", `/farms/${farm}/members`, { email: "bert@example.org", role: "caretaker" });
-    await api("POST", `/farms/${farm}/members`, { email: "cleo@example.org", role: "guest" });
+    await api("POST", `/farms/${farm}/members`, { userCode: 2002, role: "caretaker" });
+    await api("POST", `/farms/${farm}/members`, { userCode: 3003, role: "guest" });
     as = "bert";
-    expect((await api("POST", `/farms/${farm}/members`, { email: "x@example.org", role: "guest" })).status).toBe(403);
+    expect((await api("POST", `/farms/${farm}/members`, { userCode: 9998, role: "guest" })).status).toBe(403);
     expect((await api("PATCH", `/farms/${farm}/members/cleo`, { role: "admin" })).status).toBe(403);
     expect((await api("DELETE", `/farms/${farm}/members/cleo`)).status).toBe(403);
     expect((await api("PATCH", `/farms/${farm}`, { name: "Meins" })).status).toBe(403);
@@ -133,7 +136,7 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
 
   it("always keeps an admin", async () => {
     const farm = await ownFarmId();
-    await api("POST", `/farms/${farm}/members`, { email: "bert@example.org", role: "caretaker" });
+    await api("POST", `/farms/${farm}/members`, { userCode: 2002, role: "caretaker" });
     // Anna is the only admin: she can neither step down nor leave.
     expect((await api("PATCH", `/farms/${farm}/members/anna`, { role: "caretaker" })).status).toBe(409);
     expect((await api("DELETE", `/farms/${farm}/members/anna`)).status).toBe(409);
@@ -147,7 +150,7 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
 
   it("lets any member leave, but not the last one", async () => {
     const farm = await ownFarmId();
-    await api("POST", `/farms/${farm}/members`, { email: "cleo@example.org", role: "guest" });
+    await api("POST", `/farms/${farm}/members`, { userCode: 3003, role: "guest" });
     as = "cleo";
     expect((await api("DELETE", `/farms/${farm}/members/cleo`)).status).toBe(204);
     expect((await api("GET", `/farms/${farm}`)).status).toBe(404);
@@ -180,7 +183,7 @@ describe.skipIf(!enabled)("Meine Farm – farms and members (real database)", ()
     const annas = await ownFarmId();
     as = "bert";
     const berts = await ownFarmId();
-    expect((await api("POST", `/farms/${annas}/members`, { email: "cleo@example.org", role: "admin" })).status).toBe(404);
+    expect((await api("POST", `/farms/${annas}/members`, { userCode: 3003, role: "admin" })).status).toBe(404);
     expect((await api("DELETE", `/farms/${annas}/members/anna`)).status).toBe(404);
     expect((await api("GET", `/farms/${berts}/members`)).status).toBe(200);
   });

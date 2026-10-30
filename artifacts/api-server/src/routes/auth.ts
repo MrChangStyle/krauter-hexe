@@ -9,6 +9,7 @@
  * lib/registrationPolicy.ts for the brakes that come with that).
  */
 
+import { assignUserCode } from '../lib/userCode';
 import { GetCurrentAuthUserResponse } from '@workspace/api-zod';
 import { db, usersTable } from '@workspace/db';
 import { and, eq, sql, ne } from 'drizzle-orm';
@@ -329,6 +330,8 @@ router.get('/auth/user', async (req: Request, res: Response) => {
     .select(publicUserColumns)
     .from(usersTable)
     .where(eq(usersTable.id, req.user!.id));
+  // A new account gets its Nutzer-ID on its first look (lib/userCode.ts).
+  if (row && row.userCode === null) row.userCode = await assignUserCode(row.id);
   res.json(GetCurrentAuthUserResponse.parse({ user: row ?? null }));
 });
 

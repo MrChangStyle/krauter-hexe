@@ -9,8 +9,12 @@ import type { FarmRole } from './farmRole';
 import type { ModuleId } from './moduleId';
 
 export interface AddFarmMemberInput {
-  /** @maxLength 254 */
-  email: string;
+  /**
+     * Nutzer-ID of the account to add (docs/konto.md)
+     * @minimum 1000
+     * @maximum 9999999
+     */
+  userCode: number;
   role: FarmRole;
   /**
      * Vertretung – last day of access; not for admins

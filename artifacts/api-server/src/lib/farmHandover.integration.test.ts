@@ -57,7 +57,7 @@ describe.skipIf(!enabled)("Vertretung (real database)", () => {
     fixedDay = "2026-10-19";
     await q("TRUNCATE farms, farm_memberships, users RESTART IDENTITY CASCADE");
     await q(
-      `INSERT INTO users (id, email, approved, first_name, last_name) VALUES ('anna', 'anna@x.de', true, 'Anna', 'Hof'), ('nina', 'nina@x.de', true, 'Nina', NULL), ('gast', 'g@x.de', true, NULL, NULL)`,
+      `INSERT INTO users (id, email, approved, first_name, last_name, user_code) VALUES ('anna', 'anna@x.de', true, 'Anna', 'Hof', 1001), ('nina', 'nina@x.de', true, 'Nina', NULL, 1002), ('gast', 'g@x.de', true, NULL, NULL, 1003)`,
     );
     const [f] = await q<{ id: number }>("INSERT INTO farms (name) VALUES ('Hof Anna') RETURNING id");
     farmId = f!.id;
@@ -76,9 +76,9 @@ describe.skipIf(!enabled)("Vertretung (real database)", () => {
   };
 
   it("gives a stand-in access up to a day, and not one day longer", async () => {
-    expect((await api("POST", `/farms/${farmId}/members`, { email: "nina@x.de", role: "admin", accessUntil: "2026-10-26" })).status).toBe(400);
-    expect((await api("POST", `/farms/${farmId}/members`, { email: "nina@x.de", role: "caretaker", accessUntil: "2026-10-18" })).status).toBe(400);
-    const added = await api("POST", `/farms/${farmId}/members`, { email: "nina@x.de", role: "caretaker", accessUntil: "2026-10-26" });
+    expect((await api("POST", `/farms/${farmId}/members`, { userCode: 1002, role: "admin", accessUntil: "2026-10-26" })).status).toBe(400);
+    expect((await api("POST", `/farms/${farmId}/members`, { userCode: 1002, role: "caretaker", accessUntil: "2026-10-18" })).status).toBe(400);
+    const added = await api("POST", `/farms/${farmId}/members`, { userCode: 1002, role: "caretaker", accessUntil: "2026-10-26" });
     expect(added.data.find((m: any) => m.userId === "nina")).toMatchObject({ role: "caretaker", accessUntil: "2026-10-26" });
 
     as = "nina";
@@ -95,7 +95,7 @@ describe.skipIf(!enabled)("Vertretung (real database)", () => {
   });
 
   it("lets the admin extend or end the limit; making someone admin ends it", async () => {
-    await api("POST", `/farms/${farmId}/members`, { email: "nina@x.de", role: "caretaker", accessUntil: "2026-10-26" });
+    await api("POST", `/farms/${farmId}/members`, { userCode: 1002, role: "caretaker", accessUntil: "2026-10-26" });
     let members = (await api("PATCH", `/farms/${farmId}/members/nina`, { role: "caretaker", accessUntil: "2026-11-02" })).data;
     expect(members.find((m: any) => m.userId === "nina").accessUntil).toBe("2026-11-02");
     // Only the role: the date stays.

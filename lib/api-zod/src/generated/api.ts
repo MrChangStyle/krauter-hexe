@@ -1721,6 +1721,7 @@ export const GetCurrentAuthUserResponse = zod.object({
   "isOwner": zod.boolean().describe('Whether this account is the app owner (the first account that ever signed in).'),
   "username": zod.string().nullable(),
   "leavesCount": zod.number(),
+  "userCode": zod.number().nullish().describe('Nutzer-ID (docs\/konto.md) – the account passes it on to be added to a farm or a list'),
   "blockedAt": zod.coerce.date().nullish().describe('Set when the owner blocked the account through moderation; the app then says \"gesperrt\" instead of \"warte auf Freigabe\".\n')
 }),zod.null()])
 })
@@ -1773,6 +1774,7 @@ export const RegisterAccountResponse = zod.object({
   "isOwner": zod.boolean().describe('Whether this account is the app owner (the first account that ever signed in).'),
   "username": zod.string().nullable(),
   "leavesCount": zod.number(),
+  "userCode": zod.number().nullish().describe('Nutzer-ID (docs\/konto.md) – the account passes it on to be added to a farm or a list'),
   "blockedAt": zod.coerce.date().nullish().describe('Set when the owner blocked the account through moderation; the app then says \"gesperrt\" instead of \"warte auf Freigabe\".\n')
 }),zod.null()])
 })
@@ -1804,6 +1806,7 @@ export const LoginWithPasswordResponse = zod.object({
   "isOwner": zod.boolean().describe('Whether this account is the app owner (the first account that ever signed in).'),
   "username": zod.string().nullable(),
   "leavesCount": zod.number(),
+  "userCode": zod.number().nullish().describe('Nutzer-ID (docs\/konto.md) – the account passes it on to be added to a farm or a list'),
   "blockedAt": zod.coerce.date().nullish().describe('Set when the owner blocked the account through moderation; the app then says \"gesperrt\" instead of \"warte auf Freigabe\".\n')
 }),zod.null()])
 })
@@ -1871,6 +1874,7 @@ export const ConfirmPasswordResetResponse = zod.object({
   "isOwner": zod.boolean().describe('Whether this account is the app owner (the first account that ever signed in).'),
   "username": zod.string().nullable(),
   "leavesCount": zod.number(),
+  "userCode": zod.number().nullish().describe('Nutzer-ID (docs\/konto.md) – the account passes it on to be added to a farm or a list'),
   "blockedAt": zod.coerce.date().nullish().describe('Set when the owner blocked the account through moderation; the app then says \"gesperrt\" instead of \"warte auf Freigabe\".\n')
 }),zod.null()])
 })
@@ -8062,6 +8066,7 @@ export const ListFarmMembersResponseItem = zod.object({
   "userId": zod.string(),
   "displayName": zod.string(),
   "email": zod.string().nullable().describe('Only filled in for admins.'),
+  "userCode": zod.number().nullable().describe('Nutzer-ID of the member'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
@@ -8071,20 +8076,21 @@ export const ListFarmMembersResponse = zod.array(ListFarmMembersResponseItem)
 
 
 /**
- * @summary Add an existing account by email (admin only)
+ * @summary Add an existing account by its Nutzer-ID (admin only)
  */
 export const AddFarmMemberParams = zod.object({
   "farmId": zod.coerce.number()
 })
 
-export const addFarmMemberBodyEmailMax = 254;
+export const addFarmMemberBodyUserCodeMin = 1000;
+export const addFarmMemberBodyUserCodeMax = 9999999;
 
 export const addFarmMemberBodyModulesMax = 40;
 
 
 
 export const AddFarmMemberBody = zod.object({
-  "email": zod.string().max(addFarmMemberBodyEmailMax),
+  "userCode": zod.number().min(addFarmMemberBodyUserCodeMin).max(addFarmMemberBodyUserCodeMax).describe('Nutzer-ID of the account to add (docs\/konto.md)'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "accessUntil": zod.string().nullish().describe('Vertretung – last day of access; not for admins'),
   "modules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])).max(addFarmMemberBodyModulesMax).nullish().describe('Modul-Freigaben right away (e.g. Tierarzt-Zugang); null or omitted = all; ignored for admins')
@@ -8094,6 +8100,7 @@ export const AddFarmMemberResponseItem = zod.object({
   "userId": zod.string(),
   "displayName": zod.string(),
   "email": zod.string().nullable().describe('Only filled in for admins.'),
+  "userCode": zod.number().nullable().describe('Nutzer-ID of the member'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
@@ -8122,6 +8129,7 @@ export const SetFarmMemberModulesResponseItem = zod.object({
   "userId": zod.string(),
   "displayName": zod.string(),
   "email": zod.string().nullable().describe('Only filled in for admins.'),
+  "userCode": zod.number().nullable().describe('Nutzer-ID of the member'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
@@ -8147,6 +8155,7 @@ export const ChangeFarmMemberRoleResponseItem = zod.object({
   "userId": zod.string(),
   "displayName": zod.string(),
   "email": zod.string().nullable().describe('Only filled in for admins.'),
+  "userCode": zod.number().nullable().describe('Nutzer-ID of the member'),
   "role": zod.enum(['admin', 'caretaker', 'guest']).describe('admin = everything incl. members; caretaker = write animals and records; guest = read only.'),
   "isMe": zod.boolean(),
   "accessUntil": zod.string().nullable().describe('Vertretung – last day of access (YYYY-MM-DD)'),
@@ -9079,15 +9088,16 @@ export const ListNoteSharesResponse = zod.object({
 
 
 /**
- * @summary Share the own list with a team member (userId) or any approved account (email)
+ * @summary Share the own list with a team member (userId) or any approved account (Nutzer-ID)
  */
-export const addNoteShareBodyEmailMax = 200;
+export const addNoteShareBodyUserCodeMin = 1000;
+export const addNoteShareBodyUserCodeMax = 9999999;
 
 
 
 export const AddNoteShareBody = zod.object({
   "userId": zod.string().nullish(),
-  "email": zod.string().max(addNoteShareBodyEmailMax).nullish()
+  "userCode": zod.number().min(addNoteShareBodyUserCodeMin).max(addNoteShareBodyUserCodeMax).nullish().describe('Nutzer-ID of the account (docs\/konto.md)')
 })
 
 export const AddNoteShareResponse = zod.object({

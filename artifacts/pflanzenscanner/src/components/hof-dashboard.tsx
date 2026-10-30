@@ -19,7 +19,6 @@ import {
   Pill,
   ShieldCheck,
   Sun,
-  Trophy,
   Wheat,
   Wind,
 } from "lucide-react";
@@ -46,7 +45,8 @@ import { useModules } from "@/hooks/use-modules";
 import { FarmingStrip } from "@/components/organic-area-switch";
 import { WIDGET_MODULE, farmModuleGranted } from "@/lib/modules";
 import { HofTools } from "@/components/hof-tasks";
-import { FarmSwitcher } from "@/components/farm-switcher";
+import { FarmSwitcher, TOP_BOX } from "@/components/farm-switcher";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DashboardEditor } from "@/components/dashboard-editor";
 import { ALERT_STYLES, AlertBox, LocationForm } from "@/components/farm-weather-card";
 import { effectiveLayout, plantTaskDue, topCounts, widgetsOf, type WidgetArea, type WidgetId } from "@/lib/dashboard";
@@ -227,25 +227,24 @@ const mm = (n: number) => `${n.toLocaleString("de-DE", { maximumFractionDigits: 
 /** One line with the own place; opens to the top four. */
 export function LeaderboardStrip() {
   const { data } = useGetLeaderboard();
-  const [open, setOpen] = useState(false);
   if (!data || !data.own) return null;
   const top = data.top.slice(0, 4);
   const ownInTop = top.some((e) => e.isCurrentUser);
+  // A small box in the Hof's top row; a tap opens the ranking.
   return (
-    <div className="rounded-2xl border bg-card" data-testid="hof-leaderboard">
-      <button type="button" className="flex w-full items-center gap-3 px-4 py-2.5 text-left text-sm" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <Trophy className="h-4 w-4 shrink-0 text-yellow-500" />
-        <span className="flex-1">
-          Pflanzenretter: <span className="font-semibold">Platz {data.own.rank}</span>
+    <DropdownMenu>
+      <DropdownMenuTrigger className={TOP_BOX} aria-label={`Pflanzenretter – Platz ${data.own.rank}`} data-testid="hof-leaderboard">
+        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <span className="truncate">Pflanzenretter</span>
+          </span>
+        <span className="block truncate text-[13px] font-semibold">Platz {data.own.rank}</span>
+        <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+          <Leaf className="h-3 w-3 text-emerald-600" />
+          {data.own.leavesCount} Blätter
         </span>
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
-          <Leaf className="h-3.5 w-3.5 text-emerald-600" />
-          {data.own.leavesCount}
-        </span>
-        <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
-      </button>
-      {open && (
-        <ol className="border-t px-4 py-2 text-sm">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="center" className="w-64 max-w-[calc(100vw-2rem)]">
+        <ol className="px-2 py-1 text-sm">
           {top.map((e) => (
             <li key={e.userId} className={cn("flex items-center gap-3 py-1", e.isCurrentUser && "font-semibold text-emerald-700 dark:text-emerald-400")}>
               <span className="w-5 text-xs tabular-nums text-muted-foreground">{e.rank}.</span>
@@ -262,8 +261,8 @@ export function LeaderboardStrip() {
           )}
           <li className="pt-1 text-[11px] text-muted-foreground">Blätter gibt es für neu gescannte Arten und abgehakte Pflegetage.</li>
         </ol>
-      )}
-    </div>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
@@ -565,11 +564,13 @@ export function HofDashboard() {
   return (
     <div className="w-full space-y-4">
       <TesterNotice closable />
-      <FarmSwitcher farms={farms} active={farm} onSelect={select} />
+      {/* Top row side by side: which farm, Pflanzenretter, Bewirtschaftung (Bio) – each opens its own menu or page. */}
+      <div className="flex gap-2" data-testid="hof-top-row">
+        <FarmSwitcher farms={farms} active={farm} onSelect={select} compact />
+        <LeaderboardStrip />
+        <FarmingStrip />
+      </div>
       {farm ? <WeatherStrip farm={farm} /> : <div className="h-[72px] rounded-2xl border bg-card animate-pulse" />}
-      <LeaderboardStrip />
-      {/* How the farm works and where to switch to Bio (docs/bio.md). */}
-      <FarmingStrip />
       <HofTools farm={farm} />
       {farm && !saved.isLoading && (
         <>

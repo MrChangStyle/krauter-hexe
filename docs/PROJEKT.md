@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #155 | Hof-Startseite: oberste Zeile mit drei Kästchen nebeneinander – Farm (Auswahl), Pflanzenretter (Rangliste), Bewirtschaftung (Stand, „Auf Bio wechseln“) – statt drei Zeilen untereinander |
 | 30.10.2026 | #154 | Bio sichtbar: Zeile zur Bewirtschaftung auf der Hof-Startseite; in jedem Modul mit Bio-Regeln oben eine Bio-Zeile mit Schalter für diesen Bereich (Futterplaner, Saatgut, Beete, Ernte, Arzneimittel, Gesundheit am Tier, Ertrag, Bienen, Meine Tiere) |
 | 30.10.2026 | #153 | Design D4, Schritt 5: Tiere – Bio-Check als Kachel mit eigener Seite (`/farm/bio-check`); Pflegeplan – Pflege-Guides als Kachel statt offener Liste |
 | 30.10.2026 | #152 | Design D4, Schritt 4: Grow – KCanG-Check (Zahl auf der Kachel), Erinnerungen und Premium als Kacheln mit eigener Seite statt offener Karten |

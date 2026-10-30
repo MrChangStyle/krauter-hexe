@@ -89,3 +89,6 @@ Hat der Hof einen Standort, schaut die gerade geltende Ration in die Vorhersage 
 
 Meerschweinchen gehören frostfrei untergebracht; Katzen und Hunde haben keine Rationsrechnung. Die App zeigt im Futterplaner den Tag, das Mehr je Futtermittel und Tier sowie für die ganze Gruppe (`cold` an der Ration). Ohne Standort oder ohne Antwort des Wetterdienstes fehlt der Hinweis. Die Werte sind Richtwerte und wie die übrigen vor dem Start von einer Fachperson zu prüfen.
 
+## Bio
+
+Auf Bio-Höfen gibt es die Karte „Herkunft der Futtermittel“, und jede Ration zeigt ihre Bio-Anteile mit Ampel (Bio-Anteil, zugekauftes Umstellungsfutter, vom Hof oder aus der Region, Raufutter). Einzelheiten in `docs/bio.md`.

@@ -1,6 +1,6 @@
 # Bio und Bewirtschaftung
 
-Schritte B1 und B2 aus `docs/BIO-KONZEPT.md`. **Bio ist eine Option, keine Pflicht.** Die App bleibt für alle da, die konventionell wirtschaften. Wer möchte, stellt auf naturnah oder bio um, und kann jederzeit zurückwechseln.
+Schritte B1 bis B3 aus `docs/BIO-KONZEPT.md`. **Bio ist eine Option, keine Pflicht.** Die App bleibt für alle da, die konventionell wirtschaften. Wer möchte, stellt auf naturnah oder bio um, und kann jederzeit zurückwechseln.
 
 ## Für Nutzer
 
@@ -45,6 +45,26 @@ Wer zurück auf konventionell oder naturnah stellt, verliert Kontrollstelle und 
   - Impfungen und Parasitenbehandlungen zählen nicht.
 - Konventionelle und naturnahe Höfe sehen alles wie bisher; die Art der Behandlung ist dort nur eine Notiz.
 
+### Futterplaner (B3)
+
+Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
+
+- **Herkunft der Futtermittel**, eine Karte im Futterplaner:
+  - Je Futter, das in einer Ration vorkommt: bio, Umstellung oder konventionell, dazu „vom Hof / aus der Region“.
+  - Mitarbeiter und Admins tragen ein, Gäste lesen nur.
+- **Bio-Futter je Ration:** Anteile auf die Trockenmasse mit Ampel (Richtwerte):
+
+  | Regel | Richtwert | Gilt für |
+  |---|---|---|
+  | Bio- und Umstellungsfutter | 100 % | alle |
+  | Umstellungsfutter zugekauft | höchstens 25 % | alle |
+  | Vom Hof oder aus der Region | mindestens 70 % | Rind, Schaf, Ziege, Pferd, Esel, Alpaka |
+  | Vom Hof oder aus der Region | mindestens 30 % | Schwein und Geflügel |
+  | Raufutter und Grünfutter | mindestens 60 % | Rind, Schaf, Ziege, Pferd, Esel, Alpaka |
+
+- Futter ohne Angabe zählt als konventionell und zugekauft. Die Ration nennt es unter „Herkunft fehlt bei …“.
+- Konventionelle und naturnahe Höfe sehen den Futterplaner wie bisher.
+
 ## Technik
 
 - **Datenbank** (additiv, `farmSchemaStatements.ts`, `schemaUpgrade.ts`):
@@ -64,15 +84,22 @@ Wer zurück auf konventionell oder naturnah stellt, verliert Kontrollstelle und 
 - **Krankenakte (B2):**
   - `medical_records.remedy_kind` (`chemical` | `natural` | `vaccine` | `antiparasitic` | null) und `medical_records.organic`. `organic` wird beim Anlegen aus der Stufe des Hofs gesetzt (`certified`) und danach nie geändert.
   - `withdrawalDays` und `withdrawalUntil` in `lib/farmHealth.ts`, gespiegelt in der App (`lib/farm-health.ts`, dazu `chemicalTreatments`, `waitDaysText`).
+- **Futterplaner (B3):**
+  - Tabelle `feed_origins` (`feed_key` oder `feed_id`, `organic`, `own_farm`), `lib/feedOrganic.ts` mit `organicShares` und `setFeedOrigin`.
+  - `GET/PUT /farms/:farmId/feed-origins`, Modul Futter.
+  - `RationEvaluation.organic` ist nur auf Bio-Höfen gefüllt.
+  - App: `components/feed-organic.tsx`.
 - **Demo:** Der Demo-Hof ist naturnah (`docs/demo.md`).
 - **Tests:**
   - `farming.integration.test.ts`: Standard, Umschalten in beide Richtungen, Rollen, Prüfungen, wer biologische Tipps bekommt.
   - `organicAdvice.test.ts`: was die KI gesagt bekommt und was zurückkommt.
   - `farmHealth.integration.test.ts`: doppelte Wartezeit nur bei Bio, Art der Behandlung.
   - App `farm-health.test.ts`: Wartezeit-Rechnung, Export-Text, Zähler über 12 Monate.
+  - `feedPlanner.integration.test.ts`: Anteile nur auf Bio-Höfen, fehlende Herkunft, Rollen.
 
 ## Offen
 
 - Richtwerte zur fachlichen Prüfung: doppelte Wartezeit, mindestens 48 Stunden; höchstens 3 chemisch-synthetische Behandlungen in 12 Monaten, bei Tieren mit weniger als einem Jahr Nutzungsdauer 1 (die App zeigt dafür nur einen Hinweis, sie kennt die Nutzungsdauer nicht); dass Impfungen und Parasitenbehandlungen nicht zählen (VO (EU) 2018/848, Anhang II Teil II).
-- Die nächsten Schritte B3–B8 aus `docs/BIO-KONZEPT.md`, unter anderem doppelte Wartezeit bei Bio, Bio-Futter, Platz-Check, Bio-Check und Bio-Dokumentation. Der Berater-Zugang (B6) ist zurückgestellt.
+- Futter-Richtwerte zur fachlichen Prüfung: Anteil vom Hof oder aus der Region, zugekauftes Umstellungsfutter, Raufutter (bei Milchkühen in der Frühlaktation 50 %), Ausnahmen für Eiweißfutter bei Jungtieren (VO (EU) 2018/848, Anhang II Teil II 1.4). „Region“ prüft die App nicht, das Häkchen setzt der Hof selbst.
+- Die nächsten Schritte B4–B8 aus `docs/BIO-KONZEPT.md`, unter anderem doppelte Wartezeit bei Bio, Bio-Futter, Platz-Check, Bio-Check und Bio-Dokumentation. Der Berater-Zugang (B6) ist zurückgestellt.
 - Die Liste der „im Ökolandbau üblichen“ Mittel im KI-Hinweis ist ein Richtwert. Verbindlich ist Anhang I der VO (EU) 2021/1165 (zugelassene Pflanzenschutzmittel, Dünger); fachlich zu prüfen.

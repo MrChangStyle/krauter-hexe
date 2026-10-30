@@ -10,6 +10,7 @@ import type { FeedTransition } from './feedTransition';
 import type { FeedWarning } from './feedWarning';
 import type { LifeStage } from './lifeStage';
 import type { NutrientCheck } from './nutrientCheck';
+import type { OrganicShares } from './organicShares';
 import type { RationEvaluationGroup } from './rationEvaluationGroup';
 import type { RationEvaluationItemsItem } from './rationEvaluationItemsItem';
 import type { RationEvaluationNeed } from './rationEvaluationNeed';
@@ -37,5 +38,7 @@ export interface RationEvaluation {
   /** More feed for the cold of the next three days (forecast at the farm); only on the ration in effect. */
   cold: null | ColdBoost;
   group: RationEvaluationGroup;
+  /** Bio (docs/bio.md) – shares of the ration by dry matter against the organic rules; null unless the farm is organic */
+  organic: OrganicShares | null;
   updatedAt: string;
 }

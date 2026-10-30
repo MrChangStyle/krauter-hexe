@@ -240,6 +240,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       "Mit Hofstandort zeigt sie bei Kälte, wie viel mehr Heu oder Körner es braucht.",
     ],
     faq: [
+      {
+        q: "Wie rechnet der Futterplaner auf einem Bio-Hof?",
+        a: "Nur wenn der Hof unter Farm & Team auf „Bio“ oder „Bio-Verband“ steht: Unter „Herkunft der Futtermittel“ gibst du je Futter an, ob es bio, aus der Umstellung oder konventionell ist und ob es vom Hof oder aus der Region kommt. Jede Ration zeigt dann die Anteile auf die Trockenmasse mit Ampel – Bio-Anteil 100 %, zugekauftes Umstellungsfutter höchstens 25 %, vom Hof oder aus der Region mindestens 70 % (Pflanzenfresser) bzw. 30 % (Schwein, Geflügel), Raufutter mindestens 60 % bei Pflanzenfressern. Alles Richtwerte nach EU-Öko-Verordnung. Andere Höfe sehen den Futterplaner wie bisher.",
+      },
       { q: "Warum warnt die App bei Mineralfutter?", a: "Manches Mineralfutter ist für eine andere Art gemacht – zu viel Kupfer ist für Schafe giftig, Kokzidiostatika für Pferde. Diese Warnungen lassen sich nicht wegklicken." },
       { q: "Sind das genaue Werte?", a: "Es sind Richtwerte aus der Fachliteratur für ein typisches Tier. Im Zweifel mit Tierärztin oder Fütterungsberatung abstimmen." },
     ],

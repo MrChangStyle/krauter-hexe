@@ -7,6 +7,8 @@
  * Fixed rules only; no AI.
  */
 
+import { certified, getFarming } from './farming';
+import { listFeedOrigins, organicShares, type OrganicShares } from './feedOrganic';
 import {
   db,
   farmAnimalsTable,
@@ -461,12 +463,16 @@ export interface RationEvaluation {
   cold: ColdBoost | null;
   /** For the whole group per day: feed as fed (kg) and water (l). */
   group: { feedKg: number; waterL: number | null };
+  /** Bio (docs/bio.md): shares against the organic rules – organic farms only. */
+  organic: OrganicShares | null;
   updatedAt: string;
 }
 
 async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSelect)[]): Promise<RationEvaluation[]> {
   const own = new Map((await listFarmFeeds(farmId)).map((f) => [f.id, f]));
   const all = await db.select().from(feedRationsTable).where(eq(feedRationsTable.farmId, farmId));
+  // Bio: the shares only matter on an organic farm.
+  const origins = rows.length && certified((await getFarming(farmId)).level) ? await listFeedOrigins(farmId) : null;
   const today = berlinDay();
   // The forecast at the farm, for the cold ahead (none without a location or when the service is down).
   const location = rows.length ? await farmLocation(farmId) : null;
@@ -535,6 +541,13 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
         feedKg: Math.round(resolved.reduce((s, r) => s + r.grams, 0) * target.count) / 1000,
         waterL: need ? Math.round(need.waterL * target.count * 10) / 10 : null,
       },
+      organic: origins
+        ? organicShares(
+            target.species,
+            resolved.map((r) => ({ ref: r.ref, name: r.name, grams: r.grams, category: r.category, dryMatter: r.values.dryMatter })),
+            origins,
+          )
+        : null,
       updatedAt: row.updatedAt.toISOString(),
     });
   }

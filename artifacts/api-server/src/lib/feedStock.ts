@@ -14,6 +14,7 @@ import { and, eq, inArray, lt, sql } from 'drizzle-orm';
 
 import { FarmDataError, notFound } from './farmAnimals';
 import { feedByKey, type FeedCategory } from './feedCatalog';
+import { checkRef } from './feedOrganic';
 import { evaluatedRations, type RationEvaluation } from './feedPlanner';
 import { activeSeason, addDays, daysBetween, seasonOf, type Season } from './feedSeason';
 import { logger } from './logger';
@@ -252,22 +253,6 @@ export async function winterGardenNeed(farmId: number): Promise<{ kg: number; cr
 export interface StockInput {
   feedKey?: string | null;
   feedId?: number | null;
-}
-
-async function checkRef(farmId: number, input: StockInput): Promise<FeedRef> {
-  if (input.feedKey) {
-    if (!feedByKey(input.feedKey)) throw new FarmDataError(400, 'Dieses Futtermittel gibt es nicht.');
-    return { feedKey: input.feedKey, feedId: null };
-  }
-  if (input.feedId != null) {
-    const [own] = await db
-      .select({ id: farmFeedsTable.id })
-      .from(farmFeedsTable)
-      .where(and(eq(farmFeedsTable.id, input.feedId), eq(farmFeedsTable.farmId, farmId)));
-    if (!own) throw new FarmDataError(400, 'Dieses Futtermittel gibt es nicht.');
-    return { feedKey: null, feedId: own.id };
-  }
-  throw new FarmDataError(400, 'Bitte wähle ein Futtermittel.');
 }
 
 const refWhere = (farmId: number, ref: FeedRef) =>

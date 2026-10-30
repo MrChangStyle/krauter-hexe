@@ -27,6 +27,7 @@ import { quickStart } from './farmSetup';
 import { addExpense, addYield } from './farmYields';
 import { addFarmTaskComment, completeFarmTask, createFarmTask, type FarmTaskInput } from './farmTasks';
 import { addDays } from './feedSeason';
+import { setFeedOrigin } from './feedOrganic';
 import { buyFeed } from './feedStock';
 import { createBed } from './gardenBeds';
 import { addGardenCost, addGardenHours } from './gardenEconomics';
@@ -86,6 +87,9 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   // Futtervorrat: a sack of layer feed nearly gone, hay for a while.
   await buyFeed(farmId, { feedKey: 'legehennen', packages: 1, packageKg: 5 });
   await buyFeed(farmId, { feedKey: 'heu', packages: 4, packageKg: 20 });
+  // Bio (docs/bio.md): where the feeds come from – shown once the demo farm is switched to Bio.
+  await setFeedOrigin(farmId, { feedKey: 'heu', organic: 'organic', ownFarm: true });
+  await setFeedOrigin(farmId, { feedKey: 'legehennen', organic: 'organic', ownFarm: false });
 
   // Zucht: a goat in kid, a clutch under a hen.
   const [goat] = await db

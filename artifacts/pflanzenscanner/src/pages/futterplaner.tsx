@@ -8,6 +8,7 @@ import {
   useAddFarmFeed,
   useCreateFeedReminders,
   useEnsureOwnFarm,
+  useGetFarmFarming,
   useGetFeedReference,
   useListFarmAnimals,
   useListFarmFeeds,
@@ -27,6 +28,7 @@ import {
   type RationEvaluation,
   type RationSeason,
 } from "@workspace/api-client-react";
+import { FeedOriginsCard, OrganicSharesBox } from "@/components/feed-organic";
 import { PremiumBadge } from "@/components/premium-badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -36,6 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { downscaleFile } from "@/lib/image";
 import { SPECIES_LABELS } from "@/lib/farm-labels";
+import { certified } from "@/lib/farming-labels";
 import { CATEGORY_LABELS, NUTRIENT_LABELS, SEASON_LABELS, STAGE_LABELS, formatRange, formatValue, grams, light, lightText, rationName, shareText, shortDate } from "@/lib/feed-labels";
 import { berlinToday, dayLabel } from "@/lib/weather-labels";
 import { cn } from "@/lib/utils";
@@ -198,6 +201,7 @@ function RationResult({ ration }: { ration: RationEvaluation }) {
       <p className="text-xs text-muted-foreground">
         Nährstoffe auf die Trockenmasse gerechnet; Richtwerte für ein typisches Tier{ration.need ? ` (${ration.need.weightKg.toLocaleString("de-DE")} kg)` : ""}.
       </p>
+      {ration.organic && <OrganicSharesBox shares={ration.organic} />}
     </div>
   );
 }
@@ -620,6 +624,8 @@ function Planner({ farm }: { farm: FarmSummary }) {
   const herds = useListHerds(farm.id);
   const rations = useListRations(farm.id);
   const own = useListFarmFeeds(farm.id);
+  // Bio (docs/bio.md): origins of the feeds only on an organic farm.
+  const organicFarm = certified(useGetFarmFarming(farm.id).data?.level);
   const removeFeed = useRemoveFarmFeed({ mutation: { onSuccess: () => void queryClient.invalidateQueries({ queryKey: getListFarmFeedsQueryKey(farm.id) }) } });
   const { toast } = useToast();
   const [editing, setEditing] = useState<{ target: Target; season: RationSeason; ration: RationEvaluation | undefined } | null>(null);
@@ -746,6 +752,8 @@ function Planner({ farm }: { farm: FarmSummary }) {
           })}
         </ul>
       )}
+
+      {organicFarm && <FeedOriginsCard farmId={farm.id} rations={rations.data ?? []} canWrite={canWrite} />}
 
       <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
         <div className="flex items-center justify-between gap-2">

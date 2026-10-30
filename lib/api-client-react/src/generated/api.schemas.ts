@@ -3303,6 +3303,40 @@ export type RationEvaluationGroup = {
   waterL: number | null;
 };
 
+export type OrganicSharesChecksItemKey = typeof OrganicSharesChecksItemKey[keyof typeof OrganicSharesChecksItemKey];
+
+
+export const OrganicSharesChecksItemKey = {
+  organic: 'organic',
+  conversion: 'conversion',
+  ownFarm: 'ownFarm',
+  roughage: 'roughage',
+} as const;
+
+export type OrganicSharesChecksItemBound = typeof OrganicSharesChecksItemBound[keyof typeof OrganicSharesChecksItemBound];
+
+
+export const OrganicSharesChecksItemBound = {
+  min: 'min',
+  max: 'max',
+} as const;
+
+export type OrganicSharesChecksItem = {
+  key: OrganicSharesChecksItemKey;
+  /** Share of the dry matter, % */
+  value: number;
+  /** Richtwert, % */
+  target: number;
+  bound: OrganicSharesChecksItemBound;
+  ok: boolean;
+};
+
+export interface OrganicShares {
+  checks: OrganicSharesChecksItem[];
+  /** Feeds of the ration without a stated origin (counted as conventional) */
+  missing: string[];
+}
+
 export interface RationEvaluation {
   id: number;
   target: RationEvaluationTarget;
@@ -3323,7 +3357,38 @@ export interface RationEvaluation {
   /** More feed for the cold of the next three days (forecast at the farm); only on the ration in effect. */
   cold: null | ColdBoost;
   group: RationEvaluationGroup;
+  /** Bio (docs/bio.md) – shares of the ration by dry matter against the organic rules; null unless the farm is organic */
+  organic: OrganicShares | null;
   updatedAt: string;
+}
+
+export type FeedOrganic = typeof FeedOrganic[keyof typeof FeedOrganic];
+
+
+export const FeedOrganic = {
+  organic: 'organic',
+  conversion: 'conversion',
+  conventional: 'conventional',
+} as const;
+
+export interface FeedOrigin {
+  /** @nullable */
+  feedKey: string | null;
+  /** @nullable */
+  feedId: number | null;
+  organic: FeedOrganic;
+  /** Grown on the farm itself or in the region */
+  ownFarm: boolean;
+}
+
+export interface FeedOriginInput {
+  /** @nullable */
+  feedKey?: string | null;
+  /** @nullable */
+  feedId?: number | null;
+  /** null removes the origin */
+  organic: FeedOrganic | null;
+  ownFarm?: boolean;
 }
 
 export type AppStatusLevel = typeof AppStatusLevel[keyof typeof AppStatusLevel];

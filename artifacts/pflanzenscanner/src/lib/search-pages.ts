@@ -13,7 +13,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Hof", hint: "Startseite mit Wetter und Dashboard", href: "/", words: "start dashboard wetter übersicht" },
   { title: "Meine Pflanzen", hint: "Deine Scans und Sammlung", href: "/meine-pflanzen", module: "my-plants", words: "sammlung zimmer balkon scans" },
   { title: "Pflegeplan", hint: "Gießen, Düngen, Umtopfen", href: "/aufgaben", module: "care-plan", words: "gießen düngen umtopfen erinnerung pflege" },
-  { title: "Bio & Bewirtschaftung", hint: "Konventionell, naturnah oder bio – umschaltbar", href: "/team", words: "bio biologisch ökologisch öko ökolandbau naturnah nachhaltig konventionell bewirtschaftung demeter bioland naturland kontrollstelle umstellung naturheilverfahren homöopathie wartezeit doppelt behandlungen" },
+  { title: "Bio & Bewirtschaftung", hint: "Konventionell, naturnah oder bio – umschaltbar", href: "/team", words: "bio biologisch ökologisch öko ökolandbau naturnah nachhaltig konventionell bewirtschaftung demeter bioland naturland kontrollstelle umstellung naturheilverfahren homöopathie wartezeit doppelt behandlungen biofütterung fütterung herkunft region" },
   { title: "Pflanzendoc", hint: "Kranke Pflanze per Foto", href: "/pflanzendoc", module: "plant-doc", words: "krank diagnose blätter flecken doktor" },
   { title: "Schädlinge & Nützlinge", hint: "Erkennen und bekämpfen", href: "/schaedlinge", module: "pests", words: "läuse schnecken insekten bekämpfen schädling" },
   { title: "Nützlinge fördern", hint: "Wer gegen welches Problem hilft", href: "/schaedlinge?tab=nuetzlinge", module: "pests", words: "nützling nützlinge marienkäfer florfliege ohrwurm insektenhotel nisthilfe tränke igel regenwurm boden blühstreifen wildbienen" },

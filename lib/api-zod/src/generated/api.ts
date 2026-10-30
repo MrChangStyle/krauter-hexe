@@ -1830,6 +1830,16 @@ export const ListRationsResponseItem = zod.object({
   "feedKg": zod.number(),
   "waterL": zod.number().nullable()
 }),
+  "organic": zod.union([zod.object({
+  "checks": zod.array(zod.object({
+  "key": zod.enum(['organic', 'conversion', 'ownFarm', 'roughage']),
+  "value": zod.number().describe('Share of the dry matter, %'),
+  "target": zod.number().describe('Richtwert, %'),
+  "bound": zod.enum(['min', 'max']),
+  "ok": zod.boolean()
+})),
+  "missing": zod.array(zod.string()).describe('Feeds of the ration without a stated origin (counted as conventional)')
+}),zod.null()]).describe('Bio (docs\/bio.md) – shares of the ration by dry matter against the organic rules; null unless the farm is organic'),
   "updatedAt": zod.string()
 })
 export const ListRationsResponse = zod.array(ListRationsResponseItem)
@@ -1937,6 +1947,16 @@ export const SaveRationResponse = zod.object({
   "feedKg": zod.number(),
   "waterL": zod.number().nullable()
 }),
+  "organic": zod.union([zod.object({
+  "checks": zod.array(zod.object({
+  "key": zod.enum(['organic', 'conversion', 'ownFarm', 'roughage']),
+  "value": zod.number().describe('Share of the dry matter, %'),
+  "target": zod.number().describe('Richtwert, %'),
+  "bound": zod.enum(['min', 'max']),
+  "ok": zod.boolean()
+})),
+  "missing": zod.array(zod.string()).describe('Feeds of the ration without a stated origin (counted as conventional)')
+}),zod.null()]).describe('Bio (docs\/bio.md) – shares of the ration by dry matter against the organic rules; null unless the farm is organic'),
   "updatedAt": zod.string()
 })
 
@@ -1965,6 +1985,45 @@ export const CreateFeedRemindersResponse = zod.object({
   "updated": zod.number(),
   "paused": zod.number()
 })
+
+
+/**
+ * @summary Bio – where the farm's feeds come from (docs/bio.md)
+ */
+export const ListFeedOriginsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListFeedOriginsResponseItem = zod.object({
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "organic": zod.enum(['organic', 'conversion', 'conventional']),
+  "ownFarm": zod.boolean().describe('Grown on the farm itself or in the region')
+})
+export const ListFeedOriginsResponse = zod.array(ListFeedOriginsResponseItem)
+
+
+/**
+ * @summary Bio – set or remove the origin of one feed (caretaker or admin)
+ */
+export const SetFeedOriginParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const SetFeedOriginBody = zod.object({
+  "feedKey": zod.string().nullish(),
+  "feedId": zod.number().nullish(),
+  "organic": zod.union([zod.enum(['organic', 'conversion', 'conventional']),zod.null()]).describe('null removes the origin'),
+  "ownFarm": zod.boolean().optional()
+})
+
+export const SetFeedOriginResponseItem = zod.object({
+  "feedKey": zod.string().nullable(),
+  "feedId": zod.number().nullable(),
+  "organic": zod.enum(['organic', 'conversion', 'conventional']),
+  "ownFarm": zod.boolean().describe('Grown on the farm itself or in the region')
+})
+export const SetFeedOriginResponse = zod.array(SetFeedOriginResponseItem)
 
 
 /**

@@ -78,6 +78,25 @@ export const FEED_SCHEMA_STATEMENTS: readonly string[] = [
   `CREATE INDEX IF NOT EXISTS "feed_stocks_farm_idx" ON "feed_stocks" USING btree ("farm_id")`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "feed_stocks_farm_key_unique" ON "feed_stocks" USING btree ("farm_id","feed_key") WHERE "feed_stocks"."feed_key" IS NOT NULL`,
   `CREATE UNIQUE INDEX IF NOT EXISTS "feed_stocks_feed_unique" ON "feed_stocks" USING btree ("feed_id") WHERE "feed_stocks"."feed_id" IS NOT NULL`,
+  // Bio: Herkunft der Futtermittel (docs/bio.md).
+  `CREATE TABLE IF NOT EXISTS "feed_origins" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"feed_key" text,
+	"feed_id" integer,
+	"organic" text NOT NULL,
+	"own_farm" boolean DEFAULT false NOT NULL,
+	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "feed_origins" ADD CONSTRAINT "feed_origins_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "feed_origins" ADD CONSTRAINT "feed_origins_feed_id_farm_feeds_id_fk" FOREIGN KEY ("feed_id") REFERENCES "public"."farm_feeds"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "feed_origins_farm_idx" ON "feed_origins" USING btree ("farm_id")`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "feed_origins_farm_key_unique" ON "feed_origins" USING btree ("farm_id","feed_key") WHERE "feed_origins"."feed_key" IS NOT NULL`,
+  `CREATE UNIQUE INDEX IF NOT EXISTS "feed_origins_feed_unique" ON "feed_origins" USING btree ("feed_id") WHERE "feed_origins"."feed_id" IS NOT NULL`,
   // Step 5: Rezepte.
   `CREATE TABLE IF NOT EXISTS "feed_recipes" (
 	"id" serial PRIMARY KEY NOT NULL,

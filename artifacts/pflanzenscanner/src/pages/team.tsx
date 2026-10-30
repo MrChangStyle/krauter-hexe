@@ -3,6 +3,7 @@ import { ArrowLeft, ChevronRight, Handshake, Loader2 } from "lucide-react";
 import { getListFarmContactsQueryKey, getListFarmMembersQueryKey, useListFarmContacts, useListFarmMembers } from "@workspace/api-client-react";
 import { FarmContactsCard } from "@/components/farm-contacts-card";
 import { FarmFarmingCard } from "@/components/farm-farming-card";
+import { SustainabilityCard } from "@/components/sustainability-card";
 import { MembersCard } from "@/components/farm-members-card";
 import { useActiveFarm } from "@/hooks/use-active-farm";
 import { FARM_ROLE_HINTS, FARM_ROLE_LABELS } from "@/lib/active-farm";
@@ -83,6 +84,7 @@ export default function TeamPage() {
           </Link>
           <FarmContactsCard farm={farm} />
           <FarmFarmingCard farm={farm} />
+          <SustainabilityCard farm={farm} />
         </>
       )}
     </div>

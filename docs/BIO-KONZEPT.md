@@ -94,7 +94,7 @@ Jeder Schritt ist für sich nutzbar und ein PR mit Definition of Done (Hilfe, De
 | **B5** ✅ (#134; Saatgut und Dünger mit B7) | Bio-Check auf dem Dashboard und Bio-Dokumentation (PDF) | Kontrolle, Beratung |
 | **B6** | Berater-Zugang (Gast mit Ablauf, lesend) – **zurückgestellt**, kommt nach den übrigen Schritten | Beraterin |
 | **B7** ✅ (Bio-Saatgut #135, Düngung #136, Erzeugnisse #137) | Beet-Architekt und Saatgut: Bio-Saatgut, Gründüngung, Kreislauf Mist → Beet; Erzeugnisse als „Bio“ | Garten |
-| **B8** | Nachhaltigkeits-Liste, Demo-Hof naturnah, Homepage „Bio & nachhaltig“, FAQ, Marketing | Vermarktung |
+| **B8** ✅ (#138) | Nachhaltigkeits-Liste, Demo-Hof naturnah, Homepage „Bio & nachhaltig“, FAQ, Marketing | Vermarktung |
 
 **Reihenfolge:** B1 zuerst, weil alles darauf aufbaut, dann B2–B5, B7 und B8. B6 (Beraterin) ist zurückgestellt.
 

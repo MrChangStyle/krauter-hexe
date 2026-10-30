@@ -1,6 +1,6 @@
 # Bio und Bewirtschaftung
 
-Schritte B1 bis B5 und B7 aus `docs/BIO-KONZEPT.md`. **Bio ist eine Option, keine Pflicht.** Die App bleibt für alle da, die konventionell wirtschaften. Wer möchte, stellt auf naturnah oder bio um, und kann jederzeit zurückwechseln.
+Schritte B1 bis B5, B7 und B8 aus `docs/BIO-KONZEPT.md`. **Bio ist eine Option, keine Pflicht.** Die App bleibt für alle da, die konventionell wirtschaften. Wer möchte, stellt auf naturnah oder bio um, und kann jederzeit zurückwechseln.
 
 ## Für Nutzer
 
@@ -122,6 +122,12 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
 - Eier, Milch, Fleisch, Wolle, Honig und Ernten, die eingetragen werden, während der Hof auf „Bio“ oder „Bio-Verband“ steht, bekommen das Zeichen **„Bio“** – fest beim Eintragen, wie die Wartezeit einer Behandlung. Wer zurückstellt, behält es an den alten Einträgen.
 - „Ertrag & Bilanz“ zeigt unter dem Jahreswert **„davon Bio“** und das Zeichen an jedem Eintrag; die Ernte-Liste im Beet ebenso.
 
+### Nachhaltigkeit und Homepage (B8)
+
+- Unter **Farm & Team** für **jeden** Hof, auch konventionell: eine Liste mit zwölf Maßnahmen zum Abhaken (Nistkästen, Wildbienen-Nisthilfen, Blühstreifen, Hecken, Totholz, Teich, Regenwasser, Kompost, Mulchen, torffreie Erde, alte Rassen und samenfeste Sorten, Sonnenstrom). Abhaken dürfen Admins und Mitarbeiter, Gäste sehen sie.
+- Daraus entsteht der **Hof-Steckbrief**: ein, zwei Sätze mit Bewirtschaftung (ab naturnah) und den Maßnahmen, zum Kopieren für die Website oder den Hofladen.
+- **Homepage:** Abschnitt „Bio & nachhaltig“ (Bio-Check, Kreislauf Stall → Beet, Bio-Dokumentation, Nachhaltigkeit) und die Frage „Ist Little Farming eine Bio-App?“ – Antwort: nein, eine Option.
+
 ## Technik
 
 - **Datenbank** (additiv, `farmSchemaStatements.ts`, `schemaUpgrade.ts`):
@@ -156,6 +162,7 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
 - **Bio-Saatgut (B7):** Spalte `seeds.organic` (true/false/null), über die vorhandenen Saatgut-Routen; Regeln in `lib/organic-check.ts` (`conventionalSeeds`, `seedArea`, `seedRows`).
 - **Düngung (B7):** Tabelle `bed_fertilizings` (Beet, Datum, Art, Bezeichnung, kg; fällt mit dem Beet weg), Routen `GET /farms/:farmId/fertilizings`, `POST /farms/:farmId/beds/:bedId/fertilizings`, `DELETE /farms/:farmId/fertilizings/:id` (Modul Garten, Schreiben ab Mitarbeiter). App: `components/bed-fertilizing-card.tsx`, `lib/fertilizing.ts`.
 - **Bio-Erzeugnisse (B7):** Spalte `organic` an `farm_yields` und `harvest_logs` (Standard false), gesetzt in `addYield`, `addHoney` und `addHarvest` aus `certified(getFarming())`; `summarize` liefert `organicValue`.
+- **Nachhaltigkeit (B8):** Spalte `farms.sustainability` (text[], Schlüssel aus `SUSTAINABILITY_KEYS` in `lib/sustainability.ts`, feste Reihenfolge), `GET/PUT /farms/:farmId/sustainability` (Grundfunktion ohne Modul, Schreiben ab Mitarbeiter). App: `lib/sustainability.ts` (Texte, `farmProfile`), `components/sustainability-card.tsx`; Homepage in `components/site/site-pages.tsx`, Frage in `lib/site-meta.ts`.
 - **Demo:** Der Demo-Hof ist naturnah (`docs/demo.md`).
 - **Tests:**
   - `farming.integration.test.ts`: Standard, Umschalten in beide Richtungen, Rollen, Prüfungen, wer biologische Tipps bekommt.
@@ -167,6 +174,7 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
   - App `organic-check.test.ts`: Ampeln und Zeilen der Bio-Dokumentation, Bio-Saatgut.
   - `seeds.integration.test.ts`: Bio-Saatgut speichern und ändern.
   - `farmYields.integration.test.ts` und `gardenHarvests.integration.test.ts`: Bio-Zeichen beim Eintragen, bleibt nach dem Umstellen; `farmYields.test.ts`: „davon Bio“.
+  - `farming.integration.test.ts`: Nachhaltigkeit für jede Stufe, Rollen, unbekannte Maßnahmen; App `sustainability.test.ts`: Hof-Steckbrief.
   - `bedFertilizing.integration.test.ts`: Düngung eintragen, prüfen, löschen, Rollen, Trennung der Höfe; App `fertilizing.test.ts`: Kreislauf-Rechnung.
 
 ## Offen
@@ -177,5 +185,5 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
 - Rationen und Flächen in der Bio-Dokumentation sind der heutige Stand. Ob die Kontrolle den Stand im Zeitraum braucht, ist zu klären.
 - Mist-Mengen je Tierart und 3 kg/m² (`lib/fertilizing.ts`) sind grobe Richtwerte und fachlich zu prüfen.
 - Ware aus der Umstellungszeit (`organicSince` jünger als 2 bzw. 3 Jahre) zählt in der App schon als Bio; ob dafür ein eigenes Zeichen „Umstellungsware“ nötig ist, ist fachlich zu klären.
-- Der nächste Schritt: B8 und B8 (Nachhaltigkeit, Homepage) aus `docs/BIO-KONZEPT.md`. Der Berater-Zugang (B6) ist zurückgestellt.
+- Bio ist damit vollständig bis auf den Berater-Zugang (B6, zurückgestellt). und B8 (Nachhaltigkeit, Homepage) aus `docs/BIO-KONZEPT.md`. Der Berater-Zugang (B6) ist zurückgestellt.
 - Die Liste der „im Ökolandbau üblichen“ Mittel im KI-Hinweis ist ein Richtwert. Verbindlich ist Anhang I der VO (EU) 2021/1165 (zugelassene Pflanzenschutzmittel, Dünger); fachlich zu prüfen.

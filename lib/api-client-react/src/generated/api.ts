@@ -110,6 +110,7 @@ import type {
   FarmSetupDismissInput,
   FarmSpecies,
   FarmSummary,
+  FarmSustainability,
   FarmTask,
   FarmTaskInput,
   FarmTaskPlan,
@@ -12169,6 +12170,155 @@ export const useDeleteGrowLog = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteGrowLogMutationOptions(options));
+    }
+
+export const getGetFarmSustainabilityUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/sustainability`
+}
+
+/**
+ * @summary Nachhaltigkeit – the measures the farm ticked (docs/bio.md, B8)
+ */
+export const getFarmSustainability = async (farmId: number, options?: RequestInit): Promise<FarmSustainability> => {
+
+  return customFetch<FarmSustainability>(getGetFarmSustainabilityUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFarmSustainabilityQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/sustainability`
+    ] as const;
+    }
+
+
+export const getGetFarmSustainabilityQueryOptions = <TData = Awaited<ReturnType<typeof getFarmSustainability>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmSustainability>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFarmSustainabilityQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFarmSustainability>>> = ({ signal }) => getFarmSustainability(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFarmSustainability>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFarmSustainabilityQueryResult = NonNullable<Awaited<ReturnType<typeof getFarmSustainability>>>
+export type GetFarmSustainabilityQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Nachhaltigkeit – the measures the farm ticked (docs/bio.md, B8)
+ */
+
+export function useGetFarmSustainability<TData = Awaited<ReturnType<typeof getFarmSustainability>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmSustainability>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFarmSustainabilityQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetFarmSustainabilityUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/sustainability`
+}
+
+/**
+ * @summary Tick the farm's measures (caretaker or admin)
+ */
+export const setFarmSustainability = async (farmId: number,
+    farmSustainability: FarmSustainability, options?: RequestInit): Promise<FarmSustainability> => {
+
+  return customFetch<FarmSustainability>(getSetFarmSustainabilityUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmSustainability)
+  }
+);}
+
+
+
+
+
+export const getSetFarmSustainabilityMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmSustainability>>, TError,{farmId: number;data: BodyType<FarmSustainability>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setFarmSustainability>>, TError,{farmId: number;data: BodyType<FarmSustainability>}, TContext> => {
+
+const mutationKey = ['setFarmSustainability'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setFarmSustainability>>, {farmId: number;data: BodyType<FarmSustainability>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  setFarmSustainability(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetFarmSustainabilityMutationResult = NonNullable<Awaited<ReturnType<typeof setFarmSustainability>>>
+    export type SetFarmSustainabilityMutationBody = BodyType<FarmSustainability>
+    export type SetFarmSustainabilityMutationError = ErrorType<void>
+
+    /**
+ * @summary Tick the farm's measures (caretaker or admin)
+ */
+export const useSetFarmSustainability = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmSustainability>>, TError,{farmId: number;data: BodyType<FarmSustainability>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setFarmSustainability>>,
+        TError,
+        {farmId: number;data: BodyType<FarmSustainability>},
+        TContext
+      > => {
+      return useMutation(getSetFarmSustainabilityMutationOptions(options));
     }
 
 export const getGetFarmFarmingUrl = (farmId: number,) => {

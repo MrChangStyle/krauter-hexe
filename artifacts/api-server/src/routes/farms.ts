@@ -29,6 +29,9 @@ import {
   SetHandoverNoteBody,
   SetFarmDutySettingsBody,
   GetFarmFarmingResponse,
+  GetFarmSustainabilityResponse,
+  SetFarmSustainabilityBody,
+  SetFarmSustainabilityResponse,
   SetFarmFarmingBody,
   SetFarmFarmingResponse,
   SetFarmDutySettingsResponse,
@@ -39,6 +42,7 @@ import { checkDuty, farmDuties, setDutySettings } from '../lib/farmDuties';
 import { handover, setHandoverNote } from '../lib/farmHandover';
 import { FarmDataError } from '../lib/farmAnimals';
 import { getFarming, setFarming } from '../lib/farming';
+import { getSustainability, setSustainability } from '../lib/sustainability';
 import { dismissSetup, farmSetup, quickStart } from '../lib/farmSetup';
 import { cleanFarmModules } from '../lib/farmModules';
 import { berlinDay } from '../lib/monitoring';
@@ -285,6 +289,26 @@ router.post('/farms/:farmId/setup/quickstart', requireFarm('admin'), async (req,
       return;
     }
     throw err;
+  }
+});
+
+// ── Nachhaltigkeit (docs/bio.md, B8) ─────────────────────────────────────────
+
+router.get('/farms/:farmId/sustainability', requireFarm('guest'), async (req, res): Promise<void> => {
+  res.json(GetFarmSustainabilityResponse.parse(await getSustainability(req.farm!.farmId)));
+});
+
+router.put('/farms/:farmId/sustainability', requireFarm('caretaker'), async (req, res): Promise<void> => {
+  const body = SetFarmSustainabilityBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: 'Bitte prüfe deine Eingaben.' });
+    return;
+  }
+  try {
+    res.json(SetFarmSustainabilityResponse.parse(await setSustainability(req.farm!.farmId, body.data.keys)));
+  } catch (err) {
+    if (!(err instanceof FarmDataError)) throw err;
+    res.status(err.status).json({ error: err.message });
   }
 });
 

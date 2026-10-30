@@ -67,7 +67,9 @@ import { useScanQueue } from "@/lib/scan-queue-context";
 import { STALE_QUEUE_WARNING_MS, type PendingScan } from "@/lib/scan-queue";
 import { useNow } from "@/hooks/use-now";
 import { cn } from "@/lib/utils";
-import { Link, useLocation } from "wouter";
+import { Link, Redirect, useLocation } from "wouter";
+import { PageHeader } from "@/components/page-header";
+import { tileOf, type LookKey } from "@/lib/module-look";
 import { paketLabel } from "@/lib/billing-labels";
 import { useImageBackup } from "@/lib/use-image-backup";
 
@@ -1113,12 +1115,11 @@ export default function MehrPage() {
           tone="bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300"
           badge={pendingCount > 0 ? String(pendingCount) : null}
         />
-        {pushSupported() && (
-          <HubTile href="#push" icon={Bell} label="Benachrichtigungen" hint="Erinnerungen aufs Handy" tone="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" />
-        )}
+        {pushSupported() && <HubTile {...tileOf("benachrichtigungen")} />}
         <HubTile href="/module" icon={LayoutGrid} label="Meine Module" hint="Ein- und ausblenden, Demo-Daten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />
         <HubTile href="/hilfe" icon={CircleHelp} label="Hilfe & FAQ" hint="Alle Module erklärt" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />
-        <HubTile href="#konto" icon={UserCog} label="Konto" hint="Name, Passwort, Rechtliches" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />
+        <HubTile {...tileOf("darstellung")} />
+        <HubTile {...tileOf("konto")} />
         {me?.isOwner && (
           <HubTile
             href="/verwaltung"
@@ -1126,28 +1127,37 @@ export default function MehrPage() {
             label="Verwaltung"
             hint="Betrieb, Moderation, Premium, Benutzer"
             tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300"
-            className={pushSupported() ? undefined : "col-span-2"}
           />
         )}
       </HubGrid>
 
+      {/* Shows only while photos wait on this device for the upload. */}
       <ImageRescueCard />
-
-      <div id="push" className="scroll-mt-4">
-        <PushNotificationCard />
-      </div>
-
-      <ThemeCard />
-
-      <div id="konto" className="scroll-mt-4">
-        <AccountCard />
-      </div>
 
       {formatBuild(appBuiltAt()) && (
         <p className="text-center text-xs text-muted-foreground" data-testid="app-version">
           App-Stand: {formatBuild(appBuiltAt())}
         </p>
       )}
+    </div>
+  );
+}
+
+/** Mehr's settings, each on its own page (docs/DESIGN.md, D4). */
+const MEHR_SECTIONS: Record<string, { look: LookKey; body: () => React.ReactNode }> = {
+  benachrichtigungen: { look: "benachrichtigungen", body: () => <PushNotificationCard /> },
+  darstellung: { look: "darstellung", body: () => <ThemeCard /> },
+  konto: { look: "konto", body: () => <AccountCard /> },
+};
+
+/** /mehr/:section */
+export function MehrSectionPage({ params }: { params: { section: string } }) {
+  const section = MEHR_SECTIONS[params.section];
+  if (!section) return <Redirect to="/mehr" replace />;
+  return (
+    <div className="space-y-5 px-4 pb-6 pt-6">
+      <PageHeader look={section.look} />
+      {section.body()}
     </div>
   );
 }

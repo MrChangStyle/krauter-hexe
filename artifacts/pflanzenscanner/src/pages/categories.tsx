@@ -14,6 +14,7 @@ import { exportCategoriesPdf } from "@/lib/pdf-export";
 import { cn } from "@/lib/utils";
 import {
   VIEW_CATEGORIES,
+  VIEW_CATEGORY_COLORS,
   VIEW_CATEGORY_LABELS,
   apiCategoryOf,
   computeCategorySummary,
@@ -24,16 +25,6 @@ import {
 
 // ─── Colours (same palette logic as the insect category cards) ────────────────
 
-const categoryColors: Record<ViewCategory, string> = {
-  poisonous:          "bg-rose-100   text-rose-800   border-rose-200   dark:bg-rose-950/50   dark:text-rose-300",
-  edible:             "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300",
-  medicinal:          "bg-indigo-100  text-indigo-800  border-indigo-200  dark:bg-indigo-950/50  dark:text-indigo-300",
-  mushroom:           "bg-amber-100   text-amber-800   border-amber-200   dark:bg-amber-950/50   dark:text-amber-300",
-  tree:               "bg-teal-100    text-teal-800    border-teal-200    dark:bg-teal-950/50    dark:text-teal-300",
-  shrub:              "bg-lime-100    text-lime-800    border-lime-200    dark:bg-lime-950/50    dark:text-lime-300",
-  moss:               "bg-cyan-100    text-cyan-800    border-cyan-200    dark:bg-cyan-950/50    dark:text-cyan-300",
-  cactus:             "bg-orange-100  text-orange-800  border-orange-200  dark:bg-orange-950/50  dark:text-orange-300",
-};
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 
@@ -335,7 +326,7 @@ export default function CategoriesPage({
         <div className="grid grid-cols-2 gap-3">
           {VIEW_CATEGORIES.map((cat) => {
             const count = countFor(cat);
-            const color = categoryColors[cat];
+            const color = VIEW_CATEGORY_COLORS[cat];
             const isEmpty = count === 0;
 
             return (

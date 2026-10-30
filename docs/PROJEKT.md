@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #137 | Bio-Erzeugnisse (B7): Eier, Milch, Honig, Ernte usw. auf Bio-Höfen bekommen beim Eintragen das Zeichen „Bio“; Ertrag & Bilanz zeigt „davon Bio“ |
 | 30.10.2026 | #136 | Düngung je Beet (B7): Kompost, Mist, Gründüngung … mit Datum und Menge, für alle Höfe; Kreislauf Stall → Beet (Mist der eigenen Tiere im Jahr, Richtwerte); auf Bio-Höfen Dünger-Ampel im Bio-Check und Düngung in der Bio-Dokumentation |
 | 30.10.2026 | #135 | Bio-Saatgut (B7, erster Teil): Feld „Bio-Saatgut?“ auf naturnahen und Bio-Höfen, Warnung bei konventionellem Saatgut auf Bio-Höfen, Saatgut im Bio-Check und in der Bio-Dokumentation |
 | 30.10.2026 | #134 | Bio-Check und Bio-Dokumentation (B5): auf Bio-Höfen Ampel für Futter, Platz und Behandlungen auf der Tiere-Seite; im Export ein PDF für die Öko-Kontrolle mit Bio-Anteilen, Stall und Auslauf, Weidegang |

@@ -23,4 +23,6 @@ export interface YieldEntry {
   animalName: string | null;
   /** @nullable */
   note: string | null;
+  /** Entered while the farm was organic (Bio, docs/bio.md) */
+  organic: boolean;
 }

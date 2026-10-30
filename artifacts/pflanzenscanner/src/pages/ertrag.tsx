@@ -459,6 +459,12 @@ function Overview({ farm }: { farm: FarmSummary }) {
             {change && <p className="text-xs text-muted-foreground">{change}</p>}
             <MonthChart months={d.summary.months} />
             <p className="text-xs text-muted-foreground">Garten {euro(d.summary.garden.value)} · Tiere {euro(d.summary.animals.value)} – zu euren Preisen.</p>
+            {/* Bio (docs/bio.md, B7): what was entered while the farm was organic. */}
+            {d.summary.organicValue > 0 && (
+              <p className="text-xs font-medium text-emerald-700 dark:text-emerald-400" data-testid="yield-organic">
+                davon Bio {euro(d.summary.organicValue)}
+              </p>
+            )}
             {(d.expenses.total > 0 || d.sales.revenue > 0) && (
               <dl className="space-y-1 border-t border-border pt-3">
                 {d.sales.revenue > 0 && (
@@ -652,6 +658,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
                       {deDay(e.date)} · {num(e.amount)} {e.unit} {PRODUCTS[e.product].label}
                       {e.herdName && <span className="text-muted-foreground"> · {e.herdName}</span>}
                       {e.animalName && <span className="text-muted-foreground"> · {e.animalName}</span>}
+                      {e.organic && <span className="ml-1 rounded-full bg-emerald-100 px-1.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">Bio</span>}
                     </span>
                     {canWrite && (
                       <button type="button" aria-label="Eintrag löschen" className="text-muted-foreground hover:text-destructive" onClick={() => remove.mutate({ farmId: farm.id, yieldId: e.id })}>

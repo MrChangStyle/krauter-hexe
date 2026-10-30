@@ -226,6 +226,8 @@ export const harvestLogsTable = pgTable(
     amountKg: doublePrecision("amount_kg").notNull(),
     use: harvestUseEnum("use").notNull(),
     note: text("note"),
+    // Bio (docs/bio.md, B7): harvested while the farm was organic – fixed then.
+    organic: boolean("organic").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("harvest_logs_farm_season_idx").on(table.farmId, table.season)],

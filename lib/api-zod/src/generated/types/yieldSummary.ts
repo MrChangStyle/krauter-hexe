@@ -15,4 +15,6 @@ export interface YieldSummary {
   animals: YieldSummaryAnimals;
   months: YieldMonth[];
   total: number;
+  /** Value of what was entered as organic (Bio, docs/bio.md) */
+  organicValue: number;
 }

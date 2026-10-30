@@ -8415,7 +8415,7 @@ components:
           maxLength: 500
     YieldEntry:
       type: object
-      required: [id, product, date, amount, unit, herdId, herdName, animalId, animalName, note]
+      required: [id, product, date, amount, unit, herdId, herdName, animalId, animalName, note, organic]
       properties:
         id:
           type: integer
@@ -8437,6 +8437,9 @@ components:
           type: [string, 'null']
         note:
           type: [string, 'null']
+        organic:
+          type: boolean
+          description: Entered while the farm was organic (Bio, docs/bio.md)
     YieldGardenLine:
       type: object
       required: [key, name, kitchenKg, fodderKg, pricePerKg, value]
@@ -8479,7 +8482,7 @@ components:
           type: number
     YieldSummary:
       type: object
-      required: [year, garden, animals, months, total]
+      required: [year, garden, animals, months, total, organicValue]
       properties:
         year:
           type: integer
@@ -8511,6 +8514,9 @@ components:
             $ref: "#/components/schemas/YieldMonth"
         total:
           type: number
+        organicValue:
+          type: number
+          description: Value of what was entered as organic (Bio, docs/bio.md)
     ExpenseCategory:
       type: string
       enum: [feed, vet, bedding, seeds, soil, water, animals, equipment, other]
@@ -13777,7 +13783,7 @@ components:
           type: [number, 'null']
     Harvest:
       type: object
-      required: [id, plantingId, bedId, season, cropKey, label, cells, harvestedOn, amountKg, use, note]
+      required: [id, plantingId, bedId, season, cropKey, label, cells, harvestedOn, amountKg, use, note, organic]
       properties:
         id:
           type: integer
@@ -13803,6 +13809,9 @@ components:
           $ref: "#/components/schemas/HarvestUse"
         note:
           type: [string, 'null']
+        organic:
+          type: boolean
+          description: Harvested while the farm was organic (Bio, docs/bio.md)
     HarvestInput:
       type: object
       required: [harvestedOn, amountKg, use]

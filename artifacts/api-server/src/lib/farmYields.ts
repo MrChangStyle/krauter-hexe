@@ -31,6 +31,7 @@ import { LAYING_AGE_DAYS } from './layingHistory';
 import { logger } from './logger';
 import { berlinDay } from './monitoring';
 import { POULTRY_SPECIES } from './species';
+import { certified, getFarming } from './farming';
 
 export const PRODUCT_UNITS: Record<FarmProduct, { unit: string; label: string }> = {
   eggs: { unit: 'Stück', label: 'Eier' },
@@ -117,12 +118,15 @@ export interface HarvestRow {
   harvestedOn: string;
   amountKg: number;
   use: 'kitchen' | 'fodder';
+  /** Bio (docs/bio.md, B7): harvested on the organic farm. */
+  organic?: boolean;
 }
 
 export interface YieldRow {
   product: FarmProduct;
   date: string;
   amount: number;
+  organic?: boolean;
 }
 
 export interface YieldSummary {
@@ -135,10 +139,13 @@ export interface YieldSummary {
   animals: { value: number; lines: { product: FarmProduct; unit: string; amount: number; price: number; value: number }[] };
   months: { month: number; garden: number; animals: number }[];
   total: number;
+  /** Value of what was entered as organic (B7). */
+  organicValue: number;
 }
 
 export function summarize(year: number, harvests: HarvestRow[], yields: YieldRow[], price: (key: string) => number): YieldSummary {
   const months = Array.from({ length: 12 }, (_, k) => ({ month: k + 1, garden: 0, animals: 0 }));
+  let organicValue = 0;
   const garden = new Map<string, { key: string; name: string; kitchenKg: number; fodderKg: number; pricePerKg: number; value: number }>();
   for (const h of harvests) {
     const key = h.cropKey ?? `label:${h.label}`;
@@ -154,6 +161,7 @@ export function summarize(year: number, harvests: HarvestRow[], yields: YieldRow
     if (h.use === 'fodder') line.fodderKg += h.amountKg;
     else line.kitchenKg += h.amountKg;
     line.value += value;
+    if (h.organic) organicValue += value;
     garden.set(key, line);
     months[Number(h.harvestedOn.slice(5, 7)) - 1]!.garden += value;
   }
@@ -162,6 +170,7 @@ export function summarize(year: number, harvests: HarvestRow[], yields: YieldRow
     const line = animals.get(y.product) ?? { product: y.product, unit: PRODUCT_UNITS[y.product].unit, amount: 0, price: price(`product:${y.product}`), value: 0 };
     line.amount += y.amount;
     line.value += y.amount * line.price;
+    if (y.organic) organicValue += y.amount * line.price;
     animals.set(y.product, line);
     months[Number(y.date.slice(5, 7)) - 1]!.animals += y.amount * line.price;
   }
@@ -178,6 +187,7 @@ export function summarize(year: number, harvests: HarvestRow[], yields: YieldRow
     animals: { value: animalValue, lines: animalLines },
     months: months.map((m) => ({ month: m.month, garden: round2(m.garden), animals: round2(m.animals) })),
     total: round2(gardenValue + animalValue),
+    organicValue: round2(organicValue),
   };
 }
 
@@ -298,11 +308,11 @@ async function yearData(farmId: number, year: number) {
   const to = `${year}-12-31`;
   const [harvests, yields] = await Promise.all([
     db
-      .select({ cropKey: harvestLogsTable.cropKey, label: harvestLogsTable.label, harvestedOn: harvestLogsTable.harvestedOn, amountKg: harvestLogsTable.amountKg, use: harvestLogsTable.use })
+      .select({ cropKey: harvestLogsTable.cropKey, label: harvestLogsTable.label, harvestedOn: harvestLogsTable.harvestedOn, amountKg: harvestLogsTable.amountKg, use: harvestLogsTable.use, organic: harvestLogsTable.organic })
       .from(harvestLogsTable)
       .where(and(eq(harvestLogsTable.farmId, farmId), gte(harvestLogsTable.harvestedOn, from), lte(harvestLogsTable.harvestedOn, to))),
     db
-      .select({ product: farmYieldsTable.product, date: farmYieldsTable.date, amount: farmYieldsTable.amount })
+      .select({ product: farmYieldsTable.product, date: farmYieldsTable.date, amount: farmYieldsTable.amount, organic: farmYieldsTable.organic })
       .from(farmYieldsTable)
       .where(and(eq(farmYieldsTable.farmId, farmId), gte(farmYieldsTable.date, from), lte(farmYieldsTable.date, to))),
   ]);
@@ -357,6 +367,7 @@ export async function yieldOverview(farmId: number, rawYear?: unknown, today = b
         animalId: farmYieldsTable.animalId,
         animalName: farmAnimalsTable.name,
         note: farmYieldsTable.note,
+        organic: farmYieldsTable.organic,
       })
       .from(farmYieldsTable)
       .leftJoin(herdsTable, and(eq(herdsTable.id, farmYieldsTable.herdId), eq(herdsTable.farmId, farmYieldsTable.farmId)))
@@ -435,10 +446,12 @@ export async function addYield(farmId: number, input: YieldInput): Promise<void>
   }
   const clientId = input.clientId ?? null;
   if (clientId !== null && !/^[A-Za-z0-9-]{8,64}$/.test(clientId)) throw new FarmDataError(400, 'Ungültige Kennung.');
+  // Bio (B7): fixed when entered, like the Wartezeit of a treatment.
+  const organic = certified((await getFarming(farmId)).level);
   // The same tap sent twice (offline queue, docs/stall.md) is stored once.
   await db
     .insert(farmYieldsTable)
-    .values({ farmId, product: input.product, date, amount: input.amount, herdId, animalId, clientId, note: text(input.note, 500, 'Die Notiz') })
+    .values({ farmId, product: input.product, date, amount: input.amount, herdId, animalId, clientId, note: text(input.note, 500, 'Die Notiz'), organic })
     .onConflictDoNothing({ target: [farmYieldsTable.farmId, farmYieldsTable.clientId], where: sql`${farmYieldsTable.clientId} IS NOT NULL` });
 }
 

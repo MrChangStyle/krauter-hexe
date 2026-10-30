@@ -25,4 +25,6 @@ export interface Harvest {
   use: HarvestUse;
   /** @nullable */
   note: string | null;
+  /** Harvested while the farm was organic (Bio, docs/bio.md) */
+  organic: boolean;
 }

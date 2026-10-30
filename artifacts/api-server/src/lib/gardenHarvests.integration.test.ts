@@ -88,7 +88,10 @@ describe.skipIf(!enabled)("Beet-Architekt – Ernten (real database)", () => {
     const first = await harvest(tomate, { harvestedOn: today, amountKg: 1.2345, use: "kitchen", note: "erste Rispe" });
     expect(first.status).toBe(201);
     expect(first.data).toMatchObject({ plantingId: tomate, bedId: bed, season, cropKey: "tomate", label: "Tomate", cells: 4, amountKg: 1.235, use: "kitchen", note: "erste Rispe" });
-    await harvest(tomate, { harvestedOn: today, amountKg: 0.8, use: "fodder" });
+    expect(first.data.organic).toBe(false);
+    // Bio (docs/bio.md, B7): harvested on an organic farm.
+    await q("UPDATE farms SET farming = 'organic' WHERE id = $1", [farm.anna]);
+    expect((await harvest(tomate, { harvestedOn: today, amountKg: 0.8, use: "fodder" })).data.organic).toBe(true);
     expect((await api("GET", `/farms/${farm.anna}/garden/seasons/${season}/harvests`)).data).toHaveLength(2);
 
     expect((await harvest(tomate, { harvestedOn: "2099-07-01", amountKg: 1, use: "kitchen" })).status).toBe(400);

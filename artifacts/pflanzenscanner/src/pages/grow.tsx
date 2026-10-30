@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "wouter";
+import { Link, Redirect } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertTriangle, Bell, ChevronRight, Coins, Plus, Scale, ShieldCheck, Trash2, Archive, Loader2 } from "lucide-react";
 import {
@@ -417,12 +417,17 @@ function Overview({ access }: { access: GrowAccess }) {
   const d = overview.data;
   return (
     <div className="space-y-4">
-      <KcangCard overview={d} access={access} />
-      <PushCard access={access} />
-      <GrowPremiumCard />
+      {/* Nothing open: check, reminders and Premium on their own pages (docs/DESIGN.md, D4). */}
       <HubGrid>
+        <HubTile
+          {...tileOf("grow-kcang")}
+          hint={`${d.kcang.activePlants} von ${d.kcang.maxPlants} Pflanzen`}
+          badge={d.kcang.plantsOver || d.kcang.gramsOver ? "Zu viel" : null}
+        />
+        <HubTile {...tileOf("grow-erinnerungen")} />
         <HubTile {...tileOf("grow-wissen")} />
         <HubTile {...tileOf("grow-recht")} />
+        <HubTile {...tileOf("grow-premium")} className="col-span-2" />
       </HubGrid>
       <Button className="gap-1.5" onClick={() => setCreating(true)}>
         <Plus className="h-4 w-4" />
@@ -441,7 +446,38 @@ function Overview({ access }: { access: GrowAccess }) {
   );
 }
 
-/** /grow – the Grow module: gate, KCanG check, grows and plants. */
+/** /grow/kcang, /grow/erinnerungen, /grow/premium – behind the same age gate as /grow. */
+function GrowSection({ section, access }: { section: "kcang" | "erinnerungen" | "premium"; access: GrowAccess }) {
+  const overview = useGetGrowOverview({ query: { queryKey: getGetGrowOverviewQueryKey(), enabled: section === "kcang" } });
+  if (section === "erinnerungen") return <PushCard access={access} />;
+  if (section === "premium") return <GrowPremiumCard />;
+  return overview.data ? <KcangCard overview={overview.data} access={access} /> : <Loader2 className="h-6 w-6 animate-spin text-primary" />;
+}
+
+const SECTION_LOOK = { kcang: "grow-kcang", erinnerungen: "grow-erinnerungen", premium: "grow-premium" } as const;
+
+export function GrowSectionPage({ params }: { params: { section: string } }) {
+  const section = params.section in SECTION_LOOK ? (params.section as keyof typeof SECTION_LOOK) : null;
+  const access = useGetGrowAccess({ query: { queryKey: getGetGrowAccessQueryKey(), enabled: GROW_ENABLED && !!section } });
+  if (!section) return <Redirect to="/grow" replace />;
+  const a = access.data;
+  // Without the age confirmation the gate on /grow comes first.
+  if (a && !a.ageConfirmed) return <Redirect to="/grow" replace />;
+  return (
+    <div className="space-y-5 px-4 pb-6 pt-6">
+      <PageHeader look={SECTION_LOOK[section]} />
+      {!GROW_ENABLED ? (
+        <p className="text-sm text-muted-foreground">Dieses Modul ist in dieser Version nicht verfügbar.</p>
+      ) : !a ? (
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      ) : (
+        <GrowSection section={section} access={a} />
+      )}
+    </div>
+  );
+}
+
+/** /grow – the Grow module: gate, the tiles and the grows with their plants. */
 export default function GrowPage() {
   const access = useGetGrowAccess({ query: { queryKey: getGetGrowAccessQueryKey(), enabled: GROW_ENABLED } });
   const a = access.data;

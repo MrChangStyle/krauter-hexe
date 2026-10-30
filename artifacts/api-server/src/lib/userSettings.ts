@@ -8,6 +8,7 @@
 import { ModuleId, PushTopic, type ModuleId as Module, type PushTopic as Topic, type QuietHours } from '@workspace/api-zod';
 import { db, userSettingsTable } from '@workspace/db';
 import { eq } from 'drizzle-orm';
+import { organicTipsFor } from './farming';
 
 const KNOWN = new Set<string>(Object.values(ModuleId));
 const TOPICS = new Set<string>(Object.values(PushTopic));
@@ -19,6 +20,10 @@ export interface UserSettings {
   pushOff: Topic[];
   quietHours: QuietHours | null;
   seasonalCare: boolean;
+  /** Bio (docs/bio.md): the account's own switch for organic plant advice. */
+  organicTips: boolean;
+  /** A farm of the account farms naturally or organically – its advice is organic anyway. */
+  organicFarm: string | null;
 }
 
 /** Known ids only, each once – a module the app no longer has drops out. */
@@ -42,18 +47,21 @@ export async function getSettings(userId: string): Promise<UserSettings> {
     pushOff: cleanTopics(row?.pushOff ?? []),
     quietHours: quiet(row?.quietStart, row?.quietEnd),
     seasonalCare: row?.seasonalCare ?? true,
+    organicTips: row?.organicTips ?? false,
+    organicFarm: (await organicTipsFor(userId)).farmName,
   };
 }
 
 export async function setSettings(
   userId: string,
-  input: { hiddenModules?: readonly string[]; onboarded?: boolean; pushOff?: readonly string[]; quietHours?: QuietHours | null; seasonalCare?: boolean },
+  input: { hiddenModules?: readonly string[]; onboarded?: boolean; pushOff?: readonly string[]; quietHours?: QuietHours | null; seasonalCare?: boolean; organicTips?: boolean },
 ): Promise<UserSettings> {
   const set: Partial<typeof userSettingsTable.$inferInsert> = { updatedAt: new Date() };
   if (input.hiddenModules !== undefined) set.hiddenModules = cleanModules(input.hiddenModules);
   if (input.onboarded !== undefined) set.onboardedAt = input.onboarded ? new Date() : null;
   if (input.pushOff !== undefined) set.pushOff = cleanTopics(input.pushOff);
   if (input.seasonalCare !== undefined) set.seasonalCare = input.seasonalCare;
+  if (input.organicTips !== undefined) set.organicTips = input.organicTips;
   if (input.quietHours !== undefined) {
     const q = input.quietHours && quiet(input.quietHours.from, input.quietHours.to);
     set.quietStart = q ? q.from : null;

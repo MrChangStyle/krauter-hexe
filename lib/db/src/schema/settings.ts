@@ -17,4 +17,7 @@ export const userSettingsTable = pgTable("user_settings", {
   // and no fertilising in winter; the last "frost in sight" push.
   seasonalCare: boolean("seasonal_care").notNull().default(true),
   frostNoticeOn: date("frost_notice_on", { mode: "string" }),
+  // Bio (docs/bio.md): only organic advice in Pflanzendoc and Pflege-Guide,
+  // for accounts without a farm that farms naturally or organically.
+  organicTips: boolean("organic_tips").notNull().default(false),
 });

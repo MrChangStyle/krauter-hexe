@@ -552,18 +552,31 @@ export interface PlantHealthResult {
   symptome: string[];
   hausmittel: PlantHealthRemedy[];
   duenge_biologisch: string;
+  /** Empty when the advice is organic only. */
   duenge_chemisch: string;
+  /** Bio: the advice names organic means only (docs/bio.md). */
+  organic: boolean;
 }
 
 // Analyses a plant photo for health issues and returns a health score,
 // detected symptoms, and biological home remedies. Stateless — no DB writes.
-export async function checkPlantHealth(imageDataUrl: string): Promise<PlantHealthResult> {
+/** Bio (docs/bio.md): what the AI is told for a farm that works naturally or organically. */
+export const ORGANIC_RULE =
+  "Wichtig: Der Hof wirtschaftet biologisch. Nenne ausschließlich Mittel und Dünger, die im ökologischen Landbau üblich sind " +
+  "(Kompost, Mist, Hornspäne, Pflanzenjauchen, Nützlinge, Gesteinsmehl, Schmierseife u. Ä.) – keine chemisch-synthetischen " +
+  "Pflanzenschutzmittel und keine Mineraldünger wie Blaukorn oder Kalkammonsalpeter.";
+
+export async function checkPlantHealth(imageDataUrl: string, opts: { organic?: boolean } = {}): Promise<PlantHealthResult> {
   const { mimeType, data } = parseDataUrl(imageDataUrl);
   const contents = [
     {
       role: "user",
       parts: [
-        { text: `${PLANT_HEALTH_PROMPT}\n\nAnalysiere diese Pflanze und erstelle das JSON.` },
+        {
+          text: opts.organic
+            ? `${PLANT_HEALTH_PROMPT}\n\n${ORGANIC_RULE} Setze "duenge_chemisch" auf "".\n\nAnalysiere diese Pflanze und erstelle das JSON.`
+            : `${PLANT_HEALTH_PROMPT}\n\nAnalysiere diese Pflanze und erstelle das JSON.`,
+        },
         { inlineData: { mimeType, data } },
       ],
     },
@@ -606,12 +619,14 @@ export async function checkPlantHealth(imageDataUrl: string): Promise<PlantHealt
       ? obj.duenge_biologisch.trim()
       : "Keine Angabe.";
 
-  const duenge_chemisch =
-    typeof obj.duenge_chemisch === "string" && obj.duenge_chemisch.trim().length > 0
+  // Organic: no mineral advice at all, whatever the model wrote.
+  const duenge_chemisch = opts.organic
+    ? ""
+    : typeof obj.duenge_chemisch === "string" && obj.duenge_chemisch.trim().length > 0
       ? obj.duenge_chemisch.trim()
       : "Keine Angabe.";
 
-  return { pflanzen_name, gesundheits_score, symptome, hausmittel, duenge_biologisch, duenge_chemisch };
+  return { pflanzen_name, gesundheits_score, symptome, hausmittel, duenge_biologisch, duenge_chemisch, organic: !!opts.organic };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -691,8 +706,10 @@ export async function generateCareGuide(params: {
   duengeBiologisch: string;
   duegeChemisch: string;
   imageDataUrl?: string | null;
+  /** Bio (docs/bio.md): fertilise organically only. */
+  organic?: boolean;
 }): Promise<CareGuideResult> {
-  const { plantName, healthScore, symptoms, duengeBiologisch, duegeChemisch, imageDataUrl } = params;
+  const { plantName, healthScore, symptoms, duengeBiologisch, duegeChemisch, imageDataUrl, organic } = params;
   const symptomsText = symptoms.length > 0 ? symptoms.join(", ") : "keine";
 
   const textPart = {
@@ -702,7 +719,9 @@ export async function generateCareGuide(params: {
       `Gesundheits-Score: ${healthScore}/100\n` +
       `Erkannte Symptome: ${symptomsText}\n` +
       `Biologische Düngeempfehlung: ${duengeBiologisch}\n` +
-      `Mineralische Düngeempfehlung: ${duegeChemisch}\n\n` +
+      (organic
+        ? `\n${ORGANIC_RULE} Dünge nur biologisch: "duengerart" ist immer "biologisch" oder null.\n\n`
+        : `Mineralische Düngeempfehlung: ${duegeChemisch}\n\n`) +
       `Erstelle jetzt den vollständigen 30-Tage-Pflegeplan als JSON.`,
   };
 
@@ -759,9 +778,10 @@ export async function generateCareGuide(params: {
         beschneiden: e.beschneiden === true ? true : e.beschneiden === false ? false : null,
         drehen: e.drehen === true,
         duengen: e.duengen === true,
+        // Organic: a mineral day the model planned anyway becomes an organic one.
         duengerart:
           e.duengerart === "biologisch" || e.duengerart === "mineralisch"
-            ? e.duengerart
+            ? organic ? "biologisch" : e.duengerart
             : null,
         umtopfen,
         notizen: typeof e.notizen === "string" && e.notizen.trim().length > 0 ? e.notizen.trim() : "",

@@ -87,7 +87,7 @@ Jeder Schritt ist für sich nutzbar und ein PR mit Definition of Done (Hilfe, De
 
 | Schritt | Inhalt | Nutzen für |
 |---|---|---|
-| **B1** | Hof-Einstellung „Bewirtschaftung“ (Stufe, Kontrollstelle, Umstellung); Pflanzendoc, Pflege-Guide und Schädlinge nur biologisch bei naturnah/Bio; Einstellung für Konten ohne Hof | alle |
+| **B1** ✅ (#127, `docs/bio.md`) | Hof-Einstellung „Bewirtschaftung“ (Stufe, Kontrollstelle, Umstellung); Pflanzendoc, Pflege-Guide und Schädlinge nur biologisch bei naturnah/Bio; Einstellung für Konten ohne Hof | alle |
 | **B2** | Krankenakte und Arzneimittel: doppelte Wartezeit bei Bio, Behandlungszähler je Tier, Naturheilverfahren | Bio-Tierhalter |
 | **B3** | Futterplaner: Bio-Kennzeichen am Futter, Anteile und Ampel je Tiergruppe | Bio-Tierhalter |
 | **B4** | Stall und Weide: Flächen, Platz-Check, Weidegang | Bio-Tierhalter |

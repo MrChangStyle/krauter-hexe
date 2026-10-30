@@ -83,7 +83,7 @@ describe.skipIf(!enabled)("Kostenschutz: KI nur innerhalb der Tageslimits (real 
   });
 
   it("Pflanzendoc counts like a plant scan and stops at the limit without asking the AI", async () => {
-    ai.health.mockResolvedValue({ pflanzen_name: "Minze", gesundheits_score: 80, symptome: [], hausmittel: [], duenge_biologisch: "", duenge_chemisch: "" });
+    ai.health.mockResolvedValue({ pflanzen_name: "Minze", gesundheits_score: 80, symptome: [], hausmittel: [], duenge_biologisch: "", duenge_chemisch: "", organic: false });
     expect((await post("/plants/health-check", { image: PHOTO })).status).toBe(200);
     expect(await attempts("plant")).toBe(1);
 
@@ -133,7 +133,7 @@ describe.skipIf(!enabled)("Kostenschutz: KI nur innerhalb der Tageslimits (real 
     try {
       ai.classify.mockResolvedValue({ subject: "nichts" });
       await fill("classify", 5);
-      ai.health.mockResolvedValue({ pflanzen_name: "Minze", gesundheits_score: 80, symptome: [], hausmittel: [], duenge_biologisch: "", duenge_chemisch: "" });
+      ai.health.mockResolvedValue({ pflanzen_name: "Minze", gesundheits_score: 80, symptome: [], hausmittel: [], duenge_biologisch: "", duenge_chemisch: "", organic: false });
       expect((await post("/plants/health-check", { image: PHOTO })).status).toBe(200);
       expect((await post("/plants/health-check", { image: PHOTO })).status).toBe(200);
       const refused = await post("/plants/health-check", { image: PHOTO });

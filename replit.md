@@ -135,6 +135,10 @@ In-house, no outside service (`lib/monitoring.ts`, `routes/monitoring.ts`, `midd
 - **Usage**: daily totals only – active accounts (once a day via `last_active_on`), new accounts (from `users.created_at`), AI actions (in `checkAndRecordScanAttempt`), AI timeouts (an AI plan that ran out of time – Google too slow – is counted as `ai_timeouts`, logged as a warning and answered „Die KI hat zu lange gebraucht“, not an error group; `lib/aiTimeout.ts`, `withAiQuota`), errors. Owner card "Betrieb" in Mehr shows status form, errors (expand for stack, "Als behoben markieren") and the last 14 days. Housekeeping (daily, with the minute cron): resolved groups after 90 days, daily totals after ~400 days.
 - Optional extra: an external uptime check on `/api/healthz` (e.g. a free uptime monitor) alerts when the whole server is down, which the in-app monitor cannot report.
 
+## Bio und Bewirtschaftung
+
+Plan in `docs/BIO-KONZEPT.md`, step B1 in `docs/bio.md`. Bio is an option, not the app's only way: `farms.farming` (conventional default | natural | organic | association, plus `organic_control_body`, `organic_since`; `lib/farming.ts`, `GET/PUT /farms/:farmId/farming`, card on `/team`). Natural and up – or the account's own `user_settings.organic_tips` switch in Pflanzendoc – make Pflanzendoc and Pflege-Guide name organic means only (`ORGANIC_RULE`, no mineral advice, mineral care days become organic); the demo farm never forces it.
+
 ## Futterplaner (Tiere)
 
 Plan and steps in `docs/futterplaner.md`. Fixed rules, no AI (`lib/feedCatalog.ts`, `lib/feedNeeds.ts`, `lib/feedPlanner.ts`, `routes/feed.ts`; tables `farm_feeds`, `feed_rations`; page `/farm/futter`).

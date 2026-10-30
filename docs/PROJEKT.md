@@ -95,7 +95,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 - **Registrierung:** E-Mail und Passwort oder Google, dazu die Zustimmung zu Datenschutz und Nutzungsbedingungen. **Es gibt keinen Einladungscode.**
 - **Freischaltung:** Die ersten `FREE_TESTER_SLOTS` Konten (Standard 20, der Betreiber zählt nicht, bestehende Konten zählen mit) starten sofort. Danach wartet ein neues Konto auf die Freischaltung unter Verwaltung → Benutzer. Der Betreiber bekommt bei jeder Anmeldung einen Push.
 - **Betreiber:** Das erste Konto wird Betreiber (Owner). Es sieht die Verwaltung (Betrieb, Feedback, Moderation, Entwürfe, Premium, Benutzer, Aufräumen) und hat kein KI-Limit.
-- **Höfe und Rollen:** Jedes Konto bekommt einen eigenen Hof („Meine Farm“) und kann weitere anlegen. Auf einem Hof gibt es die Rollen Admin, Mitarbeiter (caretaker) und Gast, dazu Modul-Freigaben und Vertretungen mit Enddatum (`docs/team.md`). Der Tierarzt bekommt per „Tierarzt einladen“ einen Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export (`docs/krankenakte.md`). Geteilte Höfe stehen unter „Wähle deine Farm“.
+- **Höfe und Rollen:** Jedes Konto bekommt einen eigenen Hof („Meine Farm“) und kann weitere anlegen. Auf einem Hof gibt es die Rollen Admin, Mitarbeiter (caretaker) und Gast, dazu Modul-Freigaben und Vertretungen mit Enddatum (`docs/team.md`). Der Tierarzt bekommt per „Tierarzt einladen“ einen Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export (`docs/krankenakte.md`). Geteilte Höfe stehen unter „Wähle deine Farm“. Unter Farm & Team legt der Hof fest, wie er wirtschaftet: konventionell (Standard), naturnah oder bio – jederzeit umschaltbar; naturnah und bio stellen Pflanzendoc und Pflege-Guide auf biologische Mittel um (`docs/bio.md`).
 - **Passwort vergessen und ändern** (`docs/konto.md`):
   - „Passwort vergessen?“ auf der Anmeldeseite schickt einen Einmal-Link per Mail, sobald `RESEND_API_KEY` gesetzt ist.
   - Bis dahin bekommt der Betreiber einen Push und gibt einen „Passwort-Link“ aus Verwaltung → Benutzer weiter.
@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #127 | Bio als Option (B1): Bewirtschaftung je Hof unter Farm & Team (konventionell als Standard, naturnah, Bio, Bio-Verband – jederzeit umschaltbar); Schalter „Nur biologische Empfehlungen“ im Pflanzendoc, bei naturnahen und Bio-Höfen automatisch an; Demo-Hof naturnah |
 | 30.10.2026 | #126 | Konzept Bio und Nachhaltigkeit (`docs/BIO-KONZEPT.md`): Hof-Einstellung „Bewirtschaftung“, Auswirkungen je Modul, Berater-Zugang, Vermarktung, Schritte B1–B8 |
 | 30.10.2026 | #125 | KI zu langsam: Notizen und Hof-Aufgaben melden „Die KI hat zu lange gebraucht“ statt „nicht erreichbar“; in der Verwaltung zählt das als „Langsam“ in den Tageszahlen statt als Fehlergruppe |
 | 29.10.2026 | #124 | Abschlussbericht des Launch-Plans (`docs/ABSCHLUSSBERICHT.md`): Ampel je Bereich, was geprüft, behoben und gebaut wurde, Tests, Restpunkte vor und nach dem Start |

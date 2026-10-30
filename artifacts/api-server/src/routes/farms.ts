@@ -28,6 +28,9 @@ import {
   RenameFarmResponse,
   SetHandoverNoteBody,
   SetFarmDutySettingsBody,
+  GetFarmFarmingResponse,
+  SetFarmFarmingBody,
+  SetFarmFarmingResponse,
   SetFarmDutySettingsResponse,
   SetHandoverNoteResponse,
 } from '@workspace/api-zod';
@@ -35,6 +38,7 @@ import {
 import { checkDuty, farmDuties, setDutySettings } from '../lib/farmDuties';
 import { handover, setHandoverNote } from '../lib/farmHandover';
 import { FarmDataError } from '../lib/farmAnimals';
+import { getFarming, setFarming } from '../lib/farming';
 import { dismissSetup, farmSetup, quickStart } from '../lib/farmSetup';
 import { cleanFarmModules } from '../lib/farmModules';
 import { berlinDay } from '../lib/monitoring';
@@ -281,6 +285,26 @@ router.post('/farms/:farmId/setup/quickstart', requireFarm('admin'), async (req,
       return;
     }
     throw err;
+  }
+});
+
+// ── Bewirtschaftung (Bio, docs/bio.md) ────────────────────────────────────────
+
+router.get('/farms/:farmId/farming', requireFarm('guest'), async (req, res): Promise<void> => {
+  res.json(GetFarmFarmingResponse.parse(await getFarming(req.farm!.farmId)));
+});
+
+router.put('/farms/:farmId/farming', requireFarm('admin'), async (req, res): Promise<void> => {
+  const body = SetFarmFarmingBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: 'Bitte prüfe deine Eingaben.' });
+    return;
+  }
+  try {
+    res.json(SetFarmFarmingResponse.parse(await setFarming(req.farm!.farmId, body.data)));
+  } catch (err) {
+    if (!(err instanceof FarmDataError)) throw err;
+    res.status(err.status).json({ error: err.message });
   }
 });
 

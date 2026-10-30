@@ -112,6 +112,11 @@ export const farmsTable = pgTable("farms", {
   state: text("state"),
   // Demo-Hof with example data (lib/demoData.ts) – "Demo-Daten löschen" removes it whole.
   isDemo: boolean("is_demo").notNull().default(false),
+  // Bewirtschaftung (docs/bio.md): conventional | natural | organic | association,
+  // the organic control body (e.g. "DE-ÖKO-006") and the start of the conversion.
+  farming: text("farming").notNull().default("conventional"),
+  organicControlBody: text("organic_control_body"),
+  organicSince: date("organic_since", { mode: "string" }),
 });
 
 export const farmMembershipsTable = pgTable(

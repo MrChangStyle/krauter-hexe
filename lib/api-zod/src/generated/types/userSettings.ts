@@ -12,6 +12,13 @@ import type { QuietHours } from './quietHours';
 export interface UserSettings {
   /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */
   seasonalCare: boolean;
+  /** Bio (docs/bio.md) – the account's own switch for organic plant advice only */
+  organicTips: boolean;
+  /**
+     * Name of a farm of the account that farms naturally or organically – its plant advice is organic anyway
+     * @nullable
+     */
+  organicFarm: string | null;
   hiddenModules: ModuleId[];
   onboarded: boolean;
   /** Push topics switched off */

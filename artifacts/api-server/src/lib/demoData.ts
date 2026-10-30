@@ -8,6 +8,7 @@
  * shows exactly what a user would get.
  */
 
+import { setFarming } from './farming';
 import { beeSiteChecksTable, db, farmAnimalsTable, farmMembershipsTable, farmsTable, farmYieldsTable, growAccessTable, growsTable, pastureGrazingsTable, pasturesTable } from '@workspace/db';
 import { and, asc, eq, inArray, ne } from 'drizzle-orm';
 
@@ -159,6 +160,8 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   // Pflichten: the farm's registration number (made up).
   // Thüringen: the demo pastures lie there too.
   await setDutySettings(farmId, { holdingNumber: '276 09 000 000 0000 (Demo)', state: 'TH' });
+  // Bio (docs/bio.md): the demo farm works naturally, so testers see the option.
+  await setFarming(farmId, { level: 'natural' });
   // Übergabe: what a stand-in needs to know.
   await setHandoverNote(farmId, 'Demo: Schlüssel liegt im Futterraum links. Hühner abends um 20 Uhr einsperren, Ziegen bekommen morgens Heu und abends eine Handvoll Hafer. Tierarzt steht unter „Farm & Team“.');
 

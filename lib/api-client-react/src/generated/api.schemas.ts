@@ -2217,6 +2217,13 @@ export interface QuietHours {
 export interface UserSettings {
   /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */
   seasonalCare: boolean;
+  /** Bio (docs/bio.md) – the account's own switch for organic plant advice only */
+  organicTips: boolean;
+  /**
+     * Name of a farm of the account that farms naturally or organically – its plant advice is organic anyway
+     * @nullable
+     */
+  organicFarm: string | null;
   hiddenModules: ModuleId[];
   onboarded: boolean;
   /** Push topics switched off */
@@ -2232,6 +2239,7 @@ export interface UserSettingsInput {
   pushOff?: PushTopic[];
   quietHours?: QuietHours | null;
   seasonalCare?: boolean;
+  organicTips?: boolean;
 }
 
 export interface SearchItem {
@@ -3082,6 +3090,44 @@ export interface FarmDuties {
   duties: FarmDuty[];
 }
 
+/**
+ * conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)
+ */
+export type FarmingLevel = typeof FarmingLevel[keyof typeof FarmingLevel];
+
+
+export const FarmingLevel = {
+  conventional: 'conventional',
+  natural: 'natural',
+  organic: 'organic',
+  association: 'association',
+} as const;
+
+export interface FarmFarming {
+  level: FarmingLevel;
+  /**
+     * Öko-Kontrollstelle, e.g. DE-ÖKO-006 (organic and association only)
+     * @nullable
+     */
+  controlBody: string | null;
+  /**
+     * Start of the conversion, YYYY-MM-DD (organic and association only)
+     * @nullable
+     */
+  organicSince: string | null;
+}
+
+export interface FarmFarmingInput {
+  level?: FarmingLevel;
+  /**
+     * @maxLength 40
+     * @nullable
+     */
+  controlBody?: string | null;
+  /** @nullable */
+  organicSince?: string | null;
+}
+
 export interface FarmDutySettingsInput {
   /** @maxLength 30 */
   holdingNumber?: string | null;
@@ -3679,8 +3725,10 @@ export interface PlantHealthResult {
   hausmittel: PlantHealthRemedy[];
   /** General organic/biological fertilizer recommendation for this plant (German). */
   duenge_biologisch: string;
-  /** General mineral/chemical fertilizer recommendation for this plant (German). */
+  /** General mineral/chemical fertilizer recommendation for this plant (German); empty when organic. */
   duenge_chemisch: string;
+  /** Bio (docs/bio.md) – organic means only; duenge_chemisch is then empty */
+  organic: boolean;
 }
 
 export interface PlantScanInput {

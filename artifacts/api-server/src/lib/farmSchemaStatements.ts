@@ -33,7 +33,10 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"holding_number" text,
 	"housing_order_until" date,
 	"state" text,
-	"is_demo" boolean DEFAULT false NOT NULL
+	"is_demo" boolean DEFAULT false NOT NULL,
+	"farming" text DEFAULT 'conventional' NOT NULL,
+	"organic_control_body" text,
+	"organic_since" date
 )`,
   // Wetter: where the farm is.
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "postal_code" text`,
@@ -49,6 +52,10 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "is_demo" boolean DEFAULT false NOT NULL`,
   // Pflichten je Bundesland.
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "state" text`,
+  // Bewirtschaftung (Bio).
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "farming" text DEFAULT 'conventional' NOT NULL`,
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "organic_control_body" text`,
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "organic_since" date`,
   `CREATE TABLE IF NOT EXISTS "farm_memberships" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

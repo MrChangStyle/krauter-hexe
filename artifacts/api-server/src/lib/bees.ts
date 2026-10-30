@@ -34,6 +34,7 @@ import { logger } from './logger';
 import { adjustStock, usableMedicine } from './medicines';
 import { berlinDay } from './monitoring';
 import { sendPushToUser } from './webPush';
+import { certified, getFarming } from './farming';
 
 export const BEE_PUSH_TIME = '07:30';
 /** Days between swarm checks in the swarming season. */
@@ -415,6 +416,8 @@ export async function addHoney(farmId: number, colonyId: number, input: HoneyInp
     date: validDate(input.date, 'Datum'),
     amount: kg(input.amountKg, 500, 'Die Menge', true),
     note: text(input.note, 200, 'Die Notiz'),
+    // Bio (docs/bio.md, B7): fixed when entered.
+    organic: certified((await getFarming(farmId)).level),
   });
   return colonyDetail(farmId, colonyId);
 }

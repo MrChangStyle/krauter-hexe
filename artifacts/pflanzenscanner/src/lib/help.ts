@@ -324,7 +324,13 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       "Ausgaben eintragen (Futter, Tierarzt, Einstreu) – die Bilanz rechnet mit.",
       "„Legeleistung“ zeigt Eier je Henne und Woche.",
     ],
-    faq: [{ q: "Woher kommen die Preise?", a: "Grobe Bio- bzw. Hofladen-Preise als Vergleich – du kannst sie anpassen." }],
+    faq: [
+      { q: "Woher kommen die Preise?", a: "Grobe Bio- bzw. Hofladen-Preise als Vergleich – du kannst sie anpassen." },
+      {
+        q: "Was heißt „Bio“ bei einem Eintrag?",
+        a: "Was du einträgst, während dein Hof unter Farm & Team auf „Bio“ oder „Bio-Verband“ steht – Eier, Milch, Honig, Ernte –, bekommt das Zeichen „Bio“. Es bleibt, auch wenn du später umstellst. Oben steht dann „davon Bio“ mit dem Wert. Ware aus der Umstellungszeit darf noch nicht als Bio verkauft werden – das prüft die App nicht.",
+      },
+    ],
   },
   pasture: {
     title: "Weide",

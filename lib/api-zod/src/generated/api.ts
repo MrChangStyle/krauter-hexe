@@ -3430,7 +3430,8 @@ export const GetYieldOverviewResponse = zod.object({
   "herdName": zod.string().nullable(),
   "animalId": zod.number().nullable(),
   "animalName": zod.string().nullable(),
-  "note": zod.string().nullable()
+  "note": zod.string().nullable(),
+  "organic": zod.boolean().describe('Entered while the farm was organic (Bio, docs\/bio.md)')
 })),
   "summary": zod.object({
   "year": zod.number(),
@@ -3461,7 +3462,8 @@ export const GetYieldOverviewResponse = zod.object({
   "garden": zod.number(),
   "animals": zod.number()
 })),
-  "total": zod.number()
+  "total": zod.number(),
+  "organicValue": zod.number().describe('Value of what was entered as organic (Bio, docs\/bio.md)')
 }),
   "previousTotal": zod.number(),
   "expenses": zod.object({
@@ -10442,7 +10444,8 @@ export const ListHarvestsResponseItem = zod.object({
   "harvestedOn": zod.string().describe('YYYY-MM-DD'),
   "amountKg": zod.number(),
   "use": zod.enum(['kitchen', 'fodder']),
-  "note": zod.string().nullable()
+  "note": zod.string().nullable(),
+  "organic": zod.boolean().describe('Harvested while the farm was organic (Bio, docs\/bio.md)')
 })
 export const ListHarvestsResponse = zod.array(ListHarvestsResponseItem)
 
@@ -10478,7 +10481,8 @@ export const AddHarvestResponse = zod.object({
   "harvestedOn": zod.string().describe('YYYY-MM-DD'),
   "amountKg": zod.number(),
   "use": zod.enum(['kitchen', 'fodder']),
-  "note": zod.string().nullable()
+  "note": zod.string().nullable(),
+  "organic": zod.boolean().describe('Harvested while the farm was organic (Bio, docs\/bio.md)')
 })
 
 

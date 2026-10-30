@@ -105,6 +105,17 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
     expect((await api("GET", Y(2027))).status).toBe(400);
   });
 
+  it("marks what an organic farm enters as Bio, fixed at the time (docs/bio.md, B7)", async () => {
+    await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-01", amount: 10 });
+    await q("UPDATE farms SET farming = 'organic' WHERE id = $1", [farmId]);
+    await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-02", amount: 20 });
+    // Switching back does not change what was entered meanwhile.
+    await q("UPDATE farms SET farming = 'conventional' WHERE id = $1", [farmId]);
+    const { data } = await api("GET", Y());
+    expect(data.entries.map((e: any) => [e.amount, e.organic])).toEqual([[20, true], [10, false]]);
+    expect(data.summary).toMatchObject({ total: 12, organicValue: 8 });
+  });
+
   it("shows the laying history per week, group and hen", async () => {
     const [lotte] = await q<{ id: number }>("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number) VALUES ($1, $2, 'Lotte', 'poultry', 'female', 'L') RETURNING id", [farmId, herdId]);
     await q("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number) VALUES ($1, $2, 'Berta', 'poultry', 'unknown', 'B')", [farmId, herdId]);

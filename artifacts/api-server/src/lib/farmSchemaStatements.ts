@@ -342,6 +342,8 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
 	"note" text,
 	"created_at" timestamp with time zone DEFAULT now() NOT NULL
 )`,
+  // Bio-Erzeugnisse (docs/bio.md, B7).
+  `ALTER TABLE "farm_yields" ADD COLUMN IF NOT EXISTS "organic" boolean DEFAULT false NOT NULL`,
   `CREATE TABLE IF NOT EXISTS "farm_prices" (
 	"farm_id" integer NOT NULL,
 	"key" text NOT NULL,

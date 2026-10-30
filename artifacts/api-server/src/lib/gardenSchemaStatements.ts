@@ -171,6 +171,8 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "harvest_logs" ADD CONSTRAINT "harvest_logs_bed_id_garden_beds_id_fk" FOREIGN KEY ("bed_id") REFERENCES "public"."garden_beds"("id") ON DELETE set null ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "harvest_logs_farm_season_idx" ON "harvest_logs" USING btree ("farm_id","season")`,
+  // Bio-Erzeugnisse (docs/bio.md, B7).
+  `ALTER TABLE "harvest_logs" ADD COLUMN IF NOT EXISTS "organic" boolean DEFAULT false NOT NULL`,
   `CREATE TABLE IF NOT EXISTS "seeds" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

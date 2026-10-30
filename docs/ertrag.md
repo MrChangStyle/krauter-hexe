@@ -20,6 +20,8 @@ Die Seite `/farm/ertrag` zeigt, was Tiere und Garten im Jahr bringen und was das
 - Ernte als Futter zählt zum Preis von zugekauftem Futtergemüse (0,30 €/kg). Kulturen ohne eigenen Preis zählen 3 €/kg; Ringelblume und Tagetes zählen nicht.
 - `summarize()` ist rein: Zeilen je Kultur und Produkt, Wert je Monat, Summe. Daneben steht die Summe des Vorjahrs zum Vergleich.
 
+**Bio** (`docs/bio.md`, B7): Einträge auf einem Bio-Hof tragen das Zeichen „Bio“ (fest beim Eintragen); unter dem Jahreswert steht „davon Bio“.
+
 ## Kennzahlen (nur im laufenden Jahr)
 
 - **Legeleistung**: Eier der letzten 30 Tage geteilt durch Hennen (Geflügel weiblich oder unbekannt, nicht archiviert, ab 20 Wochen) und 30 Tage. Die Kachel führt zum Verlauf (`docs/legeleistung.md`).

@@ -23,12 +23,12 @@ describe("Ertrag – summary", () => {
         { cropKey: "tomate", label: "Tomate", harvestedOn: "2026-08-03", amountKg: 4, use: "kitchen" },
         { cropKey: "tomate", label: "Tomate", harvestedOn: "2026-09-01", amountKg: 2.5, use: "kitchen" },
         { cropKey: "moehre", label: "Möhre", harvestedOn: "2026-09-10", amountKg: 10, use: "fodder" },
-        { cropKey: null, label: "Topinambur", harvestedOn: "2026-10-01", amountKg: 1, use: "kitchen" },
+        { cropKey: null, label: "Topinambur", harvestedOn: "2026-10-01", amountKg: 1, use: "kitchen", organic: true },
       ],
       [
         { product: "eggs", date: "2026-09-02", amount: 30 },
         { product: "eggs", date: "2026-10-01", amount: 20 },
-        { product: "milk", date: "2026-10-02", amount: 3 },
+        { product: "milk", date: "2026-10-02", amount: 3, organic: true },
       ],
       (key) => (key === "crop:tomate" ? 5 : defaultPrice(key)),
     );
@@ -48,6 +48,8 @@ describe("Ertrag – summary", () => {
         { product: "milk", unit: "l", amount: 3, price: 1.5, value: 4.5 },
       ],
     });
+    // Bio: Topinambur 3 € and milk 4.50 €.
+    expect(s.organicValue).toBe(7.5);
     expect(s.months[7]).toEqual({ month: 8, garden: 20, animals: 0 });
     expect(s.months[8]).toEqual({ month: 9, garden: 15.5, animals: 12 });
     expect(s.months[9]).toEqual({ month: 10, garden: 3, animals: 12.5 });

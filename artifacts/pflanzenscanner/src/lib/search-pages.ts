@@ -34,7 +34,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Zucht", hint: "Trächtigkeit und Brut", href: "/farm/zucht", module: "breeding", words: "trächtig brut küken lämmer geburt" },
   { title: "Arzneimittel", hint: "Vorrat und Wartezeiten", href: "/farm/arzneimittel", module: "medicines", words: "medizin wartezeit wurmkur impfung" },
   { title: "Pflichten & Tierseuchen", hint: "Anmeldung, Kasse, Stallpflicht", href: "/farm/pflichten", module: "duties", words: "meldung tierseuchenkasse vetamt geflügelpest bundesland stichtag" },
-  { title: "Ertrag & Bilanz", hint: "Eier, Milch, Kosten", href: "/farm/ertrag", module: "yields", words: "eier milch ernte kosten verkauf" },
+  { title: "Ertrag & Bilanz", hint: "Eier, Milch, Kosten", href: "/farm/ertrag", module: "yields", words: "eier milch ernte kosten verkauf bio-erzeugnisse" },
   { title: "Am Stall", hint: "Eier und Aufgaben mit einem Tipp", href: "/farm/stall", module: "farm-tasks", words: "schnell erfassen eier gefüttert getränkt wasser offline" },
   { title: "Vorratskammer", hint: "Eingekochtes, Eingefrorenes, Haltbarkeit", href: "/vorrat", module: "pantry", words: "vorrat keller eingekocht einmachen eingefroren gefriertruhe marmelade gläser haltbarkeit" },
   { title: "Weide", hint: "Flächen, Umtreiben, Ruhezeit", href: "/farm/weide", module: "pasture", words: "weide weiden koppel umtreiben auftreiben weidetagebuch fläche" },

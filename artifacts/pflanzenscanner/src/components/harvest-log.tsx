@@ -79,6 +79,7 @@ export function HarvestLog({ farmId, planting, canWrite }: { farmId: number; pla
               <span className="w-12 tabular-nums text-muted-foreground">{shortDay(h.harvestedOn)}</span>
               <span className="flex-1">
                 {kg(h.amountKg)} · {USE_LABELS[h.use]}
+                {h.organic && <span className="ml-1 rounded-full bg-emerald-100 px-1.5 text-[10px] font-semibold text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300">Bio</span>}
               </span>
               {canWrite && (
                 <button

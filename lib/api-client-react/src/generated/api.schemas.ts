@@ -1074,6 +1074,8 @@ export interface YieldEntry {
   animalName: string | null;
   /** @nullable */
   note: string | null;
+  /** Entered while the farm was organic (Bio, docs/bio.md) */
+  organic: boolean;
 }
 
 export interface YieldGardenLine {
@@ -1116,6 +1118,8 @@ export interface YieldSummary {
   animals: YieldSummaryAnimals;
   months: YieldMonth[];
   total: number;
+  /** Value of what was entered as organic (Bio, docs/bio.md) */
+  organicValue: number;
 }
 
 export type ExpenseCategory = typeof ExpenseCategory[keyof typeof ExpenseCategory];
@@ -5557,6 +5561,8 @@ export interface Harvest {
   use: HarvestUse;
   /** @nullable */
   note: string | null;
+  /** Harvested while the farm was organic (Bio, docs/bio.md) */
+  organic: boolean;
 }
 
 export interface HarvestInput {

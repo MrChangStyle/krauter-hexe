@@ -503,6 +503,8 @@ export const farmYieldsTable = pgTable(
     clientId: text("client_id"),
     // Honey: the colony it came from (docs/bienen.md).
     colonyId: integer("colony_id").references((): AnyPgColumn => beeColoniesTable.id, { onDelete: "set null" }),
+    // Bio (docs/bio.md, B7): entered while the farm was organic – fixed then.
+    organic: boolean("organic").notNull().default(false),
   },
   (table) => [
     index("farm_yields_farm_date_idx").on(table.farmId, table.date),

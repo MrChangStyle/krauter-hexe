@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #149 | Design D4, Schritt 1: Farm & Team nur noch als Kacheln – Team, Vertretung, Übergabe, Kontakte, Bewirtschaftung, Nachhaltigkeit je auf eigener Seite (`/team/…`), Zahlen auf den Kacheln; Links aus Pflanzendoc, Übergabe, Hof-Aufgaben, Hof einrichten und Suche zeigen direkt auf die Unterseite |
 | 30.10.2026 | #148 | Meine Pflanzen: Filter-Leiste schnitt den Ring der gewählten Art ab (Handy und PC) – behoben; kein Scrollbalken mehr, am PC Pfeile links und rechts (`ScrollRow`, auch in der ABC-Leiste des Lexikons); neu ABC-Filter unter den Arten |
 | 30.10.2026 | #147 | Datenschutzerklärung mit dem Code abgeglichen: Rangliste, Standort (gerundet statt „nie Koordinaten“), Grow, Spracheingabe, Futter-Rezepte, Push-Dienste, alle KI-Funktionen; Stand 2026-10-30; monatliche Prüfung der Rechtstexte und Richtwerte als geplante Aufgabe |
 | 30.10.2026 | #146 | Bio je Bereich: Admins schalten Bio für Pflanzendoc, Garten, Fütterung, Stall & Auslauf, Behandlungen und Erzeugnisse einzeln an oder aus (auch für Privathaushalte); Bio-Richtwerte freigegeben mit Hinweis „keine Gewähr“ in App, PDF, Nutzungsbedingungen und Homepage |

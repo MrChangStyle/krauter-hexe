@@ -29,7 +29,7 @@ export function OrganicTipsSwitch() {
             {byFarm ? (
               <>
                 Euer Hof „{s.organicFarm}“ wirtschaftet naturnah oder bio.{" "}
-                <Link href="/team" className="underline">
+                <Link href="/team/bewirtschaftung" className="underline">
                   Ändern unter Farm & Team
                 </Link>
               </>

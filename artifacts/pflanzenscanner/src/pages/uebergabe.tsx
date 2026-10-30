@@ -193,7 +193,7 @@ export default function UebergabePage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <PageHeader look="uebergabe" subtitle={<>Für alle, die die Tiere ein paar Tage versorgen. Eine Vertretung trägt ein Admin unter{" "} <Link href="/team" className="font-medium text-foreground underline underline-offset-4"> Farm &amp; Team </Link>{" "} ein – mit dem Datum „Vertretung bis“ endet der Zugang danach von selbst.</>} />
+      <PageHeader look="uebergabe" subtitle={<>Für alle, die die Tiere ein paar Tage versorgen. Eine Vertretung trägt ein Admin unter{" "} <Link href="/team/vertretung" className="font-medium text-foreground underline underline-offset-4"> Farm &amp; Team → Vertretung </Link>{" "} ein – mit dem Datum „Vertretung bis“ endet der Zugang danach von selbst.</>} />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Handover farm={farm} />}
     </div>
   );

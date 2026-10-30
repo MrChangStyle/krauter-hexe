@@ -6,7 +6,7 @@ Schritt 2 des Launch-Plans (`docs/LAUNCH-PLAN.md`). Wer sein Passwort vergisst, 
 
 ### Nutzer-ID
 
-- Jedes Konto bekommt eine eigene **Nutzer-ID**: eine Zahl mit vier Stellen (1000–9999), z. B. 4821. Sie steht unter Mehr → Konto (mit „Kopieren“) und auf der Kachel „Konto“.
+- Jedes Konto bekommt eine eigene **Nutzer-ID**: eine Zahl mit vier Stellen (1000–9999), z. B. 4821. Sie steht unter Mehr → Konto (mit „Kopieren“) und auf der Kachel „Konto“. Der Einrichtungsassistent zeigt sie beim ersten Start, die App-Tour weist im Schritt „Mehr“ darauf hin, und die Hilfe erklärt unter „Wo finde ich meine Nutzer-ID?“ den Weg.
 - Mit ihr – nicht mit der E-Mail-Adresse – holt ein Admin jemanden ins **Team**, als **Vertretung** oder als **Tierarzt** (`docs/team.md`), und mit ihr teilt man **Listen** (Hof-Aufgaben, Alltagsnotizen; `docs/alltagsnotizen.md`).
 - Jede Person braucht dafür ein eigenes Konto, auch eine Vertretung oder ein Mitarbeiter.
 - Bestehende Konten ohne Nummer bekommen sie automatisch beim nächsten Serverstart (spätestens bei der nächsten Anmeldung).

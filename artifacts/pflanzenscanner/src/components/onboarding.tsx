@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Leaf, Loader2 } from "lucide-react";
 import { getGetSettingsQueryKey, useSetSettings } from "@workspace/api-client-react";
+import { UserCodeBox } from "@/components/account-card";
 import { DemoCard } from "@/components/demo-card";
 import { ModuleSwitches } from "@/components/module-switches";
 import { startTour } from "@/components/tour-card";
@@ -69,6 +70,14 @@ export function Onboarding() {
               <li>🐔 <span className="font-medium">Tiere</span>: Stall-Aufgaben, Futter, Zucht, Arzneimittel, Ertrag.</li>
               <li>🏡 <span className="font-medium">Hof</span>: das Wichtigste aus allem auf einen Blick.</li>
             </ul>
+            {user?.userCode && (
+              <div data-testid="onboarding-user-code">
+                <UserCodeBox
+                  code={user.userCode}
+                  hint="Damit holt dich jemand ins Team, als Vertretung oder zu einer geteilten Liste. Du findest sie jederzeit unter Mehr → Konto."
+                />
+              </div>
+            )}
           </>
         )}
         {step === 1 && (

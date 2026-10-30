@@ -502,6 +502,10 @@ export const GENERAL_HELP: HelpTopic[] = [
       },
       { q: "Wie ändere ich mein Passwort?", a: "Unter „Mehr → Konto → Passwort ändern“. Danach sind alle anderen Geräte abgemeldet – praktisch, wenn jemand dein Passwort kennen könnte." },
       {
+        q: "Wo finde ich meine Nutzer-ID?",
+        a: "1. Unten rechts auf „Mehr“ tippen. 2. Die Nummer steht schon auf der Kachel „Konto“ (z. B. „Nutzer-ID 4821“). 3. Kachel antippen: Oben unter „Deine Nutzer-ID“ steht sie groß, mit „Kopieren“ legst du sie in die Zwischenablage und kannst sie per Nachricht weitergeben. Beim ersten Start zeigt sie dir auch die Einrichtung.",
+      },
+      {
         q: "Was ist meine Nutzer-ID?",
         a: "Eine Zahl mit vier Stellen, die nur zu deinem Konto gehört, z. B. 4821. Du findest sie unter „Mehr → Konto“ (auch auf der Kachel „Konto“) und kannst sie dort kopieren. Wer dich ins Team, als Vertretung oder als Tierarzt auf seinen Hof holen oder eine Liste mit dir teilen will, braucht diese Nummer – nicht deine E-Mail-Adresse.",
       },

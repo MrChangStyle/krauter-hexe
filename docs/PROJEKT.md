@@ -262,7 +262,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
-| 30.10.2026 | #157 | Nutzer-ID in Verwaltung → Benutzer: der Betreiber sieht die Nummer jedes Kontos; ältere Konten bekommen sie beim Serverstart |
+| 30.10.2026 | #157 | Nutzer-ID in Verwaltung → Benutzer: der Betreiber sieht die Nummer jedes Kontos; ältere Konten bekommen sie beim Serverstart; Einrichtungsassistent und App-Tour zeigen die Nutzer-ID, Hilfe mit Anleitung „Wo finde ich meine Nutzer-ID?“ |
 | 30.10.2026 | #156 | Nutzer-ID: jedes Konto bekommt eine vierstellige Nummer (später fünf); Team, Vertretung, Tierarzt und Listen-Teilen gehen per Nutzer-ID statt E-Mail; Nummer unter Mehr → Konto zum Kopieren; Hilfe mit drei neuen Fragen, Datenschutz ergänzt |
 | 30.10.2026 | #155 | Hof-Startseite: oberste Zeile mit drei Kästchen nebeneinander – Farm (Auswahl), Pflanzenretter (Rangliste), Bewirtschaftung (Stand, „Auf Bio wechseln“) – statt drei Zeilen untereinander |
 | 30.10.2026 | #154 | Bio sichtbar: Zeile zur Bewirtschaftung auf der Hof-Startseite; in jedem Modul mit Bio-Regeln oben eine Bio-Zeile mit Schalter für diesen Bereich (Futterplaner, Saatgut, Beete, Ernte, Arzneimittel, Gesundheit am Tier, Ertrag, Bienen, Meine Tiere) |

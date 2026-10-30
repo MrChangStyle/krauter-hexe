@@ -13,7 +13,7 @@ import {
 } from "@workspace/api-client-react";
 import { exportInsectsPdf, exportSelectedPlantsPdf } from "@/lib/pdf-export";
 import { RELATION_FILTERS, filterByRelation, relationCounts, type RelationFilter } from "@/lib/beneficials";
-import { viewCategoryOf, VIEW_CATEGORY_LABELS } from "@/lib/view-categories";
+import { viewCategoryOf, VIEW_CATEGORIES, VIEW_CATEGORY_COLORS, VIEW_CATEGORY_LABELS, type ViewCategory } from "@/lib/view-categories";
 import { format, formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
 import {
@@ -298,6 +298,7 @@ export function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavo
   const { data: plants, isLoading, isError } = useListMyScans({
     query: { queryKey: ["/api/plants/my-scans"] },
   });
+  const [category, setCategory] = useState<ViewCategory | null>(null);
 
   // Silently re-upload any locally-cached photos to the server so they are
   // visible on other devices via the GET /plants/:id/image fallback.
@@ -333,9 +334,36 @@ export function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavo
     );
   }
 
+  // Filter by kind (Pilze, Heilkräuter …) in the colours of the Lexikon's Arten tiles: only the kinds that occur, with their count.
+  const counts = new Map<ViewCategory, number>();
+  for (const p of plants) counts.set(viewCategoryOf(p), (counts.get(viewCategoryOf(p)) ?? 0) + 1);
+  const kinds = VIEW_CATEGORIES.filter((c) => counts.has(c));
+  const active = category && counts.has(category) ? category : null;
+  const shown = active ? plants.filter((p) => viewCategoryOf(p) === active) : plants;
+  const chip = (on: boolean, kind?: ViewCategory) =>
+    cn(
+      "shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-all",
+      kind ? VIEW_CATEGORY_COLORS[kind] : "border-border bg-card text-muted-foreground",
+      on ? "ring-2 ring-primary ring-offset-1 ring-offset-background" : kind && active ? "opacity-60" : "",
+    );
+
   return (
-    <CollapsibleCardList>
-      {plants.map((plant) => (
+    <div className="space-y-3">
+      {kinds.length > 1 && (
+        <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1" role="group" aria-label="Nach Art filtern" data-testid="scan-filter">
+          <button type="button" className={chip(active === null)} aria-pressed={active === null} onClick={() => setCategory(null)}>
+            Alle ({plants.length})
+          </button>
+          {kinds.map((c) => (
+            <button key={c} type="button" className={chip(active === c, c)} aria-pressed={active === c} onClick={() => setCategory(c)}>
+              {VIEW_CATEGORY_LABELS[c]} ({counts.get(c)})
+            </button>
+          ))}
+        </div>
+      )}
+      {/* key: a new filter starts collapsed again. */}
+      <CollapsibleCardList key={active ?? "all"}>
+      {shown.map((plant) => (
         <PlantCard
           key={plant.id}
           plant={plant}
@@ -344,7 +372,8 @@ export function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavo
           onToggleFavorite={favorites.toggle}
         />
       ))}
-    </CollapsibleCardList>
+      </CollapsibleCardList>
+    </div>
   );
 }
 

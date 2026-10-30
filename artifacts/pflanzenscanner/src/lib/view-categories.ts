@@ -32,6 +32,18 @@ export const VIEW_CATEGORY_LABELS: Record<ViewCategory, string> = {
   cactus: "Kakteen & Sukkulenten",
 };
 
+/** Colour of each kind – the Arten tiles in the Lexikon and the filter of Meine Pflanzen. */
+export const VIEW_CATEGORY_COLORS: Record<ViewCategory, string> = {
+  poisonous:          "bg-rose-100   text-rose-800   border-rose-200   dark:bg-rose-950/50   dark:text-rose-300",
+  edible:             "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-300",
+  medicinal:          "bg-indigo-100  text-indigo-800  border-indigo-200  dark:bg-indigo-950/50  dark:text-indigo-300",
+  mushroom:           "bg-amber-100   text-amber-800   border-amber-200   dark:bg-amber-950/50   dark:text-amber-300",
+  tree:               "bg-teal-100    text-teal-800    border-teal-200    dark:bg-teal-950/50    dark:text-teal-300",
+  shrub:              "bg-lime-100    text-lime-800    border-lime-200    dark:bg-lime-950/50    dark:text-lime-300",
+  moss:               "bg-cyan-100    text-cyan-800    border-cyan-200    dark:bg-cyan-950/50    dark:text-cyan-300",
+  cactus:             "bg-orange-100  text-orange-800  border-orange-200  dark:bg-orange-950/50  dark:text-orange-300",
+};
+
 /** The API category a view category is loaded from. */
 export function apiCategoryOf(view: ViewCategory): PlantCategory {
   return view as PlantCategory;

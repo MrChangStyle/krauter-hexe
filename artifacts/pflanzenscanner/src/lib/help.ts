@@ -46,7 +46,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       "Einen Ort zuordnen (Zimmer, Balkon, Beet), damit du sie wiederfindest.",
       "Von der Pflanze aus einen Pflegeplan anlegen oder den Pflanzendoc fragen.",
     ],
-    faq: [{ q: "Kann ich eine Pflanze wieder entfernen?", a: "Ja, in der Pflanze unten über „Löschen“. Der Pflegeplan dazu geht mit." }],
+    faq: [
+      { q: "Kann ich eine Pflanze wieder entfernen?", a: "Ja, in der Pflanze unten über „Löschen“. Der Pflegeplan dazu geht mit." },
+      { q: "Wie finde ich nur meine Pilze?", a: "Über der Liste der Scans stehen die Arten, die du gescannt hast – etwa „Pilze (4)“ oder „Heilkräuter (2)“. Ein Tipp zeigt nur diese, „Alle“ wieder alles." },
+    ],
   },
   "care-plan": {
     title: "Pflegeplan",

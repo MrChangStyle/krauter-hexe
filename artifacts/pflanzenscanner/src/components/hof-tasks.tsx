@@ -70,10 +70,11 @@ function useRefresh(farmId: number) {
 
 /**
  * The look of the two everyday tools: square, orange frame, stands out from
- * the widgets. Always exactly square – a long line is cut, never makes one
- * tile taller than the other.
+ * the widgets. Always exactly square on the phone – a long line is cut, never
+ * makes one tile taller than the other; on wider screens a fixed height, else
+ * they grow into big, empty squares.
  */
-const TOOL_TILE = `flex aspect-square min-h-0 min-w-0 flex-col overflow-hidden p-3 text-left transition active:scale-[0.98] ${TOOL_FRAME}`;
+const TOOL_TILE = `flex aspect-square min-h-0 min-w-0 flex-col overflow-hidden p-3 text-left transition active:scale-[0.98] sm:aspect-auto sm:h-40 ${TOOL_FRAME}`;
 
 function ToolTile({ href, icon, title, value, line, progress, testId }: { href: string; icon: ReactNode; title: string; value: string; line: string; progress?: number | null; testId: string }) {
   return (

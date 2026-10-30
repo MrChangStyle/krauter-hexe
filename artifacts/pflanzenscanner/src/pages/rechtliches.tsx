@@ -153,8 +153,17 @@ export function DatenschutzPage() {
             <strong>Konto:</strong> E-Mail-Adresse, Passwort (nur als
             verschlüsselter Hash gespeichert), optional Vor- und Nachname und
             Profilbild (bei Anmeldung mit Google), selbst gewählter
-            Benutzername, Zeitpunkt der Zustimmung zu diesen Bedingungen.
-            Zweck: Bereitstellung deines Kontos (Art. 6 Abs. 1 lit. b DSGVO).
+            Benutzername, Zeitpunkt der Zustimmung zu diesen Bedingungen und
+            deine Einstellungen (z. B. Meine Module, Meine Tierarten,
+            Benachrichtigungen, Bio-Empfehlungen). Zweck: Bereitstellung deines
+            Kontos (Art. 6 Abs. 1 lit. b DSGVO).
+          </li>
+          <li>
+            <strong>Rangliste:</strong> Wählst du einen Benutzernamen, steht er
+            mit deiner Zahl geretteter Pflanzen in der Pflanzenretter-Rangliste,
+            die alle angemeldeten Nutzerinnen und Nutzer sehen. Ohne
+            Benutzernamen erscheinst du dort nicht (Art. 6 Abs. 1 lit. b
+            DSGVO).
           </li>
           <li>
             <strong>Fotos und Scan-Ergebnisse:</strong> Fotos, die du zum
@@ -166,7 +175,9 @@ export function DatenschutzPage() {
           <li>
             <strong>Hof und Tiere:</strong> Was du für deinen Hof einträgst –
             Tiere mit Gesundheitsakte und Behandlungen, Aufgaben, Futter,
-            Ertrag, Weiden, Bienen, Beete und Kontakte. Diese Daten gehören zum
+            Ertrag, Weiden (mit ihrem Umriss auf der Karte), Bienen, Beete,
+            Saatgut, Vorräte, Hof-Aufgaben mit Kommentaren, Bewirtschaftung
+            (z. B. Bio) und Kontakte. Diese Daten gehören zum
             Hof: Wer zum Hof gehört (Team, Vertretung, eingeladener Tierarzt),
             sieht sie je nach Rolle und Freigabe; eine Vertretung oder ein
             Tierarzt nur bis zum eingetragenen Tag (Art. 6 Abs. 1 lit. b DSGVO).
@@ -180,14 +191,41 @@ export function DatenschutzPage() {
             b DSGVO).
           </li>
           <li>
-            <strong>Region:</strong> Wenn du es erlaubst, ermittelt die App aus
-            deinem Standort die nächstgelegene Stadt. Gespeichert wird nur der
-            Stadtname, nie die Koordinaten (Art. 6 Abs. 1 lit. a DSGVO).
+            <strong>Standort:</strong> Die App fragt deinen Standort nur, wenn
+            du auf „Standort verwenden“ tippst (Art. 6 Abs. 1 lit. a DSGVO).
+            Für deine Region speichern wir dann nur den Namen der
+            nächstgelegenen Stadt. Für Wetter, Frost und Unwetterwarnungen von
+            Hof, Beet und Grow speichern wir die Postleitzahl oder den auf etwa
+            10 km gerundeten Ort, nie den genauen Standort. Beim Einzeichnen
+            einer Weide zeigt die Karte deinen Standort nur auf deinem Gerät.
+          </li>
+          <li>
+            <strong>Grow (Eigenanbau ab 18):</strong> Wenn du den Bereich
+            nutzt, speichern wir den Zeitpunkt deiner Bestätigung, dass du
+            volljährig bist, und deine Anbau-Daten (Pflanzen, Tagebuch,
+            Ergebnisse der KI-Checks). Ein Foto für den KI-Check wird nur
+            ausgewertet, nicht gespeichert. Die Daten gehören nur zu deinem
+            Konto (Art. 6 Abs. 1 lit. b DSGVO).
+          </li>
+          <li>
+            <strong>Spracheingabe:</strong> Wenn du den Mikrofon-Knopf hältst,
+            wandelt die Spracherkennung deines Browsers bzw. Betriebssystems die
+            Sprache in Text um. Je nach Gerät geschieht das beim Anbieter des
+            Browsers (z. B. Google bei Chrome, Apple bei Safari). Wir bekommen
+            nur den fertigen Text, nie die Aufnahme (Art. 6 Abs. 1 lit. a
+            DSGVO).
+          </li>
+          <li>
+            <strong>Futter-Rezepte:</strong> Ein Rezept, das du einsendest,
+            sehen nach unserer Freigabe alle Nutzerinnen und Nutzer – ohne
+            deinen Namen (Art. 6 Abs. 1 lit. b DSGVO).
           </li>
           <li>
             <strong>Erinnerungen:</strong> Wenn du Push-Benachrichtigungen
-            erlaubst, speichern wir die Push-Adresse deines Browsers (Art. 6
-            Abs. 1 lit. a DSGVO).
+            erlaubst, speichern wir die Push-Adresse deines Browsers. Die
+            Nachricht geht verschlüsselt über den Push-Dienst deines Browsers
+            (z. B. Google, Mozilla, Apple) an dein Gerät (Art. 6 Abs. 1 lit. a
+            DSGVO).
           </li>
           <li>
             <strong>Meldungen:</strong> Wenn du ein Foto oder einen
@@ -252,10 +290,15 @@ export function DatenschutzPage() {
           <li>Neon (Datenbank, Rechenzentrum Frankfurt)</li>
           <li>Cloudinary (Speicherung und Auslieferung der Fotos)</li>
           <li>
-            Google Gemini (KI-Bestimmung und KI-Vorschläge, z. B. im Beet-Architekt und beim Standort-Check der Bienen: deine
-            Fotos und die Bilder der Wildkameras werden zur Auswertung an Google übermittelt; beim KI-Aufgabenplan der Hof-Aufgaben der gesprochene oder
-            getippte Text sowie die Namen des Teams und der Tiergruppen; bei den Alltagsnotizen nur der gesprochene oder
-            getippte Text)
+            Google Gemini (alle KI-Funktionen: Bestimmen von Pflanzen, Pilzen
+            und Insekten, Pflanzendoc und Pflege-Guide, Grow-Diagnose,
+            Futteretiketten, Futter- und Arten-Vorschläge, Beet-Architekt und
+            Garten-Assistent, Standort-Check der Bienen, Wildkameras,
+            KI-Aufgabenplan und Alltagsnotizen. Übermittelt wird nur, was die
+            jeweilige Funktion braucht: deine Fotos bzw. die Kamerabilder, beim
+            Aufgabenplan der Text sowie die Namen des Teams und der Tiergruppen,
+            sonst der Text oder die Angaben zu Tier, Beet oder Ort, ohne deinen
+            Namen oder deine E-Mail-Adresse)
           </li>
           <li>Google (nur bei „Mit Google anmelden“)</li>
           <li>
@@ -263,6 +306,10 @@ export function DatenschutzPage() {
             E-Mail-Adresse und der Inhalt der Mail, Rechenzentrum in der EU)
           </li>
           <li>Cloudflare Turnstile (Schutz der Registrierung vor Bots)</li>
+          <li>
+            Push-Dienste der Browser-Anbieter (z. B. Google Firebase Cloud
+            Messaging, Mozilla, Apple), nur wenn du Benachrichtigungen erlaubst
+          </li>
           <li>
             OpenStreetMap Nominatim (Beet-Architekt: Postleitzahl eines Beetes
             → ungefährer Ort; übermittelt wird nur die Postleitzahl)

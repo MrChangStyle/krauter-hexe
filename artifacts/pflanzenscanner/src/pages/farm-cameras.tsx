@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "wouter";
+
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, Camera, Check, Copy, KeyRound, Loader2, Plus, Radar, Trash2, Zap } from "lucide-react";
+import { AlertTriangle, Camera, Check, Copy, KeyRound, Loader2, Plus, Radar, Trash2, Zap } from "lucide-react";
 import {
   getListCameraEventsQueryKey,
   getListCamerasQueryKey,
@@ -24,6 +24,7 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { AiNote } from "@/components/farm-ai";
+import { PageHeader } from "@/components/page-header";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -388,14 +389,7 @@ export default function FarmCamerasPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Meine Farm
-      </Link>
-      <div>
-        <h1 className="text-2xl font-bold">Wildtier-Radar</h1>
-        {farm && <p className="text-sm text-muted-foreground">{farm.name}</p>}
-      </div>
+      <PageHeader look="kameras" subtitle={farm?.name} />
       <div className="flex gap-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
         <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
         <p>

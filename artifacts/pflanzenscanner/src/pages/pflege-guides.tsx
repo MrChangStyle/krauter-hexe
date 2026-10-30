@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { format, differenceInDays } from "date-fns";
 import { de } from "date-fns/locale";
+import { PageHeader } from "@/components/page-header";
 
 function dayProgress(guide: CareGuide): { elapsed: number; total: number } {
   const start = new Date(guide.startDate);
@@ -145,16 +146,8 @@ export default function PflegeGuidesPage() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 pb-8">
-      <header className="px-6 pt-8 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400">
-            <BookHeart className="w-6 h-6" strokeWidth={1.5} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-serif font-semibold">Pflege-Guides</h1>
-            <p className="text-xs text-muted-foreground">30-Tage-Pflegepläne für deine Pflanzen</p>
-          </div>
-        </div>
+      <header className="px-6 pt-6 pb-4">
+        <PageHeader look="pflege-guides" subtitle="30-Tage-Pflegepläne für deine Pflanzen" />
 
         <p className="text-sm text-muted-foreground mt-4">
           Erstelle einen Pflege-Guide direkt nach einer{" "}

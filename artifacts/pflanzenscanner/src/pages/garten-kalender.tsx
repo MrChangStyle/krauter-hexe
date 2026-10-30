@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useEnsureOwnFarm, useGetGardenCalendar, type FarmSummary, type GardenEventKind } from "@workspace/api-client-react";
 import { EventChip, useToggleGardenEvent } from "@/components/bed-calendar";
 import { FrostWarnings } from "@/components/garden-overview";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { KIND_COLORS, KIND_LABELS, MONTHS, inMonth, todayKey } from "@/lib/garden-calendar";
+import { PageHeader } from "@/components/page-header";
 
 const KINDS: GardenEventKind[] = ["sow_indoor", "direct_sow", "plant_out", "harvest"];
 
@@ -86,14 +87,7 @@ export default function GartenKalenderPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/beete" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Beete
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Beet-Architekt</p>
-        <h1 className="text-2xl font-bold">Gartenkalender</h1>
-      </div>
+      <PageHeader look="garten-kalender" />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <MonthView farm={farm} />}
     </div>
   );

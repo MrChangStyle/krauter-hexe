@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { AlertTriangle, ArrowLeft, Egg, Info, Loader2 } from "lucide-react";
+import { AlertTriangle, Info, Loader2 } from "lucide-react";
 import { useEnsureOwnFarm, useGetLayingHistory, type FarmSummary, type LayingHint, type LayingWeek } from "@workspace/api-client-react";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { deDay } from "@/lib/medicine-labels";
 import { num } from "@/lib/yield-labels";
+import { PageHeader } from "@/components/page-header";
 
 /** "1 Ei", "12 Eier" */
 function eggs(n: number): string {
@@ -173,18 +174,7 @@ export default function LegeleistungPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm/ertrag" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Ertrag & Bilanz
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Egg className="h-6 w-6 text-primary" />
-          Legeleistung
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Wie viele Eier eure Hennen legen – Woche für Woche, je Gruppe und je Henne.</p>
-      </div>
+      <PageHeader look="legeleistung" subtitle="Wie viele Eier eure Hennen legen – Woche für Woche, je Gruppe und je Henne." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <History farm={farm} />}
     </div>
   );

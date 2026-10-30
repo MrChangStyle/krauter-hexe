@@ -1,13 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
-import {
-  Loader2,
-  Pencil,
-  Plus,
-  Radar,
-  Trash2,
-  Users,
-  Wheat, Pill, Handshake, Baby, PiggyBank, FileText, Warehouse, Hexagon, Trees } from "lucide-react";
+import { Loader2, Pencil, Plus, Trash2, Warehouse } from "lucide-react";
 import {
   useCreateFarm,
   useDeleteFarm,
@@ -46,6 +39,7 @@ import {
   readActiveFarmId,
   writeActiveFarmId,
 } from "@/lib/active-farm";
+import { tileOf } from "@/lib/module-look";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -295,17 +289,17 @@ export default function FarmPage() {
 
       <HubGrid>
         {show("farm-tasks") && <FarmTasksTile farm={farm} />}
-        {show("feed") && <HubTile href="/farm/futter" icon={Wheat} label="Futterplaner" hint="Rationen, Bedarf, Vorrat" tone="bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300" />}
-        {show("breeding") && <HubTile href="/farm/zucht" icon={Baby} label="Zucht" hint="Trächtigkeit, Brut, Jungtiere" tone="bg-pink-100 text-pink-800 dark:bg-pink-950/50 dark:text-pink-300" />}
-        {show("medicines") && <HubTile href="/farm/arzneimittel" icon={Pill} label="Arzneimittel" hint="Vorrat, Charge, Wartezeit" tone="bg-red-100 text-red-800 dark:bg-red-950/50 dark:text-red-300" />}
+        {show("feed") && <HubTile {...tileOf("futter")} />}
+        {show("breeding") && <HubTile {...tileOf("zucht")} />}
+        {show("medicines") && <HubTile {...tileOf("arzneimittel")} />}
         {show("duties") && <FarmDutiesTile farm={farm} />}
-        {show("pasture") && <HubTile href="/farm/weide" icon={Trees} label="Weide" hint="Flächen, Umtreiben, Ruhezeit" tone="bg-lime-100 text-lime-800 dark:bg-lime-950/50 dark:text-lime-300" />}
-        {show("bees") && <HubTile href="/farm/bienen" icon={Hexagon} label="Bienen" hint="Stockkarte, Varroa, Honig" tone="bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300" />}
-        {show("yields") && <HubTile href="/farm/ertrag" icon={PiggyBank} label="Ertrag & Bilanz" hint="Eier, Milch, Ernte, Kosten" tone="bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300" />}
-        {show("wildlife") && <HubTile href="/farm/kameras" icon={Radar} label="Wildtier-Radar" hint="Kameras & Raubtier-Alarm" tone="bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200" />}
-        {show("handover") && <HubTile href="/farm/uebergabe" icon={Handshake} label="Übergabe" hint="Vertretung für ein paar Tage" tone="bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300" />}
-        {show("members") && <HubTile href="/team" icon={Users} label="Farm & Team" hint="Team, Vertretung, Kontakte" tone="bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300" />}
-        {show("export") && <HubTile href="/farm/export" icon={FileText} label="Veterinäramt-Export" hint="Bestandsliste & Medizin als PDF" tone="bg-teal-100 text-teal-800 dark:bg-teal-950/50 dark:text-teal-300" />}
+        {show("pasture") && <HubTile {...tileOf("weide")} />}
+        {show("bees") && <HubTile {...tileOf("bienen")} />}
+        {show("yields") && <HubTile {...tileOf("ertrag")} />}
+        {show("wildlife") && <HubTile {...tileOf("kameras")} />}
+        {show("handover") && <HubTile {...tileOf("uebergabe")} />}
+        {show("members") && <HubTile {...tileOf("team")} />}
+        {show("export") && <HubTile {...tileOf("export")} />}
       </HubGrid>
 
       <FarmSetupCard farm={farm} onRename={() => openDialog("rename")} />

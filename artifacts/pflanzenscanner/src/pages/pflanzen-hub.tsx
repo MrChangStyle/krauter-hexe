@@ -1,96 +1,27 @@
 import { Link } from "wouter";
-import {
-  BookOpen,
-  Bug,
-  CalendarCheck,
-  Fence,
-  Leaf,
-  Package,
-  Sparkles,
-  Sprout,
-  Stethoscope,
-} from "lucide-react";
+import { Sprout } from "lucide-react";
 import { useGetPremium, useListMyFarms, useListMyScans, type ModuleId } from "@workspace/api-client-react";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { GROW_ENABLED } from "@/lib/grow-labels";
 import { useModules } from "@/hooks/use-modules";
 import { farmModuleGranted, tierLabel } from "@/lib/modules";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
+import { tileOf, type LookKey } from "@/lib/module-look";
 
 /**
  * Pflanzen: the hub for everything around plants. Each tile opens one area;
  * the order follows the agreed Little Farming navigation (design "Option B").
  */
-const AREAS: { module: ModuleId; href: string; icon: typeof Sprout; label: string; hint: string; tone: string }[] = [
-  {
-    module: "care-plan",
-    href: "/aufgaben",
-    icon: CalendarCheck,
-    label: "Pflegeplan",
-    hint: "Aufgaben & Erinnerungen",
-    tone: "bg-sky-100 text-sky-800 dark:bg-sky-950/50 dark:text-sky-300",
-  },
-  {
-    module: "plant-doc",
-    href: "/pflanzendoc",
-    icon: Stethoscope,
-    label: "Pflanzendoc",
-    hint: "Diagnose & Pflege-Guide",
-    tone: "bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300",
-  },
-  {
-    module: "pests",
-    href: "/schaedlinge",
-    icon: Bug,
-    label: "Schädlinge & Nützlinge",
-    hint: "Bio & chemisch",
-    tone: "bg-amber-100 text-amber-800 dark:bg-amber-950/50 dark:text-amber-300",
-  },
-  {
-    module: "lexicon",
-    href: "/lexikon",
-    icon: BookOpen,
-    label: "Lexikon",
-    hint: "Alle Arten · mit Pilzen",
-    tone: "bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200",
-  },
-  {
-    module: "herb-witch",
-    href: "/kraeuter-hexe",
-    icon: Sparkles,
-    label: "Kräuter-Hexe",
-    hint: "Heilkräuter-Ratgeber",
-    tone: "bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300",
-  },
-  {
-    module: "garden",
-    href: "/beete",
-    icon: Fence,
-    label: "Beet-Architekt",
-    hint: "Beete, Standort, Saatgut",
-    tone: "bg-rose-100 text-rose-800 dark:bg-rose-950/50 dark:text-rose-300",
-  },
+const AREAS: { module: ModuleId; look: LookKey }[] = [
+  { module: "care-plan", look: "aufgaben" },
+  { module: "plant-doc", look: "pflanzendoc" },
+  { module: "pests", look: "schaedlinge" },
+  { module: "lexicon", look: "lexikon" },
+  { module: "herb-witch", look: "kraeuter" },
+  { module: "garden", look: "beete" },
   // Grow sits right of the Beet-Architekt; builds without it (app stores) leave it out.
-  ...(GROW_ENABLED
-    ? [
-        {
-          module: "grow" as const,
-          href: "/grow",
-          icon: Leaf,
-          label: "Grow",
-          hint: "Eigenanbau ab 18",
-          tone: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/50 dark:text-emerald-300",
-        },
-      ]
-    : []),
-  {
-    module: "pantry",
-    href: "/vorrat",
-    icon: Package,
-    label: "Vorratskammer",
-    hint: "Eingekocht, eingefroren, Honig",
-    tone: "bg-orange-100 text-orange-800 dark:bg-orange-950/50 dark:text-orange-300",
-  },
+  ...(GROW_ENABLED ? [{ module: "grow" as const, look: "grow" as const }] : []),
+  { module: "pantry", look: "vorrat" },
 ];
 
 /** Top of the Pflanzen page, like "Meine Tiere" on Tiere: the way to all of your plants. */
@@ -136,8 +67,8 @@ export default function PflanzenHubPage() {
       {visible("my-plants") && <MyPlantsCard />}
 
       <HubGrid>
-        {AREAS.filter((a) => visible(a.module) && farmModuleGranted(farm, a.module)).map(({ module, ...area }) => (
-          <HubTile key={area.href} {...area} tag={tierLabel(module, !!premium.data?.active)} />
+        {AREAS.filter((a) => visible(a.module) && farmModuleGranted(farm, a.module)).map(({ module, look }) => (
+          <HubTile key={look} {...tileOf(look)} tag={tierLabel(module, !!premium.data?.active)} />
         ))}
       </HubGrid>
     </div>

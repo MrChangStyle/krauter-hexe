@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertOctagon, ArrowLeft, Check, ClipboardList, Handshake, HeartPulse, Loader2, Phone, StickyNote } from "lucide-react";
+import { AlertOctagon, Check, ClipboardList, Handshake, HeartPulse, Loader2, Phone, StickyNote } from "lucide-react";
 import {
   getGetHandoverQueryKey,
   getListFarmTasksQueryKey,
@@ -20,6 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { deDay } from "@/lib/medicine-labels";
+import { PageHeader } from "@/components/page-header";
 
 function Section({ icon: Icon, title, children }: { icon: typeof Handshake; title: string; children: ReactNode }) {
   return (
@@ -192,24 +193,7 @@ export default function UebergabePage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Tiere
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Handshake className="h-6 w-6 text-primary" />
-          Übergabe & Vertretung
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Für alle, die die Tiere ein paar Tage versorgen. Eine Vertretung trägt ein Admin unter{" "}
-          <Link href="/team" className="font-medium text-foreground underline underline-offset-4">
-            Farm &amp; Team
-          </Link>{" "}
-          ein – mit dem Datum „Vertretung bis“ endet der Zugang danach von selbst.
-        </p>
-      </div>
+      <PageHeader look="uebergabe" subtitle={<>Für alle, die die Tiere ein paar Tage versorgen. Eine Vertretung trägt ein Admin unter{" "} <Link href="/team" className="font-medium text-foreground underline underline-offset-4"> Farm &amp; Team </Link>{" "} ein – mit dem Datum „Vertretung bis“ endet der Zugang danach von selbst.</>} />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Handover farm={farm} />}
     </div>
   );

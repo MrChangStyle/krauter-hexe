@@ -13,7 +13,7 @@ import {
 } from "@workspace/api-client-react";
 import type { Task } from "@workspace/api-client-react";
 import { plantImageUrl } from "@/lib/image";
-import { BackToPflanzen } from "@/components/back-to-pflanzen";
+import { PageHeader } from "@/components/page-header";
 import { PflegeGuidesSection } from "@/pages/mehr";
 import { GardenTodoSection } from "@/components/garden-overview";
 import { GardenHofTasks } from "@/components/hof-tasks";
@@ -315,39 +315,30 @@ export default function AufgabenPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col flex-1 min-h-0 pb-8">
-      <div className="px-6 pt-4">
-        <BackToPflanzen />
-      </div>
-      {/* Header */}
-      <header className="px-6 pt-2 pb-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/40 text-sky-600 dark:text-sky-400">
-              <ClipboardList className="w-6 h-6" strokeWidth={1.5} />
-            </div>
-            <div>
-              <h1 className="text-2xl font-serif font-semibold">Pflegeplan</h1>
-              <p className="text-xs text-muted-foreground">Aufgaben und Erinnerungen für deine Pflanzen</p>
-            </div>
-          </div>
-          <Button
-            size="sm"
-            variant={showForm && !editingTask ? "secondary" : "default"}
-            onClick={() => {
-              if (showForm) {
-                closeForm();
-              } else {
-                setForm(DEFAULT_FORM);
-                setEditingTask(null);
-                setShowForm(true);
-              }
-            }}
-            className="gap-1.5"
-          >
-            <Plus className="w-4 h-4" />
-            Neue Aufgabe
-          </Button>
-        </div>
+      <header className="px-6 pt-4 pb-4">
+        <PageHeader
+          look="aufgaben"
+          subtitle="Aufgaben und Erinnerungen für deine Pflanzen"
+          actions={
+              <Button
+                size="sm"
+                variant={showForm && !editingTask ? "secondary" : "default"}
+                onClick={() => {
+                  if (showForm) {
+                    closeForm();
+                  } else {
+                    setForm(DEFAULT_FORM);
+                    setEditingTask(null);
+                    setShowForm(true);
+                  }
+                }}
+                className="gap-1.5"
+              >
+                <Plus className="w-4 h-4" />
+                Neue Aufgabe
+              </Button>
+          }
+        />
       </header>
 
       {tasks.length > 0 && (

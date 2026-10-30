@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, BookOpen, CalendarDays, Loader2, Plus, ShieldCheck, Trash2, Warehouse } from "lucide-react";
+import { BookOpen, CalendarDays, Loader2, Plus, ShieldCheck, Trash2, Warehouse } from "lucide-react";
 import {
   getListFeedRecipesQueryKey,
   useDeleteFeedRecipe,
@@ -27,6 +27,7 @@ import { SPECIES_LABELS } from "@/lib/farm-labels";
 import { RECIPE_KIND_LABELS, lines } from "@/lib/feed-labels";
 import { MONTHS } from "@/lib/garden-calendar";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -343,15 +344,7 @@ export default function FutterTippsPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm/futter" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Futterplaner
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="text-2xl font-bold">Tipps & Rezepte</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Was der Garten im Jahr liefert, und geprüfte Rezepte mit Hygieneregeln.</p>
-      </div>
+      <PageHeader look="futter-tipps" subtitle="Was der Garten im Jahr liefert, und geprüfte Rezepte mit Hygieneregeln." />
       <section className="space-y-3 rounded-2xl border border-border bg-card p-4">
         <h2 className="flex items-center gap-2 font-semibold">
           <CalendarDays className="h-4 w-4 text-primary" />

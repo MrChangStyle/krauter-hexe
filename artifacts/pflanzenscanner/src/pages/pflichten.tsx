@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, ExternalLink, Loader2, ShieldCheck, Undo2 } from "lucide-react";
+import { Check, ExternalLink, Loader2, Undo2 } from "lucide-react";
 import {
   getGetFarmDutiesQueryKey,
   useCheckFarmDuty,
@@ -22,6 +22,7 @@ import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { dutyBadge, stockText } from "@/lib/duty-labels";
 import { SPECIES_LABELS, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
+import { PageHeader } from "@/components/page-header";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -218,20 +219,7 @@ export default function PflichtenPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Tiere
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <ShieldCheck className="h-6 w-6 text-primary" />
-          Pflichten & Tierseuchen
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Was die Haltung eurer Tiere in Deutschland auf dem Papier bedeutet. Fristen und Details unterscheiden sich zwischen den Bundesländern – im Zweifel wissen das Veterinäramt und die Tierseuchenkasse Bescheid. Keine Rechtsberatung.
-        </p>
-      </div>
+      <PageHeader look="pflichten" subtitle="Was die Haltung eurer Tiere in Deutschland auf dem Papier bedeutet. Fristen und Details unterscheiden sich zwischen den Bundesländern – im Zweifel wissen das Veterinäramt und die Tierseuchenkasse Bescheid. Keine Rechtsberatung." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Duties farm={farm} />}
     </div>
   );

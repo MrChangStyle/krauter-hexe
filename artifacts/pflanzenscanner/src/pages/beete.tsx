@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { ArrowLeft, BarChart3, CalendarDays, ChevronRight, Compass, Fence, Loader2, MapPin, Plus, Sprout } from "lucide-react";
+import { BarChart3, CalendarDays, ChevronRight, Compass, Fence, Loader2, MapPin, Plus, Sprout } from "lucide-react";
 import { FrostWarnings } from "@/components/garden-overview";
 import { PremiumBadge } from "@/components/premium-badge";
 import { useEnsureOwnFarm, useListBeds, type FarmSummary } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { BED_TYPE_LABELS, bedArea, bedSize, dayMonth } from "@/lib/garden-labels";
+import { PageHeader } from "@/components/page-header";
 
 function BedList({ farm }: { farm: FarmSummary }) {
   const beds = useListBeds(farm.id);
@@ -146,17 +147,7 @@ export default function BeetePage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/pflanzen" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Pflanzen
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Beet-Architekt</p>
-        <h1 className="text-2xl font-bold">Beete planen</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {farm ? `Beete von „${farm.name}“ – geteilt mit allen Mitgliedern der Farm.` : "Beete deiner Farm."}
-        </p>
-      </div>
+      <PageHeader look="beete" subtitle={<>{farm ? `Beete von „${farm.name}“ – geteilt mit allen Mitgliedern der Farm.` : "Beete deiner Farm."}</>} />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <BedList farm={farm} />}
     </div>
   );

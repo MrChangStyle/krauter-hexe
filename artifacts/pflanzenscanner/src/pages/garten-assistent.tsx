@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Sparkles } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 import {
   getGetGardenGoalsQueryKey,
   getGetGardenPlanQueryKey,
@@ -22,6 +22,7 @@ import { PremiumBadge } from "@/components/premium-badge";
 import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
 
 const DIRECTIONS: [GardenDirection, string][] = [
   ["vegetables", "Gemüse"],
@@ -273,18 +274,7 @@ export default function GartenAssistentPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/beete" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Beete
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Beet-Architekt</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          Garten-Assistent
-          <PremiumBadge />
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Was brauchen Haushalt und Tiere – und wie verteilst du es auf deine Beete?</p>
-      </div>
+      <PageHeader look="garten-assistent" title={<>Garten-Assistent <PremiumBadge /></>} subtitle="Was brauchen Haushalt und Tiere – und wie verteilst du es auf deine Beete?" />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Assistant farm={farm} />}
     </div>
   );

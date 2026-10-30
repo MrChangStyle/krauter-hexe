@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { ArrowLeft, ChevronRight, Handshake, Loader2 } from "lucide-react";
+import { ChevronRight, Handshake, Loader2 } from "lucide-react";
 import { getListFarmContactsQueryKey, getListFarmMembersQueryKey, useListFarmContacts, useListFarmMembers } from "@workspace/api-client-react";
 import { FarmContactsCard } from "@/components/farm-contacts-card";
 import { FarmFarmingCard } from "@/components/farm-farming-card";
@@ -7,6 +7,7 @@ import { SustainabilityCard } from "@/components/sustainability-card";
 import { MembersCard } from "@/components/farm-members-card";
 import { useActiveFarm } from "@/hooks/use-active-farm";
 import { FARM_ROLE_HINTS, FARM_ROLE_LABELS } from "@/lib/active-farm";
+import { PageHeader } from "@/components/page-header";
 
 const selectClass = "h-9 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring";
 
@@ -31,15 +32,8 @@ export default function TeamPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/mehr" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Mehr
-      </Link>
       <div className="space-y-2">
-        <div>
-          <h1 className="text-2xl font-bold">Farm & Team</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Alle Menschen auf deinem Hof: Team, Vertretung, Rollen und wichtige Kontakte.</p>
-        </div>
+        <PageHeader look="team" subtitle="Alle Menschen auf deinem Hof: Team, Vertretung, Rollen und wichtige Kontakte." />
         {farms && farms.length > 1 && farm && (
           <select aria-label="Farm wechseln" className={selectClass} value={farm.id} onChange={(e) => select(Number(e.target.value))}>
             {farms.map((f) => (

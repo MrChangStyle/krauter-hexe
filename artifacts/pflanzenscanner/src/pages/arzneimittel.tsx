@@ -1,7 +1,7 @@
 import { useEffect, useState, type ComponentProps, type FormEvent } from "react";
-import { Link } from "wouter";
+
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, Pill, Plus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import {
   getListMedicinesQueryKey,
   useCreateMedicine,
@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { MEDICINE_STATUS, deDay, medicineWithdrawal } from "@/lib/medicine-labels";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -256,18 +257,7 @@ export default function ArzneimittelPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Tiere
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Pill className="h-6 w-6 text-primary" />
-          Arzneimittel-Vorrat
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Was im Schrank steht, wie lange es haltbar ist und welche Wartezeit gilt.</p>
-      </div>
+      <PageHeader look="arzneimittel" subtitle="Was im Schrank steht, wie lange es haltbar ist und welche Wartezeit gilt." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Stock farm={farm} />}
     </div>
   );

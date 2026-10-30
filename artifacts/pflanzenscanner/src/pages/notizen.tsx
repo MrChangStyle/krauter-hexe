@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "wouter";
+
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, Loader2, LogOut, Plus, Share2, ShoppingCart, Sparkles, StickyNote, Trash2, X } from "lucide-react";
+import { Check, Loader2, LogOut, Plus, Share2, ShoppingCart, Sparkles, StickyNote, Trash2, X } from "lucide-react";
 import {
   getListNoteSharesQueryKey,
   getListNotesQueryKey,
@@ -29,6 +29,7 @@ import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { CATEGORY_LABELS, CATEGORY_ORDER, groupNotes, notesNeedPlan, splitNotes, type NoteDraft } from "@/lib/daily-notes";
+import { PageHeader } from "@/components/page-header";
 
 /**
  * /notizen – Alltagsnotizen (docs/alltagsnotizen.md): the own shopping list
@@ -54,14 +55,7 @@ export default function NotizenPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Hof
-      </Link>
-      <div>
-        <h1 className="text-2xl font-bold">Alltagsnotizen</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Einkaufsliste und was du dir merken willst – getrennt von den Hof-Aufgaben.</p>
-      </div>
+      <PageHeader look="notizen" subtitle="Einkaufsliste und was du dir merken willst – getrennt von den Hof-Aufgaben." />
 
       {sharedWithMe.length > 0 && (
         <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Listen">

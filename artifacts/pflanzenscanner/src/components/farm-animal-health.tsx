@@ -12,12 +12,14 @@ import {
   useCreateWeightLog,
   useDeleteMedicalRecord,
   useDeleteWeightLog,
+  useGetFarmFarming,
   useListMedicalRecords,
   useListMedicines,
   useListWeightLogs,
   useUpdateMedicalRecord,
   type MedicalRecord,
   type MedicalRecordInput,
+  type RemedyKind,
   type TaskIntervalUnit,
   type WeightLog,
 } from "@workspace/api-client-react";
@@ -29,16 +31,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { todayIso } from "@/lib/farm-labels";
+import { certified } from "@/lib/farming-labels";
 import { REPEAT_DEFAULTS, REPEAT_LABELS, guessRepeatKind, repeatDue, type RepeatKind } from "@/lib/medical-repeat";
 import { medicineWithdrawal } from "@/lib/medicine-labels";
 import {
+  ORGANIC_TREATMENT_LIMIT,
+  REMEDY_LABELS,
   WEIGHT_LOSS_WINDOW_DAYS,
   activeWithdrawalEnd,
+  chemicalTreatments,
   dateRangeText,
   deDate,
   doseText,
   kg,
   weightWarning,
+  withdrawalDays,
   withdrawalEnd,
 } from "@/lib/farm-health";
 
@@ -236,6 +243,7 @@ const EMPTY_RECORD: MedicalRecordInput = {
   notes: "",
   medicineId: null,
   dose: null,
+  remedyKind: null,
 };
 
 function toRecordInput(r: MedicalRecord): MedicalRecordInput {
@@ -250,6 +258,7 @@ function toRecordInput(r: MedicalRecord): MedicalRecordInput {
     notes: r.notes ?? "",
     medicineId: r.medicineId,
     dose: r.dose,
+    remedyKind: r.remedyKind,
   };
 }
 
@@ -259,6 +268,8 @@ function RecordDialog({
   record,
   open,
   onOpenChange,
+  organicFarm,
+  chemicalCount,
 }: {
   farmId: number;
   animalId: number;
@@ -266,6 +277,10 @@ function RecordDialog({
   record: MedicalRecord | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Bio (docs/bio.md): the farm is organic – new records get the doubled Wartezeit. */
+  organicFarm: boolean;
+  /** Chemical treatments of this animal in the last 12 months. */
+  chemicalCount: number;
 }) {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<MedicalRecordInput>(() =>
@@ -304,7 +319,12 @@ function RecordDialog({
   // Offer what can still be used – and the one this record already uses.
   const offered = (medicines.data ?? []).filter((m) => m.id === form.medicineId || (!m.archived && m.status !== "expired"));
   const chosen = medicines.data?.find((m) => m.id === form.medicineId) ?? null;
-  const formWaitEnd = form.date ? withdrawalEnd({ date: form.date, treatmentUntil: form.treatmentUntil ?? null, withdrawalPeriodDays: form.withdrawalPeriodDays ?? null }) : null;
+  // A record keeps the level it was entered with; a new one takes the farm's.
+  const organic = record ? record.organic : organicFarm;
+  const waitInput = { date: form.date, treatmentUntil: form.treatmentUntil ?? null, withdrawalPeriodDays: form.withdrawalPeriodDays ?? null, organic, remedyKind: form.remedyKind ?? null };
+  const formWaitEnd = form.date ? withdrawalEnd(waitInput) : null;
+  const formWaitDays = withdrawalDays(waitInput);
+  const overLimit = organic && !record && form.remedyKind === "chemical" && chemicalCount >= ORGANIC_TREATMENT_LIMIT;
 
   function submit(event: FormEvent) {
     event.preventDefault();
@@ -346,7 +366,7 @@ function RecordDialog({
               />
             </div>
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="med-wait">Wartezeit (Tage)</Label>
+              <Label htmlFor="med-wait">{organic ? "Gesetzl. Wartezeit (Tage)" : "Wartezeit (Tage)"}</Label>
               <Input
                 id="med-wait"
                 type="number"
@@ -357,8 +377,36 @@ function RecordDialog({
               />
             </div>
             <p className="self-end pb-2 text-xs text-muted-foreground" data-testid="med-wait-end">
-              {formWaitEnd ? `Wartezeit bis ${deDate(formWaitEnd)}` : "Zählt ab dem letzten Behandlungstag."}
+              {formWaitEnd
+                ? `${organic ? `Bio: ${formWaitDays} Tage, ` : ""}Wartezeit bis ${deDate(formWaitEnd)}`
+                : "Zählt ab dem letzten Behandlungstag."}
             </p>
+          </div>
+          {organic && (
+            <p className="text-xs text-muted-foreground">
+              Bio: Die App verdoppelt die gesetzliche Wartezeit, mindestens 2 Tage – auch bei chemischen Mitteln ohne Wartezeit.
+            </p>
+          )}
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="med-kind">Art der Behandlung</Label>
+            <select
+              id="med-kind"
+              className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              value={form.remedyKind ?? ""}
+              onChange={(e) => set("remedyKind", e.target.value === "" ? null : (e.target.value as RemedyKind))}
+            >
+              <option value="">– keine Angabe –</option>
+              {(Object.keys(REMEDY_LABELS) as RemedyKind[]).map((k) => (
+                <option key={k} value={k}>
+                  {REMEDY_LABELS[k]}
+                </option>
+              ))}
+            </select>
+            {overLimit && (
+              <p role="alert" className="text-xs font-medium text-destructive">
+                Schon {chemicalCount} chemisch-synthetische Behandlungen in 12 Monaten: Mit dieser verliert das Tier nach Bio-Regeln seinen Bio-Status. Mit dem Tierarzt und der Kontrollstelle klären.
+              </p>
+            )}
           </div>
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="med-diagnosis">Diagnose / Anlass *</Label>
@@ -511,6 +559,10 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
   const all = records.data ?? [];
   const today = todayIso();
   const waitUntil = activeWithdrawalEnd(all, today);
+  // Bio (docs/bio.md): the count of chemical treatments matters on an organic farm.
+  const farming = useGetFarmFarming(farmId);
+  const organicFarm = certified(farming.data?.level);
+  const chemicalCount = chemicalTreatments(all, today);
 
   return (
     <section className="space-y-3">
@@ -538,6 +590,30 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
         </div>
       )}
 
+      {organicFarm && (
+        <p
+          data-testid="organic-treatments"
+          className={
+            chemicalCount > ORGANIC_TREATMENT_LIMIT
+              ? "rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+              : chemicalCount === ORGANIC_TREATMENT_LIMIT
+                ? "rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm"
+                : "rounded-xl border bg-card p-3 text-sm text-muted-foreground"
+          }
+        >
+          <span className="font-medium text-foreground">
+            Bio: {chemicalCount} von {ORGANIC_TREATMENT_LIMIT}
+          </span>{" "}
+          chemisch-synthetischen Behandlungen in 12 Monaten
+          {chemicalCount > ORGANIC_TREATMENT_LIMIT
+            ? " – Grenze überschritten: Das Tier hat nach Bio-Regeln seinen Bio-Status verloren."
+            : chemicalCount === ORGANIC_TREATMENT_LIMIT
+              ? " – Grenze erreicht."
+              : "."}{" "}
+          Impfungen und Parasitenbehandlungen zählen nicht; bei Masttieren unter einem Jahr gilt 1.
+        </p>
+      )}
+
       {records.isLoading ? (
         <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
       ) : all.length === 0 ? (
@@ -553,6 +629,7 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
                   <span className="shrink-0 text-xs text-muted-foreground">{dateRangeText(r)}</span>
                 </div>
                 {r.treatment && <p className="whitespace-pre-wrap text-muted-foreground">{r.treatment}</p>}
+                {r.remedyKind && <p className="text-xs text-muted-foreground">{REMEDY_LABELS[r.remedyKind]}</p>}
                 {(r.medication || r.vet) && (
                   <p className="text-xs text-muted-foreground">
                     {[r.medication && `Medikament: ${r.medication}${doseText(r) ? ` (${doseText(r)})` : ""}`, r.vet && `Tierarzt: ${r.vet}`].filter(Boolean).join(" · ")}
@@ -560,7 +637,7 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
                 )}
                 {end && (
                   <p className={end >= today ? "text-xs font-medium text-amber-700 dark:text-amber-400" : "text-xs text-muted-foreground"}>
-                    Wartezeit {r.withdrawalPeriodDays} Tage, bis {deDate(end)}
+                    Wartezeit {withdrawalDays(r)} Tage{r.organic ? " (Bio, doppelt)" : ""}, bis {deDate(end)}
                   </p>
                 )}
                 {r.notes && <p className="whitespace-pre-wrap text-xs text-muted-foreground">{r.notes}</p>}
@@ -593,6 +670,8 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
           record={dialog.record}
           open
           onOpenChange={(o) => !o && setDialog(null)}
+          organicFarm={organicFarm}
+          chemicalCount={chemicalCount}
         />
       )}
     </section>

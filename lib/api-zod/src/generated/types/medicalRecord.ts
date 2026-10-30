@@ -5,6 +5,7 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { RemedyKind } from './remedyKind';
 
 export interface MedicalRecord {
   id: number;
@@ -50,5 +51,8 @@ export interface MedicalRecord {
      * @nullable
      */
   doseUnit: string | null;
+  remedyKind: RemedyKind | null;
+  /** Entered on an organic farm (docs/bio.md) – the Wartezeit is withdrawalPeriodDays doubled, at least 2 days; a chemical remedy without one gets 2 days */
+  organic: boolean;
   createdAt: Date;
 }

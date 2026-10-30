@@ -46,15 +46,16 @@ export async function handover(farmId: number, viewerId: string): Promise<Handov
       medication: medicalRecordsTable.medication,
       withdrawalPeriodDays: medicalRecordsTable.withdrawalPeriodDays,
       treatmentUntil: medicalRecordsTable.treatmentUntil,
+      organic: medicalRecordsTable.organic,
+      remedyKind: medicalRecordsTable.remedyKind,
     })
     .from(medicalRecordsTable)
     .innerJoin(farmAnimalsTable, and(eq(farmAnimalsTable.id, medicalRecordsTable.animalId), eq(farmAnimalsTable.farmId, medicalRecordsTable.farmId)))
     .where(and(eq(medicalRecordsTable.farmId, farmId), gte(medicalRecordsTable.date, addDays(today, -400))))
     .orderBy(desc(medicalRecordsTable.date), desc(medicalRecordsTable.id));
   const withdrawals = records
-    .filter((r) => r.withdrawalPeriodDays)
-    .map((r) => ({ animalName: r.animalName, medication: r.medication, until: withdrawalUntil(r)! }))
-    .filter((w) => w.until >= today)
+    .map((r) => ({ animalName: r.animalName, medication: r.medication, until: withdrawalUntil(r) }))
+    .filter((w): w is typeof w & { until: string } => w.until !== null && w.until >= today)
     .sort((a, b) => b.until.localeCompare(a.until));
   return {
     note: farm.note,

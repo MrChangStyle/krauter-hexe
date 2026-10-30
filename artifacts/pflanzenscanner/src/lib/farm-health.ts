@@ -1,4 +1,4 @@
-import type { ExportBeeColony, ExportBeeTreatment, FarmAnimal, FarmExport, MedicalRecord, WeightLog } from "@workspace/api-client-react";
+import type { ExportBeeColony, ExportBeeTreatment, FarmAnimal, FarmExport, MedicalRecord, RemedyKind, WeightLog } from "@workspace/api-client-react";
 import { COLONY_STATUS, VARROA_METHODS } from "@/lib/bee-labels";
 import { SEX_LABELS, SPECIES_LABELS } from "@/lib/farm-labels";
 
@@ -55,9 +55,49 @@ export function weightWarning(logs: WeightLog[]): WeightWarning | null {
  * Last day of the Wartezeit, or null without one. It counts from the last day
  * of the treatment – a treatment over several days moves it back.
  */
-export function withdrawalEnd(record: Pick<MedicalRecord, "date" | "withdrawalPeriodDays"> & { treatmentUntil?: string | null }): string | null {
-  if (!record.withdrawalPeriodDays) return null;
-  return addDays(record.treatmentUntil ?? record.date, record.withdrawalPeriodDays);
+export function withdrawalEnd(
+  record: Pick<MedicalRecord, "date" | "withdrawalPeriodDays"> & { treatmentUntil?: string | null; organic?: boolean; remedyKind?: RemedyKind | null },
+): string | null {
+  const days = withdrawalDays(record);
+  return days ? addDays(record.treatmentUntil ?? record.date, days) : null;
+}
+
+/** Bio: at least 48 hours of Wartezeit (Richtwert, docs/bio.md). */
+export const ORGANIC_MIN_WITHDRAWAL_DAYS = 2;
+
+/**
+ * The days of Wartezeit that apply (as the server counts them): on an organic
+ * farm the legal one doubles, at least 2 days – also for a chemical remedy
+ * without one.
+ */
+export function withdrawalDays(record: { withdrawalPeriodDays?: number | null; organic?: boolean; remedyKind?: RemedyKind | null }): number | null {
+  const legal = record.withdrawalPeriodDays ?? null;
+  if (!record.organic) return legal || null;
+  if (legal !== null) return Math.max(legal * 2, ORGANIC_MIN_WITHDRAWAL_DAYS);
+  return record.remedyKind === "chemical" ? ORGANIC_MIN_WITHDRAWAL_DAYS : null;
+}
+
+// ── Bio: kind of remedy and the yearly limit ─────────────────────────────────
+
+export const REMEDY_LABELS: Record<RemedyKind, string> = {
+  chemical: "Chemisch-synthetisches Arzneimittel",
+  natural: "Naturheilverfahren (Pflanzen, Homöopathie)",
+  vaccine: "Impfung",
+  antiparasitic: "Parasitenbehandlung (Würmer, Milben …)",
+};
+
+/**
+ * Bio (Richtwert, VO (EU) 2018/848): at most 3 chemical-synthetic allopathic
+ * treatments in 12 months – 1 for animals kept less than a year. More, and the
+ * animal (and its products) lose the organic status. Vaccines and parasite
+ * treatments do not count.
+ */
+export const ORGANIC_TREATMENT_LIMIT = 3;
+
+/** Chemical treatments of the last 12 months up to `today` (one treatment over several days counts once). */
+export function chemicalTreatments(records: readonly Pick<MedicalRecord, "date" | "remedyKind">[], today: string): number {
+  const from = addDays(today, -365);
+  return records.filter((r) => r.remedyKind === "chemical" && r.date > from && r.date <= today).length;
 }
 
 /** The latest end of a Wartezeit still running on `today`, or null. */
@@ -180,6 +220,14 @@ export function doseText(r: Pick<MedicalRecord, "dose" | "doseUnit" | "batch">):
   return [dose, r.batch && `Ch. ${r.batch}`].filter(Boolean).join(", ");
 }
 
+/** "14", or on an organic farm "14 (Bio 28)" – the legal days and the ones that apply. */
+export function waitDaysText(r: Pick<MedicalRecord, "withdrawalPeriodDays" | "organic" | "remedyKind">): string {
+  const legal = r.withdrawalPeriodDays == null ? "" : String(r.withdrawalPeriodDays);
+  if (!r.organic) return legal;
+  const days = withdrawalDays(r);
+  return days ? `${legal || "–"} (Bio ${days})` : legal;
+}
+
 export function medicalRow({ record: r, animal: a }: ExportData["records"][number]): string[] {
   return [
     dateRangeText(r),
@@ -189,7 +237,7 @@ export function medicalRow({ record: r, animal: a }: ExportData["records"][numbe
     r.treatment ?? "",
     r.medication ?? "",
     doseText(r),
-    r.withdrawalPeriodDays == null ? "" : String(r.withdrawalPeriodDays),
+    waitDaysText(r),
     deDate(withdrawalEnd(r)),
     r.vet ?? "",
   ];

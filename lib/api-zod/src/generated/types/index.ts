@@ -442,6 +442,7 @@ export * from './rationSeason';
 export * from './recipeIngredient';
 export * from './recipeKind';
 export * from './registerInput';
+export * from './remedyKind';
 export * from './reportContentType';
 export * from './reportGroup';
 export * from './reportReason';

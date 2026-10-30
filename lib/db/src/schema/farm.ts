@@ -248,6 +248,13 @@ export const medicalRecordsTable = pgTable(
     medicineId: integer("medicine_id").references(() => medicinesTable.id, { onDelete: "set null" }),
     dose: doublePrecision("dose"),
     batch: text("batch"),
+    // Bio (docs/bio.md): what kind of remedy – "chemical" (chemisch-synthetisch
+    // allopathisch, counts towards the organic limit), "natural"
+    // (Naturheilverfahren), "vaccine", "antiparasitic"; null = not said.
+    remedyKind: text("remedy_kind"),
+    // Entered on an organic farm: the Wartezeit is doubled, at least 2 days
+    // (withdrawalPeriodDays stays the legal one).
+    organic: boolean("organic").notNull().default(false),
   },
   (table) => [index("medical_records_farm_animal_idx").on(table.farmId, table.animalId)],
 );

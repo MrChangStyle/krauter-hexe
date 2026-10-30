@@ -184,6 +184,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         q: "Ab wann zählt die Wartezeit?",
         a: "Ab dem letzten Behandlungstag. Bei einer Behandlung über mehrere Tage trägst du „Behandlung bis“ ein; das Formular zeigt sofort, bis wann Milch, Eier und Fleisch nicht verwendet werden dürfen. Maßgeblich bleibt die Angabe auf dem Beipackzettel oder vom Tierarzt.",
       },
+      {
+        q: "Wozu die „Art der Behandlung“?",
+        a: "Freiwillig: chemisch-synthetisches Arzneimittel, Naturheilverfahren (Pflanzen, Homöopathie), Impfung oder Parasitenbehandlung. Auf einem Bio-Hof zählt die App damit die chemisch-synthetischen Behandlungen je Tier in 12 Monaten und rechnet die doppelte Wartezeit. Auf allen anderen Höfen ist es nur eine Notiz.",
+      },
       { q: "Was passiert beim Archivieren?", a: "Das Tier verschwindet aus den Listen, bleibt aber mit seiner Akte für den Veterinäramt-Export erhalten." },
       {
         q: "Wo sind Gänse, Enten, Puten und Wachteln?",
@@ -264,7 +268,13 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       "In der Gesundheitsakte oder bei den Bienen das Mittel wählen – Menge und Charge werden übernommen.",
       "Vor dem Ablauf kommt eine Erinnerung.",
     ],
-    faq: [{ q: "Wo sehe ich laufende Wartezeiten?", a: "Am Tier, in der Übergabe und im Futterplaner – solange Fleisch, Milch oder Eier nicht genutzt werden dürfen." }],
+    faq: [
+      { q: "Wo sehe ich laufende Wartezeiten?", a: "Am Tier, in der Übergabe und im Futterplaner – solange Fleisch, Milch oder Eier nicht genutzt werden dürfen." },
+      {
+        q: "Was ändert sich auf einem Bio-Hof?",
+        a: "Nur wenn der Hof unter Farm & Team auf „Bio“ oder „Bio-Verband“ steht: Neue Behandlungen bekommen die doppelte gesetzliche Wartezeit, mindestens 2 Tage – auch chemische Mittel ohne Wartezeit. Eingetragen wird weiter die gesetzliche Zahl. Am Tier zählt die App die chemisch-synthetischen Behandlungen der letzten 12 Monate (Richtwert: höchstens 3). Konventionelle und naturnahe Höfe sehen alles wie bisher.",
+      },
+    ],
   },
   duties: {
     title: "Pflichten & Tierseuchen",

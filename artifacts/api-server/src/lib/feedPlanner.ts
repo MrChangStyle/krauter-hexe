@@ -342,11 +342,13 @@ async function withdrawals(farmId: number, animalIds: number[], today: string): 
       medication: medicalRecordsTable.medication,
       withdrawalPeriodDays: medicalRecordsTable.withdrawalPeriodDays,
       treatmentUntil: medicalRecordsTable.treatmentUntil,
+      organic: medicalRecordsTable.organic,
+      remedyKind: medicalRecordsTable.remedyKind,
       name: farmAnimalsTable.name,
     })
     .from(medicalRecordsTable)
     .innerJoin(farmAnimalsTable, eq(farmAnimalsTable.id, medicalRecordsTable.animalId))
-    .where(and(eq(medicalRecordsTable.farmId, farmId), inArray(medicalRecordsTable.animalId, animalIds), isNotNull(medicalRecordsTable.withdrawalPeriodDays)));
+    .where(and(eq(medicalRecordsTable.farmId, farmId), inArray(medicalRecordsTable.animalId, animalIds), or(isNotNull(medicalRecordsTable.withdrawalPeriodDays), eq(medicalRecordsTable.organic, true))));
   const out: Warning[] = [];
   for (const r of rows) {
     const until = withdrawalUntil(r);

@@ -6,6 +6,7 @@
  * filters by it, so an id from another farm is simply "not found".
  */
 
+import { certified, getFarming } from './farming';
 import { beeColoniesTable, beeTreatmentsTable, db, farmAnimalsTable, farmsTable, medicalRecordsTable, medicinesTable, weightLogsTable, type FarmSpecies } from '@workspace/db';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 
@@ -33,10 +34,33 @@ export const MAX_TREATMENT_DAYS = 90;
  * Last day of the Wartezeit: counted from the last day of the treatment (or
  * its only day). Null without a withdrawal period.
  */
-export function withdrawalUntil(r: { date: string; treatmentUntil: string | null; withdrawalPeriodDays: number | null }): string | null {
-  if (!r.withdrawalPeriodDays) return null;
-  return addDays(r.treatmentUntil ?? r.date, r.withdrawalPeriodDays);
+export function withdrawalUntil(r: {
+  date: string;
+  treatmentUntil: string | null;
+  withdrawalPeriodDays: number | null;
+  organic?: boolean;
+  remedyKind?: string | null;
+}): string | null {
+  const days = withdrawalDays(r);
+  return days ? addDays(r.treatmentUntil ?? r.date, days) : null;
 }
+
+export const REMEDY_KINDS = ['chemical', 'natural', 'vaccine', 'antiparasitic'] as const;
+
+/**
+ * Days of Wartezeit that apply. On an organic farm (Bio, docs/bio.md) the legal
+ * one doubles, at least 2 days (48 hours) – also for a chemical remedy without
+ * one (Richtwert, VO (EU) 2018/848).
+ */
+export function withdrawalDays(r: { withdrawalPeriodDays: number | null; organic?: boolean; remedyKind?: string | null }): number | null {
+  const legal = r.withdrawalPeriodDays;
+  if (!r.organic) return legal || null;
+  if (legal !== null) return Math.max(legal * 2, ORGANIC_MIN_WITHDRAWAL_DAYS);
+  return r.remedyKind === 'chemical' ? ORGANIC_MIN_WITHDRAWAL_DAYS : null;
+}
+
+/** Bio: at least 48 hours of Wartezeit (Richtwert). */
+export const ORGANIC_MIN_WITHDRAWAL_DAYS = 2;
 
 const medicalColumns = {
   id: medicalRecordsTable.id,
@@ -52,6 +76,8 @@ const medicalColumns = {
   medicineId: medicalRecordsTable.medicineId,
   dose: medicalRecordsTable.dose,
   batch: medicalRecordsTable.batch,
+  remedyKind: medicalRecordsTable.remedyKind,
+  organic: medicalRecordsTable.organic,
   // Unit of the dose, from the medicine (records without one: null).
   doseUnit: medicinesTable.unit,
   createdAt: medicalRecordsTable.createdAt,
@@ -86,6 +112,8 @@ export interface MedicalInput {
   dose?: number | null;
   /** New records only: remind to repeat (docs/gesundheit-erinnerung.md). */
   repeat?: MedicalRepeat | null;
+  /** Bio: chemical, natural, vaccine, antiparasitic or null. */
+  remedyKind?: unknown;
 }
 
 function medicalValues(input: MedicalInput) {
@@ -108,7 +136,14 @@ function medicalValues(input: MedicalInput) {
     withdrawalPeriodDays: days,
     vet: text(input.vet, 100, 'Der Tierarzt'),
     notes: text(input.notes, 2000, 'Die Notiz'),
+    remedyKind: remedyKind(input.remedyKind),
   };
+}
+
+function remedyKind(raw: unknown): string | null {
+  if (raw == null || raw === '') return null;
+  if (typeof raw !== 'string' || !(REMEDY_KINDS as readonly string[]).includes(raw)) throw new FarmDataError(400, 'Diese Art der Behandlung gibt es nicht.');
+  return raw;
 }
 
 export async function listMedicalRecords(farmId: number, animalId: number) {
@@ -153,9 +188,11 @@ export async function createMedicalRecord(farmId: number, animalId: number, inpu
   const { species } = await assertAnimal(farmId, animalId);
   if (input.repeat) checkRepeat(input.repeat);
   const values = await withMedicine(farmId, species, input, medicalValues(input), null);
+  // Bio: the farm's level when the treatment is entered decides the Wartezeit for good.
+  const organic = certified((await getFarming(farmId)).level);
   const [record] = await db
     .insert(medicalRecordsTable)
-    .values({ farmId, animalId, ...values })
+    .values({ farmId, animalId, ...values, organic })
     .returning({ id: medicalRecordsTable.id });
   if (values.medicineId !== null) await adjustStock(farmId, values.medicineId, -values.dose!);
   if (input.repeat) await scheduleRepeat(farmId, animalId, input.repeat, values.date, values.medication);

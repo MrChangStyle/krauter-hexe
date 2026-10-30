@@ -12476,7 +12476,7 @@ components:
           description: JPEG/PNG/WebP data URL, already downscaled by the app.
     MedicalRecord:
       type: object
-      required: [id, animalId, date, diagnosis, treatment, medication, withdrawalPeriodDays, treatmentUntil, vet, notes, medicineId, dose, batch, doseUnit, createdAt]
+      required: [id, animalId, date, diagnosis, treatment, medication, withdrawalPeriodDays, treatmentUntil, vet, notes, medicineId, dose, batch, doseUnit, remedyKind, organic, createdAt]
       properties:
         id:
           type: integer
@@ -12513,6 +12513,13 @@ components:
         doseUnit:
           type: [string, 'null']
           description: Unit of the dose (from the medicine)
+        remedyKind:
+          oneOf:
+            - $ref: "#/components/schemas/RemedyKind"
+            - type: 'null'
+        organic:
+          type: boolean
+          description: Entered on an organic farm (docs/bio.md) – the Wartezeit is withdrawalPeriodDays doubled, at least 2 days; a chemical remedy without one gets 2 days
         createdAt:
           type: string
           format: date-time
@@ -12551,11 +12558,19 @@ components:
           description: A medicine from the stock; its dose is taken off the stock
         dose:
           type: [number, 'null']
+        remedyKind:
+          oneOf:
+            - $ref: "#/components/schemas/RemedyKind"
+            - type: 'null'
         repeat:
           description: New records only – a stall task (Entwurmen/Impfen) for this animal, due one interval after the record's date.
           oneOf:
             - type: 'null'
             - $ref: "#/components/schemas/MedicalRepeat"
+    RemedyKind:
+      type: string
+      enum: [chemical, natural, vaccine, antiparasitic]
+      description: Bio (docs/bio.md) – chemical = chemisch-synthetisch allopathisch (counts towards the organic limit), natural = Naturheilverfahren, vaccine, antiparasitic
     MedicalRepeat:
       type: object
       required: [kind, every, unit]

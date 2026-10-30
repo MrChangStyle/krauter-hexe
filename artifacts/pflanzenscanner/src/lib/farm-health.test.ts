@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { FarmAnimal, MedicalRecord, WeightLog } from "@workspace/api-client-react";
 import {
+  chemicalTreatments,
+  waitDaysText,
+  withdrawalDays,
   activeWithdrawalEnd,
   exportCsv,
   exportFileName,
@@ -47,6 +50,12 @@ const rec = (over: Partial<MedicalRecord> = {}): MedicalRecord => ({
   treatmentUntil: null,
   vet: null,
   notes: null,
+  medicineId: null,
+  dose: null,
+  batch: null,
+  doseUnit: null,
+  remedyKind: null,
+  organic: false,
   createdAt: "2026-05-02T10:00:00Z",
   ...over,
 });
@@ -171,3 +180,36 @@ describe("veterinary office export", () => {
     expect(exportFileName(out, "pdf")).toBe("LittleFarming_Bestand_Hof-Sonnenblick_2026-01-01_2026-06-30.pdf");
   });
 });
+
+describe("Bio (docs/bio.md)", () => {
+  it("doubles the legal Wartezeit on an organic farm, at least 2 days", () => {
+    expect(withdrawalDays(rec({ withdrawalPeriodDays: 7 }))).toBe(7);
+    expect(withdrawalDays(rec({ withdrawalPeriodDays: 7, organic: true }))).toBe(14);
+    expect(withdrawalDays(rec({ withdrawalPeriodDays: 0, organic: true }))).toBe(2);
+    // A chemical remedy without a Wartezeit: 48 hours on an organic farm, none otherwise.
+    expect(withdrawalDays(rec({ remedyKind: "chemical", organic: true }))).toBe(2);
+    expect(withdrawalDays(rec({ remedyKind: "chemical" }))).toBeNull();
+    expect(withdrawalDays(rec({ remedyKind: "natural", organic: true }))).toBeNull();
+    expect(withdrawalEnd(rec({ withdrawalPeriodDays: 7, organic: true, treatmentUntil: "2026-05-04" }))).toBe("2026-05-18");
+  });
+
+  it("shows the legal and the organic days in the export", () => {
+    expect(waitDaysText(rec({ withdrawalPeriodDays: 7 }))).toBe("7");
+    expect(waitDaysText(rec({ withdrawalPeriodDays: 7, organic: true }))).toBe("7 (Bio 14)");
+    expect(waitDaysText(rec({ remedyKind: "chemical", organic: true }))).toBe("– (Bio 2)");
+    expect(waitDaysText(rec({}))).toBe("");
+  });
+
+  it("counts chemical treatments of the last 12 months only", () => {
+    const records = [
+      rec({ date: "2025-10-30", remedyKind: "chemical" }), // exactly a year ago: out
+      rec({ date: "2025-11-01", remedyKind: "chemical" }),
+      rec({ date: "2026-03-01", remedyKind: "vaccine" }),
+      rec({ date: "2026-04-01", remedyKind: "antiparasitic" }),
+      rec({ date: "2026-05-01", remedyKind: "natural" }),
+      rec({ date: "2026-10-01", remedyKind: "chemical" }),
+    ];
+    expect(chemicalTreatments(records, "2026-10-30")).toBe(2);
+  });
+});
+

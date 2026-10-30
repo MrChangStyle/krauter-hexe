@@ -90,6 +90,7 @@ const VerwaltungPage = lazy(() => import('@/pages/verwaltung'));
 const ModulePage = lazy(() => import('@/pages/module'));
 const FarmAufgabenPage = lazy(() => import('@/pages/farm-aufgaben'));
 const FarmExportPage = lazy(() => import('@/pages/farm-export'));
+const BioCheckPage = lazy(() => import('@/pages/bio-check'));
 const TeamPage = lazy(() => import('@/pages/team'));
 const TeamSectionPage = lazy(() => import('@/pages/team').then((m) => ({ default: m.TeamSectionPage })));
 const TierNeuPage = lazy(() => import('@/pages/tier-neu'));
@@ -204,6 +205,7 @@ function Router() {
         <Route path="/farm/pflichten" component={PflichtenPage} />
         <Route path="/farm/aufgaben" component={FarmAufgabenPage} />
         <Route path="/farm/export" component={FarmExportPage} />
+        <Route path="/farm/bio-check" component={BioCheckPage} />
         <Route path="/farm/mitglieder"><Redirect to="/team" replace /></Route>
         <Route path="/team" component={TeamPage} />
         <Route path="/team/:section" component={TeamSectionPage} />

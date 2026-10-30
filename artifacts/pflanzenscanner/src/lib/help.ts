@@ -199,7 +199,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       },
       {
         q: "Was zeigt der Bio-Check?",
-        a: "Auf Bio-Höfen steht auf der Tiere-Seite eine Ampel je Bereich: Futter (Bio-Anteile der Rationen), Platz (Stall und Auslauf) und Behandlungen (chemisch-synthetische je Tier in 12 Monaten) Saatgut (Bio oder vom eigenen Hof) und Dünger (kein Mineraldünger in 12 Monaten). Grün passt, gelb fehlt etwas, rot braucht Handlung. Ein Tipp öffnet, wo du es ändern kannst.",
+        a: "Auf Bio-Höfen gibt es auf der Tiere-Seite die Kachel „Bio-Check“ mit einer Ampel je Bereich: Futter (Bio-Anteile der Rationen), Platz (Stall und Auslauf) und Behandlungen (chemisch-synthetische je Tier in 12 Monaten) Saatgut (Bio oder vom eigenen Hof) und Dünger (kein Mineraldünger in 12 Monaten). Grün passt, gelb fehlt etwas, rot braucht Handlung. Ein Tipp öffnet, wo du es ändern kannst.",
       },
       {
         q: "Was ist der Platz-Check?",

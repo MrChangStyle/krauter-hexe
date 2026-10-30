@@ -126,6 +126,7 @@ export const MODULE_LOOK = {
   "team-kontakte": { href: "/team/kontakte", icon: Contact, label: "Kontakte", hint: "Tierarzt, Hufschmied, Nachbarn", tone: T.amber, parent: "team" },
   bewirtschaftung: { href: "/team/bewirtschaftung", icon: Leaf, label: "Bewirtschaftung", hint: "Konventionell, naturnah oder Bio", tone: T.green, parent: "team" },
   nachhaltigkeit: { href: "/team/nachhaltigkeit", icon: Flower2, label: "Nachhaltigkeit", hint: "Maßnahmen und Hof-Steckbrief", tone: T.lime, parent: "team" },
+  "bio-check": { href: "/farm/bio-check", icon: Leaf, label: "Bio-Check", hint: "Ampel für Futter, Platz, Behandlungen, Garten", tone: T.green, parent: "tiere" },
   export: { href: "/farm/export", icon: FileText, label: "Veterinäramt-Export", hint: "Bestandsliste & Medizin als PDF", tone: T.teal, parent: "tiere" },
   // ── Hof ──
   notizen: { href: "/notizen", icon: NotebookPen, label: "Notizen", hint: "Gedanken, Einkauf, Ideen", tone: T.yellow, parent: "hof" },

@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #153 | Design D4, Schritt 5: Tiere – Bio-Check als Kachel mit eigener Seite (`/farm/bio-check`); Pflegeplan – Pflege-Guides als Kachel statt offener Liste |
 | 30.10.2026 | #152 | Design D4, Schritt 4: Grow – KCanG-Check (Zahl auf der Kachel), Erinnerungen und Premium als Kacheln mit eigener Seite statt offener Karten |
 | 30.10.2026 | #151 | Design D4, Schritt 3: Mehr nur noch als Kacheln – Benachrichtigungen, Darstellung (neue Kachel) und Konto je auf eigener Seite (`/mehr/…`); Suche zeigt direkt dorthin |
 | 30.10.2026 | #150 | Design D4, Schritt 2: Seite eines Tiers – oben Steckbrief, darunter Kacheln Gesundheit, Gewicht, Futter, Abstammung, Heil- & Futterpflanzen, Haltung, je auf eigener Seite; Heil- & Futterpflanzen jetzt auch für Hund, Ziege, Schaf, Rind, Schwein und Alpaka |

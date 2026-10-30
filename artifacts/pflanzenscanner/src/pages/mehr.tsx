@@ -22,7 +22,7 @@ import { de } from "date-fns/locale";
 import {
   Crown, ShieldCheck, Hourglass, Trash2, UserCheck, UserX,
   Pin, Camera, Users, WifiOff, Wifi, Loader2, Clock, AlertCircle,
-  RefreshCw, ImageOff, TriangleAlert, Bug, Download, BookHeart, ChevronRight,
+  RefreshCw, ImageOff, TriangleAlert, Bug, Download, ChevronRight,
   Leaf, Trophy, Tractor, Bell, UserCog, LayoutGrid,
   CircleHelp,
 } from "lucide-react";
@@ -53,9 +53,6 @@ import { pushSupported } from "@/lib/push";
 import { useFavorites } from "@/lib/use-favorites";
 import {
   useListPlants,
-  useListCareGuides,
-  useDeleteCareGuide,
-  getListCareGuidesQueryKey,
 } from "@workspace/api-client-react";
 import type { CareGuide } from "@workspace/api-client-react";
 import { differenceInDays } from "date-fns";
@@ -752,137 +749,6 @@ function GuideProgress({ guide }: { guide: CareGuide }) {
           style={{ width: `${pct}%` }}
         />
       </div>
-    </div>
-  );
-}
-
-export function PflegeGuidesSection() {
-  const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
-  const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null);
-
-  const { data: guides = [], isLoading } = useListCareGuides();
-  const { mutate: deleteGuide, isPending: isDeleting } = useDeleteCareGuide({
-    mutation: {
-      onSuccess: () => {
-        void queryClient.invalidateQueries({ queryKey: getListCareGuidesQueryKey() });
-        setConfirmDeleteId(null);
-      },
-    },
-  });
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-3">
-        <h2 className="flex items-center gap-2 font-semibold">
-          <BookHeart className="w-4 h-4 text-rose-500" />
-          Meine Pflege-Guides
-        </h2>
-        {guides.length > 0 && (
-          <button
-            onClick={() => setLocation("/pflege-guides")}
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-          >
-            Alle anzeigen <ChevronRight className="w-3.5 h-3.5" />
-          </button>
-        )}
-      </div>
-
-      {isLoading ? (
-        <div className="flex justify-center py-6">
-          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-        </div>
-      ) : guides.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-border bg-muted/30 px-5 py-8 text-center">
-          <BookHeart className="w-8 h-8 mx-auto text-muted-foreground/40 mb-2" />
-          <p className="text-sm text-muted-foreground leading-snug">
-            Noch keine Pflege-Guides erstellt.
-          </p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Nutze den <button onClick={() => setLocation("/pflanzendoc")} className="underline hover:text-foreground transition-colors">Pflanzendoc</button>, um deinen ersten Guide zu erstellen.
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {guides.slice(0, 3).map((guide) => (
-            <div key={guide.id} className="rounded-2xl border bg-card shadow-sm overflow-hidden">
-              <button
-                className="w-full text-left hover:bg-muted/40 transition-colors"
-                onClick={() => setLocation(`/pflege-guide/${guide.id}`)}
-              >
-                <div className="flex items-stretch gap-0">
-                  {/* Photo thumbnail */}
-                  {guide.hasImageDay1 ? (
-                    <div className="w-20 shrink-0 bg-muted overflow-hidden">
-                      <img
-                        src={careGuideImageUrl(guide.id)}
-                        alt={guide.plantName}
-                        className="w-full h-full object-cover"
-                        style={{ minHeight: "80px" }}
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-20 shrink-0 bg-muted/50 flex items-center justify-center" style={{ minHeight: "80px" }}>
-                      <BookHeart className="w-6 h-6 text-muted-foreground/30" />
-                    </div>
-                  )}
-
-                  {/* Content */}
-                  <div className="flex-1 px-3 py-3 min-w-0">
-                    <p className="font-semibold text-sm leading-snug truncate mb-2">{guide.plantName}</p>
-                    <GuideProgress guide={guide} />
-                  </div>
-
-                  <div className="flex items-center pr-3">
-                    <ChevronRight className="w-4 h-4 text-muted-foreground shrink-0" />
-                  </div>
-                </div>
-              </button>
-
-              <div className="border-t border-border px-3 py-1.5 flex justify-end">
-                <button
-                  onClick={() => setConfirmDeleteId(guide.id)}
-                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors py-0.5"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                  Löschen
-                </button>
-              </div>
-            </div>
-          ))}
-
-          {guides.length > 3 && (
-            <button
-              onClick={() => setLocation("/pflege-guides")}
-              className="w-full text-center text-xs text-muted-foreground hover:text-primary py-2 transition-colors"
-            >
-              + {guides.length - 3} weitere anzeigen
-            </button>
-          )}
-        </div>
-      )}
-
-      {/* Delete confirmation */}
-      <AlertDialog open={confirmDeleteId !== null} onOpenChange={(open) => !open && setConfirmDeleteId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Pflege-Guide löschen?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Möchtest du diesen Pflege-Guide wirklich löschen? Dieser Vorgang kann nicht rückgängig gemacht werden.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Abbrechen</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => confirmDeleteId !== null && deleteGuide({ id: confirmDeleteId })}
-              disabled={isDeleting}
-              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-            >
-              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Löschen"}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

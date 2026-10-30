@@ -110,7 +110,7 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“, oben unter **Meine Tiere**:
 
 Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
 
-- **Bio-Check** auf der Tiere-Seite (unter „Meine Tiere“): eine Ampel je Bereich, ein Tipp öffnet die Stelle zum Ändern.
+- **Bio-Check** als Kachel auf der Tiere-Seite (eigene Seite `/farm/bio-check`, nur wenn mindestens ein Bio-Bereich für Tiere oder Garten an ist): eine Ampel je Bereich, ein Tipp öffnet die Stelle zum Ändern.
   - **Futter:** Rot, wenn eine aktive Ration einen Bio-Anteil nicht einhält. Gelb, wenn bei einem Futtermittel die Herkunft fehlt oder es noch keine Ration gibt.
   - **Platz:** Rot bei zu wenig Stall oder Auslauf. Gelb, wenn Flächen fehlen.
   - **Behandlungen:** Rot, sobald ein Tier 3 oder mehr chemisch-synthetische Behandlungen in 12 Monaten hat.

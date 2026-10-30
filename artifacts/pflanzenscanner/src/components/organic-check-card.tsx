@@ -29,7 +29,7 @@ const LIGHT: Record<CheckStatus, { dot: string; label: string }> = {
  * Bio-Check (docs/bio.md, B5) on the Tiere page, organic farms only: one light
  * per area; a tap opens where to fix it.
  */
-export function OrganicCheckCard({ farm }: { farm: FarmSummary }) {
+export function OrganicCheckCard({ farm, empty = false }: { farm: FarmSummary; empty?: boolean }) {
   const farming = useGetFarmFarming(farm.id);
   // Bio je Bereich: only the areas the farm keeps organic get a light.
   const f = farming.data;
@@ -43,7 +43,15 @@ export function OrganicCheckCard({ farm }: { farm: FarmSummary }) {
   const health = useGetFarmExport(farm.id, { query: { enabled: treatmentsOn, queryKey: getGetFarmExportQueryKey(farm.id) } });
   const seeds = useGetSeedOverview(farm.id, { query: { enabled: gardenOn, retry: false, queryKey: getGetSeedOverviewQueryKey(farm.id) } });
   const fertilizings = useListFertilizings(farm.id, { query: { enabled: gardenOn, retry: false, queryKey: getListFertilizingsQueryKey(farm.id) } });
-  if (!on) return null;
+  if (!on) {
+    // On its own page say why there is nothing to check.
+    return empty && f ? (
+      <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
+        Der Bio-Check gilt für Höfe mit „Bio“ oder „Bio-Verband“ und mindestens einem Bio-Bereich für Tiere oder Garten. Einstellen unter{" "}
+        <Link href="/team/bewirtschaftung" className="underline">Farm & Team → Bewirtschaftung</Link>.
+      </p>
+    ) : null;
+  }
 
   const loading = rations.isLoading || herds.isLoading || health.isLoading || seeds.isLoading || fertilizings.isLoading;
   const areas = [

@@ -11,6 +11,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { FARM_ROLE_LABELS } from "@/lib/active-farm";
 
+/** One box of the Hof's top row (Farm, Pflanzenretter, Bewirtschaftung): label, value, one line. */
+export const TOP_BOX = "flex min-w-0 flex-1 basis-0 flex-col gap-0.5 rounded-2xl border bg-card px-2.5 py-2.5 text-left shadow-sm active:scale-[0.98]";
+
 export interface FarmGroups {
   own: FarmSummary[];
   demo: FarmSummary[];
@@ -41,7 +44,18 @@ function iconFor(f: FarmSummary, demoFarmId: number | null) {
  * the list – own farms, the Demo-Hof, and the linked farms others shared.
  * One tap switches the whole Hof. Only with more than one farm.
  */
-export function FarmSwitcher({ farms, active, onSelect }: { farms: FarmSummary[] | null; active: FarmSummary | null; onSelect: (id: number) => void }) {
+export function FarmSwitcher({
+  farms,
+  active,
+  onSelect,
+  compact = false,
+}: {
+  farms: FarmSummary[] | null;
+  active: FarmSummary | null;
+  onSelect: (id: number) => void;
+  /** A small box for the top row of the Hof (next to Pflanzenretter and Bewirtschaftung). */
+  compact?: boolean;
+}) {
   const demo = useGetDemoStatus();
   if (!farms || farms.length < 2 || !active) return null;
   const demoId = demo.data?.farmId ?? null;
@@ -68,8 +82,19 @@ export function FarmSwitcher({ farms, active, onSelect }: { farms: FarmSummary[]
       </>
     );
 
+  const trigger = compact ? (
+    <DropdownMenuTrigger className={TOP_BOX} aria-label={`Wähle deine Farm – jetzt: ${active.name}`} data-testid="farm-switcher">
+      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+        <span className="truncate">Farm</span>
+      </span>
+      <span className="block truncate text-[13px] font-semibold">{active.name}</span>
+      <span className="block truncate text-[11px] text-muted-foreground">{farmLine(active, demoId)}</span>
+    </DropdownMenuTrigger>
+  ) : null;
+
   return (
     <DropdownMenu>
+      {trigger ?? (
       <DropdownMenuTrigger
         className="flex w-full items-center gap-3 rounded-2xl border bg-card px-3 py-2.5 text-left shadow-sm"
         aria-label={`Wähle deine Farm – jetzt: ${active.name}`}
@@ -85,7 +110,8 @@ export function FarmSwitcher({ farms, active, onSelect }: { farms: FarmSummary[]
         </span>
         <ChevronDown className="h-5 w-5 shrink-0 text-muted-foreground" />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-[var(--radix-dropdown-menu-trigger-width)]">
+      )}
+      <DropdownMenuContent align="start" className={compact ? "w-72 max-w-[calc(100vw-2rem)]" : "w-[var(--radix-dropdown-menu-trigger-width)]"}>
         {section(groups.own.length > 1 ? "Meine Farmen" : "Meine Farm", groups.own)}
         {groups.own.length > 0 && groups.shared.length > 0 && <DropdownMenuSeparator />}
         {section("Verknüpfte Höfe", groups.shared)}

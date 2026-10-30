@@ -13,6 +13,7 @@ import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useToast } from "@/hooks/use-toast";
 import { FARMING_LABELS, ORGANIC_AREAS, organicAreasFor } from "@/lib/farming-labels";
 import { cn } from "@/lib/utils";
+import { TOP_BOX } from "@/components/farm-switcher";
 
 const SETTINGS = "/team/bewirtschaftung";
 
@@ -100,7 +101,7 @@ export function OrganicAreaSwitch({ area, farmId }: { area: OrganicArea; farmId?
   );
 }
 
-/** Hof start page: how the farm works, one tap to switch to Bio (docs/bio.md). */
+/** Hof start page, top row: Bewirtschaftung with the current level and the way to Bio (docs/bio.md). */
 export function FarmingStrip() {
   const { farm } = useActiveFarm();
   const id = farm?.id ?? 0;
@@ -113,22 +114,14 @@ export function FarmingStrip() {
   return (
     <Link
       href={SETTINGS}
-      className={cn(
-        "flex items-center gap-3 rounded-2xl border p-3 text-sm active:scale-[0.99]",
-        bio ? "border-green-300 bg-green-50 dark:border-green-900 dark:bg-green-950/30" : "bg-card",
-      )}
+      className={cn(TOP_BOX, bio && "border-green-300 bg-green-50 dark:border-green-900 dark:bg-green-950/30")}
       data-testid="hof-farming"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300">
-        <Leaf className="h-5 w-5" />
+      <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+        <span className="truncate">Bewirtschaftung</span>
       </span>
-      <span className="min-w-0 flex-1">
-        <span className="block font-semibold">{bio ? FARMING_LABELS[f.level] : "Konventionell"}</span>
-        <span className="block text-xs text-muted-foreground">
-          {bio ? `Bio in ${on} von ${areas.length} Bereichen – je Bereich umschaltbar` : "Auf Bio oder naturnah umstellen – ganz oder nur für einzelne Bereiche"}
-        </span>
-      </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <span className="block truncate text-[13px] font-semibold">{bio ? FARMING_LABELS[f.level].replace(" (EU-Öko-Verordnung)", "") : "Konventionell"}</span>
+      <span className="block truncate text-[11px] text-muted-foreground">{bio ? `Bio in ${on} von ${areas.length}` : "Auf Bio wechseln"}</span>
     </Link>
   );
 }

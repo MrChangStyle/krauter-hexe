@@ -5,14 +5,17 @@ Die Startseite „Hof“ zeigt einen kompakten Überblick über den Hof. Gescann
 ## Aufbau (`components/hof-dashboard.tsx`)
 
 1. **Begrüßung**: „Hallo …“ und ein Satz. Gibt es einen offenen Pflege-Guide, ist es ein Hinweis darauf.
-2. **Wähle deine Farm** (`components/farm-switcher.tsx`), nur wenn man zu mehr als einem Hof gehört: ein Knopf über die ganze Breite mit dem Hof, der gerade gezeigt wird („Wähle deine Farm“, Name, „Mein Hof“). Ein Tipp klappt die Liste auf, gruppiert: **Meine Farm(en)** (Admin), **Verknüpfte Höfe** (freigegeben, mit dem Namen dessen, der den Hof führt: „Geteilt von Stefan · Mitarbeiter“, „Vertretung von … · …“; `FarmSummary.ownerName`, der erste Admin) und **Zum Ausprobieren** (der Demo-Hof, „Beispieldaten“, aus `GET /demo`). Ganz unten „Farmen verwalten (umbenennen, löschen)“ → `/farm`. Ein Tipp auf einen Hof wechselt den ganzen Hof – Wetter, Hof-Aufgaben, Notizen-Kachel und Widgets. Gemerkt wird die Wahl auf dem Gerät (`lf-active-farm`), dieselbe wie unter Tiere.
+2. **Oberste Zeile, drei kleine Kästchen nebeneinander** (`TOP_BOX` in `components/farm-switcher.tsx`), je mit Überschrift, Wert und einer Zeile:
+   - **Farm** (`FarmSwitcher compact`), nur wenn man zu mehr als einem Hof gehört: Name des gezeigten Hofs und „Mein Hof“/„Beispieldaten“. Ein Tipp klappt die Liste auf, gruppiert: **Meine Farm(en)** (Admin), **Verknüpfte Höfe** (freigegeben, mit dem Namen dessen, der den Hof führt: „Geteilt von Stefan · Mitarbeiter“, „Vertretung von … · …“; `FarmSummary.ownerName`, der erste Admin) und **Zum Ausprobieren** (der Demo-Hof, aus `GET /demo`). Ganz unten „Farmen verwalten (umbenennen, löschen)“ → `/farm`. Ein Tipp auf einen Hof wechselt den ganzen Hof – Wetter, Hof-Aufgaben, Notizen-Kachel und Widgets. Gemerkt wird die Wahl auf dem Gerät (`lf-active-farm`), dieselbe wie unter Tiere.
+   - **Pflanzenretter**: eigener Platz und Blätter; ein Tipp öffnet die ersten vier, dazu den eigenen Platz, falls er nicht darunter ist. Nur mit Benutzernamen.
+   - **Bewirtschaftung** (`FarmingStrip`): „Konventionell · Auf Bio wechseln“ bzw. „Bio · Bio in 5 von 6“; ein Tipp öffnet Farm & Team → Bewirtschaftung (`docs/bio.md`).
+   - Fehlt ein Kästchen, teilen sich die übrigen die Breite. Ab 360 px passt alles ohne Abschneiden.
 3. **Wetter** als schmaler Streifen. Ein Pfeil zeigt, dass er aufklappt: Ein Tipp öffnet die 7-Tage-Vorhersage mit Temperaturbalken, Regen und Böen sowie alle Warnungen und „Standort ändern“.
    - Heute mit Höchst- und Tiefstwert, Regen und Böen.
    - Die nächsten zwei Tage klein daneben.
    - Darunter die erste Warnung des Hofs (Frost, Hitze, Sturm …).
    - Ohne Standort steht hier direkt das Formular (Postleitzahl oder Gerätestandort, nur für Admins des Hofs).
-4. **Pflanzenretter**: eine Zeile mit dem eigenen Platz und den Blättern. Aufgeklappt zeigt sie die ersten vier, dazu den eigenen Platz, falls er nicht darunter ist.
-   - Darunter zwei **quadratische Kacheln mit orangem Rand** nebeneinander, die Werkzeuge für jeden Tag (`HofTools`): **Hof-Aufgaben** (`docs/hof-aufgaben.md`; offen heute, Fortschritt, die nächsten Aufgaben; nur mit der Freigabe „Hof- & Stall-Aufgaben“) und **Alltagsnotizen** (`docs/alltagsnotizen.md`; Einkaufsliste und Merkzettel).
+4. Darunter zwei **quadratische Kacheln mit orangem Rand** nebeneinander, die Werkzeuge für jeden Tag (`HofTools`): **Hof-Aufgaben** (`docs/hof-aufgaben.md`; offen heute, Fortschritt, die nächsten Aufgaben; nur mit der Freigabe „Hof- & Stall-Aufgaben“) und **Alltagsnotizen** (`docs/alltagsnotizen.md`; Einkaufsliste und Merkzettel).
 5. **Widgets**, gruppiert nach **Pflanzen** und **Tiere**:
    - Jedes Widget hat ein kleines Symbol, einen Namen, eine Kennzahl und eine Zeile Text.
    - Ein Punkt zeigt an, wenn etwas Aufmerksamkeit braucht.

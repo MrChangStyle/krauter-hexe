@@ -411,7 +411,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Was dürfen Gäste?", a: "Lesen, aber nichts ändern." },
       {
         q: "Wo stelle ich auf Bio um?",
-        a: "Auf der Hof-Startseite unter dem Wetter steht, wie euer Hof wirtschaftet – ein Tipp führt zur Bewirtschaftung. Außerdem steht oben in jedem Modul mit Bio-Regeln (Futterplaner, Saatgut, Beete, Arzneimittel, Ertrag, Meine Tiere …) eine Bio-Zeile: Admins schalten Bio für diesen Bereich dort direkt an oder aus.",
+        a: "Auf der Hof-Startseite steht oben das Kästchen „Bewirtschaftung“ mit eurem Stand, z. B. „Konventionell“ – ein Tipp führt zur Bewirtschaftung. Außerdem steht oben in jedem Modul mit Bio-Regeln (Futterplaner, Saatgut, Beete, Arzneimittel, Ertrag, Meine Tiere …) eine Bio-Zeile: Admins schalten Bio für diesen Bereich dort direkt an oder aus.",
       },
       {
         q: "Wir bauen bio an, füttern aber nicht bio – geht das?",

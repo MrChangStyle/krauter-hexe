@@ -37,7 +37,7 @@ Nicht jeder Hof ist ein zertifizierter Betrieb – wer privat Bio-Gemüse anbaut
 
 ### Wo man Bio sieht und umschaltet
 
-- **Hof-Startseite:** eine Zeile unter dem Wetter mit der Bewirtschaftung – „Konventionell · Auf Bio oder naturnah umstellen“ bzw. „Bio · Bio in 5 von 6 Bereichen“; ein Tipp öffnet Farm & Team → Bewirtschaftung.
+- **Hof-Startseite:** in der obersten Zeile neben „Farm“ und „Pflanzenretter“ das Kästchen **Bewirtschaftung** mit dem Stand darunter („Konventionell · Auf Bio wechseln“ bzw. „Bio · Bio in 5 von 6“); ein Tipp öffnet Farm & Team → Bewirtschaftung.
 - **In jedem Modul mit Bio-Regeln** oben eine Bio-Zeile (`components/organic-area-switch.tsx`): Futterplaner (Fütterung), Saatgut, Beet-Architekt und Ernte-Auswertung (Garten), Arzneimittel und Gesundheit am Tier (Behandlungen), Ertrag & Bilanz und Bienen (Erzeugnisse), Meine Tiere (Stall & Auslauf). Pflanzendoc hat seinen Schalter „Nur biologische Empfehlungen“.
   - Bio-Hof: grün mit „Bio: Fütterung“ bzw. „Fütterung: konventionell“; Admins schalten den Bereich dort direkt um, alle anderen sehen den Stand. „Alle Bereiche“ führt zur Bewirtschaftung.
   - Konventioneller Hof: dezente Zeile „Konventionell – Bio ist aus. Auf Bio umstellen“.

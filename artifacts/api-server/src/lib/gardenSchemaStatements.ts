@@ -183,6 +183,7 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
 	"harvest_year" integer,
 	"use_by" date,
 	"open_pollinated" boolean,
+	"organic" boolean,
 	"test_sown" integer,
 	"test_germinated" integer,
 	"tested_on" date,
@@ -194,6 +195,8 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "seeds" ADD CONSTRAINT "seeds_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "seeds_farm_idx" ON "seeds" USING btree ("farm_id")`,
+  // Bio-Saatgut (docs/bio.md, B7).
+  `ALTER TABLE "seeds" ADD COLUMN IF NOT EXISTS "organic" boolean`,
   `CREATE TABLE IF NOT EXISTS "seed_uses" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"farm_id" integer NOT NULL,

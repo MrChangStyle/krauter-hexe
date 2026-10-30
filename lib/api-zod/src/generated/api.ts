@@ -3219,6 +3219,7 @@ export const GetSeedOverviewResponse = zod.object({
   "harvestYear": zod.number().nullable(),
   "useBy": zod.string().nullable().describe('YYYY-MM-DD from the packet'),
   "openPollinated": zod.boolean().nullable(),
+  "organic": zod.boolean().nullable().describe('Bio-Saatgut (true), konventionell (false), unknown (null)'),
   "testSown": zod.number().nullable(),
   "testGerminated": zod.number().nullable(),
   "testedOn": zod.string().nullable(),
@@ -3272,6 +3273,7 @@ export const CreateSeedBody = zod.object({
   "harvestYear": zod.number().nullish(),
   "useBy": zod.string().nullish().describe('YYYY-MM-DD'),
   "openPollinated": zod.boolean().nullish(),
+  "organic": zod.boolean().nullish().describe('Bio-Saatgut (true), konventionell (false), unknown (null)'),
   "notes": zod.string().max(createSeedBodyNotesMax).nullish(),
   "archived": zod.boolean().optional()
 })
@@ -3288,6 +3290,7 @@ export const CreateSeedResponse = zod.object({
   "harvestYear": zod.number().nullable(),
   "useBy": zod.string().nullable().describe('YYYY-MM-DD from the packet'),
   "openPollinated": zod.boolean().nullable(),
+  "organic": zod.boolean().nullable().describe('Bio-Saatgut (true), konventionell (false), unknown (null)'),
   "testSown": zod.number().nullable(),
   "testGerminated": zod.number().nullable(),
   "testedOn": zod.string().nullable(),
@@ -3328,6 +3331,7 @@ export const UpdateSeedBody = zod.object({
   "harvestYear": zod.number().nullish(),
   "useBy": zod.string().nullish().describe('YYYY-MM-DD'),
   "openPollinated": zod.boolean().nullish(),
+  "organic": zod.boolean().nullish().describe('Bio-Saatgut (true), konventionell (false), unknown (null)'),
   "notes": zod.string().max(updateSeedBodyNotesMax).nullish(),
   "archived": zod.boolean().optional()
 })
@@ -3344,6 +3348,7 @@ export const UpdateSeedResponse = zod.object({
   "harvestYear": zod.number().nullable(),
   "useBy": zod.string().nullable().describe('YYYY-MM-DD from the packet'),
   "openPollinated": zod.boolean().nullable(),
+  "organic": zod.boolean().nullable().describe('Bio-Saatgut (true), konventionell (false), unknown (null)'),
   "testSown": zod.number().nullable(),
   "testGerminated": zod.number().nullable(),
   "testedOn": zod.string().nullable(),
@@ -3393,6 +3398,7 @@ export const RecordGerminationTestResponse = zod.object({
   "harvestYear": zod.number().nullable(),
   "useBy": zod.string().nullable().describe('YYYY-MM-DD from the packet'),
   "openPollinated": zod.boolean().nullable(),
+  "organic": zod.boolean().nullable().describe('Bio-Saatgut (true), konventionell (false), unknown (null)'),
   "testSown": zod.number().nullable(),
   "testGerminated": zod.number().nullable(),
   "testedOn": zod.string().nullable(),

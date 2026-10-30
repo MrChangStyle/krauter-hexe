@@ -20,7 +20,7 @@ Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt dan
 - **Wildtier-Radar**: zwei Kameras, noch ohne Ereignisse.
 - **Übergabe**: eine Notiz für die Vertretung.
 - **Beet-Architekt**: ein Hochbeet mit Tomate (zwei Ernten für die Ernte-Auswertung) und ein Gemüsebeet mit Salat, im laufenden Jahr. Für die Wirtschaftlichkeit: Tomatensamen und Hochbeeterde als Gartenausgaben, 3,5 Stunden Arbeit.
-- **Saatgut**: Tomate „Ochsenherz“ und Möhre „Nantaise“.
+- **Saatgut**: Tomate „Ochsenherz“ (samenfest, Bio-Saatgut) und Möhre „Nantaise“ (konventionell) – auf Bio gestellt warnt die Saatgut-Seite bei der Möhre.
 - **Hof-Aufgaben**: die Liste für heute – Eier einsammeln (mit Kommentar „Wir brauchen neue Eierkartons“), Ziegen Heu geben, Teichpumpe kontrollieren (schon abgehakt, mit Kommentar), einmalig Federn aus dem Teich keschern, Hochbeet gießen alle zwei Tage.
 - **Farm & Team**: eine Tierarztpraxis und eine Stallhilfe als wichtige Kontakte.
 - **Grow**: ein „Demo-Zelt“ mit zwei Pflanzen, aber nur, wenn das Konto Grow schon freigeschaltet hat (Alter bestätigt).

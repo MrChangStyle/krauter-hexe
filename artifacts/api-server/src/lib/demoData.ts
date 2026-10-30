@@ -272,8 +272,8 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await addGardenHours(farmId, { date: ago(40), hours: 2, bedId: raised.id, note: 'Demo: Pflanzen und Mulchen' });
   await addGardenHours(farmId, { date: ago(20), hours: 1.5, note: 'Demo: Jäten und Gießen' });
   await addPlanting(farmId, bed.id, year, { cropKey: 'salat', x: 1, y: 1 });
-  await createSeed(farmId, { cropKey: 'tomate', variety: 'Ochsenherz', amount: 30, unit: 'Korn', source: 'bought', harvestYear: year - 1 }, today);
-  await createSeed(farmId, { cropKey: 'moehre', variety: 'Nantaise', amount: 2, unit: 'g', source: 'bought', harvestYear: year - 3 }, today);
+  await createSeed(farmId, { cropKey: 'tomate', variety: 'Ochsenherz', amount: 30, unit: 'Korn', source: 'bought', harvestYear: year - 1, openPollinated: true, organic: true }, today);
+  await createSeed(farmId, { cropKey: 'moehre', variety: 'Nantaise', amount: 2, unit: 'g', source: 'bought', harvestYear: year - 3, organic: false }, today);
 
   // Farm & Team: the vet and a helper.
   await createContact(farmId, { kind: 'vet', name: 'Tierarztpraxis Muster (Demo)', role: 'Großtiere und Geflügel', phone: '0123 456789', note: 'Notdienst über die Praxisnummer' });

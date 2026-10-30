@@ -37,6 +37,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useModules } from "@/hooks/use-modules";
 import { farmModuleGranted } from "@/lib/modules";
 import { MyAnimalsCard } from "@/components/farm-animals-section";
+import { OrganicCheckCard } from "@/components/organic-check-card";
 import { FarmTasksTile } from "@/components/farm-tasks-section";
 import {
   FARM_ROLE_HINTS,
@@ -273,6 +274,8 @@ export default function FarmPage() {
       <HousingOrderBanner farm={farm} link />
 
       <MyAnimalsCard farm={farm} />
+
+      <OrganicCheckCard farm={farm} />
 
       {(show("farm-tasks") || show("yields")) && farm.role !== "guest" && (
         <Link

@@ -269,14 +269,14 @@ export function AccountCard() {
  * Nutzer-ID (docs/konto.md): the number the account passes on, so an admin
  * adds it to a farm (Team, Vertretung, Tierarzt) or someone shares a list.
  */
-function UserCodeBox({ code }: { code: number }) {
+export function UserCodeBox({ code, hint }: { code: number; hint?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="flex items-center gap-3 rounded-xl border bg-muted/40 p-3" data-testid="user-code">
       <span className="min-w-0 flex-1">
         <span className="block text-xs text-muted-foreground">Deine Nutzer-ID</span>
         <span className="block font-mono text-2xl font-semibold tracking-widest">{code}</span>
-        <span className="block text-xs text-muted-foreground">Gib sie weiter, damit man dich ins Team, als Vertretung oder zu einer Liste holen kann.</span>
+        <span className="block text-xs text-muted-foreground">{hint ?? "Gib sie weiter, damit man dich ins Team, als Vertretung oder zu einer Liste holen kann."}</span>
       </span>
       <Button
         type="button"

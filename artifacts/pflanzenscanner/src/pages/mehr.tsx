@@ -865,6 +865,10 @@ export function Benutzerverwaltung() {
                 {u.email && (
                   <p className="text-xs text-muted-foreground truncate">{u.email}</p>
                 )}
+                <p className="mt-1 text-xs" data-testid="admin-user-code">
+                  <span className="text-muted-foreground">Nutzer-ID </span>
+                  <span className="font-mono font-semibold tracking-wider">{u.userCode ?? "wird vergeben"}</span>
+                </p>
                 <p className="text-xs text-muted-foreground mt-1">
                   Dabei seit {format(new Date(u.createdAt), "dd.MM.yyyy")}
                 </p>

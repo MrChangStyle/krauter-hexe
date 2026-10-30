@@ -1914,7 +1914,8 @@ export const ListUsersResponseItem = zod.object({
   "isOwner": zod.boolean(),
   "createdAt": zod.coerce.date(),
   "username": zod.string().nullable(),
-  "leavesCount": zod.number()
+  "leavesCount": zod.number(),
+  "userCode": zod.number().nullable().describe('Nutzer-ID (docs\/konto.md); null only until the server has handed one out')
 })
 export const ListUsersResponse = zod.array(ListUsersResponseItem)
 
@@ -1979,7 +1980,8 @@ export const UpdateUserApprovalResponse = zod.object({
   "isOwner": zod.boolean(),
   "createdAt": zod.coerce.date(),
   "username": zod.string().nullable(),
-  "leavesCount": zod.number()
+  "leavesCount": zod.number(),
+  "userCode": zod.number().nullable().describe('Nutzer-ID (docs\/konto.md); null only until the server has handed one out')
 })
 
 

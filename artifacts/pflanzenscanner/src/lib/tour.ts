@@ -35,7 +35,7 @@ export const TOUR: readonly TourStep[] = [
   {
     path: "/mehr",
     title: "Mehr",
-    text: "Konto, Benachrichtigungen und „Meine Module“: Dort blendest du Module ein und aus, lädst oder löschst die Demo-Daten und startest die Einrichtung oder diese Tour noch einmal.",
+    text: "Unter „Konto“ steht deine Nutzer-ID – die gibst du weiter, wenn dich jemand ins Team holen oder eine Liste mit dir teilen will. Außerdem Benachrichtigungen und „Meine Module“: Dort blendest du Module ein und aus, lädst oder löschst die Demo-Daten und startest die Einrichtung oder diese Tour noch einmal.",
   },
 ];
 

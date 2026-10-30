@@ -4,7 +4,7 @@
 
 Beim ersten Start (sobald der Benutzername gewählt ist) öffnet sich der Assistent. Er hat vier Schritte:
 
-1. **Willkommen**: kurz, was Pflanzen, Tiere und Hof sind.
+1. **Willkommen**: kurz, was Pflanzen, Tiere und Hof sind, dazu die eigene **Nutzer-ID** zum Kopieren mit dem Hinweis, dass sie jederzeit unter Mehr → Konto steht (`docs/konto.md`).
 2. **Module**: dieselben Schalter wie unter „Meine Module“, mit den Kennzeichnungen Lite und Premium. Jeder Schalter speichert sofort.
 3. **Demo-Daten**: auf Wunsch zwei Beispiele je Modul laden (`docs/demo.md`).
 4. **Fertig**: „Tour starten“ oder „Ohne Tour loslegen“.
@@ -15,7 +15,7 @@ Auch Konten, die es schon vor dem Assistenten gab, sehen ihn einmal.
 
 ## App-Tour
 
-Die Tour ist eine Folge von Erklärfeldern über der unteren Leiste, eines je Hauptseite: Hof, Pflanzen, Tiere, Mehr. „Weiter“ springt zur nächsten Seite. „Erklärungen überspringen“ oder das X beenden die Tour. Bereiche, die das Konto ausgeblendet hat, fallen aus der Tour heraus. Die Tour lässt sich unter „Meine Module“ jederzeit neu starten.
+Die Tour ist eine Folge von Erklärfeldern über der unteren Leiste, eines je Hauptseite: Hof, Pflanzen, Tiere, Mehr. Der Schritt „Mehr“ zeigt, dass unter „Konto“ die Nutzer-ID steht. „Weiter“ springt zur nächsten Seite. „Erklärungen überspringen“ oder das X beenden die Tour. Bereiche, die das Konto ausgeblendet hat, fallen aus der Tour heraus. Die Tour lässt sich unter „Meine Module“ jederzeit neu starten.
 
 Wo die Tour gerade steht, merkt sich das Gerät (`localStorage`, `lf-tour-step`). Das ist nur eine Anzeigehilfe.
 

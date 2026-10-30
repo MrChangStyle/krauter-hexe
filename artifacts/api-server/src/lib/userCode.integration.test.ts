@@ -8,6 +8,9 @@
  */
 
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
+import express, { type NextFunction, type Request, type Response } from "express";
+import { createServer } from "node:http";
+import type { AddressInfo } from "node:net";
 
 const testUrl = process.env["TEST_DATABASE_URL"];
 const enabled =
@@ -43,5 +46,25 @@ describe.skipIf(!enabled)("Nutzer-ID (real database)", () => {
     await q(`UPDATE users SET approved = false WHERE id = 'u0'`);
     expect(await accountByCode(4821)).toBeNull();
     expect(await accountByCode("12")).toBeNull();
+  });
+
+  it("shows every account's Nutzer-ID in the owner's user list", async () => {
+    await q(`INSERT INTO users (id, email, approved, is_owner, user_code) VALUES ('chef', 'chef@x.de', true, true, 1234), ('anna', 'anna@x.de', true, false, 4821)`);
+    const app = express();
+    app.use((req: Request, _res: Response, next: NextFunction) => {
+      (req as unknown as { user: unknown }).user = { id: "chef", approved: true, isOwner: true };
+      (req as unknown as { isAuthenticated: () => boolean }).isAuthenticated = () => true;
+      next();
+    });
+    app.use((await import("../routes/users")).default);
+    const server = createServer(app);
+    await new Promise<void>((r) => server.listen(0, r));
+    try {
+      const res = await fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/users`);
+      const list = (await res.json()) as { id: string; userCode: number | null }[];
+      expect(list.map((u) => [u.id, u.userCode])).toEqual([["chef", 1234], ["anna", 4821]]);
+    } finally {
+      await new Promise<void>((r) => server.close(() => r()));
+    }
   });
 });

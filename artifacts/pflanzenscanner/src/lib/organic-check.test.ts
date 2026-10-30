@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { FarmAnimal, Herd, MedicalRecord, RationEvaluation, Seed } from "@workspace/api-client-react";
-import { feedArea, grazingRows, organicFeedRows, organicSpaceRows, seedArea, seedRows, spaceArea, treatmentArea } from "@/lib/organic-check";
+import type { FarmAnimal, Fertilizing, Herd, MedicalRecord, RationEvaluation, Seed } from "@workspace/api-client-react";
+import { feedArea, fertilizerArea, fertilizerRows, grazingRows, organicFeedRows, organicSpaceRows, seedArea, seedRows, spaceArea, treatmentArea } from "@/lib/organic-check";
 
 const check = (key: string, value: number, ok: boolean) => ({ key, value, target: 0, bound: "min", ok });
 const ration = (name: string, ok: boolean, missing: string[] = [], active = true) =>
@@ -60,6 +60,18 @@ describe("Bio-Check", () => {
     expect(seedRows([seed("Mais", false), seed("Bohne", null, "saved")], (s) => s.source, () => "1 Tüte")).toEqual([
       ["Mais", "–", "bought", "konventionell (!)", "–", "–", "1 Tüte"],
       ["Bohne", "–", "saved", "eigener Hof", "–", "–", "1 Tüte"],
+    ]);
+  });
+
+  it("rates the fertiliser: mineral in 12 months is red, nothing is open", () => {
+    const f = (id: number, date: string, kind: string, bedName = "Hochbeet") => ({ id, bedId: 1, bedName, date, kind, label: null, amountKg: null }) as Fertilizing;
+    expect(fertilizerArea([], "2026-10-30").status).toBe("open");
+    expect(fertilizerArea([f(1, "2025-03-01", "compost")], "2026-10-30").status).toBe("open");
+    expect(fertilizerArea([f(1, "2026-03-01", "compost"), f(2, "2026-04-01", "manure_own")], "2026-10-30")).toMatchObject({ status: "ok", text: "2 Düngungen in 12 Monaten, alle organisch." });
+    expect(fertilizerArea([f(1, "2026-03-01", "mineral", "Beet 2"), f(2, "2026-04-01", "mineral", "Beet 2")], "2026-10-30")).toMatchObject({ status: "warn", text: "Mineraldünger in 12 Monaten: Beet 2 – im Ökolandbau nicht zugelassen." });
+    expect(fertilizerRows([{ ...f(2, "2026-04-01", "mineral"), amountKg: 2.5 }, f(1, "2026-03-01", "compost"), f(3, "2025-01-01", "compost")], { from: "2026-01-01", to: "2026-10-30" }, (d) => d)).toEqual([
+      ["2026-03-01", "Hochbeet", "Kompost", "–", "–"],
+      ["2026-04-01", "Hochbeet", "Mineraldünger (Kunstdünger) (!)", "–", "2,5 kg"],
     ]);
   });
 });

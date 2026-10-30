@@ -82,6 +82,7 @@ const PARAM_TABLE: Record<string, string> = {
   hoursId: "garden_hours",
   heatId: "heat_records",
   harvestId: "harvest_logs",
+  fertilizingId: "bed_fertilizings",
   taskId: "farm_tasks",
   commentId: "farm_task_comments",
   "medical/recordId": "medical_records",

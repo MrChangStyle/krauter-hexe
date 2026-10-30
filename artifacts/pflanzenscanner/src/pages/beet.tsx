@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { BedPlanner } from "@/components/bed-planner";
+import { BedFertilizingCard } from "@/components/bed-fertilizing-card";
 import { useToast } from "@/hooks/use-toast";
 import {
   BED_TYPE_LABELS,
@@ -549,6 +550,8 @@ function BedDetailPage({ farmId, bedId }: { farmId: number; bedId: number }) {
           <p className="text-muted-foreground">Mit Fingerprobe und pH-Wert gibt es hier Tipps zu Kompost, Mist und Kalk.</p>
         )}
       </Card>
+
+      <BedFertilizingCard farmId={farmId} bedId={bedId} canWrite={canWrite} />
 
       {b.notes && (
         <Card icon={<Fence className="h-4 w-4 text-primary" />} title="Notizen">

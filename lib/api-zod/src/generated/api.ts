@@ -10494,6 +10494,66 @@ export const RemoveHarvestResponse = zod.void()
 
 
 /**
+ * @summary Düngung – the farm's fertilising entries, newest first (docs/bio.md, B7)
+ */
+export const ListFertilizingsParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const ListFertilizingsResponseItem = zod.object({
+  "id": zod.number(),
+  "bedId": zod.number(),
+  "bedName": zod.string(),
+  "date": zod.string(),
+  "kind": zod.enum(['compost', 'manure_own', 'manure_bought', 'green_manure', 'horn', 'plant_tea', 'organic_bought', 'mineral', 'other']),
+  "label": zod.string().nullable(),
+  "amountKg": zod.number().nullable()
+})
+export const ListFertilizingsResponse = zod.array(ListFertilizingsResponseItem)
+
+
+/**
+ * @summary Log what went onto a bed (caretaker or admin)
+ */
+export const AddFertilizingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "bedId": zod.coerce.number()
+})
+
+export const addFertilizingBodyLabelMax = 80;
+
+
+
+export const AddFertilizingBody = zod.object({
+  "date": zod.string(),
+  "kind": zod.enum(['compost', 'manure_own', 'manure_bought', 'green_manure', 'horn', 'plant_tea', 'organic_bought', 'mineral', 'other']),
+  "label": zod.string().max(addFertilizingBodyLabelMax).nullish(),
+  "amountKg": zod.number().nullish()
+})
+
+export const AddFertilizingResponse = zod.object({
+  "id": zod.number(),
+  "bedId": zod.number(),
+  "bedName": zod.string(),
+  "date": zod.string(),
+  "kind": zod.enum(['compost', 'manure_own', 'manure_bought', 'green_manure', 'horn', 'plant_tea', 'organic_bought', 'mineral', 'other']),
+  "label": zod.string().nullable(),
+  "amountKg": zod.number().nullable()
+})
+
+
+/**
+ * @summary Delete a fertilising entry (caretaker or admin)
+ */
+export const RemoveFertilizingParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "fertilizingId": zod.coerce.number()
+})
+
+export const RemoveFertilizingResponse = zod.void()
+
+
+/**
  * @summary Beds where frost-tender plants meet a frosty night (DWD forecast via Bright Sky)
  */
 export const GetFrostWarningsParams = zod.object({

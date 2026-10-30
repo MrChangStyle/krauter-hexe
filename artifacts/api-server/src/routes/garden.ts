@@ -1,7 +1,10 @@
 import { Router, type IRouter } from 'express';
 import {
+  AddFertilizingBody,
+  AddFertilizingResponse,
   AddHarvestBody,
   AddHarvestResponse,
+  ListFertilizingsResponse,
   AddPlantingBody,
   AddGardenCostBody,
   AddGardenHoursBody,
@@ -60,6 +63,7 @@ import { approveCrop, listCropDrafts, loadApprovedCrops, rejectCrop, requestCrop
 import { analyzeBedPhoto, suggestCorners, suggestPlanting } from '../lib/gardenAi';
 import { addPlanting, listPlantings, movePlanting, removePlanting } from '../lib/gardenPlanner';
 import { bedHistory, farmCalendar, farmFrostWarnings, setCheck } from '../lib/gardenCalendar';
+import { addFertilizing, listFertilizings, removeFertilizing } from '../lib/bedFertilizing';
 import { berlinTodayKey } from '../lib/pushScheduler';
 import { gardenPlan, getGoals, saveGoals } from '../lib/gardenAssistant';
 import { addHarvest, listHarvests, removeHarvest } from '../lib/gardenHarvests';
@@ -419,6 +423,39 @@ router.delete(
     const harvestId = idParam(req, 'harvestId');
     if (harvestId === null) return notFound(res);
     await removeHarvest(req.farm!.farmId, harvestId);
+    res.sendStatus(204);
+  }),
+);
+
+// ── Düngung (docs/bio.md, B7) ────────────────────────────────────────────────
+
+router.get(
+  '/farms/:farmId/fertilizings',
+  requireFarm('guest'),
+  handle(async (req, res) => {
+    res.json(ListFertilizingsResponse.parse(await listFertilizings(req.farm!.farmId)));
+  }),
+);
+
+router.post(
+  '/farms/:farmId/beds/:bedId/fertilizings',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const bedId = idParam(req, 'bedId');
+    if (bedId === null) return notFound(res);
+    const body = AddFertilizingBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.status(201).json(AddFertilizingResponse.parse(await addFertilizing(req.farm!.farmId, bedId, body.data)));
+  }),
+);
+
+router.delete(
+  '/farms/:farmId/fertilizings/:fertilizingId',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const id = idParam(req, 'fertilizingId');
+    if (id === null) return notFound(res);
+    await removeFertilizing(req.farm!.farmId, id);
     res.sendStatus(204);
   }),
 );

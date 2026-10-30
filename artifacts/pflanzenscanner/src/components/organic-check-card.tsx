@@ -3,18 +3,20 @@ import { ChevronRight, FileText, Leaf } from "lucide-react";
 import {
   getGetFarmExportQueryKey,
   getGetSeedOverviewQueryKey,
+  getListFertilizingsQueryKey,
   getListHerdsQueryKey,
   getListRationsQueryKey,
   useGetFarmExport,
   useGetFarmFarming,
   useGetSeedOverview,
+  useListFertilizings,
   useListHerds,
   useListRations,
   type FarmSummary,
 } from "@workspace/api-client-react";
 import { todayIso } from "@/lib/farm-labels";
 import { FARMING_LABELS, certified } from "@/lib/farming-labels";
-import { feedArea, seedArea, spaceArea, treatmentArea, type CheckStatus } from "@/lib/organic-check";
+import { feedArea, fertilizerArea, seedArea, spaceArea, treatmentArea, type CheckStatus } from "@/lib/organic-check";
 import { cn } from "@/lib/utils";
 
 const LIGHT: Record<CheckStatus, { dot: string; label: string }> = {
@@ -33,16 +35,18 @@ export function OrganicCheckCard({ farm }: { farm: FarmSummary }) {
   const rations = useListRations(farm.id, { query: { enabled: on, queryKey: getListRationsQueryKey(farm.id) } });
   const herds = useListHerds(farm.id, { query: { enabled: on, queryKey: getListHerdsQueryKey(farm.id) } });
   const health = useGetFarmExport(farm.id, { query: { enabled: on, queryKey: getGetFarmExportQueryKey(farm.id) } });
-  // Members without the seed module see no seed light.
   const seeds = useGetSeedOverview(farm.id, { query: { enabled: on, retry: false, queryKey: getGetSeedOverviewQueryKey(farm.id) } });
+  const fertilizings = useListFertilizings(farm.id, { query: { enabled: on, retry: false, queryKey: getListFertilizingsQueryKey(farm.id) } });
   if (!on) return null;
 
-  const loading = rations.isLoading || herds.isLoading || health.isLoading || seeds.isLoading;
+  const loading = rations.isLoading || herds.isLoading || health.isLoading || seeds.isLoading || fertilizings.isLoading;
   const areas = [
     feedArea(rations.data),
     spaceArea(herds.data),
     treatmentArea(health.data?.animals, health.data?.medicalRecords, todayIso()),
+    // Members without the garden module see neither light.
     ...(seeds.isError ? [] : [seedArea(seeds.data?.seeds)]),
+    ...(fertilizings.isError ? [] : [fertilizerArea(fertilizings.data, todayIso())]),
   ];
 
   return (
@@ -73,7 +77,7 @@ export function OrganicCheckCard({ farm }: { farm: FarmSummary }) {
           ))}
         </ul>
       )}
-      <p className="text-xs text-muted-foreground">Richtwerte nach EU-Öko-Verordnung – ersetzen nicht die Kontrolle. Dünger kommt dazu.</p>
+      <p className="text-xs text-muted-foreground">Richtwerte nach EU-Öko-Verordnung – ersetzen nicht die Kontrolle.</p>
       <Link href="/farm/export" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
         <FileText className="h-3.5 w-3.5" />
         Bio-Dokumentation als PDF

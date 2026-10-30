@@ -231,6 +231,33 @@ export const harvestLogsTable = pgTable(
   (table) => [index("harvest_logs_farm_season_idx").on(table.farmId, table.season)],
 );
 
+// Düngung (docs/bio.md, B7): what went onto a bed and when – compost, manure
+// from the own stall or bought, green manure, mineral fertiliser … On organic
+// farms mineral fertiliser turns the Bio-Check red.
+export const FERTILIZER_KINDS = ["compost", "manure_own", "manure_bought", "green_manure", "horn", "plant_tea", "organic_bought", "mineral", "other"] as const;
+export type FertilizerKind = (typeof FERTILIZER_KINDS)[number];
+
+export const bedFertilizingsTable = pgTable(
+  "bed_fertilizings",
+  {
+    id: serial("id").primaryKey(),
+    farmId: integer("farm_id")
+      .notNull()
+      .references(() => farmsTable.id, { onDelete: "cascade" }),
+    bedId: integer("bed_id")
+      .notNull()
+      .references(() => gardenBedsTable.id, { onDelete: "cascade" }),
+    date: date("date", { mode: "string" }).notNull(),
+    // One of FERTILIZER_KINDS.
+    kind: text("kind").notNull(),
+    // Product or what exactly, e.g. "Pferdemist vom Nachbarn", "Phacelia".
+    label: text("label"),
+    amountKg: doublePrecision("amount_kg"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("bed_fertilizings_farm_date_idx").on(table.farmId, table.date)],
+);
+
 // Garten-Wirtschaftlichkeit (docs/garten-wirtschaftlichkeit.md): the hours
 // spent in the garden, optionally for one bed – for the € per hour.
 export const gardenHoursTable = pgTable(

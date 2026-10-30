@@ -43,6 +43,7 @@ const SEGMENT_MODULE: Record<string, FarmModule> = {
   garden: 'garden',
   seeds: 'garden',
   harvests: 'garden',
+  fertilizings: 'garden',
   'helpful-plants': 'garden',
   bees: 'bees',
   pantry: 'pantry',

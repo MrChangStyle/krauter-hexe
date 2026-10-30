@@ -10841,7 +10841,7 @@ components:
           type: [string, 'null']
     UsageDay:
       type: object
-      required: [day, activeUsers, newUsers, aiActions, errors]
+      required: [day, activeUsers, newUsers, aiActions, aiTimeouts, errors]
       properties:
         day:
           type: string
@@ -10851,6 +10851,9 @@ components:
           type: integer
         aiActions:
           type: integer
+        aiTimeouts:
+          type: integer
+          description: AI requests that ran out of time (Google too slow), not an error group
         errors:
           type: integer
     GeoReverseInput:

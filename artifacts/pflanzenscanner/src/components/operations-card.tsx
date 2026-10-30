@@ -82,6 +82,7 @@ function Usage() {
               <th className="py-1 text-right font-normal">Aktiv</th>
               <th className="py-1 text-right font-normal">Neu</th>
               <th className="py-1 text-right font-normal">KI</th>
+              <th className="py-1 text-right font-normal" title="KI hat zu lange gebraucht">Langsam</th>
               <th className="py-1 text-right font-normal">Fehler</th>
             </tr>
           </thead>
@@ -92,6 +93,7 @@ function Usage() {
                 <td className="py-1 text-right">{d.activeUsers}</td>
                 <td className="py-1 text-right">{d.newUsers}</td>
                 <td className="py-1 text-right">{d.aiActions}</td>
+                <td className="py-1 text-right">{d.aiTimeouts}</td>
                 <td className={cn("py-1 text-right", d.errors > 0 && "font-semibold text-destructive")}>{d.errors}</td>
               </tr>
             ))}

@@ -6966,6 +6966,7 @@ export const GetUsageResponseItem = zod.object({
   "activeUsers": zod.number(),
   "newUsers": zod.number(),
   "aiActions": zod.number(),
+  "aiTimeouts": zod.number().describe('AI requests that ran out of time (Google too slow), not an error group'),
   "errors": zod.number()
 })
 export const GetUsageResponse = zod.array(GetUsageResponseItem)

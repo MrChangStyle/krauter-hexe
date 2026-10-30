@@ -1,6 +1,9 @@
 import type { Request, Response } from 'express';
 
+import { isAiTimeout } from '../lib/aiTimeout';
 import { FarmDataError } from '../lib/farmAnimals';
+import { logger } from '../lib/logger';
+import { bumpUsage } from '../lib/monitoring';
 import { checkAndRecordScanAttempt, refundScanAttempt } from '../lib/scanRateLimit';
 
 // Shared by the farm data routes (farm-animals.ts, farm-health.ts,
@@ -64,6 +67,13 @@ export async function withAiQuota<T>(
   } catch (err) {
     await refundScanAttempt(limit.attemptId);
     if (err instanceof FarmDataError) throw err;
+    // Too slow is Google's answer time, not a fault: counted per day for the
+    // owner instead of an error group with a stack (docs/kostenschutz.md).
+    if (isAiTimeout(err)) {
+      logger.warn({ err }, 'AI request timed out');
+      await bumpUsage('ai_timeouts');
+      throw new FarmDataError(502, 'Die KI hat zu lange gebraucht. Bitte versuche es gleich noch einmal.');
+    }
     req.log.error({ err }, 'AI request failed');
     // The owner sees what went wrong, to find the cause without the server logs.
     const detail = user.isOwner ? ` (technisch: ${aiErrorDetail(err)})` : '';

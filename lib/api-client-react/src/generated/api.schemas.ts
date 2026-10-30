@@ -3355,6 +3355,8 @@ export interface UsageDay {
   activeUsers: number;
   newUsers: number;
   aiActions: number;
+  /** AI requests that ran out of time (Google too slow), not an error group */
+  aiTimeouts: number;
   errors: number;
 }
 

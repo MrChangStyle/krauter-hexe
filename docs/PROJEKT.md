@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #125 | KI zu langsam: Notizen und Hof-Aufgaben melden „Die KI hat zu lange gebraucht“ statt „nicht erreichbar“; in der Verwaltung zählt das als „Langsam“ in den Tageszahlen statt als Fehlergruppe |
 | 29.10.2026 | #124 | Abschlussbericht des Launch-Plans (`docs/ABSCHLUSSBERICHT.md`): Ampel je Bereich, was geprüft, behoben und gebaut wurde, Tests, Restpunkte vor und nach dem Start |
 | 29.10.2026 | #123 | Store-Apps vorbereitet: Capacitor-Hülle für Android und iOS (`artifacts/mobile`) mit Berechtigungen, Offline-Seite, Icon- und Startbild-Vorlagen; in der App kein Google-Login und keine Bestellung |
 | 29.10.2026 | #122 | Analyse: Besucherzählung der Homepage ohne Cookies und ohne IP (Tag, Seite, Herkunft aus `?ref=`/`utm_source` oder verweisender Domain), abschaltbar mit `ANALYTICS=off`, Auswertung unter Verwaltung → Betrieb; Datenschutzerklärung ergänzt |

@@ -156,7 +156,7 @@ describe.skipIf(!enabled)("Betrieb – Fehlerüberwachung, Status, Statistik (re
     expect((await q<any>("SELECT last_active_on::text AS d FROM users WHERE id = 'anna'"))[0].d).toBe(today);
     const usage = await api("GET", "/admin/usage");
     expect(usage.data).toHaveLength(14);
-    expect(usage.data[0]).toEqual({ day: today, activeUsers: 1, newUsers: 3, aiActions: 2, errors: 0 });
+    expect(usage.data[0]).toEqual({ day: today, activeUsers: 1, newUsers: 3, aiActions: 2, aiTimeouts: 0, errors: 0 });
     as = "anna";
     expect((await api("GET", "/admin/usage")).status).toBe(403);
     expect((await api("GET", "/admin/errors")).status).toBe(403);

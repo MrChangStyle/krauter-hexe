@@ -22,7 +22,7 @@ export function berlinDay(d = new Date()): string {
 
 // ── Usage ────────────────────────────────────────────────────────────────────
 
-export const USAGE_METRICS = ['active_users', 'ai_actions', 'errors'] as const;
+export const USAGE_METRICS = ['active_users', 'ai_actions', 'ai_timeouts', 'errors'] as const;
 export type UsageMetric = (typeof USAGE_METRICS)[number];
 
 /** Adds to today's total of a metric. Never throws. */
@@ -58,6 +58,7 @@ export interface UsageDay {
   activeUsers: number;
   newUsers: number;
   aiActions: number;
+  aiTimeouts: number;
   errors: number;
 }
 
@@ -74,7 +75,7 @@ export async function usageSummary(days = 14): Promise<UsageDay[]> {
   for (let i = 0; i < days; i += 1) {
     const day = berlinDay(new Date(Date.now() - i * 86_400_000));
     const v = (m: UsageMetric) => rows.find((r) => r.day === day && r.metric === m)?.value ?? 0;
-    out.push({ day, activeUsers: v('active_users'), newUsers: signups.find((s) => s.day === day)?.n ?? 0, aiActions: v('ai_actions'), errors: v('errors') });
+    out.push({ day, activeUsers: v('active_users'), newUsers: signups.find((s) => s.day === day)?.n ?? 0, aiActions: v('ai_actions'), aiTimeouts: v('ai_timeouts'), errors: v('errors') });
   }
   return out;
 }

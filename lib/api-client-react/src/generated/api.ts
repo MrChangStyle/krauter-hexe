@@ -171,6 +171,7 @@ import type {
   HelpfulPlants,
   Herd,
   HerdInput,
+  HerdSpaceInput,
   HusbandryGuide,
   ImageLockInput,
   Insect,
@@ -14692,6 +14693,80 @@ export const useCreateHerd = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getCreateHerdMutationOptions(options));
+    }
+
+export const getSetHerdSpaceUrl = (farmId: number,
+    herdId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/herds/${herdId}/space`
+}
+
+/**
+ * @summary Platz-Check (Bio) – stall and outdoor area of a group in m² (caretaker or admin)
+ */
+export const setHerdSpace = async (farmId: number,
+    herdId: number,
+    herdSpaceInput: HerdSpaceInput, options?: RequestInit): Promise<Herd> => {
+
+  return customFetch<Herd>(getSetHerdSpaceUrl(farmId,herdId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(herdSpaceInput)
+  }
+);}
+
+
+
+
+
+export const getSetHerdSpaceMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setHerdSpace>>, TError,{farmId: number;herdId: number;data: BodyType<HerdSpaceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setHerdSpace>>, TError,{farmId: number;herdId: number;data: BodyType<HerdSpaceInput>}, TContext> => {
+
+const mutationKey = ['setHerdSpace'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setHerdSpace>>, {farmId: number;herdId: number;data: BodyType<HerdSpaceInput>}> = (props) => {
+          const {farmId,herdId,data} = props ?? {};
+
+          return  setHerdSpace(farmId,herdId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetHerdSpaceMutationResult = NonNullable<Awaited<ReturnType<typeof setHerdSpace>>>
+    export type SetHerdSpaceMutationBody = BodyType<HerdSpaceInput>
+    export type SetHerdSpaceMutationError = ErrorType<void>
+
+    /**
+ * @summary Platz-Check (Bio) – stall and outdoor area of a group in m² (caretaker or admin)
+ */
+export const useSetHerdSpace = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setHerdSpace>>, TError,{farmId: number;herdId: number;data: BodyType<HerdSpaceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setHerdSpace>>,
+        TError,
+        {farmId: number;herdId: number;data: BodyType<HerdSpaceInput>},
+        TContext
+      > => {
+      return useMutation(getSetHerdSpaceMutationOptions(options));
     }
 
 export const getUpdateHerdUrl = (farmId: number,

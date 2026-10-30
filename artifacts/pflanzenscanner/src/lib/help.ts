@@ -185,6 +185,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         a: "Ab dem letzten Behandlungstag. Bei einer Behandlung über mehrere Tage trägst du „Behandlung bis“ ein; das Formular zeigt sofort, bis wann Milch, Eier und Fleisch nicht verwendet werden dürfen. Maßgeblich bleibt die Angabe auf dem Beipackzettel oder vom Tierarzt.",
       },
       {
+        q: "Was ist der Platz-Check?",
+        a: "Nur auf Bio-Höfen (Farm & Team → Bewirtschaftung): Oben unter „Meine Tiere“ trägst du je Gruppe Stallfläche und Auslauf in m² ein. Die App rechnet aus, wie viel die Tiere nach EU-Öko-Verordnung mindestens brauchen (z. B. Legehennen höchstens 6 je m² Stall und 4 m² Auslauf je Huhn), und zeigt grün oder rot. Richtwerte für ausgewachsene Tiere; Verbände verlangen oft mehr.",
+      },
+      {
         q: "Wozu die „Art der Behandlung“?",
         a: "Freiwillig: chemisch-synthetisches Arzneimittel, Naturheilverfahren (Pflanzen, Homöopathie), Impfung oder Parasitenbehandlung. Auf einem Bio-Hof zählt die App damit die chemisch-synthetischen Behandlungen je Tier in 12 Monaten und rechnet die doppelte Wartezeit. Auf allen anderen Höfen ist es nur eine Notiz.",
       },

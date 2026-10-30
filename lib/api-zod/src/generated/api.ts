@@ -7677,6 +7677,8 @@ export const ListHerdsResponseItem = zod.object({
   "name": zod.string(),
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "notes": zod.string().nullable(),
+  "stallM2": zod.number().nullable().describe('Platz-Check (Bio) – stall floor of the group, m²'),
+  "runM2": zod.number().nullable().describe('Platz-Check (Bio) – outdoor run of the group, m²'),
   "animalCount": zod.number().describe('Animals in the herd that are not archived.')
 })
 export const ListHerdsResponse = zod.array(ListHerdsResponseItem)
@@ -7706,6 +7708,38 @@ export const CreateHerdResponse = zod.object({
   "name": zod.string(),
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "notes": zod.string().nullable(),
+  "stallM2": zod.number().nullable().describe('Platz-Check (Bio) – stall floor of the group, m²'),
+  "runM2": zod.number().nullable().describe('Platz-Check (Bio) – outdoor run of the group, m²'),
+  "animalCount": zod.number().describe('Animals in the herd that are not archived.')
+})
+
+
+/**
+ * @summary Platz-Check (Bio) – stall and outdoor area of a group in m² (caretaker or admin)
+ */
+export const SetHerdSpaceParams = zod.object({
+  "farmId": zod.coerce.number(),
+  "herdId": zod.coerce.number()
+})
+
+export const setHerdSpaceBodyStallM2Min = 0;
+
+export const setHerdSpaceBodyRunM2Min = 0;
+
+
+
+export const SetHerdSpaceBody = zod.object({
+  "stallM2": zod.number().min(setHerdSpaceBodyStallM2Min).nullish(),
+  "runM2": zod.number().min(setHerdSpaceBodyRunM2Min).nullish()
+})
+
+export const SetHerdSpaceResponse = zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
+  "notes": zod.string().nullable(),
+  "stallM2": zod.number().nullable().describe('Platz-Check (Bio) – stall floor of the group, m²'),
+  "runM2": zod.number().nullable().describe('Platz-Check (Bio) – outdoor run of the group, m²'),
   "animalCount": zod.number().describe('Animals in the herd that are not archived.')
 })
 
@@ -7735,6 +7769,8 @@ export const UpdateHerdResponse = zod.object({
   "name": zod.string(),
   "species": zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'goose', 'duck', 'turkey', 'quail', 'rhea', 'donkey', 'other']),
   "notes": zod.string().nullable(),
+  "stallM2": zod.number().nullable().describe('Platz-Check (Bio) – stall floor of the group, m²'),
+  "runM2": zod.number().nullable().describe('Platz-Check (Bio) – outdoor run of the group, m²'),
   "animalCount": zod.number().describe('Animals in the herd that are not archived.')
 })
 

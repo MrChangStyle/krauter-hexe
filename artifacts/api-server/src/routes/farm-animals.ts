@@ -14,6 +14,8 @@ import {
   UpdateFarmAnimalBody,
   UpdateFarmAnimalResponse,
   UpdateHerdBody,
+  SetHerdSpaceBody,
+  SetHerdSpaceResponse,
   UpdateHerdResponse,
 } from '@workspace/api-zod';
 
@@ -22,6 +24,7 @@ import {
   createAnimal,
   createHerd,
   deleteHerd,
+  setHerdSpace,
   getAnimal,
   listAnimals,
   listHerds,
@@ -67,6 +70,19 @@ router.patch(
     const body = UpdateHerdBody.safeParse(req.body);
     if (!body.success) return badRequest(res);
     res.json(UpdateHerdResponse.parse(await updateHerd(req.farm!.farmId, herdId, body.data)));
+  }),
+);
+
+// Platz-Check (Bio, docs/bio.md).
+router.put(
+  '/farms/:farmId/herds/:herdId/space',
+  requireFarm('caretaker'),
+  handle(async (req, res) => {
+    const herdId = idParam(req, 'herdId');
+    if (herdId === null) return notFound(res);
+    const body = SetHerdSpaceBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(SetHerdSpaceResponse.parse(await setHerdSpace(req.farm!.farmId, herdId, body.data)));
   }),
 );
 

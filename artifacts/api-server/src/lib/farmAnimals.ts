@@ -67,9 +67,11 @@ export function validBirthDate(raw: unknown, today: Date = new Date()): string {
 // ── Herds ────────────────────────────────────────────────────────────────────
 
 export async function listHerds(farmId: number) {
+  // Spelled out with table names: inside a select drizzle renders columns
+  // without them, and a bare "id" would be the animal's own.
   const animalCount = sql<number>`(
-    SELECT count(*)::int FROM ${farmAnimalsTable}
-    WHERE ${farmAnimalsTable.herdId} = ${herdsTable.id} AND ${farmAnimalsTable.archivedAt} IS NULL
+    SELECT count(*)::int FROM "farm_animals" a
+    WHERE a."herd_id" = "herds"."id" AND a."archived_at" IS NULL
   )`;
   return db
     .select({
@@ -77,6 +79,8 @@ export async function listHerds(farmId: number) {
       name: herdsTable.name,
       species: herdsTable.species,
       notes: herdsTable.notes,
+      stallM2: herdsTable.stallM2,
+      runM2: herdsTable.runM2,
       animalCount,
     })
     .from(herdsTable)
@@ -119,6 +123,27 @@ export async function updateHerd(
       species: input.species,
       notes: text(input.notes, 2000, 'Die Notiz'),
     })
+    .where(and(eq(herdsTable.id, herdId), eq(herdsTable.farmId, farmId)))
+    .returning({ id: herdsTable.id });
+  if (updated.length === 0) throw notFound();
+  return herdById(farmId, herdId);
+}
+
+/** Platz-Check (Bio): stall and outdoor area of a group in m²; null clears. */
+export async function setHerdSpace(farmId: number, herdId: number, input: { stallM2?: number | null; runM2?: number | null }) {
+  const area = (v: number | null | undefined, label: string) => {
+    if (v == null) return null;
+    if (!Number.isFinite(v) || v < 0 || v > 1_000_000) throw new FarmDataError(400, `${label} liegt zwischen 0 und 1 000 000 m².`);
+    return Math.round(v * 10) / 10;
+  };
+  const set: Partial<typeof herdsTable.$inferInsert> = {};
+  if (input.stallM2 !== undefined) set.stallM2 = area(input.stallM2, 'Die Stallfläche');
+  if (input.runM2 !== undefined) set.runM2 = area(input.runM2, 'Der Auslauf');
+  // Nothing sent: nothing to change, the group as it is (or 404).
+  if (Object.keys(set).length === 0) return herdById(farmId, herdId);
+  const updated = await db
+    .update(herdsTable)
+    .set(set)
     .where(and(eq(herdsTable.id, herdId), eq(herdsTable.farmId, farmId)))
     .returning({ id: herdsTable.id });
   if (updated.length === 0) throw notFound();

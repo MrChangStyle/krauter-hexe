@@ -13,6 +13,16 @@ export interface Herd {
   species: FarmSpecies;
   /** @nullable */
   notes: string | null;
+  /**
+     * Platz-Check (Bio) – stall floor of the group, m²
+     * @nullable
+     */
+  stallM2: number | null;
+  /**
+     * Platz-Check (Bio) – outdoor run of the group, m²
+     * @nullable
+     */
+  runM2: number | null;
   /** Animals in the herd that are not archived. */
   animalCount: number;
 }

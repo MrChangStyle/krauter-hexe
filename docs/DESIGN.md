@@ -23,7 +23,7 @@ Vorbild sind die Übersichten **Hof, Pflanzen und Tiere**: Kacheln mit farbigem 
 |---|---|---|
 | **D1** | Modul-Aussehen an einer Stelle, Seitenkopf für alle Modulseiten (32 Seiten), Übersichten Pflanzen und Tiere lesen daraus | ✅ (#139) |
 | **D2** | Untermenüs als Kacheln: Beet-Architekt (Assistent, Kalender, Saatgut, Ernte), Futterplaner (Vorrat & Kosten, Tipps & Rezepte), Grow (Wissen, Rechtliches); jede Unterseite mit eigener Farbe | ✅ (#140) |
-| **D4** | Nichts offen, alles hinter Kacheln: Übersichtsseiten zeigen nur Kacheln, jedes Thema bekommt eine eigene Seite. Schritt 1: Farm & Team (Team, Vertretung, Übergabe, Kontakte, Bewirtschaftung, Nachhaltigkeit). Danach: einzelnes Tier, Mehr, Grow, Pflegeplan, Tiere | Farm & Team ✅ (#149), Rest offen |
+| **D4** | Nichts offen, alles hinter Kacheln: Übersichtsseiten zeigen nur Kacheln, jedes Thema bekommt eine eigene Seite. Schritt 1: Farm & Team (Team, Vertretung, Übergabe, Kontakte, Bewirtschaftung, Nachhaltigkeit). Schritt 2: einzelnes Tier (Gesundheit, Gewicht, Futter, Abstammung, Heil- & Futterpflanzen, Haltung unter `/farm/:farmId/tier/:animalId/:thema`). Danach: Mehr, Grow, Pflegeplan, Tiere | Farm & Team ✅ (#149), Tier ✅ (#150), Rest offen |
 | **D3** | Karten vereinheitlicht: Karten `rounded-2xl border bg-card p-4` (79), Listenzeilen `rounded-xl border bg-card p-3` (45), farbige Hinweis-Karten mit großen Ecken (12); Überschriften in Karten einheitlich `flex items-center gap-2 font-semibold` mit Symbol | ✅ (#142) |
 
 ## Bewusst so gelassen

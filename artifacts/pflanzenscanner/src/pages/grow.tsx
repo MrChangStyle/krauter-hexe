@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BookOpen, Bell, ChevronRight, Coins, Plus, Scale, ShieldCheck, Trash2, Archive, Loader2 } from "lucide-react";
+import { AlertTriangle, Bell, ChevronRight, Coins, Plus, Scale, ShieldCheck, Trash2, Archive, Loader2 } from "lucide-react";
 import {
   getGetGrowAccessQueryKey,
   getGetGrowOverviewQueryKey,
@@ -32,6 +32,8 @@ import { ENVIRONMENT_LABELS, GROW_ENABLED, MEDIUM_LABELS, PHASE_COLORS, PHASE_LA
 import { deDay } from "@/lib/medicine-labels";
 import { enablePush, isPushEnabled, pushSupported } from "@/lib/push";
 import { PageHeader } from "@/components/page-header";
+import { HubGrid, HubTile } from "@/components/hub-tile";
+import { tileOf } from "@/lib/module-look";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -418,16 +420,10 @@ function Overview({ access }: { access: GrowAccess }) {
       <KcangCard overview={d} access={access} />
       <PushCard access={access} />
       <GrowPremiumCard />
-      <div className="grid grid-cols-2 gap-3">
-        <Link href="/grow/wissen" className="flex items-center gap-2 rounded-xl border border-border bg-card p-3 text-sm font-medium hover:bg-muted/50">
-          <BookOpen className="h-4 w-4 text-primary" />
-          Grow-Wissen
-        </Link>
-        <Link href="/grow/recht" className="flex items-center gap-2 rounded-xl border border-border bg-card p-3 text-sm font-medium hover:bg-muted/50">
-          <Scale className="h-4 w-4 text-primary" />
-          Rechtliches
-        </Link>
-      </div>
+      <HubGrid>
+        <HubTile {...tileOf("grow-wissen")} />
+        <HubTile {...tileOf("grow-recht")} />
+      </HubGrid>
       <Button className="gap-1.5" onClick={() => setCreating(true)}>
         <Plus className="h-4 w-4" />
         Grow anlegen

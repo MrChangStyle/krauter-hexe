@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertOctagon, Bell, BookOpen, Camera, Droplets, Info, Leaf, Loader2, Package, Plus, Repeat, Scale, Snowflake, Trash2, Wheat, X } from "lucide-react";
+import { AlertOctagon, Bell, Camera, Droplets, Info, Leaf, Loader2, Plus, Repeat, Scale, Snowflake, Trash2, Wheat, X } from "lucide-react";
 import {
   getListFarmFeedsQueryKey,
   getListRationsQueryKey,
@@ -43,6 +43,8 @@ import { CATEGORY_LABELS, NUTRIENT_LABELS, SEASON_LABELS, STAGE_LABELS, formatRa
 import { berlinToday, dayLabel } from "@/lib/weather-labels";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
+import { HubGrid, HubTile } from "@/components/hub-tile";
+import { tileOf } from "@/lib/module-look";
 
 const TIMES = ["morgens", "mittags", "abends"] as const;
 const DOT = { green: "bg-emerald-500", yellow: "bg-amber-400", red: "bg-red-600" } as const;
@@ -837,17 +839,10 @@ export default function FutterplanerPage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="futter" subtitle="Was deine Tiere bekommen – abgeglichen mit dem, was sie brauchen." />
-      <Link href="/farm/futter/vorrat" className="flex items-center justify-between gap-2 rounded-2xl border border-border bg-card p-3 text-sm hover:bg-muted/50">
-        <span className="flex items-center gap-2 font-medium">
-          <Package className="h-4 w-4 text-primary" />
-          Vorrat, Kosten & Wintervorrat
-        </span>
-        <PremiumBadge />
-      </Link>
-      <Link href="/farm/futter/tipps" className="flex items-center gap-2 rounded-2xl border border-border bg-card p-3 text-sm font-medium hover:bg-muted/50">
-        <BookOpen className="h-4 w-4 text-primary" />
-        Tipps, Rezepte & Futterkalender
-      </Link>
+      <HubGrid>
+        <HubTile {...tileOf("futter-vorrat")} tag="Premium" />
+        <HubTile {...tileOf("futter-tipps")} />
+      </HubGrid>
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Planner farm={farm} />}
     </div>
   );

@@ -134,6 +134,8 @@ export default function KraeuterHexePage() {
   const symptomGroups = useMemo(() => groupSymptoms(availableSymptoms), [availableSymptoms]);
   // Groups opened or closed by hand in the menu.
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  // The Beschwerden menu, closed by "Übernehmen".
+  const [menuOpen, setMenuOpen] = useState(false);
   const [closedGroups, setClosedGroups] = useState<Set<string>>(new Set());
   const toggleGroup = (label: string, isOpen: boolean) => {
     const without = (set: Set<string>) => new Set([...set].filter((l) => l !== label));
@@ -403,7 +405,7 @@ export default function KraeuterHexePage() {
             )}
           </div>
 
-          <DropdownMenu>
+          <DropdownMenu open={menuOpen} onOpenChange={setMenuOpen}>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="w-full justify-between font-normal">
                 <span className="truncate text-left">
@@ -414,10 +416,15 @@ export default function KraeuterHexePage() {
                 <ChevronDown className="w-4 h-4 opacity-60 shrink-0" />
               </Button>
             </DropdownMenuTrigger>
+            {/* The list scrolls on its own; "Übernehmen" and "Zurücksetzen"
+                stay fixed at the bottom so it is clear how to finish. */}
             <DropdownMenuContent
               align="start"
-              className="w-[var(--radix-dropdown-menu-trigger-width)] max-h-[60vh] overflow-y-auto"
+              side="bottom"
+              collisionPadding={8}
+              className="flex max-h-[min(70vh,var(--radix-dropdown-menu-content-available-height))] w-[var(--radix-dropdown-menu-trigger-width)] flex-col overflow-hidden p-0"
             >
+              <div className="min-h-0 flex-1 overflow-y-auto p-1" data-testid="symptom-list">
               <DropdownMenuLabel>Beschwerden</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {/* Groups open on a tap; a lone group or one with a chosen
@@ -460,18 +467,22 @@ export default function KraeuterHexePage() {
                   </div>
                 );
               })}
-              {selected.size > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem
-                    onSelect={clearSymptoms}
-                    className="justify-center text-muted-foreground"
-                  >
-                    <X className="w-3.5 h-3.5 mr-1" />
-                    Zurücksetzen
-                  </DropdownMenuItem>
-                </>
-              )}
+              </div>
+              <div className="shrink-0 space-y-1 border-t bg-popover p-2" data-testid="symptom-actions">
+                <Button type="button" className="w-full" onClick={() => setMenuOpen(false)}>
+                  {selected.size === 0 ? "Schließen" : `Übernehmen (${selected.size})`}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full text-muted-foreground"
+                  disabled={selected.size === 0}
+                  onClick={clearSymptoms}
+                >
+                  <X className="mr-1 h-3.5 w-3.5" />
+                  Zurücksetzen
+                </Button>
+              </div>
             </DropdownMenuContent>
           </DropdownMenu>
 

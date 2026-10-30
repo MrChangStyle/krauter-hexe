@@ -7,6 +7,7 @@ import { GardenEconomicsSection } from "@/components/garden-economics";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { MONTHS, changeText, euro, num } from "@/lib/yield-labels";
 import { PageHeader } from "@/components/page-header";
+import { OrganicAreaSwitch } from "@/components/organic-area-switch";
 
 function Chart({ data, label, unit }: { data: { name: string; value: number }[]; label: string; unit: string }) {
   if (data.every((d) => d.value === 0)) return null;
@@ -184,6 +185,7 @@ export default function ErnteAuswertungPage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="ernte" subtitle="Was jede Kultur und jedes Beet gebracht hat, was der Garten gekostet hat – und was sich gelohnt hat." />
+      <OrganicAreaSwitch area="garden" />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Season farm={farm} />}
     </div>
   );

@@ -23,6 +23,7 @@ import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { MEDICINE_STATUS, deDay, medicineWithdrawal } from "@/lib/medicine-labels";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
+import { OrganicAreaSwitch } from "@/components/organic-area-switch";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -258,6 +259,7 @@ export default function ArzneimittelPage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="arzneimittel" subtitle="Was im Schrank steht, wie lange es haltbar ist und welche Wartezeit gilt." />
+      <OrganicAreaSwitch area="treatments" />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Stock farm={farm} />}
     </div>
   );

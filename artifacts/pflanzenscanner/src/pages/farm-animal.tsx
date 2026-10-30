@@ -27,6 +27,7 @@ import { MedicalSection, WeightSection } from "@/components/farm-animal-health";
 import { LineageSection } from "@/components/farm-animal-lineage";
 import { ARCHIVE_SPECIES, FeedSection, HelpfulPlantsSection, HusbandrySection, SpeciesSuggestionBox } from "@/components/farm-ai";
 import { HubGrid, HubTile } from "@/components/hub-tile";
+import { OrganicAreaSwitch } from "@/components/organic-area-switch";
 import { TONES } from "@/lib/module-look";
 import { cn } from "@/lib/utils";
 import { SpeciesRequestLink } from "@/components/species-request";
@@ -473,6 +474,7 @@ function AnimalDetailPage({ farmId, animalId, section }: { farmId: number; anima
             <p className="text-sm text-muted-foreground">{a.name} · {SPECIES_LABELS[a.species]}</p>
           </div>
         </div>
+        {topic.key === "gesundheit" && <OrganicAreaSwitch area="treatments" farmId={farmId} />}
         {topic.key === "gesundheit" && <MedicalSection farmId={farmId} animalId={animalId} canWrite={canWrite} />}
         {topic.key === "gewicht" && <WeightSection farmId={farmId} animalId={animalId} canWrite={canWrite} />}
         {topic.key === "futter" && <FeedSection farmId={farmId} animalId={animalId} canWrite={canWrite} />}

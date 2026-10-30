@@ -1,12 +1,13 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FlaskConical, Loader2, Pencil, Plus, ShoppingBasket, Sprout } from "lucide-react";
+import { ArrowLeft, FlaskConical, Leaf, Loader2, Pencil, Plus, ShoppingBasket, Sprout } from "lucide-react";
 import {
   getGetSeedOverviewQueryKey,
   getGetGardenCatalogQueryKey,
   useCreateSeed,
   useEnsureOwnFarm,
+  useGetFarmFarming,
   useGetGardenCatalog,
   useGetSeedOverview,
   useRecordGerminationTest,
@@ -25,6 +26,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { todayIso } from "@/lib/farm-labels";
+import { certified, organicAdvice } from "@/lib/farming-labels";
+import { conventionalSeeds } from "@/lib/organic-check";
 import { SAVING_TEXT, SEED_STATUS, SOURCE_LABELS, amountText, seedBasis } from "@/lib/seed-labels";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
@@ -38,7 +41,7 @@ function useRefresh(farm: FarmSummary) {
   return () => void queryClient.invalidateQueries({ queryKey: getGetSeedOverviewQueryKey(farm.id) });
 }
 
-function SeedDialog({ farm, seed, cropKey, onClose }: { farm: FarmSummary; seed: Seed | null; cropKey?: string; onClose: () => void }) {
+function SeedDialog({ farm, seed, cropKey, showOrganic, onClose }: { farm: FarmSummary; seed: Seed | null; cropKey?: string; showOrganic: boolean; onClose: () => void }) {
   const { toast } = useToast();
   const refresh = useRefresh(farm);
   const catalog = useGetGardenCatalog({ query: { queryKey: getGetGardenCatalogQueryKey(), staleTime: 5 * 60 * 1000 } });
@@ -53,6 +56,7 @@ function SeedDialog({ farm, seed, cropKey, onClose }: { farm: FarmSummary; seed:
     harvestYear: seed?.harvestYear ? String(seed.harvestYear) : "",
     useBy: seed?.useBy ?? "",
     openPollinated: seed?.openPollinated === null || seed?.openPollinated === undefined ? "" : seed.openPollinated ? "yes" : "no",
+    organic: seed?.organic === null || seed?.organic === undefined ? "" : seed.organic ? "yes" : "no",
     notes: seed?.notes ?? "",
   });
   const set = (patch: Partial<typeof form>) => setForm((f) => ({ ...f, ...patch }));
@@ -79,6 +83,7 @@ function SeedDialog({ farm, seed, cropKey, onClose }: { farm: FarmSummary; seed:
       harvestYear: form.harvestYear ? Number(form.harvestYear) : null,
       useBy: form.useBy || null,
       openPollinated: form.openPollinated === "" ? null : form.openPollinated === "yes",
+      organic: form.organic === "" ? null : form.organic === "yes",
       notes: form.notes.trim() || null,
       ...(archived === undefined ? {} : { archived }),
     };
@@ -163,6 +168,17 @@ function SeedDialog({ farm, seed, cropKey, onClose }: { farm: FarmSummary; seed:
               </select>
             </div>
           </div>
+          {/* Only for farms that farm naturally or organically (docs/bio.md, B7); a value stays when the farm switches back. */}
+          {showOrganic && (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="s-organic">Bio-Saatgut?</Label>
+              <select id="s-organic" className={selectClass} value={form.organic} onChange={(e) => set({ organic: e.target.value })}>
+                <option value="">Weiß nicht</option>
+                <option value="yes">Bio-Saatgut</option>
+                <option value="no">Konventionell</option>
+              </select>
+            </div>
+          )}
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="s-notes">Notiz</Label>
             <Textarea id="s-notes" rows={2} maxLength={2000} value={form.notes} onChange={(e) => set({ notes: e.target.value })} />
@@ -240,7 +256,7 @@ function TestDialog({ farm, seed, onClose }: { farm: FarmSummary; seed: Seed; on
   );
 }
 
-function SeedCard({ seed, canWrite, onEdit, onTest }: { seed: Seed; canWrite: boolean; onEdit: () => void; onTest: () => void }) {
+function SeedCard({ seed, canWrite, showOrganic, onEdit, onTest }: { seed: Seed; canWrite: boolean; showOrganic: boolean; onEdit: () => void; onTest: () => void }) {
   const badge = SEED_STATUS[seed.status];
   return (
     <li className={`space-y-1.5 rounded-xl border border-border bg-card p-4 text-sm ${seed.archived ? "opacity-60" : ""}`} data-testid={`seed-${seed.id}`}>
@@ -254,6 +270,8 @@ function SeedCard({ seed, canWrite, onEdit, onTest }: { seed: Seed; canWrite: bo
             {amountText(seed.amount, seed.unit)} · {SOURCE_LABELS[seed.source]}
             {seed.openPollinated === true && " · samenfest"}
             {seed.openPollinated === false && " · F1"}
+            {showOrganic && seed.organic === true && " · Bio"}
+            {showOrganic && seed.organic === false && " · konventionell"}
           </p>
         </div>
         <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.tone}`}>{badge.label}</span>
@@ -283,10 +301,13 @@ function Seeds({ farm }: { farm: FarmSummary }) {
   const overview = useGetSeedOverview(farm.id);
   const [dialog, setDialog] = useState<{ seed: Seed | null; cropKey?: string } | null>(null);
   const [testing, setTesting] = useState<Seed | null>(null);
+  const farming = useGetFarmFarming(farm.id);
   const canWrite = farm.role !== "guest";
   if (!overview.data) return <Loader2 className="h-6 w-6 animate-spin text-primary" />;
   const { seeds, plan } = overview.data;
   const active = seeds.filter((s) => !s.archived);
+  const showOrganic = organicAdvice(farming.data?.level);
+  const notOrganic = certified(farming.data?.level) ? conventionalSeeds(active) : null;
   const archived = seeds.filter((s) => s.archived);
 
   return (
@@ -320,6 +341,19 @@ function Seeds({ farm }: { farm: FarmSummary }) {
         </section>
       )}
 
+      {notOrganic && (notOrganic.conventional.length > 0 || notOrganic.unknown.length > 0) && (
+        <section className="space-y-1 rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100" data-testid="seed-organic-warning">
+          <h2 className="flex items-center gap-2 font-semibold">
+            <Leaf className="h-4 w-4" />
+            Bio-Saatgut
+          </h2>
+          {notOrganic.conventional.length > 0 && (
+            <p>Konventionell: {notOrganic.conventional.map((s) => s.name).join(", ")}. Auf einem Bio-Hof nur, wenn es die Sorte nicht in Bio gibt – mit Ausnahmegenehmigung der Kontrollstelle (Richtwert).</p>
+          )}
+          {notOrganic.unknown.length > 0 && <p>Noch nicht angegeben: {notOrganic.unknown.map((s) => s.name).join(", ")}.</p>}
+        </section>
+      )}
+
       {canWrite && (
         <Button className="gap-1.5" onClick={() => setDialog({ seed: null })}>
           <Plus className="h-4 w-4" />
@@ -334,7 +368,7 @@ function Seeds({ farm }: { farm: FarmSummary }) {
       ) : (
         <ul className="space-y-3">
           {active.map((s) => (
-            <SeedCard key={s.id} seed={s} canWrite={canWrite} onEdit={() => setDialog({ seed: s })} onTest={() => setTesting(s)} />
+            <SeedCard key={s.id} seed={s} canWrite={canWrite} showOrganic={showOrganic} onEdit={() => setDialog({ seed: s })} onTest={() => setTesting(s)} />
           ))}
         </ul>
       )}
@@ -343,12 +377,12 @@ function Seeds({ farm }: { farm: FarmSummary }) {
           <summary className="cursor-pointer text-sm text-muted-foreground">Archiviert ({archived.length})</summary>
           <ul className="space-y-3 pt-2">
             {archived.map((s) => (
-              <SeedCard key={s.id} seed={s} canWrite={canWrite} onEdit={() => setDialog({ seed: s })} onTest={() => setTesting(s)} />
+              <SeedCard key={s.id} seed={s} canWrite={canWrite} showOrganic={showOrganic} onEdit={() => setDialog({ seed: s })} onTest={() => setTesting(s)} />
             ))}
           </ul>
         </details>
       )}
-      {dialog && <SeedDialog farm={farm} seed={dialog.seed} cropKey={dialog.cropKey} onClose={() => setDialog(null)} />}
+      {dialog && <SeedDialog farm={farm} seed={dialog.seed} cropKey={dialog.cropKey} showOrganic={showOrganic} onClose={() => setDialog(null)} />}
       {testing && <TestDialog farm={farm} seed={testing} onClose={() => setTesting(null)} />}
     </div>
   );

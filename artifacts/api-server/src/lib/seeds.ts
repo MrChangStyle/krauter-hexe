@@ -114,6 +114,8 @@ export interface Seed {
   harvestYear: number | null;
   useBy: string | null;
   openPollinated: boolean | null;
+  /** Bio-Saatgut (true), konventionell (false), unknown (null). */
+  organic: boolean | null;
   testSown: number | null;
   testGerminated: number | null;
   testedOn: string | null;
@@ -138,6 +140,7 @@ function toSeed(row: Row, today: string): Seed {
     harvestYear: row.harvestYear,
     useBy: row.useBy,
     openPollinated: row.openPollinated,
+    organic: row.organic,
     testSown: row.testSown,
     testGerminated: row.testGerminated,
     testedOn: row.testedOn,
@@ -201,6 +204,7 @@ export interface SeedInput {
   harvestYear?: number | null;
   useBy?: string | null;
   openPollinated?: boolean | null;
+  organic?: boolean | null;
   notes?: unknown;
   archived?: boolean;
 }
@@ -236,6 +240,7 @@ function values(input: SeedInput, today: string) {
     harvestYear,
     useBy,
     openPollinated: input.openPollinated ?? null,
+    organic: input.organic ?? null,
     notes: text(input.notes, 2000, 'Die Notiz'),
     ...(input.archived === undefined ? {} : { archivedAt: input.archived ? new Date() : null }),
   };

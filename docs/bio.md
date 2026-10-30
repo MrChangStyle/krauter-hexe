@@ -1,6 +1,6 @@
 # Bio und Bewirtschaftung
 
-Schritte B1 bis B5 aus `docs/BIO-KONZEPT.md`. **Bio ist eine Option, keine Pflicht.** Die App bleibt für alle da, die konventionell wirtschaften. Wer möchte, stellt auf naturnah oder bio um, und kann jederzeit zurückwechseln.
+Schritte B1 bis B5 und der erste Teil von B7 aus `docs/BIO-KONZEPT.md`. **Bio ist eine Option, keine Pflicht.** Die App bleibt für alle da, die konventionell wirtschaften. Wer möchte, stellt auf naturnah oder bio um, und kann jederzeit zurückwechseln.
 
 ## Für Nutzer
 
@@ -92,15 +92,23 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
   - **Futter:** Rot, wenn eine aktive Ration einen Bio-Anteil nicht einhält. Gelb, wenn bei einem Futtermittel die Herkunft fehlt oder es noch keine Ration gibt.
   - **Platz:** Rot bei zu wenig Stall oder Auslauf. Gelb, wenn Flächen fehlen.
   - **Behandlungen:** Rot, sobald ein Tier 3 oder mehr chemisch-synthetische Behandlungen in 12 Monaten hat.
-  - Saatgut und Dünger kommen mit B7 dazu.
+  - **Saatgut** (ab B7): Rot bei konventionellem Saatgut, gelb, wenn die Angabe fehlt. Selbst gewonnenes zählt als Bio.
+  - Dünger kommt mit B7 dazu.
 - **Bio-Dokumentation (PDF)** im Veterinäramt-Export:
   - Kopf mit Stufe, Kontrollstelle und Datum der Umstellung.
   - Bestandsliste und Medizin-Historie mit Bio-Wartezeit, wie im Export.
   - Bio-Anteile der aktuellen Rationen.
   - Stall und Auslauf je Gruppe.
   - Weidegang im Zeitraum (aus der Weide).
+  - Saatgut im Bestand mit Bio-Angabe, samenfest und Erntejahr (ab B7).
   - „(!)“ markiert Werte außerhalb des Richtwerts.
   - Rationen und Flächen sind der heutige Stand, nicht der des Zeitraums.
+
+### Bio-Saatgut (B7, erster Teil)
+
+- Auf naturnahen und Bio-Höfen hat jedes Saatgut das Feld **„Bio-Saatgut?“**: Bio, konventionell oder weiß nicht. Auf konventionellen Höfen ist es ausgeblendet; ein eingetragener Wert bleibt erhalten.
+- Auf **Bio-Höfen** warnt die Saatgut-Seite bei konventionellem Saatgut (nur erlaubt, wenn es die Sorte nicht in Bio gibt, mit Ausnahmegenehmigung – Richtwert) und nennt Saatgut ohne Angabe. Selbst gewonnenes Saatgut zählt als Bio, archiviertes nicht.
+- Das Feld „Samenfest?“ gab es schon für alle Höfe.
 
 ## Technik
 
@@ -133,6 +141,7 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
 - **Bio-Check und Bio-Dokumentation (B5):**
   - Beides rechnet die App aus vorhandenen Daten (Rationen, Gruppen, Export, Weiden), ohne neue Tabelle.
   - Code: `lib/organic-check.ts`, `components/organic-check-card.tsx`, die Abschnitte in `lib/farm-export-pdf.ts` (`OrganicDoc`).
+- **Bio-Saatgut (B7):** Spalte `seeds.organic` (true/false/null), über die vorhandenen Saatgut-Routen; Regeln in `lib/organic-check.ts` (`conventionalSeeds`, `seedArea`, `seedRows`).
 - **Demo:** Der Demo-Hof ist naturnah (`docs/demo.md`).
 - **Tests:**
   - `farming.integration.test.ts`: Standard, Umschalten in beide Richtungen, Rollen, Prüfungen, wer biologische Tipps bekommt.
@@ -141,7 +150,8 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
   - App `farm-health.test.ts`: Wartezeit-Rechnung, Export-Text, Zähler über 12 Monate.
   - `feedPlanner.integration.test.ts`: Anteile nur auf Bio-Höfen, fehlende Herkunft, Rollen.
   - `farmAnimals.integration.test.ts` und App `organic-space.test.ts`: Flächen speichern und prüfen.
-  - App `organic-check.test.ts`: Ampeln und Zeilen der Bio-Dokumentation.
+  - App `organic-check.test.ts`: Ampeln und Zeilen der Bio-Dokumentation, Bio-Saatgut.
+  - `seeds.integration.test.ts`: Bio-Saatgut speichern und ändern.
 
 ## Offen
 
@@ -149,5 +159,5 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
 - Futter-Richtwerte zur fachlichen Prüfung: Anteil vom Hof oder aus der Region, zugekauftes Umstellungsfutter, Raufutter (bei Milchkühen in der Frühlaktation 50 %), Ausnahmen für Eiweißfutter bei Jungtieren (VO (EU) 2018/848, Anhang II Teil II 1.4). „Region“ prüft die App nicht, das Häkchen setzt der Hof selbst.
 - Platz-Richtwerte zur fachlichen Prüfung: Jungtiere, Masthühner, Sauen mit Ferkeln, Mastrinder und Verbandswerte fehlen noch; Pferde, Esel, Alpakas und Kaninchen ohne Werte.
 - Rationen und Flächen in der Bio-Dokumentation sind der heutige Stand. Ob die Kontrolle den Stand im Zeitraum braucht, ist zu klären.
-- Die nächsten Schritte B7 (Saatgut, Gründüngung, Mist → Beet) und B8 (Nachhaltigkeit, Homepage) aus `docs/BIO-KONZEPT.md`. Der Berater-Zugang (B6) ist zurückgestellt.
+- Die nächsten Schritte: Rest von B7 (Gründüngung, Mist → Beet, Erzeugnisse als „Bio“) und B8 (Nachhaltigkeit, Homepage) aus `docs/BIO-KONZEPT.md`. Der Berater-Zugang (B6) ist zurückgestellt.
 - Die Liste der „im Ökolandbau üblichen“ Mittel im KI-Hinweis ist ein Richtwert. Verbindlich ist Anhang I der VO (EU) 2021/1165 (zugelassene Pflanzenschutzmittel, Dünger); fachlich zu prüfen.

@@ -35,6 +35,11 @@ export interface SeedInput {
   /** @nullable */
   openPollinated?: boolean | null;
   /**
+     * Bio-Saatgut (true), konventionell (false), unknown (null)
+     * @nullable
+     */
+  organic?: boolean | null;
+  /**
      * @maxLength 2000
      * @nullable
      */

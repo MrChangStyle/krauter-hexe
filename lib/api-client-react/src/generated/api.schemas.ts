@@ -934,6 +934,11 @@ export interface Seed {
   useBy: string | null;
   /** @nullable */
   openPollinated: boolean | null;
+  /**
+     * Bio-Saatgut (true), konventionell (false), unknown (null)
+     * @nullable
+     */
+  organic: boolean | null;
   /** @nullable */
   testSown: number | null;
   /** @nullable */
@@ -980,6 +985,11 @@ export interface SeedInput {
   useBy?: string | null;
   /** @nullable */
   openPollinated?: boolean | null;
+  /**
+     * Bio-Saatgut (true), konventionell (false), unknown (null)
+     * @nullable
+     */
+  organic?: boolean | null;
   /**
      * @maxLength 2000
      * @nullable

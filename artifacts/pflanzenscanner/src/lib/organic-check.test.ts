@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { FarmAnimal, Herd, MedicalRecord, RationEvaluation } from "@workspace/api-client-react";
-import { feedArea, grazingRows, organicFeedRows, organicSpaceRows, spaceArea, treatmentArea } from "@/lib/organic-check";
+import type { FarmAnimal, Herd, MedicalRecord, RationEvaluation, Seed } from "@workspace/api-client-react";
+import { feedArea, grazingRows, organicFeedRows, organicSpaceRows, seedArea, seedRows, spaceArea, treatmentArea } from "@/lib/organic-check";
 
 const check = (key: string, value: number, ok: boolean) => ({ key, value, target: 0, bound: "min", ok });
 const ration = (name: string, ok: boolean, missing: string[] = [], active = true) =>
@@ -48,6 +48,18 @@ describe("Bio-Check", () => {
     expect(grazingRows(pastures, { from: "2026-01-01", to: "2026-10-30" }, (d) => d)).toEqual([
       ["Obstwiese", "Hühner", "12", "2026-04-01", "läuft"],
       ["Obstwiese", "Ziegen", "4", "2026-05-01", "2026-05-20"],
+    ]);
+  });
+
+  it("rates the seed: conventional before unknown; own seed counts as organic", () => {
+    const seed = (name: string, organic: boolean | null, source = "bought", archived = false) => ({ name, organic, source, archived, variety: null, openPollinated: null, harvestYear: null }) as unknown as Seed;
+    expect(seedArea([]).status).toBe("open");
+    expect(seedArea([seed("Tomate", true), seed("Bohne", null, "saved")])).toMatchObject({ status: "ok" });
+    expect(seedArea([seed("Tomate", true), seed("Möhre", null)])).toMatchObject({ status: "open", text: "Bio-Saatgut nicht angegeben: Möhre." });
+    expect(seedArea([seed("Möhre", null), seed("Mais", false), seed("Alt", false, "bought", true)])).toMatchObject({ status: "warn", text: "Konventionell (nur mit Ausnahmegenehmigung): Mais." });
+    expect(seedRows([seed("Mais", false), seed("Bohne", null, "saved")], (s) => s.source, () => "1 Tüte")).toEqual([
+      ["Mais", "–", "bought", "konventionell (!)", "–", "–", "1 Tüte"],
+      ["Bohne", "–", "saved", "eigener Hof", "–", "–", "1 Tüte"],
     ]);
   });
 });

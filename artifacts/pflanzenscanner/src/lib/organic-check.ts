@@ -1,15 +1,15 @@
-import type { FarmAnimal, Herd, MedicalRecord, RationEvaluation } from "@workspace/api-client-react";
+import type { FarmAnimal, Herd, MedicalRecord, RationEvaluation, Seed } from "@workspace/api-client-react";
 import { ORGANIC_TREATMENT_LIMIT, chemicalTreatments } from "./farm-health";
 import { spaceCheck } from "./organic-space";
 
 /**
  * Bio-Check (docs/bio.md, B5): one light per area of an organic farm, built
- * from what the modules already know. Seeds and fertiliser follow with B7.
+ * from what the modules already know. Fertiliser follows with B7.
  */
 export type CheckStatus = "ok" | "warn" | "open";
 
 export interface CheckArea {
-  key: "feed" | "space" | "treatments";
+  key: "feed" | "space" | "treatments" | "seeds";
   label: string;
   status: CheckStatus;
   /** One short line: what is fine or what is missing. */
@@ -58,6 +58,25 @@ export function treatmentArea(animals: readonly FarmAnimal[] | undefined, record
   return { ...base, status: "ok", text: active.length === 0 ? "Keine Tiere mit Behandlungen." : `Kein Tier über ${ORGANIC_TREATMENT_LIMIT - 1} chemisch-synthetischen Behandlungen in 12 Monaten.` };
 }
 
+/**
+ * Saatgut (B7): seed that is not organic. Seed saved on the farm itself counts
+ * as organic; archived lots do not count.
+ */
+export function conventionalSeeds(seeds: readonly Seed[]): { conventional: Seed[]; unknown: Seed[] } {
+  const relevant = seeds.filter((s) => !s.archived && s.source !== "saved");
+  return { conventional: relevant.filter((s) => s.organic === false), unknown: relevant.filter((s) => s.organic === null) };
+}
+
+export function seedArea(seeds: readonly Seed[] | undefined): CheckArea {
+  const base = { key: "seeds" as const, label: "Saatgut", href: "/beete/saatgut" };
+  const active = (seeds ?? []).filter((s) => !s.archived);
+  if (active.length === 0) return { ...base, status: "open", text: "Noch kein Saatgut eingetragen." };
+  const { conventional, unknown } = conventionalSeeds(active);
+  if (conventional.length > 0) return { ...base, status: "warn", text: `Konventionell (nur mit Ausnahmegenehmigung): ${conventional.map((s) => s.name).join(", ")}.` };
+  if (unknown.length > 0) return { ...base, status: "open", text: `Bio-Saatgut nicht angegeben: ${unknown.map((s) => s.name).join(", ")}.` };
+  return { ...base, status: "ok", text: `${plural(active.length, "Saatgut ist", "Saatgüter sind")} Bio oder vom eigenen Hof.` };
+}
+
 // ── Bio-Dokumentation (PDF) ──────────────────────────────────────────────────
 
 const pct = (n: number) => `${Math.round(n)} %`;
@@ -103,4 +122,22 @@ export function grazingRows(
     .filter(({ g }) => g.startOn <= period.to && (!g.endOn || g.endOn >= period.from))
     .sort((a, b) => a.g.startOn.localeCompare(b.g.startOn))
     .map(({ p, g }) => [p.name, g.label, String(g.animals), deDate(g.startOn), g.endOn ? deDate(g.endOn) : "läuft"]);
+}
+
+export const SEED_COLUMNS = ["Saatgut", "Sorte", "Herkunft", "Bio", "Samenfest", "Erntejahr", "Menge"] as const;
+
+/** Seed lots on hand; "(!)" marks conventional seed. */
+export function seedRows(seeds: readonly Seed[], sourceLabel: (s: Seed) => string, amount: (s: Seed) => string): string[][] {
+  const yesNo = (v: boolean | null, yes: string, no: string) => (v === null ? "–" : v ? yes : no);
+  return seeds
+    .filter((s) => !s.archived)
+    .map((s) => [
+      s.name,
+      s.variety ?? "–",
+      sourceLabel(s),
+      s.source === "saved" && s.organic === null ? "eigener Hof" : yesNo(s.organic, "Bio", "konventionell (!)"),
+      yesNo(s.openPollinated, "ja", "F1"),
+      s.harvestYear ? String(s.harvestYear) : "–",
+      amount(s),
+    ]);
 }

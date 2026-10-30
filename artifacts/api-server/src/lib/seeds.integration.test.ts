@@ -89,7 +89,12 @@ describe.skipIf(!enabled)("Saatgut (real database)", () => {
       goodUntil: 2028,
       saving: "biennial",
       archived: false,
+      organic: null,
     });
+    // Bio-Saatgut (docs/bio.md, B7): stored as given, and kept or changed on update.
+    const bio = await api("POST", S(), { cropKey: "erbse", amount: 1, unit: "Tüten", organic: true });
+    expect(bio.data.organic).toBe(true);
+    expect((await api("PUT", `${S()}/${bio.data.id}`, { cropKey: "erbse", amount: 1, unit: "Tüten", organic: false })).data.organic).toBe(false);
     const own = await api("POST", S(), { name: "Bauernsenf", amount: 30, unit: "g", source: "swapped" });
     expect(own.data).toMatchObject({ cropKey: null, cropName: null, status: "check", saving: null });
     const bad = async (body: object) => (await api("POST", S(), { amount: 1, unit: "Tüten", cropKey: "tomate", ...body })).data.error;

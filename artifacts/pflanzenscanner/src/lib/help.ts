@@ -137,6 +137,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Woher kennt die App meine Frosttermine?", a: "Aus Wetterdaten des Deutschen Wetterdienstes für deine Postleitzahl (auf etwa 10 km gerundet)." },
       { q: "Was ist mit dem Saatgut?", a: "Unter „Saatgut“ führst du deine Tüten. Die App sagt, wie lange sie keimen, und bucht beim Säen ab." },
       {
+        q: "Wo trage ich Bio-Saatgut ein?",
+        a: "Auf naturnahen und Bio-Höfen hat jedes Saatgut das Feld „Bio-Saatgut?“. Auf Bio-Höfen warnt die Saatgut-Seite bei konventionellem Saatgut – erlaubt nur, wenn es die Sorte nicht in Bio gibt, mit Ausnahmegenehmigung der Kontrollstelle (Richtwert). Selbst gewonnenes Saatgut vom eigenen Hof zählt als Bio. Es erscheint auch im Bio-Check und in der Bio-Dokumentation.",
+      },
+      {
         q: "Lohnt sich mein Garten?",
         a: "Die Ernte-Auswertung rechnet die Ernte zum Ladenwert, zieht die Gartenausgaben ab (Saatgut, Pflanzen, Erde, Dünger, Wasser, Material) und teilt durch deine Stunden. Ohne eingetragene Stunden schätzt sie etwa 1 Stunde je Woche für 10 m² Beet. Frische und Freude zählen nicht mit.",
       },
@@ -186,7 +190,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       },
       {
         q: "Was zeigt der Bio-Check?",
-        a: "Auf Bio-Höfen steht auf der Tiere-Seite eine Ampel je Bereich: Futter (Bio-Anteile der Rationen), Platz (Stall und Auslauf) und Behandlungen (chemisch-synthetische je Tier in 12 Monaten). Grün passt, gelb fehlt etwas, rot braucht Handlung. Ein Tipp öffnet, wo du es ändern kannst. Saatgut und Dünger kommen dazu.",
+        a: "Auf Bio-Höfen steht auf der Tiere-Seite eine Ampel je Bereich: Futter (Bio-Anteile der Rationen), Platz (Stall und Auslauf) und Behandlungen (chemisch-synthetische je Tier in 12 Monaten) und Saatgut (Bio oder vom eigenen Hof). Grün passt, gelb fehlt etwas, rot braucht Handlung. Ein Tipp öffnet, wo du es ändern kannst. Dünger kommt dazu.",
       },
       {
         q: "Was ist der Platz-Check?",
@@ -403,7 +407,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Reicht das fürs Veterinäramt?", a: "Es ist eine Arbeitshilfe mit den üblichen Angaben. Was genau verlangt wird, sagt dein Veterinäramt." },
       {
         q: "Was steht in der Bio-Dokumentation?",
-        a: "Nur auf Bio-Höfen gibt es den Knopf „Bio-Dokumentation (PDF)“: Bestandsliste und Behandlungen mit Bio-Wartezeit wie im Export, dazu die Bio-Anteile der aktuellen Rationen, Stall und Auslauf je Gruppe und den Weidegang im Zeitraum. Werte außerhalb der Richtwerte sind mit (!) markiert. Eine Arbeitshilfe für die Öko-Kontrolle – was genau verlangt wird, sagt deine Kontrollstelle.",
+        a: "Nur auf Bio-Höfen gibt es den Knopf „Bio-Dokumentation (PDF)“: Bestandsliste und Behandlungen mit Bio-Wartezeit wie im Export, dazu die Bio-Anteile der aktuellen Rationen, Stall und Auslauf je Gruppe, den Weidegang im Zeitraum und das Saatgut. Werte außerhalb der Richtwerte sind mit (!) markiert. Eine Arbeitshilfe für die Öko-Kontrolle – was genau verlangt wird, sagt deine Kontrollstelle.",
       },
     ],
   },

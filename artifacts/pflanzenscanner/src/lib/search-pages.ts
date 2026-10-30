@@ -21,7 +21,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Kräuter-Hexe", hint: "Heilkräuter-Ratgeber", href: "/kraeuter-hexe", module: "herb-witch", words: "heilkräuter tee beschwerden hausmittel" },
   { title: "Beet-Architekt", hint: "Beete planen", href: "/beete", module: "garden", words: "garten hochbeet mischkultur gemüse" },
   { title: "Gartenkalender", hint: "Säen, pflanzen, ernten", href: "/beete/kalender", module: "garden", words: "aussaat ernte kalender" },
-  { title: "Saatgut", hint: "Vorrat und Keimtest", href: "/beete/saatgut", module: "garden", words: "samen tüten keimen" },
+  { title: "Saatgut", hint: "Vorrat und Keimtest", href: "/beete/saatgut", module: "garden", words: "samen tüten keimen bio-saatgut samenfest" },
   { title: "Ernte-Auswertung", hint: "Was sich gelohnt hat", href: "/beete/ernte", module: "garden", words: "ernte kilo ertrag beet sorte vergleich wirtschaftlichkeit kosten lohnt stunden" },
   { title: "Grow", hint: "Eigenanbau ab 18", href: "/grow", module: "grow", words: "zelt anbau" },
   { title: "Tiere", hint: "Alle Tier-Module", href: "/farm", module: "animals", words: "hof module bio-check ampel" },

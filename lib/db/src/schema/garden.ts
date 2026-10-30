@@ -274,6 +274,8 @@ export const seedsTable = pgTable(
     useBy: date("use_by", { mode: "string" }),
     // Samenfest (true), F1 (false), unknown (null) – only samenfest seed comes true when saved.
     openPollinated: boolean("open_pollinated"),
+    // Bio-Saatgut (true), konventionell (false), unknown (null) – docs/bio.md, B7.
+    organic: boolean("organic"),
     testSown: integer("test_sown"),
     testGerminated: integer("test_germinated"),
     testedOn: date("tested_on", { mode: "string" }),

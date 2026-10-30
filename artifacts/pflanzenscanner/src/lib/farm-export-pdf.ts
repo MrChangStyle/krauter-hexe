@@ -14,7 +14,7 @@ import {
   type ExportData,
 } from "./farm-health";
 import { todayIso } from "./farm-labels";
-import { GRAZING_COLUMNS, ORGANIC_FEED_COLUMNS, ORGANIC_SPACE_COLUMNS } from "./organic-check";
+import { GRAZING_COLUMNS, ORGANIC_FEED_COLUMNS, ORGANIC_SPACE_COLUMNS, SEED_COLUMNS } from "./organic-check";
 
 type RGB = [number, number, number];
 
@@ -37,6 +37,8 @@ export interface OrganicDoc {
   feedRows: string[][];
   spaceRows: string[][];
   grazingRows: string[][];
+  /** null: the member may not see the seeds. */
+  seedRows: string[][] | null;
 }
 
 /**
@@ -154,6 +156,10 @@ export async function exportFarmPdf(data: ExportData, organic?: OrganicDoc): Pro
     table(ORGANIC_SPACE_COLUMNS, [24, 8, 16, 14, 16, 14], organic.spaceRows, "Keine Gruppen mit Bio-Mindestflächen.");
     section(`Weidegang (${countText(organic.grazingRows.length, "Eintrag", "Einträge")})`);
     table(GRAZING_COLUMNS, [24, 30, 10, 12, 12], organic.grazingRows, "Kein Weidegang in diesem Zeitraum eingetragen.");
+    if (organic.seedRows) {
+      section(`Saatgut (Bestand heute, ${countText(organic.seedRows.length, "Posten", "Posten")})`);
+      table(SEED_COLUMNS, [20, 18, 14, 16, 10, 10, 12], organic.seedRows, "Kein Saatgut eingetragen.");
+    }
     y += 4;
     doc.setFont("helvetica", "italic");
     doc.setFontSize(fontSize);

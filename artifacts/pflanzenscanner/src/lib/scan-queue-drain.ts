@@ -59,6 +59,7 @@ export interface DrainDeps {
   scanPlant: (args: {
     image: string;
     imageSide?: string;
+    imageGills?: string;
     localImageId?: string;
     locationRegion?: string;
   }) => Promise<{
@@ -278,6 +279,7 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
         const res = await deps.scanPlant({
           image: item.image,
           ...(item.imageSide ? { imageSide: item.imageSide } : {}),
+          ...(item.imageSide && item.imageGills ? { imageGills: item.imageGills } : {}),
           ...(item.localImageId ? { localImageId: item.localImageId } : {}),
           ...(item.locationRegion ? { locationRegion: item.locationRegion } : {}),
         });

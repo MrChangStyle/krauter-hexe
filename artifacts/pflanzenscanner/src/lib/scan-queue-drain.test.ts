@@ -299,6 +299,17 @@ describe("happy path", () => {
     });
   });
 
+  it("passes all three photos of the Pilz-Scan, the gills only with the side view", async () => {
+    for (const [item, sent] of [
+      [makePending({ imageSide: "data:side", imageGills: "data:gills" }), { imageSide: "data:side", imageGills: "data:gills" }],
+      [makePending({ imageGills: "data:gills" }), {}],
+    ] as const) {
+      const deps = makeDeps({ getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]) });
+      await drainQueue(deps);
+      expect(deps.scanPlant).toHaveBeenCalledWith({ image: item.image, ...sent });
+    }
+  });
+
   it("counts a duplicate (alreadyInArchive) in duplicates, not added", async () => {
     const item = makePending();
     const deps = makeDeps({

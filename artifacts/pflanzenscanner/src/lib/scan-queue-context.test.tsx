@@ -199,7 +199,7 @@ describe("enqueue", () => {
       returnedId = await result.current.enqueue("data:new");
     });
 
-    expect(mockAddPendingScan).toHaveBeenCalledWith("data:new", undefined, undefined, undefined, "plant");
+    expect(mockAddPendingScan).toHaveBeenCalledWith("data:new", undefined, undefined, undefined, "plant", undefined);
     expect(returnedId).toBe(newItem.id);
   });
 
@@ -216,7 +216,7 @@ describe("enqueue", () => {
       await result.current.enqueue("data:top", "data:side");
     });
 
-    expect(mockAddPendingScan).toHaveBeenCalledWith("data:top", "data:side", undefined, undefined, "plant");
+    expect(mockAddPendingScan).toHaveBeenCalledWith("data:top", "data:side", undefined, undefined, "plant", undefined);
   });
 
   it("does NOT drain by itself - the scan page drives that", async () => {

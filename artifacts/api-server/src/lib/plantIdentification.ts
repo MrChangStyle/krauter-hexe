@@ -89,7 +89,7 @@ Antworte ausschließlich mit einem JSON-Objekt (keine Erklärungen, kein Markdow
 Wenn du dir bei der Bestimmung nicht sicher bist, gib trotzdem deine beste Einschätzung ab und erwähne die Unsicherheit im "edibilityDetails"-Feld. \
 Sei im Zweifel vorsichtig: wenn Giftigkeit nicht ausgeschlossen werden kann, setze den jeweiligen Status auf "poisonous". \
 Bei Pilzen gilt höchste Vorsicht: prüfe aktiv auf giftige Doppelgänger und erwähne die Verwechslungsgefahr in "edibilityDetails". \
-Wenn zwei Fotos vorliegen (Bild 1 von oben, Bild 2 von der Seite), prüfe zuerst, ob beide erkennbar denselben Pilz zeigen, und nutze beide Ansichten für die Bestimmung.`;
+Wenn mehrere Fotos vorliegen (Bild 1 von oben, Bild 2 von der Seite, Bild 3 die Lamellen bzw. Unterseite von unten), prüfe zuerst, ob alle erkennbar denselben Pilz zeigen, und nutze alle Ansichten für die Bestimmung – bei Lamellenpilzen besonders Farbe und Ansatz der Lamellen, Ring und Knolle.`;
 
 function coerceEnum<T extends string>(
   value: unknown,
@@ -279,6 +279,23 @@ export async function runModelChain(
   throw isAiTimeout(lastError) ? new AiTimeoutError() : (lastError ?? new Error("AI request failed"));
 }
 
+/** The labelled views of a Pilz-Scan: from above, from the side and (new) the gills from below. */
+function mushroomViews(
+  main: { mimeType: string; data: string },
+  side: { mimeType: string; data: string },
+  gills?: { mimeType: string; data: string },
+) {
+  return [
+    { text: "Bild 1 - Ansicht von oben:" },
+    { inlineData: { mimeType: main.mimeType, data: main.data } },
+    { text: "Bild 2 - Ansicht von der Seite:" },
+    { inlineData: { mimeType: side.mimeType, data: side.data } },
+    ...(gills
+      ? [{ text: "Bild 3 - Lamellen bzw. Unterseite von unten:" }, { inlineData: { mimeType: gills.mimeType, data: gills.data } }]
+      : []),
+  ];
+}
+
 // Calls Gemini with the reliable-model-first fallback chain and transient-error
 // retries, returning the parsed (but not yet validated) JSON object. For the
 // two-photo mushroom scan both views are labelled so the model can cross-check
@@ -286,16 +303,14 @@ export async function runModelChain(
 function requestPlantJson(
   main: { mimeType: string; data: string },
   side?: { mimeType: string; data: string },
+  gills?: { mimeType: string; data: string },
 ): Promise<unknown> {
   const parts = side
     ? [
         {
-          text: `${SYSTEM_PROMPT}\n\nBestimme diesen Fund anhand BEIDER Fotos und erstelle das Datenblatt als JSON.`,
+          text: `${SYSTEM_PROMPT}\n\nBestimme diesen Fund anhand ${gills ? "ALLER DREI" : "BEIDER"} Fotos und erstelle das Datenblatt als JSON.`,
         },
-        { text: "Bild 1 - Ansicht von oben:" },
-        { inlineData: side && { mimeType: main.mimeType, data: main.data } },
-        { text: "Bild 2 - Ansicht von der Seite:" },
-        { inlineData: { mimeType: side.mimeType, data: side.data } },
+        ...mushroomViews(main, side, gills),
       ]
     : [
         {
@@ -1189,14 +1204,20 @@ export async function classifyScanSubject(imageDataUrl: string): Promise<Subject
   };
 }
 
+/** Starts the reason a mushroom was not rated edible (the release removes this paragraph). */
+export const NOT_CONFIRMED_PREFIX = "⚠️ Nicht als essbar bestätigt:";
+
 export async function identifyPlant(
   imageDataUrl: string,
   sideImageDataUrl?: string,
+  gillsImageDataUrl?: string,
 ): Promise<PlantIdentification> {
   const main = parseDataUrl(imageDataUrl);
   const side = sideImageDataUrl ? parseDataUrl(sideImageDataUrl) : undefined;
+  // The gills only count together with the side view (all three photos).
+  const gills = side && gillsImageDataUrl ? parseDataUrl(gillsImageDataUrl) : undefined;
 
-  const parsed = await requestPlantJson(main, side);
+  const parsed = await requestPlantJson(main, side, gills);
 
   const fields = parsed as Record<string, unknown>;
 
@@ -1228,22 +1249,22 @@ export async function identifyPlant(
   );
 
   // Mushroom safety gate - deterministic, never trusted to the model alone: a
-  // mushroom is only ever listed as edible when BOTH views (top + side) were
-  // provided AND the model explicitly confirmed a confident, lookalike-safe
-  // identification. A missing/absent flag counts as "not confident" (same
+  // mushroom is only ever listed as edible when ALL THREE views (top, side,
+  // gills from below) were provided AND the model explicitly confirmed a
+  // confident, lookalike-safe identification. A missing/absent flag counts as "not confident" (same
   // sentinel rule as everywhere else). Everything else is stored as poisonous,
   // with the reason prepended so the detail page explains the downgrade.
   if (category === "mushroom" && humanStatus === "edible") {
     const confident = fields.mushroomEdibleConfident === true;
-    if (!side) {
+    if (!side || !gills) {
       humanStatus = "poisonous";
       edibilityDetails =
-        "⚠️ Nicht als essbar bestätigt: Für die Essbar-Einstufung eines Pilzes sind zwei Fotos nötig (von oben und von der Seite). Bitte nutze den Pilz-Scan mit 2 Fotos. Zur Sicherheit wird dieser Pilz bis dahin wie ein giftiger Pilz behandelt.\n\n" +
+        `${NOT_CONFIRMED_PREFIX} Für die Essbar-Einstufung eines Pilzes sind drei Fotos nötig (von oben, von der Seite und die Lamellen von unten). Bitte nutze den Pilz-Scan mit 3 Fotos. Zur Sicherheit wird dieser Pilz bis dahin wie ein giftiger Pilz behandelt.\n\n` +
         edibilityDetails;
     } else if (!confident) {
       humanStatus = "poisonous";
       edibilityDetails =
-        "⚠️ Nicht als essbar bestätigt: Die Bestimmung war nicht eindeutig genug (mögliche Verwechslungsgefahr mit giftigen Arten). Zur Sicherheit wird dieser Pilz wie ein giftiger Pilz behandelt.\n\n" +
+        `${NOT_CONFIRMED_PREFIX} Die Bestimmung war nicht eindeutig genug (mögliche Verwechslungsgefahr mit giftigen Arten). Zur Sicherheit wird dieser Pilz wie ein giftiger Pilz behandelt.\n\n` +
         edibilityDetails;
     }
   }

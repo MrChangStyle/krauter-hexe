@@ -28,6 +28,11 @@ export interface PendingScan {
    */
   imageSide?: string;
   /**
+   * Optional third photo (data URL) of the Pilz-Scan: the gills from below.
+   * Only with imageSide – a mushroom is only rated edible with all three.
+   */
+  imageGills?: string;
+  /**
    * Client-generated UUID identifying the photo in the local IndexedDB image
    * store (see image-store.ts). For new scans this is always set; for legacy
    * queue items already in storage it may be absent — the drain falls back to
@@ -180,6 +185,7 @@ export async function addPendingScan(
   localImageId?: string,
   locationRegion?: string,
   kind: PendingScanKind = "plant",
+  imageGills?: string,
 ): Promise<PendingScan> {
   const db = await openDb();
   const item: PendingScan = {
@@ -187,6 +193,7 @@ export async function addPendingScan(
     ...(kind !== "plant" ? { kind } : {}),
     image,
     ...(imageSide ? { imageSide } : {}),
+    ...(imageSide && imageGills ? { imageGills } : {}),
     ...(localImageId ? { localImageId } : {}),
     ...(localImageId && imageSide ? { hasSideImage: true } : {}),
     ...(locationRegion ? { locationRegion } : {}),
@@ -352,6 +359,8 @@ export interface MushroomDraft {
   id: "draft";
   /** Bild 1 (von oben) as a data URL. */
   image: string;
+  /** Bild 2 (von der Seite), once taken – the scan then waits for Bild 3 (Lamellen). */
+  side?: string;
   /** Epoch milliseconds when Bild 1 was captured. */
   createdAt: number;
 }
@@ -365,9 +374,9 @@ export async function getMushroomDraft(): Promise<MushroomDraft | undefined> {
   );
 }
 
-export async function putMushroomDraft(image: string): Promise<void> {
+export async function putMushroomDraft(image: string, side?: string): Promise<void> {
   const db = await openDb();
-  const draft: MushroomDraft = { id: "draft", image, createdAt: Date.now() };
+  const draft: MushroomDraft = { id: "draft", image, ...(side ? { side } : {}), createdAt: Date.now() };
   await promisify(store(db, "readwrite", DRAFT_STORE).put(draft));
 }
 

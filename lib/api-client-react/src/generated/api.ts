@@ -86,6 +86,7 @@ import type {
   DeleteFarmInput,
   DeletePlantInput,
   DemoStatus,
+  EdibleReleaseInput,
   EggsToday,
   ErrorGroup,
   ExpenseInput,
@@ -652,6 +653,78 @@ export const useSetPlantImageLock = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSetPlantImageLockMutationOptions(options));
+    }
+
+export const getSetPlantEdibleReleaseUrl = (id: number,) => {
+
+
+
+
+  return `/api/plants/${id}/edible-release`
+}
+
+/**
+ * @summary App owner only – release a mushroom as edible after checking its photos, or take the release back
+ */
+export const setPlantEdibleRelease = async (id: number,
+    edibleReleaseInput: EdibleReleaseInput, options?: RequestInit): Promise<Plant> => {
+
+  return customFetch<Plant>(getSetPlantEdibleReleaseUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(edibleReleaseInput)
+  }
+);}
+
+
+
+
+
+export const getSetPlantEdibleReleaseMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPlantEdibleRelease>>, TError,{id: number;data: BodyType<EdibleReleaseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setPlantEdibleRelease>>, TError,{id: number;data: BodyType<EdibleReleaseInput>}, TContext> => {
+
+const mutationKey = ['setPlantEdibleRelease'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setPlantEdibleRelease>>, {id: number;data: BodyType<EdibleReleaseInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  setPlantEdibleRelease(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetPlantEdibleReleaseMutationResult = NonNullable<Awaited<ReturnType<typeof setPlantEdibleRelease>>>
+    export type SetPlantEdibleReleaseMutationBody = BodyType<EdibleReleaseInput>
+    export type SetPlantEdibleReleaseMutationError = ErrorType<void>
+
+    /**
+ * @summary App owner only – release a mushroom as edible after checking its photos, or take the release back
+ */
+export const useSetPlantEdibleRelease = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setPlantEdibleRelease>>, TError,{id: number;data: BodyType<EdibleReleaseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setPlantEdibleRelease>>,
+        TError,
+        {id: number;data: BodyType<EdibleReleaseInput>},
+        TContext
+      > => {
+      return useMutation(getSetPlantEdibleReleaseMutationOptions(options));
     }
 
 export const getGetPlantUrl = (id: number,) => {

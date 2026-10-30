@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #128 | Pilz-Scan mit drei Fotos: zusätzlich die Lamellen von unten, essbar nur mit allen drei und sicherer Bestimmung; ein Scan mit drei Fotos darf einen vorhandenen Eintrag neu bewerten; der Betreiber kann einen Pilz nach Prüfung der Fotos als essbar freigeben oder die Freigabe zurücknehmen |
 | 30.10.2026 | #127 | Bio als Option (B1): Bewirtschaftung je Hof unter Farm & Team (konventionell als Standard, naturnah, Bio, Bio-Verband – jederzeit umschaltbar); Schalter „Nur biologische Empfehlungen“ im Pflanzendoc, bei naturnahen und Bio-Höfen automatisch an; Demo-Hof naturnah |
 | 30.10.2026 | #126 | Konzept Bio und Nachhaltigkeit (`docs/BIO-KONZEPT.md`): Hof-Einstellung „Bewirtschaftung“, Auswirkungen je Modul, Berater-Zugang, Vermarktung, Schritte B1–B8 |
 | 30.10.2026 | #125 | KI zu langsam: Notizen und Hof-Aufgaben melden „Die KI hat zu lange gebraucht“ statt „nicht erreichbar“; in der Verwaltung zählt das als „Langsam“ in den Tageszahlen statt als Fehlergruppe |

@@ -50,6 +50,18 @@ export interface Plant {
   preparation?: string;
   /** ID of the user who triggered this scan. Null for plants scanned before per-user tracking was introduced. */
   scannedByUserId?: string | null;
+  /** True when the entry was scanned with all three mushroom photos (top, side, gills from below). */
+  hasGillsImage?: boolean;
+  /**
+     * CDN URL of the gills photo of the Pilz-Scan, if any.
+     * @nullable
+     */
+  imageUrlGills?: string | null;
+  /**
+     * The app owner checked the photos and released this mushroom as edible (docs/scannen.md); a later scan never changes it.
+     * @nullable
+     */
+  edibleReleasedAt?: Date | null;
   /** True when a verified side-view photo exists for this entry (either stored in the database for legacy rows, or confirmed at scan time for new local-first rows). Image bytes are never embedded in JSON responses. */
   hasSideImage: boolean;
   /** UUID that identifies the main photo in the client's local IndexedDB image store. Null for entries created before the local-first migration (those use the GET /plants/{id}/image endpoint instead). When a mushroom side image exists, it is stored under the derived key "${localImageId}-side" in the same IndexedDB store. */

@@ -118,6 +118,8 @@ interface ScanQueueContextValue {
     localImageId?: string,
     locationRegion?: string,
     kind?: PendingScanKind,
+    /** Bild 3 of the Pilz-Scan: the gills from below. */
+    imageGills?: string,
   ) => Promise<string>;
   /** Manually kick off processing (e.g. a "scan now" button). */
   processQueue: () => void;
@@ -378,12 +380,13 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
       localImageId?: string,
       locationRegion?: string,
       kind: PendingScanKind = "plant",
+      imageGills?: string,
     ) => {
       // A new photo means the user just interacted with the app — they are
       // almost certainly logged in. Clear any stale auth block so the
       // subsequent processQueue() call in scan.tsx isn't silently gated.
       setIsAuthBlocked(false);
-      const item = await addPendingScan(image, imageSide, localImageId, locationRegion, kind);
+      const item = await addPendingScan(image, imageSide, localImageId, locationRegion, kind, imageGills);
       await refresh();
       // NOTE: processQueue is intentionally NOT called here. The scan page
       // calls processQueue() itself AFTER setting waitingForItemId, which

@@ -50,6 +50,9 @@ import {
   SetPlantImageLockParams,
   SetPlantImageLockBody,
   SetPlantImageLockResponse,
+  SetPlantEdibleReleaseBody,
+  SetPlantEdibleReleaseParams,
+  SetPlantEdibleReleaseResponse,
 } from "@workspace/api-zod";
 import {
   identifyPlant,
@@ -77,6 +80,7 @@ import {
 } from "../lib/scanFailureBreaker";
 import { deleteImageByUrl, isServableImageUrl, uploadImage } from "../lib/imageStorage";
 import { shouldReplaceSharedImage } from "../lib/imageQualityPolicy";
+import { releasedDetails } from "../lib/mushroomRelease";
 
 
 const router: IRouter = Router();
@@ -102,7 +106,8 @@ const MUSHROOM_UNVERIFIED_PREFIX =
 //   - Legacy rows: imageDataSide was the durable marker (stored bytes)
 //   - New local-first rows: hasSideImage boolean is the durable marker
 // A row is "unverified" only when NEITHER marker is set.
-const unverifiedEdibleMushroom = sql`(${plantsTable.category} = 'mushroom' and ${plantsTable.humanStatus} = 'edible' and ${plantsTable.hasSideImage} is not true and ${plantsTable.imageDataSide} is null)`;
+// A mushroom the app owner released after checking the photos is never unverified.
+const unverifiedEdibleMushroom = sql`(${plantsTable.category} = 'mushroom' and ${plantsTable.humanStatus} = 'edible' and ${plantsTable.hasSideImage} is not true and ${plantsTable.imageDataSide} is null and ${plantsTable.edibleReleasedAt} is null)`;
 
 // Public selection: every column except the image payloads, plus derived fields.
 //
@@ -243,6 +248,21 @@ export async function handlePlantScan(
     return;
   }
 
+  // Third view of the Pilz-Scan (docs/scannen.md): the gills from below. Only
+  // counts together with the side view – all three photos of one find.
+  const imageGills = typeof imageSide === "string" ? parsed.data.imageGills : undefined;
+  if (typeof imageGills === "string" && !/^data:image\/[a-z0-9.+-]+;base64,.+/is.test(imageGills)) {
+    res.status(400).json({ error: "imageGills muss eine Bild-Daten-URL sein." });
+    return;
+  }
+  const threePhotos = typeof imageGills === "string";
+  // A Pilz-Scan may re-rate an archived entry when it brings a view the entry
+  // lacks: the side view (two photos) or the gills (all three). Never an entry
+  // the app owner released or took back by hand.
+  const mushroomUpgrade = (row: { hasSideImage: boolean; hasGillsImage: boolean; edibleReleasedAt: Date | null }) =>
+    row.edibleReleasedAt === null &&
+    ((typeof imageSide === "string" && !row.hasSideImage) || (threePhotos && !row.hasGillsImage));
+
   // Cost brake. A scan pays for an AI call before anything is written, so a
   // photo that fails for a non-healing reason (broken schema, bad deploy) would
   // otherwise burn money on every queue retry. Checked before the rate limit and
@@ -333,6 +353,13 @@ export async function handlePlantScan(
     typeof imageSide === "string"
       ? uploadImage(imageSide).catch((e: unknown) => {
           req.log.warn({ err: e }, "Plant side image upload failed");
+          return null as null;
+        })
+      : Promise.resolve(null as null);
+  const uploadGills = () =>
+    typeof imageGills === "string"
+      ? uploadImage(imageGills).catch((e: unknown) => {
+          req.log.warn({ err: e }, "Plant gills image upload failed");
           return null as null;
         })
       : Promise.resolve(null as null);
@@ -471,7 +498,7 @@ export async function handlePlantScan(
     const quickKey = quick.botanicalName.trim().toLowerCase();
     if (quickKey.length > 0 && quickKey !== UNKNOWN_BOTANICAL_NAME.toLowerCase()) {
       const known = await findPlantByBotanicalKey(quickKey);
-      const mayUpgradeMushroom = typeof imageSide === "string" && !!known && !known.hasSideImage;
+      const mayUpgradeMushroom = !!known && mushroomUpgrade(known);
       if (known && !mayUpgradeMushroom) {
         await respondDuplicate(known, quick.imageQuality ?? null);
         req.log.info({ totalMs: Date.now() - scanStartedAt, newSpecies: false }, "Plant scan done");
@@ -483,7 +510,7 @@ export async function handlePlantScan(
   let identification;
   const fullStartedAt = Date.now();
   try {
-    identification = await identifyPlant(parsed.data.image, imageSide);
+    identification = await identifyPlant(parsed.data.image, imageSide, imageGills);
     req.log.info({ fullMs: Date.now() - fullStartedAt }, "Full plant identification done");
   } catch (err) {
     req.log.error({ err }, "Plant identification failed");
@@ -544,12 +571,9 @@ export async function handlePlantScan(
       // a mushroom can be upgraded to "essbar bestätigt" without creating a
       // duplicate. Entries that already have a side view are never
       // overwritten - no silent downgrade by a later, worse scan.
-      const upgradesMushroom =
-        identification.category === "mushroom" &&
-        typeof imageSide === "string" &&
-        !existing.hasSideImage;
+      const upgradesMushroom = identification.category === "mushroom" && mushroomUpgrade(existing);
       if (upgradesMushroom) {
-        const [imageUrl, imageUrlSide] = await Promise.all([uploadMain(), uploadSide()]);
+        const [imageUrl, imageUrlSide, imageUrlGills] = await Promise.all([uploadMain(), uploadSide(), uploadGills()]);
         const [updated] = await db
           .update(plantsTable)
           .set({
@@ -558,6 +582,8 @@ export async function handlePlantScan(
             ...(imageUrl ? { imageUrl, imageQuality: quick?.imageQuality ?? null } : {}),
             ...(imageUrlSide ? { imageUrlSide } : {}),
             hasSideImage: true,
+            ...(imageUrlGills ? { imageUrlGills } : {}),
+            ...(threePhotos ? { hasGillsImage: true } : {}),
             ...(localImageId ? { localImageId } : {}),
             germanName: identification.germanName,
             botanicalName: identification.botanicalName,
@@ -645,6 +671,7 @@ export async function handlePlantScan(
       ...(localImageId
         ? { localImageId, hasSideImage: typeof imageSide === "string" }
         : { hasSideImage: typeof imageSide === "string" }),
+      hasGillsImage: threePhotos,
       germanName: identification.germanName,
       botanicalName: identification.botanicalName,
       category: identification.category,
@@ -714,14 +741,15 @@ export async function handlePlantScan(
   // Background upload (see above). A failed upload only means the entry has
   // no CDN photo yet; the next scan of the same species heals it.
   void (async () => {
-    const [imageUrl, imageUrlSide] = await Promise.all([uploadMain(), uploadSide()]);
-    if (!imageUrl && !imageUrlSide) return;
+    const [imageUrl, imageUrlSide, imageUrlGills] = await Promise.all([uploadMain(), uploadSide(), uploadGills()]);
+    if (!imageUrl && !imageUrlSide && !imageUrlGills) return;
     try {
       await db
         .update(plantsTable)
         .set({
           ...(imageUrl ? { imageUrl } : {}),
           ...(imageUrlSide ? { imageUrlSide } : {}),
+          ...(imageUrlGills ? { imageUrlGills } : {}),
         })
         .where(eq(plantsTable.id, plant.id));
     } catch (err) {
@@ -1563,6 +1591,43 @@ router.put("/plants/:id/image-lock", requireOwner, async (req, res): Promise<voi
 // Deliberately NOT behind requireApproved: this endpoint is called from
 // maintenance scripts outside a browser session and is protected by the
 // server-side archive password instead.
+// Freigabe durch den Betreiber (docs/scannen.md): only the app owner, only
+// mushrooms. Released entries stay as they are on later scans.
+router.put("/plants/:id/edible-release", requireOwner, async (req, res): Promise<void> => {
+  const params = SetPlantEdibleReleaseParams.safeParse(req.params);
+  const body = SetPlantEdibleReleaseBody.safeParse(req.body);
+  if (!params.success || !body.success) {
+    res.status(400).json({ error: "Bitte prüfe deine Eingaben." });
+    return;
+  }
+  const [row] = await db
+    .select({ category: plantsTable.category, edibilityDetails: plantsTable.edibilityDetails })
+    .from(plantsTable)
+    .where(eq(plantsTable.id, params.data.id));
+  if (!row) {
+    res.status(404).json({ error: "Pflanze nicht gefunden" });
+    return;
+  }
+  if (row.category !== "mushroom") {
+    res.status(400).json({ error: "Freigeben lassen sich nur Pilze." });
+    return;
+  }
+  const now = new Date();
+  const released = body.data.released;
+  const [plant] = await db
+    .update(plantsTable)
+    .set({
+      humanStatus: released ? "edible" : "poisonous",
+      humanToxicityLevel: released ? null : "poisonous",
+      edibilityDetails: releasedDetails(row.edibilityDetails, released, now),
+      edibleReleasedAt: now,
+    })
+    .where(eq(plantsTable.id, params.data.id))
+    .returning(plantSelection);
+  req.log.info({ plantId: params.data.id, released }, "Mushroom edible release by the owner");
+  res.json(SetPlantEdibleReleaseResponse.parse(plant));
+});
+
 router.patch("/plants/:id", requireApproved, async (req, res): Promise<void> => {
   const params = UpdatePlantParams.safeParse(req.params);
   if (!params.success) {

@@ -27,7 +27,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     intro: "Mit der Kamera bestimmt die App Pflanzen, Pilze und Insekten. Sie sagt dir, ob etwas giftig ist – für Menschen und für deine Tiere – und wie du es pflegst.",
     steps: [
       "Unten in der Mitte auf den Scan-Knopf tippen und die Pflanze möglichst formatfüllend fotografieren.",
-      "Pilze immer mit zwei Fotos scannen (von oben und von der Seite) – nur dann gibt es eine Aussage zur Essbarkeit.",
+      "Pilze immer mit drei Fotos scannen (von oben, von der Seite und die Lamellen von unten) – nur dann gibt es eine Aussage zur Essbarkeit.",
       "Das Ergebnis landet in „Meine Pflanzen“; von dort geht es zu Pflegeplan, Pflanzendoc und Lexikon.",
       "Ohne Netz werden Fotos zwischengespeichert und gescannt, sobald du wieder online bist.",
     ],

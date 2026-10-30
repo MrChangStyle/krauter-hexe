@@ -36,6 +36,7 @@ import { exportPlantPdf } from "@/lib/pdf-export";
 import { PhotoChoiceCard } from "@/components/photo-choice-card";
 import { ImageLockToggle } from "@/components/image-lock-toggle";
 import { ReportButton } from "@/components/report-button";
+import { MushroomReleaseCard } from "@/components/mushroom-release-card";
 
 /** Parse and validate the `tier` query-param; fall back to "poultry". */
 function parseTierParam(search: string): AnimalKey {
@@ -483,7 +484,18 @@ export default function PlantDetailPage() {
         </div>
       )}
 
+      {/* Third view of the Pilz-Scan: the gills from below (CDN photo). */}
+      {plant.hasGillsImage && plant.imageUrlGills && (
+        <div className="px-6 pt-4">
+          <div className="relative cursor-zoom-in overflow-hidden rounded-2xl border" onClick={() => setZoomedImage(plant.imageUrlGills!)}>
+            <img src={plant.imageUrlGills} alt={`${plant.germanName} – Lamellen von unten`} className="aspect-[4/3] w-full object-cover" />
+            <span className="absolute bottom-2 left-2 rounded-full bg-black/60 px-2 py-0.5 text-xs font-medium text-white backdrop-blur-sm">🍄 Lamellen von unten</span>
+          </div>
+        </div>
+      )}
+
       <div className="p-6 space-y-8">
+        <MushroomReleaseCard plant={plant} />
         <PhotoChoiceCard kind="plant" id={plant.id} />
         <ImageLockToggle
           kind="plant"

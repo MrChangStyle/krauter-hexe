@@ -19,6 +19,10 @@ import { PASTURE_SCHEMA_STATEMENTS } from "./pastureSchemaStatements";
 const STATEMENTS = [
   "ALTER TABLE plants ADD COLUMN IF NOT EXISTS image_quality integer",
   "ALTER TABLE plants ADD COLUMN IF NOT EXISTS image_locked boolean NOT NULL DEFAULT false",
+  // Pilz-Scan mit drei Fotos und Freigabe durch den Betreiber (docs/scannen.md).
+  "ALTER TABLE plants ADD COLUMN IF NOT EXISTS image_url_gills text",
+  "ALTER TABLE plants ADD COLUMN IF NOT EXISTS has_gills_image boolean NOT NULL DEFAULT false",
+  "ALTER TABLE plants ADD COLUMN IF NOT EXISTS edible_released_at timestamp with time zone",
   "ALTER TABLE insects ADD COLUMN IF NOT EXISTS image_quality integer",
   "ALTER TABLE insects ADD COLUMN IF NOT EXISTS image_locked boolean NOT NULL DEFAULT false",
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS terms_accepted_at timestamp with time zone",

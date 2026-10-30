@@ -66,7 +66,7 @@ export function ScanSheet({ open, onClose }: { open: boolean; onClose: () => voi
             icon={<span aria-hidden="true" className="text-lg leading-none">🍄</span>}
             tone="bg-amber-100 dark:bg-amber-950/50"
             label="Pilz prüfen"
-            hint="2 Fotos · von oben und von der Seite"
+            hint="3 Fotos · oben, Seite und Lamellen"
             onClick={() => go("/?scan=pilz")}
           />
           {visible("animals") && (

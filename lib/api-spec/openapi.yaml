@@ -182,6 +182,36 @@ paths:
           description: Only the admin may lock photos
         "404":
           description: Plant not found
+  /plants/{id}/edible-release:
+    put:
+      tags: [plants]
+      operationId: setPlantEdibleRelease
+      summary: App owner only – release a mushroom as edible after checking its photos, or take the release back
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EdibleReleaseInput"
+      responses:
+        "200":
+          description: The updated entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plant"
+        "400":
+          description: Not a mushroom.
+        "403":
+          description: Not the app owner.
+        "404":
+          description: Not found.
   /plants/{id}:
     get:
       operationId: getPlant
@@ -11356,6 +11386,13 @@ components:
         organic:
           type: boolean
           description: Bio (docs/bio.md) – organic means only; duenge_chemisch is then empty
+    EdibleReleaseInput:
+      type: object
+      required: [released]
+      properties:
+        released:
+          type: boolean
+          description: true = edible after the owner's check; false = take the release back (not edible)
     PlantScanInput:
       type: object
       required: [image]
@@ -11377,6 +11414,14 @@ components:
             listed as edible when this side view was provided AND the model
             confirmed a confident identification; otherwise it is stored as
             not edible with an explanation.
+        imageGills:
+          type: string
+          description: >
+            Optional third photo of the Pilz-Scan as a base64 data URL - the
+            gills (or the underside) from below. Only counts together with
+            imageSide. Since three photos are required, a mushroom is only
+            rated edible when all three views were provided and the model
+            confirmed a confident identification (docs/scannen.md).
         localImageId:
           type: string
           description: >
@@ -11504,6 +11549,16 @@ components:
           description: >
             ID of the user who triggered this scan. Null for plants scanned
             before per-user tracking was introduced.
+        hasGillsImage:
+          type: boolean
+          description: True when the entry was scanned with all three mushroom photos (top, side, gills from below).
+        imageUrlGills:
+          type: [string, 'null']
+          description: CDN URL of the gills photo of the Pilz-Scan, if any.
+        edibleReleasedAt:
+          type: [string, 'null']
+          format: date-time
+          description: The app owner checked the photos and released this mushroom as edible (docs/scannen.md); a later scan never changes it.
         hasSideImage:
           type: boolean
           description: >

@@ -118,6 +118,7 @@ export * from './deleteAccountInput';
 export * from './deleteFarmInput';
 export * from './deletePlantInput';
 export * from './demoStatus';
+export * from './edibleReleaseInput';
 export * from './eggsToday';
 export * from './errorGroup';
 export * from './errorGroupSource';

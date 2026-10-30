@@ -12179,6 +12179,7 @@ components:
         - createdAt
         - username
         - leavesCount
+        - userCode
       properties:
         id:
           type: string
@@ -12201,6 +12202,9 @@ components:
           type: [string, 'null']
         leavesCount:
           type: integer
+        userCode:
+          type: [integer, 'null']
+          description: Nutzer-ID (docs/konto.md); null only until the server has handed one out
     TaskActionType:
       type: string
       description: The type of care action to perform.

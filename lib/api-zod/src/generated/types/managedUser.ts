@@ -22,4 +22,9 @@ export interface ManagedUser {
   /** @nullable */
   username: string | null;
   leavesCount: number;
+  /**
+     * Nutzer-ID (docs/konto.md); null only until the server has handed one out
+     * @nullable
+     */
+  userCode: number | null;
 }

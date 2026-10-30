@@ -37,6 +37,7 @@ router.get('/users', requireOwner, async (_req, res): Promise<void> => {
       isOwner: usersTable.isOwner,
       username: usersTable.username,
       leavesCount: usersTable.leavesCount,
+      userCode: usersTable.userCode,
       createdAt: usersTable.createdAt,
       updatedAt: usersTable.updatedAt,
     })

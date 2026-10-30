@@ -48,7 +48,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     ],
     faq: [
       { q: "Kann ich eine Pflanze wieder entfernen?", a: "Ja, in der Pflanze unten über „Löschen“. Der Pflegeplan dazu geht mit." },
-      { q: "Wie finde ich nur meine Pilze?", a: "Über der Liste der Scans stehen die Arten, die du gescannt hast – etwa „Pilze (4)“ oder „Heilkräuter (2)“. Ein Tipp zeigt nur diese, „Alle“ wieder alles." },
+      { q: "Wie finde ich nur meine Pilze?", a: "Über der Liste der Scans stehen die Arten, die du gescannt hast – etwa „Pilze (4)“ oder „Heilkräuter (2)“. Ein Tipp zeigt nur diese, „Alle“ wieder alles. Darunter lässt sich zusätzlich nach dem Anfangsbuchstaben filtern (A–Z), wie im Lexikon. Am PC blättern die Pfeile links und rechts durch die Leiste, am Handy wischst du." },
     ],
   },
   "care-plan": {

@@ -13,6 +13,9 @@ import {
 } from "@workspace/api-client-react";
 import { exportInsectsPdf, exportSelectedPlantsPdf } from "@/lib/pdf-export";
 import { RELATION_FILTERS, filterByRelation, relationCounts, type RelationFilter } from "@/lib/beneficials";
+import { AlphaFilter } from "@/components/alpha-filter";
+import { ScrollRow } from "@/components/scroll-row";
+import { applyAlpha, firstLetter } from "@/lib/archive-helpers";
 import { viewCategoryOf, VIEW_CATEGORIES, VIEW_CATEGORY_COLORS, VIEW_CATEGORY_LABELS, type ViewCategory } from "@/lib/view-categories";
 import { format, formatDistanceToNow } from "date-fns";
 import { de } from "date-fns/locale";
@@ -299,6 +302,7 @@ export function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavo
     query: { queryKey: ["/api/plants/my-scans"] },
   });
   const [category, setCategory] = useState<ViewCategory | null>(null);
+  const [letter, setLetter] = useState<string | null>(null);
 
   // Silently re-upload any locally-cached photos to the server so they are
   // visible on other devices via the GET /plants/:id/image fallback.
@@ -339,7 +343,10 @@ export function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavo
   for (const p of plants) counts.set(viewCategoryOf(p), (counts.get(viewCategoryOf(p)) ?? 0) + 1);
   const kinds = VIEW_CATEGORIES.filter((c) => counts.has(c));
   const active = category && counts.has(category) ? category : null;
-  const shown = active ? plants.filter((p) => viewCategoryOf(p) === active) : plants;
+  const ofKind = active ? plants.filter((p) => viewCategoryOf(p) === active) : plants;
+  // A–Z on top of the kind, like the Lexikon; a letter the kind has not got falls back to all.
+  const activeLetter = letter && ofKind.some((p) => firstLetter(p) === letter) ? letter : null;
+  const shown = applyAlpha(ofKind, activeLetter);
   const chip = (on: boolean, kind?: ViewCategory) =>
     cn(
       "shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-all",
@@ -350,7 +357,7 @@ export function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavo
   return (
     <div className="space-y-3">
       {kinds.length > 1 && (
-        <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1" role="group" aria-label="Nach Art filtern" data-testid="scan-filter">
+        <ScrollRow className="-mx-4 px-4" label="Nach Art filtern" testId="scan-filter">
           <button type="button" className={chip(active === null)} aria-pressed={active === null} onClick={() => setCategory(null)}>
             Alle ({plants.length})
           </button>
@@ -359,10 +366,11 @@ export function MyScansTab({ favorites }: { favorites: ReturnType<typeof useFavo
               {VIEW_CATEGORY_LABELS[c]} ({counts.get(c)})
             </button>
           ))}
-        </div>
+        </ScrollRow>
       )}
+      <AlphaFilter plants={ofKind} activeLetter={activeLetter} onChange={setLetter} className="-mx-4 px-4" />
       {/* key: a new filter starts collapsed again. */}
-      <CollapsibleCardList key={active ?? "all"}>
+      <CollapsibleCardList key={`${active ?? "all"}-${activeLetter ?? ""}`}>
       {shown.map((plant) => (
         <PlantCard
           key={plant.id}

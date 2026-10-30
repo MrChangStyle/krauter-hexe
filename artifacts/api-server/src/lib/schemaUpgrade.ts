@@ -92,6 +92,7 @@ const STATEMENTS = [
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "quiet_end" text`,
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "seasonal_care" boolean DEFAULT true NOT NULL`,
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "frost_notice_on" date`,
+  `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "organic_tips" boolean DEFAULT false NOT NULL`,
   // Wetterabhängige Pflege (schema/tasks.ts).
   `ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "outdoor" boolean DEFAULT false NOT NULL`,
   `ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "rain_skipped_on" date`,

@@ -3802,6 +3802,49 @@ paths:
           description: Age not confirmed.
         "404":
           description: Not found.
+  /farms/{farmId}/farming:
+    get:
+      tags: [farm]
+      operationId: getFarmFarming
+      summary: Bewirtschaftung – conventional, natural or organic (docs/bio.md)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The farming level.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmFarming"
+    put:
+      tags: [farm]
+      operationId: setFarmFarming
+      summary: Set the farming level, control body and start of conversion (admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmFarmingInput"
+      responses:
+        "200":
+          description: The farming level.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmFarming"
+        "400":
+          description: Invalid input.
   /farms/{farmId}/duties:
     get:
       tags: [farm]
@@ -9531,11 +9574,17 @@ components:
       enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members, bees, pantry, pasture]
     UserSettings:
       type: object
-      required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare]
+      required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare, organicTips, organicFarm]
       properties:
         seasonalCare:
           type: boolean
           description: Winter – water less often, no fertilising (docs/pflege-wetter.md)
+        organicTips:
+          type: boolean
+          description: Bio (docs/bio.md) – the account's own switch for organic plant advice only
+        organicFarm:
+          type: [string, 'null']
+          description: Name of a farm of the account that farms naturally or organically – its plant advice is organic anyway
         hiddenModules:
           type: array
           items:
@@ -9571,6 +9620,8 @@ components:
             - $ref: "#/components/schemas/QuietHours"
             - type: 'null'
         seasonalCare:
+          type: boolean
+        organicTips:
           type: boolean
     PushTopic:
       type: string
@@ -10512,6 +10563,32 @@ components:
           $ref: "#/components/schemas/StateCode"
         name:
           type: string
+    FarmingLevel:
+      type: string
+      enum: [conventional, natural, organic, association]
+      description: conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)
+    FarmFarming:
+      type: object
+      required: [level, controlBody, organicSince]
+      properties:
+        level:
+          $ref: "#/components/schemas/FarmingLevel"
+        controlBody:
+          type: [string, 'null']
+          description: Öko-Kontrollstelle, e.g. DE-ÖKO-006 (organic and association only)
+        organicSince:
+          type: [string, 'null']
+          description: Start of the conversion, YYYY-MM-DD (organic and association only)
+    FarmFarmingInput:
+      type: object
+      properties:
+        level:
+          $ref: "#/components/schemas/FarmingLevel"
+        controlBody:
+          type: [string, 'null']
+          maxLength: 40
+        organicSince:
+          type: [string, 'null']
     FarmDutySettingsInput:
       type: object
       properties:
@@ -11245,7 +11322,7 @@ components:
           description: Short German application instruction.
     PlantHealthResult:
       type: object
-      required: [pflanzen_name, gesundheits_score, symptome, hausmittel, duenge_biologisch, duenge_chemisch]
+      required: [pflanzen_name, gesundheits_score, symptome, hausmittel, duenge_biologisch, duenge_chemisch, organic]
       properties:
         pflanzen_name:
           type: string
@@ -11275,7 +11352,10 @@ components:
         duenge_chemisch:
           type: string
           description: >
-            General mineral/chemical fertilizer recommendation for this plant (German).
+            General mineral/chemical fertilizer recommendation for this plant (German); empty when organic.
+        organic:
+          type: boolean
+          description: Bio (docs/bio.md) – organic means only; duenge_chemisch is then empty
     PlantScanInput:
       type: object
       required: [image]

@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { OrganicTipsSwitch } from "@/components/organic-tips-switch";
 import { downscaleFile } from "@/lib/image";
 import {
   useCheckPlantHealth,
@@ -221,6 +222,12 @@ export default function PflanzendocPage() {
         </p>
       </div>
 
+      {!result && (
+        <div className="w-full max-w-sm">
+          <OrganicTipsSwitch />
+        </div>
+      )}
+
       <input
         type="file"
         accept="image/*"
@@ -384,18 +391,26 @@ export default function PflanzendocPage() {
                     </p>
                   </div>
                 </div>
-                <div className="border-t border-border" />
-                <div className="flex items-start gap-3">
-                  <FlaskConical className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                  <div className="space-y-0.5">
-                    <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
-                      Mineralisch
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {result.duenge_chemisch}
-                    </p>
-                  </div>
-                </div>
+                {result.organic ? (
+                  <p className="border-t border-border pt-2 text-xs text-muted-foreground">
+                    Nur biologische Empfehlungen – mineralische Dünger lässt die App weg.
+                  </p>
+                ) : (
+                  <>
+                    <div className="border-t border-border" />
+                    <div className="flex items-start gap-3">
+                      <FlaskConical className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                      <div className="space-y-0.5">
+                        <p className="text-xs font-semibold text-blue-700 dark:text-blue-400">
+                          Mineralisch
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {result.duenge_chemisch}
+                        </p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

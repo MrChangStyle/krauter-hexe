@@ -97,6 +97,8 @@ import type {
   FarmDutyCheckInput,
   FarmDutySettingsInput,
   FarmExport,
+  FarmFarming,
+  FarmFarmingInput,
   FarmFeed,
   FarmFeedInput,
   FarmLocationInput,
@@ -11939,6 +11941,155 @@ export const useDeleteGrowLog = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getDeleteGrowLogMutationOptions(options));
+    }
+
+export const getGetFarmFarmingUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/farming`
+}
+
+/**
+ * @summary Bewirtschaftung – conventional, natural or organic (docs/bio.md)
+ */
+export const getFarmFarming = async (farmId: number, options?: RequestInit): Promise<FarmFarming> => {
+
+  return customFetch<FarmFarming>(getGetFarmFarmingUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFarmFarmingQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/farming`
+    ] as const;
+    }
+
+
+export const getGetFarmFarmingQueryOptions = <TData = Awaited<ReturnType<typeof getFarmFarming>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmFarming>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFarmFarmingQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFarmFarming>>> = ({ signal }) => getFarmFarming(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFarmFarming>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFarmFarmingQueryResult = NonNullable<Awaited<ReturnType<typeof getFarmFarming>>>
+export type GetFarmFarmingQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Bewirtschaftung – conventional, natural or organic (docs/bio.md)
+ */
+
+export function useGetFarmFarming<TData = Awaited<ReturnType<typeof getFarmFarming>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFarmFarming>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFarmFarmingQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getSetFarmFarmingUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/farming`
+}
+
+/**
+ * @summary Set the farming level, control body and start of conversion (admin)
+ */
+export const setFarmFarming = async (farmId: number,
+    farmFarmingInput: FarmFarmingInput, options?: RequestInit): Promise<FarmFarming> => {
+
+  return customFetch<FarmFarming>(getSetFarmFarmingUrl(farmId),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(farmFarmingInput)
+  }
+);}
+
+
+
+
+
+export const getSetFarmFarmingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmFarming>>, TError,{farmId: number;data: BodyType<FarmFarmingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setFarmFarming>>, TError,{farmId: number;data: BodyType<FarmFarmingInput>}, TContext> => {
+
+const mutationKey = ['setFarmFarming'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setFarmFarming>>, {farmId: number;data: BodyType<FarmFarmingInput>}> = (props) => {
+          const {farmId,data} = props ?? {};
+
+          return  setFarmFarming(farmId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetFarmFarmingMutationResult = NonNullable<Awaited<ReturnType<typeof setFarmFarming>>>
+    export type SetFarmFarmingMutationBody = BodyType<FarmFarmingInput>
+    export type SetFarmFarmingMutationError = ErrorType<void>
+
+    /**
+ * @summary Set the farming level, control body and start of conversion (admin)
+ */
+export const useSetFarmFarming = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setFarmFarming>>, TError,{farmId: number;data: BodyType<FarmFarmingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setFarmFarming>>,
+        TError,
+        {farmId: number;data: BodyType<FarmFarmingInput>},
+        TContext
+      > => {
+      return useMutation(getSetFarmFarmingMutationOptions(options));
     }
 
 export const getGetFarmDutiesUrl = (farmId: number,) => {

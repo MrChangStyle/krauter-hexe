@@ -69,3 +69,7 @@ Ein Admin legt für jedes Mitglied fest, welche Farm-Module es sieht: Im Team bz
   - `PUT /farms/:farmId/members/:userId/modules` (nur Admins).
   - `FarmSummary.modules` und `FarmMember.modules`.
   - Tests: `farmModules.test.ts`, `farmModules.integration.test.ts`.
+
+## Bewirtschaftung
+
+Auf Farm & Team steht auch die Bewirtschaftung des Hofs: konventionell (Standard), naturnah, Bio oder Bio-Verband. Admins schalten um, alle anderen sehen sie. Einzelheiten in `docs/bio.md`.

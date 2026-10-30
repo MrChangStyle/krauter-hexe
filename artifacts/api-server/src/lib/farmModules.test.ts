@@ -21,7 +21,7 @@ describe('Modul-Freigaben', () => {
 
   it('gives every farm route a module, or names it as one of the basics', () => {
     // Open to every member on purpose (docs/team.md): the farm's basics.
-    const BASICS = ['ai', 'animals', 'contacts', 'herds', 'husbandry', 'location', 'medical', 'setup', 'weather', 'weights'];
+    const BASICS = ['ai', 'animals', 'contacts', 'farming', 'herds', 'husbandry', 'location', 'medical', 'setup', 'weather', 'weights'];
     const dir = join(__dirname, '../routes');
     const segments = new Set<string>();
     for (const file of readdirSync(dir).filter((f) => f.endsWith('.ts') && !f.endsWith('.test.ts'))) {

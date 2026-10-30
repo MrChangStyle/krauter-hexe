@@ -22,6 +22,8 @@ export interface PlantHealthResult {
   hausmittel: PlantHealthRemedy[];
   /** General organic/biological fertilizer recommendation for this plant (German). */
   duenge_biologisch: string;
-  /** General mineral/chemical fertilizer recommendation for this plant (German). */
+  /** General mineral/chemical fertilizer recommendation for this plant (German); empty when organic. */
   duenge_chemisch: string;
+  /** Bio (docs/bio.md) – organic means only; duenge_chemisch is then empty */
+  organic: boolean;
 }

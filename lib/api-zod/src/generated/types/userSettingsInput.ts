@@ -17,4 +17,5 @@ export interface UserSettingsInput {
   pushOff?: PushTopic[];
   quietHours?: QuietHours | null;
   seasonalCare?: boolean;
+  organicTips?: boolean;
 }

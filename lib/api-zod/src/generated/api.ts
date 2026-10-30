@@ -53,7 +53,8 @@ export const CheckPlantHealthResponse = zod.object({
   "anleitung": zod.string().describe('Short German application instruction.')
 })).describe('Biological home remedies to treat the detected issues. Empty when gesundheits_score is 100.\n'),
   "duenge_biologisch": zod.string().describe('General organic\/biological fertilizer recommendation for this plant (German).\n'),
-  "duenge_chemisch": zod.string().describe('General mineral\/chemical fertilizer recommendation for this plant (German).\n')
+  "duenge_chemisch": zod.string().describe('General mineral\/chemical fertilizer recommendation for this plant (German); empty when organic.\n'),
+  "organic": zod.boolean().describe('Bio (docs\/bio.md) – organic means only; duenge_chemisch is then empty')
 })
 
 
@@ -6666,6 +6667,44 @@ export const DeleteGrowLogResponse = zod.void()
 
 
 /**
+ * @summary Bewirtschaftung – conventional, natural or organic (docs/bio.md)
+ */
+export const GetFarmFarmingParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const GetFarmFarmingResponse = zod.object({
+  "level": zod.enum(['conventional', 'natural', 'organic', 'association']).describe('conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)'),
+  "controlBody": zod.string().nullable().describe('Öko-Kontrollstelle, e.g. DE-ÖKO-006 (organic and association only)'),
+  "organicSince": zod.string().nullable().describe('Start of the conversion, YYYY-MM-DD (organic and association only)')
+})
+
+
+/**
+ * @summary Set the farming level, control body and start of conversion (admin)
+ */
+export const SetFarmFarmingParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const setFarmFarmingBodyControlBodyMax = 40;
+
+
+
+export const SetFarmFarmingBody = zod.object({
+  "level": zod.enum(['conventional', 'natural', 'organic', 'association']).optional().describe('conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)'),
+  "controlBody": zod.string().max(setFarmFarmingBodyControlBodyMax).nullish(),
+  "organicSince": zod.string().nullish()
+})
+
+export const SetFarmFarmingResponse = zod.object({
+  "level": zod.enum(['conventional', 'natural', 'organic', 'association']).describe('conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)'),
+  "controlBody": zod.string().nullable().describe('Öko-Kontrollstelle, e.g. DE-ÖKO-006 (organic and association only)'),
+  "organicSince": zod.string().nullable().describe('Start of the conversion, YYYY-MM-DD (organic and association only)')
+})
+
+
+/**
  * @summary Pflichten – what keeping the farm's species means on paper, with what is ticked off
  */
 export const GetFarmDutiesParams = zod.object({
@@ -10407,6 +10446,8 @@ export const getSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 export const GetSettingsResponse = zod.object({
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
+  "organicTips": zod.boolean().describe('Bio (docs\/bio.md) – the account\'s own switch for organic plant advice only'),
+  "organicFarm": zod.string().nullable().describe('Name of a farm of the account that farms naturally or organically – its plant advice is organic anyway'),
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])),
   "onboarded": zod.boolean(),
   "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'notes', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),
@@ -10436,7 +10477,8 @@ export const SetSettingsBody = zod.object({
   "from": zod.string().regex(setSettingsBodyQuietHoursOneFromRegExp),
   "to": zod.string().regex(setSettingsBodyQuietHoursOneToRegExp)
 }).describe('No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes'),zod.null()]).optional(),
-  "seasonalCare": zod.boolean().optional()
+  "seasonalCare": zod.boolean().optional(),
+  "organicTips": zod.boolean().optional()
 })
 
 export const setSettingsResponseQuietHoursOneFromRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
@@ -10445,6 +10487,8 @@ export const setSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 export const SetSettingsResponse = zod.object({
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
+  "organicTips": zod.boolean().describe('Bio (docs\/bio.md) – the account\'s own switch for organic plant advice only'),
+  "organicFarm": zod.string().nullable().describe('Name of a farm of the account that farms naturally or organically – its plant advice is organic anyway'),
   "hiddenModules": zod.array(zod.enum(['plants', 'my-plants', 'care-plan', 'plant-doc', 'pests', 'lexicon', 'herb-witch', 'garden', 'grow', 'animals', 'farm-tasks', 'feed', 'breeding', 'medicines', 'duties', 'yields', 'wildlife', 'handover', 'export', 'members', 'bees', 'pantry', 'pasture'])),
   "onboarded": zod.boolean(),
   "pushOff": zod.array(zod.enum(['plant-care', 'farm-tasks', 'notes', 'feed', 'medicines', 'breeding', 'duties', 'weather', 'garden', 'grow', 'wildlife', 'bees', 'pantry', 'pasture', 'admin']).describe('What a push is about – each can be switched off (docs\/benachrichtigungen.md)')).describe('Push topics switched off'),

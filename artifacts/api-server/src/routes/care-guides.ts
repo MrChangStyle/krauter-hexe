@@ -127,6 +127,7 @@ router.post(
         duengeBiologisch: duengeBiologisch ?? "",
         duegeChemisch: duegeChemisch ?? "",
         imageDataUrl: imageDay1 ?? null,
+        organic: await (await import("../lib/farming")).organicTipsOn(req.user!.id),
       });
     } catch (err) {
       await refundScanAttempt(attempt.attemptId);

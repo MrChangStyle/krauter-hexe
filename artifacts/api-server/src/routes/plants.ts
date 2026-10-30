@@ -183,7 +183,9 @@ router.post("/plants/health-check", requireApproved, async (req, res): Promise<v
 
   let result;
   try {
-    result = await checkPlantHealth(parsed.data.image);
+    // Bio (docs/bio.md): organic means only for a natural or organic farm, or by the own switch.
+    const { organicTipsOn } = await import("../lib/farming");
+    result = await checkPlantHealth(parsed.data.image, { organic: await organicTipsOn(req.user!.id) });
   } catch (err) {
     await refundScanAttempt(attempt.attemptId);
     req.log.error({ err }, "Plant health check failed");

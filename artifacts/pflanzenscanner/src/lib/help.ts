@@ -69,7 +69,13 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       "Die Diagnose lesen: Ursache, Sicherheit der Einschätzung und Behandlung.",
       "Daraus einen Pflege-Guide mit Erinnerungen machen.",
     ],
-    faq: [{ q: "Ersetzt das einen Fachbetrieb?", a: "Nein. Bei wertvollen Pflanzen oder Unsicherheit lieber eine Gärtnerei fragen." }],
+    faq: [
+      { q: "Ersetzt das einen Fachbetrieb?", a: "Nein. Bei wertvollen Pflanzen oder Unsicherheit lieber eine Gärtnerei fragen." },
+      {
+        q: "Bekomme ich nur Bio-Tipps?",
+        a: "Nur wenn du willst. Standard sind biologische und mineralische Dünger-Tipps. Mit „Nur biologische Empfehlungen“ nennt der Pflanzendoc – und der Pflege-Guide daraus – nur Mittel aus dem Ökolandbau. Wirtschaftet euer Hof naturnah oder bio (Farm & Team → Bewirtschaftung), ist das automatisch an.",
+      },
+    ],
   },
   pests: {
     title: "Schädlinge & Nützlinge",
@@ -347,9 +353,14 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       "Optional Module freigeben – etwa nur Stall-Aufgaben.",
       "Bei der Vertretung „Tierarzt einladen“: Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export.",
       "Kontakte eintragen; sie stehen auch in der Übergabe.",
+      "Unter „Bewirtschaftung“ festlegen, wie ihr wirtschaftet: konventionell, naturnah oder bio – jederzeit umschaltbar.",
     ],
     faq: [
       { q: "Was dürfen Gäste?", a: "Lesen, aber nichts ändern." },
+      {
+        q: "Müssen wir bio wirtschaften?",
+        a: "Nein. Bio ist eine Option: „Konventionell“ ist Standard und lässt alle Empfehlungen wie gehabt. „Naturnah“ und „Bio“ stellen Pflanzendoc und Pflege-Guide auf biologische Mittel um; bei Bio lassen sich Kontrollstelle und Umstellungsdatum eintragen. Umschalten geht jederzeit, nur Admins können es.",
+      },
       {
         q: "Wie gebe ich meinem Tierarzt Einblick?",
         a: "Unter Vertretung auf „Tierarzt einladen“ tippen. Die E-Mail kommt aus dem Kontakt „Tierarzt“, der Zugang endet nach 14 Tagen (änderbar). Er sieht die Tiere mit Krankenakte, den Arzneimittel-Vorrat und den Export – sonst nichts. Als Gast liest er nur; als Mitarbeiter kann er Behandlungen eintragen. Er braucht ein eigenes Little-Farming-Konto.",

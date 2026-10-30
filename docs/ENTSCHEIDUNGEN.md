@@ -2,6 +2,18 @@
 
 Größere Entscheidungen auf dem Weg zum Start: Was, warum, welche Alternativen. Neueste oben.
 
+## 30.10.2026 – Bio als Eigenschaft des Hofs, nicht als Modul
+
+- **Was:** Bio und Nachhaltigkeit kommen über eine Hof-Einstellung „Bewirtschaftung“ (konventionell, naturnah, Bio nach EU-Öko-VO, Bio-Verband) in alle Module (`docs/BIO-KONZEPT.md`, Schritte B1–B8).
+- **Warum:**
+  - Ein Tester hat sich das gewünscht.
+  - Eine Beraterin für biologische Höfe testet die App und will sie gegebenenfalls Landwirten empfehlen.
+  - Bio betrifft Futter, Arzneimittel, Platz, Saatgut und Dünger zugleich. Ein eigenes Modul daneben würde das doppelt führen.
+- **Alternativen:**
+  - Eigenes Modul „Bio“: verworfen, weil die Daten dann doppelt gepflegt würden.
+  - Nur Tipps ohne Prüfungen: zu wenig für zertifizierte Betriebe und für die Beratung.
+- **Vorgemerkt:** Ein Paket für größere Betriebe („Big Farming“) mit mehreren Höfen und Beratern. Es kommt erst, wenn Little Farming mit Bio läuft.
+
 ## 29.10.2026 – Audit-Auftrag an unseren Aufbau angepasst
 
 - **Was:** Der allgemeine Auftrag „Little Farming eigenständig prüfen und fertigstellen“ wird zu `docs/LAUNCH-PLAN.md`.

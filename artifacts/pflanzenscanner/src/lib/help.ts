@@ -135,6 +135,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         a: "Die KI hat höchstens 45 Sekunden. Braucht sie länger, kommt „Die KI hat zu lange gebraucht“ und die Anfrage zählt nicht gegen dein Tageslimit. Einfach noch einmal tippen; kürzere Wünsche helfen.",
       },
       { q: "Woher kennt die App meine Frosttermine?", a: "Aus Wetterdaten des Deutschen Wetterdienstes für deine Postleitzahl (auf etwa 10 km gerundet)." },
+      {
+        q: "Wo trage ich Dünger ein?",
+        a: "Im Beet unter „Düngung“: Datum, was (Kompost, Mist, Gründüngung, Hornspäne …) und auf Wunsch die Menge. Darunter rechnet die App, wie viel Mist deine Tiere im Jahr geben und für wie viel Beet er reicht (Richtwerte). Auf Bio-Höfen zeigt der Bio-Check Mineraldünger rot.",
+      },
       { q: "Was ist mit dem Saatgut?", a: "Unter „Saatgut“ führst du deine Tüten. Die App sagt, wie lange sie keimen, und bucht beim Säen ab." },
       {
         q: "Wo trage ich Bio-Saatgut ein?",
@@ -190,7 +194,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       },
       {
         q: "Was zeigt der Bio-Check?",
-        a: "Auf Bio-Höfen steht auf der Tiere-Seite eine Ampel je Bereich: Futter (Bio-Anteile der Rationen), Platz (Stall und Auslauf) und Behandlungen (chemisch-synthetische je Tier in 12 Monaten) und Saatgut (Bio oder vom eigenen Hof). Grün passt, gelb fehlt etwas, rot braucht Handlung. Ein Tipp öffnet, wo du es ändern kannst. Dünger kommt dazu.",
+        a: "Auf Bio-Höfen steht auf der Tiere-Seite eine Ampel je Bereich: Futter (Bio-Anteile der Rationen), Platz (Stall und Auslauf) und Behandlungen (chemisch-synthetische je Tier in 12 Monaten) Saatgut (Bio oder vom eigenen Hof) und Dünger (kein Mineraldünger in 12 Monaten). Grün passt, gelb fehlt etwas, rot braucht Handlung. Ein Tipp öffnet, wo du es ändern kannst.",
       },
       {
         q: "Was ist der Platz-Check?",
@@ -407,7 +411,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Reicht das fürs Veterinäramt?", a: "Es ist eine Arbeitshilfe mit den üblichen Angaben. Was genau verlangt wird, sagt dein Veterinäramt." },
       {
         q: "Was steht in der Bio-Dokumentation?",
-        a: "Nur auf Bio-Höfen gibt es den Knopf „Bio-Dokumentation (PDF)“: Bestandsliste und Behandlungen mit Bio-Wartezeit wie im Export, dazu die Bio-Anteile der aktuellen Rationen, Stall und Auslauf je Gruppe, den Weidegang im Zeitraum und das Saatgut. Werte außerhalb der Richtwerte sind mit (!) markiert. Eine Arbeitshilfe für die Öko-Kontrolle – was genau verlangt wird, sagt deine Kontrollstelle.",
+        a: "Nur auf Bio-Höfen gibt es den Knopf „Bio-Dokumentation (PDF)“: Bestandsliste und Behandlungen mit Bio-Wartezeit wie im Export, dazu die Bio-Anteile der aktuellen Rationen, Stall und Auslauf je Gruppe, den Weidegang und die Düngung im Zeitraum und das Saatgut. Werte außerhalb der Richtwerte sind mit (!) markiert. Eine Arbeitshilfe für die Öko-Kontrolle – was genau verlangt wird, sagt deine Kontrollstelle.",
       },
     ],
   },

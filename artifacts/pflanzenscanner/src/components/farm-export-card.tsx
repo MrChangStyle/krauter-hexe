@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { FileDown, FileSpreadsheet, FileText, Leaf, Loader2 } from "lucide-react";
-import { getFarmExport, getPastures, getSeedOverview, listHerds, listRations, useGetFarmFarming, type FarmFarming, type FarmSummary } from "@workspace/api-client-react";
+import { getFarmExport, getPastures, getSeedOverview, listFertilizings, listHerds, listRations, useGetFarmFarming, type FarmFarming, type FarmSummary } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { countText, deDate, exportCsv, exportFileName, exportForPeriod, hasBees } from "@/lib/farm-health";
 import { FARMING_LABELS, certified } from "@/lib/farming-labels";
-import { grazingRows, organicFeedRows, organicSpaceRows, seedRows } from "@/lib/organic-check";
+import { fertilizerRows, grazingRows, organicFeedRows, organicSpaceRows, seedRows } from "@/lib/organic-check";
 import { SOURCE_LABELS, amountText } from "@/lib/seed-labels";
 import { todayIso } from "@/lib/farm-labels";
 
@@ -49,11 +49,12 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
         await exportFarmPdf(data);
       } else {
         // A member without the feed or pasture module gets those parts empty.
-        const [rations, herds, pastures, seeds] = await Promise.all([
+        const [rations, herds, pastures, seeds, fertilizings] = await Promise.all([
           listRations(farm.id).catch(() => []),
           listHerds(farm.id).catch(() => []),
           getPastures(farm.id).then((o) => o.pastures).catch(() => []),
           getSeedOverview(farm.id).then((o) => o.seeds).catch(() => null),
+          listFertilizings(farm.id).catch(() => null),
         ]);
         const { exportFarmPdf } = await import("@/lib/farm-export-pdf");
         await exportFarmPdf(data, {
@@ -61,6 +62,7 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
           feedRows: organicFeedRows(rations),
           spaceRows: organicSpaceRows(herds),
           grazingRows: grazingRows(pastures, { from, to }, deDate),
+          fertilizerRows: fertilizings && fertilizerRows(fertilizings, { from, to }, deDate),
           seedRows: seeds && seedRows(seeds, (s) => SOURCE_LABELS[s.source], (s) => amountText(s.amount, s.unit)),
         });
       }
@@ -114,7 +116,7 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
             {busy === "bio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Leaf className="h-4 w-4" />}
             Bio-Dokumentation (PDF)
           </Button>
-          <p className="text-xs text-muted-foreground">Für die Öko-Kontrolle: Bestand, Behandlungen mit Bio-Wartezeit, Fütterung mit Bio-Anteilen, Stall und Auslauf, Weidegang, Saatgut.</p>
+          <p className="text-xs text-muted-foreground">Für die Öko-Kontrolle: Bestand, Behandlungen mit Bio-Wartezeit, Fütterung mit Bio-Anteilen, Stall und Auslauf, Weidegang, Saatgut, Düngung.</p>
         </div>
       )}
     </section>

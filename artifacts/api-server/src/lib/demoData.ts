@@ -30,6 +30,7 @@ import { addDays } from './feedSeason';
 import { setFeedOrigin } from './feedOrganic';
 import { buyFeed } from './feedStock';
 import { createBed } from './gardenBeds';
+import { addFertilizing } from './bedFertilizing';
 import { addGardenCost, addGardenHours } from './gardenEconomics';
 import { addHarvest } from './gardenHarvests';
 import { addPlanting } from './gardenPlanner';
@@ -270,6 +271,9 @@ async function fill(userId: string, farmId: number, today: string): Promise<void
   await addGardenCost(farmId, { date: ago(60), category: 'seeds', amountEur: 3.95, note: 'Demo: Tomatensamen' });
   await addGardenCost(farmId, { date: ago(55), category: 'soil', amountEur: 17.97, bedId: raised.id, note: 'Demo: 3 Sack Hochbeeterde' });
   await addGardenHours(farmId, { date: ago(40), hours: 2, bedId: raised.id, note: 'Demo: Pflanzen und Mulchen' });
+  // Düngung (docs/bio.md, B7): the own goats' manure and compost – the Kreislauf Stall → Beet.
+  await addFertilizing(farmId, bed.id, { date: ago(60), kind: 'manure_own', label: 'Ziegenmist, gut verrottet (Demo)', amountKg: 15 });
+  await addFertilizing(farmId, raised.id, { date: ago(55), kind: 'compost', label: 'Eigener Kompost (Demo)', amountKg: 20 });
   await addGardenHours(farmId, { date: ago(20), hours: 1.5, note: 'Demo: Jäten und Gießen' });
   await addPlanting(farmId, bed.id, year, { cropKey: 'salat', x: 1, y: 1 });
   await createSeed(farmId, { cropKey: 'tomate', variety: 'Ochsenherz', amount: 30, unit: 'Korn', source: 'bought', harvestYear: year - 1, openPollinated: true, organic: true }, today);

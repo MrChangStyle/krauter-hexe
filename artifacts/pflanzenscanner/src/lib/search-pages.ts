@@ -19,7 +19,7 @@ export const APP_PAGES: AppPage[] = [
   { title: "Nützlinge fördern", hint: "Wer gegen welches Problem hilft", href: "/schaedlinge?tab=nuetzlinge", module: "pests", words: "nützling nützlinge marienkäfer florfliege ohrwurm insektenhotel nisthilfe tränke igel regenwurm boden blühstreifen wildbienen" },
   { title: "Lexikon", hint: "Alle Arten, auch Pilze", href: "/lexikon", module: "lexicon", words: "archiv arten pilze giftig" },
   { title: "Kräuter-Hexe", hint: "Heilkräuter-Ratgeber", href: "/kraeuter-hexe", module: "herb-witch", words: "heilkräuter tee beschwerden hausmittel" },
-  { title: "Beet-Architekt", hint: "Beete planen", href: "/beete", module: "garden", words: "garten hochbeet mischkultur gemüse" },
+  { title: "Beet-Architekt", hint: "Beete planen", href: "/beete", module: "garden", words: "garten hochbeet mischkultur gemüse düngung dünger mist kompost gründüngung" },
   { title: "Gartenkalender", hint: "Säen, pflanzen, ernten", href: "/beete/kalender", module: "garden", words: "aussaat ernte kalender" },
   { title: "Saatgut", hint: "Vorrat und Keimtest", href: "/beete/saatgut", module: "garden", words: "samen tüten keimen bio-saatgut samenfest" },
   { title: "Ernte-Auswertung", hint: "Was sich gelohnt hat", href: "/beete/ernte", module: "garden", words: "ernte kilo ertrag beet sorte vergleich wirtschaftlichkeit kosten lohnt stunden" },

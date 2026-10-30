@@ -131,6 +131,8 @@ import type {
   FeedbackInput,
   FeedbackList,
   FeedbackMarkInput,
+  Fertilizing,
+  FertilizingInput,
   FrostWarning,
   GardenBed,
   GardenBedInput,
@@ -20924,6 +20926,230 @@ export const useRemoveHarvest = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRemoveHarvestMutationOptions(options));
+    }
+
+export const getListFertilizingsUrl = (farmId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/fertilizings`
+}
+
+/**
+ * @summary Düngung – the farm's fertilising entries, newest first (docs/bio.md, B7)
+ */
+export const listFertilizings = async (farmId: number, options?: RequestInit): Promise<Fertilizing[]> => {
+
+  return customFetch<Fertilizing[]>(getListFertilizingsUrl(farmId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFertilizingsQueryKey = (farmId: number,) => {
+    return [
+    `/api/farms/${farmId}/fertilizings`
+    ] as const;
+    }
+
+
+export const getListFertilizingsQueryOptions = <TData = Awaited<ReturnType<typeof listFertilizings>>, TError = ErrorType<unknown>>(farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFertilizings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFertilizingsQueryKey(farmId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFertilizings>>> = ({ signal }) => listFertilizings(farmId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: farmId !== null && farmId !== undefined, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFertilizings>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFertilizingsQueryResult = NonNullable<Awaited<ReturnType<typeof listFertilizings>>>
+export type ListFertilizingsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Düngung – the farm's fertilising entries, newest first (docs/bio.md, B7)
+ */
+
+export function useListFertilizings<TData = Awaited<ReturnType<typeof listFertilizings>>, TError = ErrorType<unknown>>(
+ farmId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFertilizings>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFertilizingsQueryOptions(farmId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getAddFertilizingUrl = (farmId: number,
+    bedId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/beds/${bedId}/fertilizings`
+}
+
+/**
+ * @summary Log what went onto a bed (caretaker or admin)
+ */
+export const addFertilizing = async (farmId: number,
+    bedId: number,
+    fertilizingInput: FertilizingInput, options?: RequestInit): Promise<Fertilizing> => {
+
+  return customFetch<Fertilizing>(getAddFertilizingUrl(farmId,bedId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(fertilizingInput)
+  }
+);}
+
+
+
+
+
+export const getAddFertilizingMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addFertilizing>>, TError,{farmId: number;bedId: number;data: BodyType<FertilizingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addFertilizing>>, TError,{farmId: number;bedId: number;data: BodyType<FertilizingInput>}, TContext> => {
+
+const mutationKey = ['addFertilizing'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addFertilizing>>, {farmId: number;bedId: number;data: BodyType<FertilizingInput>}> = (props) => {
+          const {farmId,bedId,data} = props ?? {};
+
+          return  addFertilizing(farmId,bedId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddFertilizingMutationResult = NonNullable<Awaited<ReturnType<typeof addFertilizing>>>
+    export type AddFertilizingMutationBody = BodyType<FertilizingInput>
+    export type AddFertilizingMutationError = ErrorType<void>
+
+    /**
+ * @summary Log what went onto a bed (caretaker or admin)
+ */
+export const useAddFertilizing = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addFertilizing>>, TError,{farmId: number;bedId: number;data: BodyType<FertilizingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addFertilizing>>,
+        TError,
+        {farmId: number;bedId: number;data: BodyType<FertilizingInput>},
+        TContext
+      > => {
+      return useMutation(getAddFertilizingMutationOptions(options));
+    }
+
+export const getRemoveFertilizingUrl = (farmId: number,
+    fertilizingId: number,) => {
+
+
+
+
+  return `/api/farms/${farmId}/fertilizings/${fertilizingId}`
+}
+
+/**
+ * @summary Delete a fertilising entry (caretaker or admin)
+ */
+export const removeFertilizing = async (farmId: number,
+    fertilizingId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getRemoveFertilizingUrl(farmId,fertilizingId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+
+export const getRemoveFertilizingMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFertilizing>>, TError,{farmId: number;fertilizingId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof removeFertilizing>>, TError,{farmId: number;fertilizingId: number}, TContext> => {
+
+const mutationKey = ['removeFertilizing'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof removeFertilizing>>, {farmId: number;fertilizingId: number}> = (props) => {
+          const {farmId,fertilizingId} = props ?? {};
+
+          return  removeFertilizing(farmId,fertilizingId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RemoveFertilizingMutationResult = NonNullable<Awaited<ReturnType<typeof removeFertilizing>>>
+
+    export type RemoveFertilizingMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a fertilising entry (caretaker or admin)
+ */
+export const useRemoveFertilizing = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof removeFertilizing>>, TError,{farmId: number;fertilizingId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof removeFertilizing>>,
+        TError,
+        {farmId: number;fertilizingId: number},
+        TContext
+      > => {
+      return useMutation(getRemoveFertilizingMutationOptions(options));
     }
 
 export const getGetFrostWarningsUrl = (farmId: number,) => {

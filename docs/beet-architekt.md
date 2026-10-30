@@ -87,6 +87,11 @@ Vom Inhaber am 18.10.2026 ergänzt:
    mit den Faustwerten („Optimieren“ aus der Spezifikation). Der Wirtschaftlichkeits-Tracker steht in
    `docs/garten-wirtschaftlichkeit.md`.
 
+8. **Düngung (UMGESETZT, `docs/bio.md` B7):**
+   - Je Beet eine Karte „Düngung“: Datum, Art (Kompost, Mist vom eigenen Hof oder zugekauft, Gründüngung, Hornspäne, Pflanzenjauche, organischer Handelsdünger, Mineraldünger, Sonstiges), Bezeichnung und Menge.
+   - Darunter der **Kreislauf Stall → Beet**: Mist der eigenen Tiere im Jahr nach Richtwerten je Art und die Beetfläche, die er bei 3 kg/m² reicht.
+   - Für alle Höfe; auf naturnahen und Bio-Höfen steht Mineraldünger am Ende der Auswahl, auf Bio-Höfen mit Warnung.
+
 Definition of Done je Schritt wie beim Farm-Modul: Typecheck, Build, alle Tests grün
 (neue inkl. Isolation gegen echtes Postgres), Browser-Test in Handybreite, replit.md
 aktualisiert.
@@ -111,5 +116,6 @@ aktualisiert.
   - Garten-Assistent: Fläche je Person und Jahr (Gemüse 40 m², Lagergemüse 20, Kräuter 2, Obst 5), Ertrag 3 kg/m² für Küche und Grünfutter, 4 kg/m² für Lagerfutter, Grünfutter je Tier und Tag (`FODDER_KG_PER_DAY`), 10 m² je Wochenstunde.
   - Hochbeet-Begleiter: Schichten nach Gewicht 7 : 4 : 3 : 3 unter mindestens 15 cm Erde, Nachfüllen etwa 10 cm im Jahr, Fruchtfolge Stark-, Mittel-, Schwachzehrer nach Jahren.
   - Herbst: Ernteverlängerung mit Vlies (+14 Tage, Hochbeet +7), Frühbeet (+28) und Gewächshaus (+42).
+  - Düngung: Mist je Tier und Jahr (`MANURE_KG_PER_YEAR` in `lib/fertilizing.ts`, z. B. Huhn 60 kg, Ziege 1,2 t, Rind 12 t) und 3 kg gut verrotteter Mist je m² für Starkzehrer.
   - Anbaudaten-Katalog (49 Kulturen): Abstände, Wochen relativ zum letzten Frost, gute und schlechte Nachbarn.
 

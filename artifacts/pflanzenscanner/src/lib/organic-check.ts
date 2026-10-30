@@ -1,15 +1,17 @@
-import type { FarmAnimal, Herd, MedicalRecord, RationEvaluation, Seed } from "@workspace/api-client-react";
+import type { FarmAnimal, Fertilizing, Herd, MedicalRecord, RationEvaluation, Seed } from "@workspace/api-client-react";
+import { addDays } from "./garden-calendar";
+import { FERTILIZER_LABELS } from "./fertilizing";
 import { ORGANIC_TREATMENT_LIMIT, chemicalTreatments } from "./farm-health";
 import { spaceCheck } from "./organic-space";
 
 /**
  * Bio-Check (docs/bio.md, B5): one light per area of an organic farm, built
- * from what the modules already know. Fertiliser follows with B7.
+ * from what the modules already know.
  */
 export type CheckStatus = "ok" | "warn" | "open";
 
 export interface CheckArea {
-  key: "feed" | "space" | "treatments" | "seeds";
+  key: "feed" | "space" | "treatments" | "seeds" | "fertilizer";
   label: string;
   status: CheckStatus;
   /** One short line: what is fine or what is missing. */
@@ -77,6 +79,19 @@ export function seedArea(seeds: readonly Seed[] | undefined): CheckArea {
   return { ...base, status: "ok", text: `${plural(active.length, "Saatgut ist", "Saatgüter sind")} Bio oder vom eigenen Hof.` };
 }
 
+/** Dünger (B7): mineral fertiliser on a bed in the last 12 months is not allowed on an organic farm. */
+export function fertilizerArea(entries: readonly Fertilizing[] | undefined, today: string): CheckArea {
+  const base = { key: "fertilizer" as const, label: "Dünger", href: "/beete" };
+  const from = addDays(today, -365);
+  const recent = (entries ?? []).filter((f) => f.date > from && f.date <= today);
+  const mineral = recent.filter((f) => f.kind === "mineral");
+  if (mineral.length > 0) {
+    return { ...base, status: "warn", text: `Mineraldünger in 12 Monaten: ${[...new Set(mineral.map((f) => f.bedName))].join(", ")} – im Ökolandbau nicht zugelassen.` };
+  }
+  if (recent.length === 0) return { ...base, status: "open", text: "Keine Düngung in 12 Monaten eingetragen – im Beet unter „Düngung“." };
+  return { ...base, status: "ok", text: `${plural(recent.length, "Düngung", "Düngungen")} in 12 Monaten, alle organisch.` };
+}
+
 // ── Bio-Dokumentation (PDF) ──────────────────────────────────────────────────
 
 const pct = (n: number) => `${Math.round(n)} %`;
@@ -139,5 +154,21 @@ export function seedRows(seeds: readonly Seed[], sourceLabel: (s: Seed) => strin
       yesNo(s.openPollinated, "ja", "F1"),
       s.harvestYear ? String(s.harvestYear) : "–",
       amount(s),
+    ]);
+}
+
+export const FERTILIZER_COLUMNS = ["Datum", "Beet", "Dünger", "Bezeichnung", "Menge"] as const;
+
+/** Entries in the period, oldest first; "(!)" marks mineral fertiliser. */
+export function fertilizerRows(entries: readonly Fertilizing[], period: { from: string; to: string }, deDate: (iso: string) => string): string[][] {
+  return entries
+    .filter((f) => f.date >= period.from && f.date <= period.to)
+    .sort((a, b) => a.date.localeCompare(b.date) || a.id - b.id)
+    .map((f) => [
+      deDate(f.date),
+      f.bedName,
+      FERTILIZER_LABELS[f.kind] + (f.kind === "mineral" ? " (!)" : ""),
+      f.label ?? "–",
+      f.amountKg == null ? "–" : `${f.amountKg.toLocaleString("de-DE")} kg`,
     ]);
 }

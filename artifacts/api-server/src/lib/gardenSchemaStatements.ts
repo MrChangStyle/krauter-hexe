@@ -195,6 +195,23 @@ export const GARDEN_SCHEMA_STATEMENTS: readonly string[] = [
      ALTER TABLE "seeds" ADD CONSTRAINT "seeds_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
    EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
   `CREATE INDEX IF NOT EXISTS "seeds_farm_idx" ON "seeds" USING btree ("farm_id")`,
+  `CREATE TABLE IF NOT EXISTS "bed_fertilizings" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"farm_id" integer NOT NULL,
+	"bed_id" integer NOT NULL,
+	"date" date NOT NULL,
+	"kind" text NOT NULL,
+	"label" text,
+	"amount_kg" double precision,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL
+)`,
+  `DO $$ BEGIN
+     ALTER TABLE "bed_fertilizings" ADD CONSTRAINT "bed_fertilizings_farm_id_farms_id_fk" FOREIGN KEY ("farm_id") REFERENCES "public"."farms"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `DO $$ BEGIN
+     ALTER TABLE "bed_fertilizings" ADD CONSTRAINT "bed_fertilizings_bed_id_garden_beds_id_fk" FOREIGN KEY ("bed_id") REFERENCES "public"."garden_beds"("id") ON DELETE cascade ON UPDATE no action;
+   EXCEPTION WHEN duplicate_object THEN NULL; END $$`,
+  `CREATE INDEX IF NOT EXISTS "bed_fertilizings_farm_date_idx" ON "bed_fertilizings" USING btree ("farm_id","date")`,
   // Bio-Saatgut (docs/bio.md, B7).
   `ALTER TABLE "seeds" ADD COLUMN IF NOT EXISTS "organic" boolean`,
   `CREATE TABLE IF NOT EXISTS "seed_uses" (

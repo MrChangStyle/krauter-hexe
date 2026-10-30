@@ -5500,6 +5500,45 @@ export const HarvestUse = {
   fodder: 'fodder',
 } as const;
 
+export type FertilizerKind = typeof FertilizerKind[keyof typeof FertilizerKind];
+
+
+export const FertilizerKind = {
+  compost: 'compost',
+  manure_own: 'manure_own',
+  manure_bought: 'manure_bought',
+  green_manure: 'green_manure',
+  horn: 'horn',
+  plant_tea: 'plant_tea',
+  organic_bought: 'organic_bought',
+  mineral: 'mineral',
+  other: 'other',
+} as const;
+
+export interface Fertilizing {
+  id: number;
+  bedId: number;
+  bedName: string;
+  date: string;
+  kind: FertilizerKind;
+  /** @nullable */
+  label: string | null;
+  /** @nullable */
+  amountKg: number | null;
+}
+
+export interface FertilizingInput {
+  date: string;
+  kind: FertilizerKind;
+  /**
+     * @maxLength 80
+     * @nullable
+     */
+  label?: string | null;
+  /** @nullable */
+  amountKg?: number | null;
+}
+
 export interface Harvest {
   id: number;
   /** @nullable */

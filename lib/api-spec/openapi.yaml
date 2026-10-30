@@ -6620,6 +6620,76 @@ paths:
       responses:
         "204":
           description: Deleted.
+  /farms/{farmId}/fertilizings:
+    get:
+      tags: [garden]
+      operationId: listFertilizings
+      summary: Düngung – the farm's fertilising entries, newest first (docs/bio.md, B7)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The entries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Fertilizing"
+  /farms/{farmId}/beds/{bedId}/fertilizings:
+    post:
+      tags: [garden]
+      operationId: addFertilizing
+      summary: Log what went onto a bed (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: bedId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FertilizingInput"
+      responses:
+        "201":
+          description: The entry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Fertilizing"
+        "400":
+          description: Kind, date or amount invalid.
+  /farms/{farmId}/fertilizings/{fertilizingId}:
+    delete:
+      tags: [garden]
+      operationId: removeFertilizing
+      summary: Delete a fertilising entry (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fertilizingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted.
   /farms/{farmId}/garden/frost-warnings:
     get:
       tags: [garden]
@@ -13671,6 +13741,40 @@ components:
     HarvestUse:
       type: string
       enum: [kitchen, fodder]
+    FertilizerKind:
+      type: string
+      enum: [compost, manure_own, manure_bought, green_manure, horn, plant_tea, organic_bought, mineral, other]
+    Fertilizing:
+      type: object
+      required: [id, bedId, bedName, date, kind, label, amountKg]
+      properties:
+        id:
+          type: integer
+        bedId:
+          type: integer
+        bedName:
+          type: string
+        date:
+          type: string
+        kind:
+          $ref: "#/components/schemas/FertilizerKind"
+        label:
+          type: [string, 'null']
+        amountKg:
+          type: [number, 'null']
+    FertilizingInput:
+      type: object
+      required: [date, kind]
+      properties:
+        date:
+          type: string
+        kind:
+          $ref: "#/components/schemas/FertilizerKind"
+        label:
+          type: [string, 'null']
+          maxLength: 80
+        amountKg:
+          type: [number, 'null']
     Harvest:
       type: object
       required: [id, plantingId, bedId, season, cropKey, label, cells, harvestedOn, amountKg, use, note]

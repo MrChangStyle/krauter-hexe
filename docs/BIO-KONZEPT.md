@@ -8,7 +8,7 @@ Dieses Konzept beschreibt, wie das Thema **durchgehend** in die App kommt, statt
 
 - **Bio ist eine Eigenschaft des Hofs, kein Modul.** Ein Hof legt einmal fest, wie er wirtschaftet. Danach richten sich die Module danach: Empfehlungen, Prüfungen, Wartezeiten, Dokumentation.
 - **Niemand wird ausgeschlossen.** Die Stufen „naturnah“ und „Bio“ helfen auch Hobbyhaltern ohne Zertifikat. Wer konventionell wirtschaftet, sieht die App wie heute.
-- **Bio ist Standard bei den Tipps.** Bei Pflanzenschutz und Düngung nennt die App heute schon zuerst biologische Mittel. Das bleibt so. Neu ist, dass ein Bio-Hof chemisch-synthetische Mittel gar nicht mehr vorgeschlagen bekommt.
+- **Bio ist eine Option, keine Pflicht.** Little Farming wird keine reine Bio-App. Wer kein Bio will, wirtschaftet „konventionell“ – das ist der Standard und lässt alle Empfehlungen wie heute, biologische und mineralische. Wer will, schaltet auf „naturnah“ oder „Bio“ um, und jederzeit wieder zurück. Erst dann nennt die App nur noch Mittel aus dem Ökolandbau.
 - **Feste Regeln statt KI**, wo es Vorgaben gibt: Wartezeiten, Behandlungszahl, Platz je Tier, Futteranteile. Die KI bekommt die Stufe nur als Rahmen für ihre Tipps mit.
 - **Richtwerte bleiben Richtwerte.** Alle Zahlen unten stammen aus der EU-Öko-Verordnung bzw. den Verbandsrichtlinien. Sie stehen unter „Offen“ zur fachlichen Prüfung, gern durch die Beraterin.
 
@@ -60,7 +60,9 @@ Pflanzen-Module, die am Konto hängen (Scans, Meine Pflanzen, Pflegeplan, Pflanz
 - **Nachhaltigkeit**, für alle Stufen sichtbar: Nisthilfen, Blühstreifen, Hecken, Regenwasser, Kompost. Eine kleine Liste, abhakbar, als „Hof-Steckbrief“ für die Homepage des Hofs oder den Hofladen.
 - **Hilfe & FAQ, Suche, Demo-Hof**: Der Demo-Hof wird ein naturnaher Hof, damit Tester das Thema sofort sehen.
 
-## Die Beraterin: Zugang als „Beratung“
+## Die Beraterin: Zugang als „Beratung“ (zurückgestellt)
+
+**Stand 30.10.2026: zurückgestellt.** Erst kommt Bio in die bestehenden Module; der Berater-Zugang folgt in einem zweiten Schritt.
 
 Wie beim Tierarzt (Schritt 9), aber für die Beratung:
 
@@ -76,7 +78,7 @@ Wie beim Tierarzt (Schritt 9), aber für die Beratung:
 - **Beraterinnen und Berater als Multiplikatoren:** Empfehlungs-Link mit `?ref=…`, den die Besucherzählung aus Schritt 18 schon auswertet. Später gibt es Rabatt für ihre Höfe.
 - **Pakete:**
   - Die Grundregeln (Stufe, doppelte Wartezeit, biologische Tipps) gibt es in allen Paketen.
-  - Bio-Check, Bio-Dokumentation und Berater-Zugang passen zu **Premium**.
+  - Ob Bio-Check, Bio-Dokumentation und später der Berater-Zugang nur in **Premium** kommen, ist noch offen. Bis dahin gibt es alles in allen Paketen.
   - Ein Paket für größere Betriebe („Big Farming“) mit mehreren Beratern, mehreren Höfen und Export für die Kontrollstelle merken wir für später vor (`docs/ENTSCHEIDUNGEN.md`). Jetzt konzentrieren wir uns auf Little Farming.
 
 ## Umsetzung in Schritten
@@ -90,11 +92,11 @@ Jeder Schritt ist für sich nutzbar und ein PR mit Definition of Done (Hilfe, De
 | **B3** | Futterplaner: Bio-Kennzeichen am Futter, Anteile und Ampel je Tiergruppe | Bio-Tierhalter |
 | **B4** | Stall und Weide: Flächen, Platz-Check, Weidegang | Bio-Tierhalter |
 | **B5** | Bio-Check auf dem Dashboard und Bio-Dokumentation (PDF) | Kontrolle, Beratung |
-| **B6** | Berater-Zugang (Gast mit Ablauf, lesend) | Beraterin |
+| **B6** | Berater-Zugang (Gast mit Ablauf, lesend) – **zurückgestellt**, kommt nach den übrigen Schritten | Beraterin |
 | **B7** | Beet-Architekt und Saatgut: Bio-Saatgut, Gründüngung, Kreislauf Mist → Beet; Erzeugnisse als „Bio“ | Garten |
 | **B8** | Nachhaltigkeits-Liste, Demo-Hof naturnah, Homepage „Bio & nachhaltig“, FAQ, Marketing | Vermarktung |
 
-**Reihenfolge:** B1 zuerst, weil alles darauf aufbaut. B6 kann vorgezogen werden, sobald die Beraterin testen will. Mit dem vorhandenen Gast-Zugang kann sie schon heute mitlesen.
+**Reihenfolge:** B1 zuerst, weil alles darauf aufbaut, dann B2–B5, B7 und B8. B6 (Beraterin) ist zurückgestellt.
 
 ## Offen (fachlich zu prüfen)
 

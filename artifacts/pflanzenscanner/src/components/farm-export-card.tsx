@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { countText, deDate, exportCsv, exportFileName, exportForPeriod, hasBees } from "@/lib/farm-health";
-import { FARMING_LABELS, certified } from "@/lib/farming-labels";
+import { FARMING_LABELS, ORGANIC_AREAS, certifiedIn, organicAreasFor } from "@/lib/farming-labels";
 import { fertilizerRows, grazingRows, organicFeedRows, organicSpaceRows, seedRows } from "@/lib/organic-check";
 import { SOURCE_LABELS, amountText } from "@/lib/seed-labels";
 import { todayIso } from "@/lib/farm-labels";
@@ -35,7 +35,9 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
   const [to, setTo] = useState(today);
   const [busy, setBusy] = useState<"csv" | "pdf" | "bio" | null>(null);
   const farming = useGetFarmFarming(farm.id);
-  const organic = certified(farming.data?.level);
+  // Bio je Bereich: the Bio-Dokumentation holds the areas the farm keeps organic.
+  const f = farming.data;
+  const organic = ORGANIC_AREAS.some((a) => a.key !== "plants" && certifiedIn(f, a.key));
   const invalid = !from || !to || from > to;
 
   async function run(kind: "csv" | "pdf" | "bio") {
@@ -59,11 +61,12 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
         const { exportFarmPdf } = await import("@/lib/farm-export-pdf");
         await exportFarmPdf(data, {
           status: organicStatus(farming.data!),
-          feedRows: organicFeedRows(rations),
-          spaceRows: organicSpaceRows(herds),
-          grazingRows: grazingRows(pastures, { from, to }, deDate),
-          fertilizerRows: fertilizings && fertilizerRows(fertilizings, { from, to }, deDate),
-          seedRows: seeds && seedRows(seeds, (s) => SOURCE_LABELS[s.source], (s) => amountText(s.amount, s.unit)),
+          feedRows: certifiedIn(f, "feed") ? organicFeedRows(rations) : null,
+          spaceRows: certifiedIn(f, "space") ? organicSpaceRows(herds) : null,
+          grazingRows: certifiedIn(f, "space") ? grazingRows(pastures, { from, to }, deDate) : null,
+          fertilizerRows: certifiedIn(f, "garden") && fertilizings ? fertilizerRows(fertilizings, { from, to }, deDate) : null,
+          seedRows: certifiedIn(f, "garden") && seeds ? seedRows(seeds, (s) => SOURCE_LABELS[s.source], (s) => amountText(s.amount, s.unit)) : null,
+          conventional: organicAreasFor(f!.level).filter((a) => f!.organicOff.includes(a.key)).map((a) => a.label).join(", "),
         });
       }
       toast({

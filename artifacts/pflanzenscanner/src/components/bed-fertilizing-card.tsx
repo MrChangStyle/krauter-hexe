@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { deDate } from "@/lib/farm-health";
-import { certified, organicAdvice } from "@/lib/farming-labels";
+import { certifiedIn, organicAdviceIn } from "@/lib/farming-labels";
 import { FERTILIZER_LABELS, FERTILIZER_ORDER, MANURE_KG_PER_M2, manureEstimate } from "@/lib/fertilizing";
 import { todayIso } from "@/lib/farm-labels";
 
@@ -48,9 +48,9 @@ export function BedFertilizingCard({ farmId, bedId, canWrite }: { farmId: number
   const remove = useRemoveFertilizing({ mutation: { onSuccess: () => void refresh() } });
 
   const entries = (list.data ?? []).filter((f) => f.bedId === bedId);
-  const level = farming.data?.level;
-  // Natural and organic farms are not offered mineral fertiliser first; organic ones get a warning.
-  const kinds: FertilizerKind[] = organicAdvice(level) ? [...FERTILIZER_ORDER.filter((k) => k !== "mineral"), "mineral"] : FERTILIZER_ORDER;
+  // Natural and organic farms are not offered mineral fertiliser first; organic ones get a warning
+  // (unless the farm keeps its garden conventional, Bio je Bereich).
+  const kinds: FertilizerKind[] = organicAdviceIn(farming.data, "garden") ? [...FERTILIZER_ORDER.filter((k) => k !== "mineral"), "mineral"] : FERTILIZER_ORDER;
   const manure = herds.data ? manureEstimate(herds.data) : null;
 
   function submit(event: FormEvent) {
@@ -119,7 +119,7 @@ export function BedFertilizingCard({ farmId, bedId, canWrite }: { farmId: number
               ))}
             </select>
           </div>
-          {form.kind === "mineral" && certified(level) && (
+          {form.kind === "mineral" && certifiedIn(farming.data, "garden") && (
             <p className="rounded-md bg-red-50 p-2 text-xs text-red-800 dark:bg-red-950/40 dark:text-red-200" data-testid="mineral-warning">
               Mineralischer Stickstoffdünger ist im Ökolandbau nicht zugelassen – der Bio-Check zeigt das rot.
             </p>

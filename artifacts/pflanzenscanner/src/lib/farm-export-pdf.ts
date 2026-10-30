@@ -14,6 +14,7 @@ import {
   type ExportData,
 } from "./farm-health";
 import { todayIso } from "./farm-labels";
+import { ORGANIC_DISCLAIMER } from "./farming-labels";
 import { FERTILIZER_COLUMNS, GRAZING_COLUMNS, ORGANIC_FEED_COLUMNS, ORGANIC_SPACE_COLUMNS, SEED_COLUMNS } from "./organic-check";
 
 type RGB = [number, number, number];
@@ -34,13 +35,17 @@ const BEE_TREATMENT_WIDTHS = [9, 12, 12, 12, 16, 8, 9, 12, 16];
 export interface OrganicDoc {
   /** e.g. "Bio · DE-ÖKO-006 · seit 01.03.2024" */
   status: string;
-  feedRows: string[][];
-  spaceRows: string[][];
-  grazingRows: string[][];
+  /** null: the farm keeps this area conventional (Bio je Bereich). */
+  feedRows: string[][] | null;
+  /** null: Stall und Auslauf kept conventional – grazing goes with it. */
+  spaceRows: string[][] | null;
+  grazingRows: string[][] | null;
   /** null: the member may not see the seeds. */
   seedRows: string[][] | null;
   /** null: the member may not see the garden. */
   fertilizerRows: string[][] | null;
+  /** Areas the farm keeps conventional, e.g. "Fütterung, Erzeugnisse"; empty when none. */
+  conventional: string;
 }
 
 /**
@@ -152,12 +157,18 @@ export async function exportFarmPdf(data: ExportData, organic?: OrganicDoc): Pro
 
   if (organic) {
     // Shares and areas as of today; "(!)" marks a value outside the Richtwert.
-    section("Fütterung – Anteile der aktuellen Rationen (Trockenmasse, Stand heute)");
-    table(ORGANIC_FEED_COLUMNS, [20, 11, 14, 13, 11, 31], organic.feedRows, "Keine Rationen im Futterplaner.");
-    section("Stall und Auslauf (Stand heute)");
-    table(ORGANIC_SPACE_COLUMNS, [24, 8, 16, 14, 16, 14], organic.spaceRows, "Keine Gruppen mit Bio-Mindestflächen.");
-    section(`Weidegang (${countText(organic.grazingRows.length, "Eintrag", "Einträge")})`);
-    table(GRAZING_COLUMNS, [24, 30, 10, 12, 12], organic.grazingRows, "Kein Weidegang in diesem Zeitraum eingetragen.");
+    if (organic.feedRows) {
+      section("Fütterung – Anteile der aktuellen Rationen (Trockenmasse, Stand heute)");
+      table(ORGANIC_FEED_COLUMNS, [20, 11, 14, 13, 11, 31], organic.feedRows, "Keine Rationen im Futterplaner.");
+    }
+    if (organic.spaceRows) {
+      section("Stall und Auslauf (Stand heute)");
+      table(ORGANIC_SPACE_COLUMNS, [24, 8, 16, 14, 16, 14], organic.spaceRows, "Keine Gruppen mit Bio-Mindestflächen.");
+    }
+    if (organic.grazingRows) {
+      section(`Weidegang (${countText(organic.grazingRows.length, "Eintrag", "Einträge")})`);
+      table(GRAZING_COLUMNS, [24, 30, 10, 12, 12], organic.grazingRows, "Kein Weidegang in diesem Zeitraum eingetragen.");
+    }
     if (organic.seedRows) {
       section(`Saatgut (Bestand heute, ${countText(organic.seedRows.length, "Posten", "Posten")})`);
       table(SEED_COLUMNS, [20, 18, 14, 16, 10, 10, 12], organic.seedRows, "Kein Saatgut eingetragen.");
@@ -170,8 +181,12 @@ export async function exportFarmPdf(data: ExportData, organic?: OrganicDoc): Pro
     doc.setFont("helvetica", "italic");
     doc.setFontSize(fontSize);
     color(MUTED);
-    doc.text("(!) = außerhalb des Richtwerts der EU-Öko-Verordnung. Richtwerte der App, ersetzen nicht die Prüfung durch die Kontrollstelle.", margin, y, { baseline: "top" });
-    y += lineH;
+    const notes = doc.splitTextToSize(
+      `(!) = außerhalb des Richtwerts der EU-Öko-Verordnung. ${ORGANIC_DISCLAIMER}${organic.conventional ? ` Konventionell geführt: ${organic.conventional}.` : ""}`,
+      contentW,
+    ) as string[];
+    doc.text(notes, margin, y, { baseline: "top" });
+    y += lineH * notes.length;
   }
 
   if (hasBees(data)) {

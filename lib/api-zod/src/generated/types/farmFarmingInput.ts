@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FarmingLevel } from './farmingLevel';
+import type { OrganicArea } from './organicArea';
 
 export interface FarmFarmingInput {
   level?: FarmingLevel;
@@ -16,4 +17,6 @@ export interface FarmFarmingInput {
   controlBody?: string | null;
   /** @nullable */
   organicSince?: string | null;
+  /** @maxItems 10 */
+  organicOff?: OrganicArea[];
 }

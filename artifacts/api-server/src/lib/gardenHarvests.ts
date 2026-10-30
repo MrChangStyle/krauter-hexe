@@ -10,7 +10,7 @@ import { and, desc, eq, lte, max } from 'drizzle-orm';
 import { FarmDataError, notFound, text } from './farmAnimals';
 import { validMonthDay } from './gardenBeds';
 import { validSeason } from './gardenPlanner';
-import { certified, getFarming } from './farming';
+import { certifiedAt } from './farming';
 
 const CELL_M2 = (BED_CELL_CM * BED_CELL_CM) / 10_000;
 
@@ -76,7 +76,7 @@ export async function addHarvest(farmId: number, plantingId: number, input: Harv
       use: input.use,
       note: text(input.note, 300, 'Die Notiz'),
       // Bio (docs/bio.md, B7): fixed when harvested.
-      organic: certified((await getFarming(farmId)).level),
+      organic: (await certifiedAt(farmId, 'garden')),
     })
     .returning(columns);
   return row!;

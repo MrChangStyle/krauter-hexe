@@ -180,6 +180,10 @@ describe.skipIf(!enabled)("Meine Farm – health, weights, tasks, export (real d
     expect(withdrawalUntil(bio.data)).toBe("2026-05-16"); // 2 × 7 days from 2 May
     expect(withdrawalUntil(noWait.data)).toBe("2026-05-04"); // at least 48 hours
     expect(withdrawalUntil(before.data)).toBe("2026-05-09"); // entered before: stays single
+    // Bio je Bereich: an organic farm that keeps its treatments conventional.
+    await q("UPDATE farms SET organic_off = ARRAY['treatments'] WHERE id = $1", [farm.anna]);
+    expect((await api("POST", path, record({}))).data.organic).toBe(false);
+    await q("UPDATE farms SET organic_off = ARRAY[]::text[] WHERE id = $1", [farm.anna]);
     // Natural farms (no certificate) keep the legal one.
     await q("UPDATE farms SET farming = 'natural' WHERE id = $1", [farm.anna]);
     expect((await api("POST", path, record({}))).data.organic).toBe(false);

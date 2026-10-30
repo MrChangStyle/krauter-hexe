@@ -7,7 +7,7 @@
  * Fixed rules only; no AI.
  */
 
-import { certified, getFarming } from './farming';
+import { certifiedAt } from './farming';
 import { listFeedOrigins, organicShares, type OrganicShares } from './feedOrganic';
 import {
   db,
@@ -472,7 +472,7 @@ async function evaluate(farmId: number, rows: (typeof feedRationsTable.$inferSel
   const own = new Map((await listFarmFeeds(farmId)).map((f) => [f.id, f]));
   const all = await db.select().from(feedRationsTable).where(eq(feedRationsTable.farmId, farmId));
   // Bio: the shares only matter on an organic farm.
-  const origins = rows.length && certified((await getFarming(farmId)).level) ? await listFeedOrigins(farmId) : null;
+  const origins = rows.length && (await certifiedAt(farmId, 'feed')) ? await listFeedOrigins(farmId) : null;
   const today = berlinDay();
   // The forecast at the farm, for the cold ahead (none without a location or when the service is down).
   const location = rows.length ? await farmLocation(farmId) : null;

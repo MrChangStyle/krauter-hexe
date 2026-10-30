@@ -517,6 +517,11 @@ describe.skipIf(!enabled)("Futterplaner (real database)", () => {
       expect(by.ownFarm.value).toBeGreaterThan(70);
       expect(by.roughage).toMatchObject({ target: 60, ok: true });
 
+      // Bio je Bereich: an organic farm that feeds conventionally sees no shares.
+      await q("UPDATE farms SET organic_off = ARRAY['feed'] WHERE id = $1", [farm.anna]);
+      expect((await api("GET", `/farms/${farm.anna}/rations`)).data.find((x: any) => x.id === sheep.data.id).organic).toBeNull();
+      await q("UPDATE farms SET organic_off = ARRAY[]::text[] WHERE id = $1", [farm.anna]);
+
       // Removing an origin, wrong values, a guest.
       expect((await api("PUT", `/farms/${farm.anna}/feed-origins`, { feedKey: "hafer", organic: null })).data).toHaveLength(1);
       expect((await api("PUT", `/farms/${farm.anna}/feed-origins`, { feedKey: "hafer", organic: "halbbio" })).status).toBe(400);

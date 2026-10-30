@@ -7285,6 +7285,7 @@ export const GetFarmFarmingParams = zod.object({
 })
 
 export const GetFarmFarmingResponse = zod.object({
+  "organicOff": zod.array(zod.enum(['plants', 'garden', 'feed', 'space', 'treatments', 'products']).describe('Bio je Bereich: plants = Pflanzendoc und Pflege-Guide, garden = Saatgut, Düngung, Ernte, feed = Futterplaner, space = Stall und Auslauf, treatments = Behandlungen, products = tierische Erzeugnisse und Honig')).describe('Bio je Bereich (docs\/bio.md) – areas the farm keeps conventional; empty = Bio wherever the level applies'),
   "level": zod.enum(['conventional', 'natural', 'organic', 'association']).describe('conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)'),
   "controlBody": zod.string().nullable().describe('Öko-Kontrollstelle, e.g. DE-ÖKO-006 (organic and association only)'),
   "organicSince": zod.string().nullable().describe('Start of the conversion, YYYY-MM-DD (organic and association only)')
@@ -7300,15 +7301,19 @@ export const SetFarmFarmingParams = zod.object({
 
 export const setFarmFarmingBodyControlBodyMax = 40;
 
+export const setFarmFarmingBodyOrganicOffMax = 10;
+
 
 
 export const SetFarmFarmingBody = zod.object({
   "level": zod.enum(['conventional', 'natural', 'organic', 'association']).optional().describe('conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)'),
   "controlBody": zod.string().max(setFarmFarmingBodyControlBodyMax).nullish(),
-  "organicSince": zod.string().nullish()
+  "organicSince": zod.string().nullish(),
+  "organicOff": zod.array(zod.enum(['plants', 'garden', 'feed', 'space', 'treatments', 'products']).describe('Bio je Bereich: plants = Pflanzendoc und Pflege-Guide, garden = Saatgut, Düngung, Ernte, feed = Futterplaner, space = Stall und Auslauf, treatments = Behandlungen, products = tierische Erzeugnisse und Honig')).max(setFarmFarmingBodyOrganicOffMax).optional()
 })
 
 export const SetFarmFarmingResponse = zod.object({
+  "organicOff": zod.array(zod.enum(['plants', 'garden', 'feed', 'space', 'treatments', 'products']).describe('Bio je Bereich: plants = Pflanzendoc und Pflege-Guide, garden = Saatgut, Düngung, Ernte, feed = Futterplaner, space = Stall und Auslauf, treatments = Behandlungen, products = tierische Erzeugnisse und Honig')).describe('Bio je Bereich (docs\/bio.md) – areas the farm keeps conventional; empty = Bio wherever the level applies'),
   "level": zod.enum(['conventional', 'natural', 'organic', 'association']).describe('conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)'),
   "controlBody": zod.string().nullable().describe('Öko-Kontrollstelle, e.g. DE-ÖKO-006 (organic and association only)'),
   "organicSince": zod.string().nullable().describe('Start of the conversion, YYYY-MM-DD (organic and association only)')

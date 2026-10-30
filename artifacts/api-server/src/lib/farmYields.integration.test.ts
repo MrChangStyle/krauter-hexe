@@ -116,6 +116,14 @@ describe.skipIf(!enabled)("Ertrag & Bilanz (real database)", () => {
     expect(data.summary).toMatchObject({ total: 12, organicValue: 8 });
   });
 
+  it("enters no Bio sign when the farm keeps its products conventional (Bio je Bereich)", async () => {
+    await q("UPDATE farms SET farming = 'organic', organic_off = ARRAY['products'] WHERE id = $1", [farmId]);
+    await api("POST", `/farms/${farmId}/yields`, { product: "eggs", date: "2026-10-03", amount: 6 });
+    const { data } = await api("GET", Y());
+    expect(data.entries.find((e: any) => e.amount === 6).organic).toBe(false);
+    await q("UPDATE farms SET farming = 'conventional', organic_off = ARRAY[]::text[] WHERE id = $1", [farmId]);
+  });
+
   it("shows the laying history per week, group and hen", async () => {
     const [lotte] = await q<{ id: number }>("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number) VALUES ($1, $2, 'Lotte', 'poultry', 'female', 'L') RETURNING id", [farmId, herdId]);
     await q("INSERT INTO farm_animals (farm_id, herd_id, name, species, sex, registration_number) VALUES ($1, $2, 'Berta', 'poultry', 'unknown', 'B')", [farmId, herdId]);

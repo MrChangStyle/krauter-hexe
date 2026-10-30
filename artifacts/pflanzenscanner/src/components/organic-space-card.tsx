@@ -12,7 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { SPECIES_LABELS } from "@/lib/farm-labels";
-import { certified } from "@/lib/farming-labels";
+import { certifiedIn } from "@/lib/farming-labels";
 import { spaceCheck } from "@/lib/organic-space";
 import { cn } from "@/lib/utils";
 
@@ -59,7 +59,7 @@ export function OrganicSpaceCard({ farm }: { farm: FarmSummary }) {
       onError: () => toast({ title: "Nicht gespeichert", variant: "destructive" }),
     },
   });
-  if (!certified(farming.data?.level) || !herds.data?.length) return null;
+  if (!certifiedIn(farming.data, "space") || !herds.data?.length) return null;
   const canWrite = farm.role !== "guest";
 
   return (

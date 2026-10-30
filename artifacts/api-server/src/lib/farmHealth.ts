@@ -6,7 +6,7 @@
  * filters by it, so an id from another farm is simply "not found".
  */
 
-import { certified, getFarming } from './farming';
+import { certifiedAt } from './farming';
 import { beeColoniesTable, beeTreatmentsTable, db, farmAnimalsTable, farmsTable, medicalRecordsTable, medicinesTable, weightLogsTable, type FarmSpecies } from '@workspace/db';
 import { and, asc, desc, eq, sql } from 'drizzle-orm';
 
@@ -189,7 +189,7 @@ export async function createMedicalRecord(farmId: number, animalId: number, inpu
   if (input.repeat) checkRepeat(input.repeat);
   const values = await withMedicine(farmId, species, input, medicalValues(input), null);
   // Bio: the farm's level when the treatment is entered decides the Wartezeit for good.
-  const organic = certified((await getFarming(farmId)).level);
+  const organic = (await certifiedAt(farmId, 'treatments'));
   const [record] = await db
     .insert(medicalRecordsTable)
     .values({ farmId, animalId, ...values, organic })

@@ -31,7 +31,7 @@ import { LAYING_AGE_DAYS } from './layingHistory';
 import { logger } from './logger';
 import { berlinDay } from './monitoring';
 import { POULTRY_SPECIES } from './species';
-import { certified, getFarming } from './farming';
+import { certifiedAt } from './farming';
 
 export const PRODUCT_UNITS: Record<FarmProduct, { unit: string; label: string }> = {
   eggs: { unit: 'Stück', label: 'Eier' },
@@ -447,7 +447,7 @@ export async function addYield(farmId: number, input: YieldInput): Promise<void>
   const clientId = input.clientId ?? null;
   if (clientId !== null && !/^[A-Za-z0-9-]{8,64}$/.test(clientId)) throw new FarmDataError(400, 'Ungültige Kennung.');
   // Bio (B7): fixed when entered, like the Wartezeit of a treatment.
-  const organic = certified((await getFarming(farmId)).level);
+  const organic = (await certifiedAt(farmId, 'products'));
   // The same tap sent twice (offline queue, docs/stall.md) is stored once.
   await db
     .insert(farmYieldsTable)

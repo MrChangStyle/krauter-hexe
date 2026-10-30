@@ -38,7 +38,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { downscaleFile } from "@/lib/image";
 import { SPECIES_LABELS } from "@/lib/farm-labels";
-import { certified } from "@/lib/farming-labels";
+import { certifiedIn } from "@/lib/farming-labels";
 import { CATEGORY_LABELS, NUTRIENT_LABELS, SEASON_LABELS, STAGE_LABELS, formatRange, formatValue, grams, light, lightText, rationName, shareText, shortDate } from "@/lib/feed-labels";
 import { berlinToday, dayLabel } from "@/lib/weather-labels";
 import { cn } from "@/lib/utils";
@@ -628,7 +628,7 @@ function Planner({ farm }: { farm: FarmSummary }) {
   const rations = useListRations(farm.id);
   const own = useListFarmFeeds(farm.id);
   // Bio (docs/bio.md): origins of the feeds only on an organic farm.
-  const organicFarm = certified(useGetFarmFarming(farm.id).data?.level);
+  const organicFarm = certifiedIn(useGetFarmFarming(farm.id).data, "feed");
   const removeFeed = useRemoveFarmFeed({ mutation: { onSuccess: () => void queryClient.invalidateQueries({ queryKey: getListFarmFeedsQueryKey(farm.id) }) } });
   const { toast } = useToast();
   const [editing, setEditing] = useState<{ target: Target; season: RationSeason; ration: RationEvaluation | undefined } | null>(null);

@@ -15,7 +15,7 @@ import {
   type FarmSummary,
 } from "@workspace/api-client-react";
 import { todayIso } from "@/lib/farm-labels";
-import { FARMING_LABELS, certified } from "@/lib/farming-labels";
+import { FARMING_LABELS, ORGANIC_DISCLAIMER, certifiedIn } from "@/lib/farming-labels";
 import { feedArea, fertilizerArea, seedArea, spaceArea, treatmentArea, type CheckStatus } from "@/lib/organic-check";
 import { cn } from "@/lib/utils";
 
@@ -31,22 +31,28 @@ const LIGHT: Record<CheckStatus, { dot: string; label: string }> = {
  */
 export function OrganicCheckCard({ farm }: { farm: FarmSummary }) {
   const farming = useGetFarmFarming(farm.id);
-  const on = certified(farming.data?.level);
-  const rations = useListRations(farm.id, { query: { enabled: on, queryKey: getListRationsQueryKey(farm.id) } });
-  const herds = useListHerds(farm.id, { query: { enabled: on, queryKey: getListHerdsQueryKey(farm.id) } });
-  const health = useGetFarmExport(farm.id, { query: { enabled: on, queryKey: getGetFarmExportQueryKey(farm.id) } });
-  const seeds = useGetSeedOverview(farm.id, { query: { enabled: on, retry: false, queryKey: getGetSeedOverviewQueryKey(farm.id) } });
-  const fertilizings = useListFertilizings(farm.id, { query: { enabled: on, retry: false, queryKey: getListFertilizingsQueryKey(farm.id) } });
+  // Bio je Bereich: only the areas the farm keeps organic get a light.
+  const f = farming.data;
+  const feedOn = certifiedIn(f, "feed");
+  const spaceOn = certifiedIn(f, "space");
+  const treatmentsOn = certifiedIn(f, "treatments");
+  const gardenOn = certifiedIn(f, "garden");
+  const on = feedOn || spaceOn || treatmentsOn || gardenOn;
+  const rations = useListRations(farm.id, { query: { enabled: feedOn, queryKey: getListRationsQueryKey(farm.id) } });
+  const herds = useListHerds(farm.id, { query: { enabled: spaceOn, queryKey: getListHerdsQueryKey(farm.id) } });
+  const health = useGetFarmExport(farm.id, { query: { enabled: treatmentsOn, queryKey: getGetFarmExportQueryKey(farm.id) } });
+  const seeds = useGetSeedOverview(farm.id, { query: { enabled: gardenOn, retry: false, queryKey: getGetSeedOverviewQueryKey(farm.id) } });
+  const fertilizings = useListFertilizings(farm.id, { query: { enabled: gardenOn, retry: false, queryKey: getListFertilizingsQueryKey(farm.id) } });
   if (!on) return null;
 
   const loading = rations.isLoading || herds.isLoading || health.isLoading || seeds.isLoading || fertilizings.isLoading;
   const areas = [
-    feedArea(rations.data),
-    spaceArea(herds.data),
-    treatmentArea(health.data?.animals, health.data?.medicalRecords, todayIso()),
+    ...(feedOn ? [feedArea(rations.data)] : []),
+    ...(spaceOn ? [spaceArea(herds.data)] : []),
+    ...(treatmentsOn ? [treatmentArea(health.data?.animals, health.data?.medicalRecords, todayIso())] : []),
     // Members without the garden module see neither light.
-    ...(seeds.isError ? [] : [seedArea(seeds.data?.seeds)]),
-    ...(fertilizings.isError ? [] : [fertilizerArea(fertilizings.data, todayIso())]),
+    ...(gardenOn && !seeds.isError ? [seedArea(seeds.data?.seeds)] : []),
+    ...(gardenOn && !fertilizings.isError ? [fertilizerArea(fertilizings.data, todayIso())] : []),
   ];
 
   return (
@@ -77,7 +83,7 @@ export function OrganicCheckCard({ farm }: { farm: FarmSummary }) {
           ))}
         </ul>
       )}
-      <p className="text-xs text-muted-foreground">Richtwerte nach EU-Öko-Verordnung – ersetzen nicht die Kontrolle.</p>
+      <p className="text-xs text-muted-foreground">{ORGANIC_DISCLAIMER}</p>
       <Link href="/farm/export" className="inline-flex items-center gap-1.5 text-xs font-medium text-primary">
         <FileText className="h-3.5 w-3.5" />
         Bio-Dokumentation als PDF

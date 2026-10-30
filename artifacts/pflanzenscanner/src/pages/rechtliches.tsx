@@ -374,6 +374,15 @@ export function NutzungsbedingungenPage() {
             und Fleisch bleibst du als Halterin oder Halter verantwortlich.
           </li>
           <li>
+            <strong>Bio:</strong> Bio-Check, Bio-Anteile im Futter, Platz-Check,
+            doppelte Wartezeit, Bio-Zeichen und Bio-Dokumentation sind eine
+            Hilfe mit Richtwerten nach der EU-Öko-Verordnung. Wir übernehmen
+            keine Gewähr, dass damit die Anforderungen der Verordnung, eines
+            Verbands oder deiner Kontrollstelle erfüllt sind. Ein „Bio“ in der
+            App ist kein Zertifikat; verbindlich ist allein die Prüfung durch
+            die Kontrollstelle.
+          </li>
+          <li>
             <strong>Pflichten und Fristen:</strong> Die Hinweise zu Anmeldung,
             Tierseuchenkasse und Fristen sind eine Arbeitshilfe und keine
             Rechtsberatung. Maßgeblich sind das Veterinäramt, die

@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { todayIso } from "@/lib/farm-labels";
-import { certified } from "@/lib/farming-labels";
+import { certifiedIn } from "@/lib/farming-labels";
 import { REPEAT_DEFAULTS, REPEAT_LABELS, guessRepeatKind, repeatDue, type RepeatKind } from "@/lib/medical-repeat";
 import { medicineWithdrawal } from "@/lib/medicine-labels";
 import {
@@ -561,7 +561,7 @@ export function MedicalSection({ farmId, animalId, canWrite }: { farmId: number;
   const waitUntil = activeWithdrawalEnd(all, today);
   // Bio (docs/bio.md): the count of chemical treatments matters on an organic farm.
   const farming = useGetFarmFarming(farmId);
-  const organicFarm = certified(farming.data?.level);
+  const organicFarm = certifiedIn(farming.data, "treatments");
   const chemicalCount = chemicalTreatments(all, today);
 
   return (

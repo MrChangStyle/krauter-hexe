@@ -6,8 +6,11 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { FarmingLevel } from './farmingLevel';
+import type { OrganicArea } from './organicArea';
 
 export interface FarmFarming {
+  /** Bio je Bereich (docs/bio.md) – areas the farm keeps conventional; empty = Bio wherever the level applies */
+  organicOff: OrganicArea[];
   level: FarmingLevel;
   /**
      * Öko-Kontrollstelle, e.g. DE-ÖKO-006 (organic and association only)

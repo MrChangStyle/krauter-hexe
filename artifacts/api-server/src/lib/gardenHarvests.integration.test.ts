@@ -92,6 +92,12 @@ describe.skipIf(!enabled)("Beet-Architekt – Ernten (real database)", () => {
     // Bio (docs/bio.md, B7): harvested on an organic farm.
     await q("UPDATE farms SET farming = 'organic' WHERE id = $1", [farm.anna]);
     expect((await harvest(tomate, { harvestedOn: today, amountKg: 0.8, use: "fodder" })).data.organic).toBe(true);
+    // Bio je Bereich: the garden kept conventional.
+    await q("UPDATE farms SET organic_off = ARRAY['garden'] WHERE id = $1", [farm.anna]);
+    const conventional = await harvest(tomate, { harvestedOn: today, amountKg: 0.2, use: "kitchen" });
+    expect(conventional.data.organic).toBe(false);
+    await api("DELETE", `/farms/${farm.anna}/harvests/${conventional.data.id}`);
+    await q("UPDATE farms SET organic_off = ARRAY[]::text[] WHERE id = $1", [farm.anna]);
     expect((await api("GET", `/farms/${farm.anna}/garden/seasons/${season}/harvests`)).data).toHaveLength(2);
 
     expect((await harvest(tomate, { harvestedOn: "2099-07-01", amountKg: 1, use: "kitchen" })).status).toBe(400);

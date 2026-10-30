@@ -117,6 +117,10 @@ export const farmsTable = pgTable("farms", {
   farming: text("farming").notNull().default("conventional"),
   organicControlBody: text("organic_control_body"),
   organicSince: date("organic_since", { mode: "string" }),
+  // Bio je Bereich (docs/bio.md): areas the farm keeps conventional although
+  // it farms naturally or organically, e.g. ["feed"] – keys of ORGANIC_AREAS
+  // in api-server lib/farming.ts. Empty = Bio everywhere the level applies.
+  organicOff: text("organic_off").array().notNull().default(sql`ARRAY[]::text[]`),
   // Nachhaltigkeit (docs/bio.md, B8): ticked measures, keys of SUSTAINABILITY_KEYS
   // in api-server lib/sustainability.ts – for every level of farming.
   sustainability: text("sustainability").array().notNull().default(sql`ARRAY[]::text[]`),

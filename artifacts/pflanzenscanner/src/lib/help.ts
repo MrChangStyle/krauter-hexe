@@ -185,6 +185,10 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         a: "Ab dem letzten Behandlungstag. Bei einer Behandlung über mehrere Tage trägst du „Behandlung bis“ ein; das Formular zeigt sofort, bis wann Milch, Eier und Fleisch nicht verwendet werden dürfen. Maßgeblich bleibt die Angabe auf dem Beipackzettel oder vom Tierarzt.",
       },
       {
+        q: "Was zeigt der Bio-Check?",
+        a: "Auf Bio-Höfen steht auf der Tiere-Seite eine Ampel je Bereich: Futter (Bio-Anteile der Rationen), Platz (Stall und Auslauf) und Behandlungen (chemisch-synthetische je Tier in 12 Monaten). Grün passt, gelb fehlt etwas, rot braucht Handlung. Ein Tipp öffnet, wo du es ändern kannst. Saatgut und Dünger kommen dazu.",
+      },
+      {
         q: "Was ist der Platz-Check?",
         a: "Nur auf Bio-Höfen (Farm & Team → Bewirtschaftung): Oben unter „Meine Tiere“ trägst du je Gruppe Stallfläche und Auslauf in m² ein. Die App rechnet aus, wie viel die Tiere nach EU-Öko-Verordnung mindestens brauchen (z. B. Legehennen höchstens 6 je m² Stall und 4 m² Auslauf je Huhn), und zeigt grün oder rot. Richtwerte für ausgewachsene Tiere; Verbände verlangen oft mehr.",
       },
@@ -394,8 +398,14 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     title: "Veterinäramt-Export",
     href: "/farm/export",
     intro: "Bestandsliste und Medizin-Historie für einen Zeitraum als PDF oder CSV – mit Bienen auch die Völker und das Bestandsbuch der Behandlungen.",
-    steps: ["Zeitraum wählen.", "PDF zum Ausdrucken oder CSV für Excel.", "Tiere ohne Ohrmarke stehen am Ende der Liste – Nummern lassen sich nachtragen."],
-    faq: [{ q: "Reicht das fürs Veterinäramt?", a: "Es ist eine Arbeitshilfe mit den üblichen Angaben. Was genau verlangt wird, sagt dein Veterinäramt." }],
+    steps: ["Zeitraum wählen.", "PDF zum Ausdrucken oder CSV für Excel.", "Tiere ohne Ohrmarke stehen am Ende der Liste – Nummern lassen sich nachtragen.", "Auf Bio-Höfen gibt es zusätzlich die Bio-Dokumentation für die Öko-Kontrolle."],
+    faq: [
+      { q: "Reicht das fürs Veterinäramt?", a: "Es ist eine Arbeitshilfe mit den üblichen Angaben. Was genau verlangt wird, sagt dein Veterinäramt." },
+      {
+        q: "Was steht in der Bio-Dokumentation?",
+        a: "Nur auf Bio-Höfen gibt es den Knopf „Bio-Dokumentation (PDF)“: Bestandsliste und Behandlungen mit Bio-Wartezeit wie im Export, dazu die Bio-Anteile der aktuellen Rationen, Stall und Auslauf je Gruppe und den Weidegang im Zeitraum. Werte außerhalb der Richtwerte sind mit (!) markiert. Eine Arbeitshilfe für die Öko-Kontrolle – was genau verlangt wird, sagt deine Kontrollstelle.",
+      },
+    ],
   },
 };
 

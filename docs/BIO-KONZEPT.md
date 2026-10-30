@@ -91,7 +91,7 @@ Jeder Schritt ist für sich nutzbar und ein PR mit Definition of Done (Hilfe, De
 | **B2** ✅ (#131) | Krankenakte und Arzneimittel: doppelte Wartezeit bei Bio, Behandlungszähler je Tier, Naturheilverfahren | Bio-Tierhalter |
 | **B3** ✅ (#132) | Futterplaner: Bio-Kennzeichen am Futter, Anteile und Ampel je Tiergruppe | Bio-Tierhalter |
 | **B4** ✅ (#133, Platz-Check; Weidegang folgt) | Stall und Weide: Flächen, Platz-Check, Weidegang | Bio-Tierhalter |
-| **B5** | Bio-Check auf dem Dashboard und Bio-Dokumentation (PDF) | Kontrolle, Beratung |
+| **B5** ✅ (#134; Saatgut und Dünger mit B7) | Bio-Check auf dem Dashboard und Bio-Dokumentation (PDF) | Kontrolle, Beratung |
 | **B6** | Berater-Zugang (Gast mit Ablauf, lesend) – **zurückgestellt**, kommt nach den übrigen Schritten | Beraterin |
 | **B7** | Beet-Architekt und Saatgut: Bio-Saatgut, Gründüngung, Kreislauf Mist → Beet; Erzeugnisse als „Bio“ | Garten |
 | **B8** | Nachhaltigkeits-Liste, Demo-Hof naturnah, Homepage „Bio & nachhaltig“, FAQ, Marketing | Vermarktung |

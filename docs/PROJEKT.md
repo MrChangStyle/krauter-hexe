@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #134 | Bio-Check und Bio-Dokumentation (B5): auf Bio-Höfen Ampel für Futter, Platz und Behandlungen auf der Tiere-Seite; im Export ein PDF für die Öko-Kontrolle mit Bio-Anteilen, Stall und Auslauf, Weidegang |
 | 30.10.2026 | #133 | Bio-Platz-Check (B4): Stallfläche und Auslauf je Gruppe, Ampel gegen die Mindestflächen der EU-Öko-Verordnung (Richtwerte), nur auf Bio-Höfen. Behoben: Die Tierzahl je Gruppe unter „Meine Tiere“ war falsch |
 | 30.10.2026 | #132 | Bio im Futterplaner (B3): Herkunft je Futtermittel (bio, Umstellung, konventionell, vom Hof/aus der Region); auf Bio-Höfen zeigt jede Ration Bio-Anteil, zugekauftes Umstellungsfutter, Anteil vom Hof und Raufutter mit Ampel (Richtwerte) |
 | 30.10.2026 | #131 | Bio in der Krankenakte (B2): Art der Behandlung (chemisch, Naturheilverfahren, Impfung, Parasiten); auf Bio-Höfen doppelte gesetzliche Wartezeit (mindestens 2 Tage) am Tier, in Übergabe, Futterplaner und Export, Zähler der chemischen Behandlungen je Tier in 12 Monaten |

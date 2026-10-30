@@ -14,6 +14,7 @@ import {
   type ExportData,
 } from "./farm-health";
 import { todayIso } from "./farm-labels";
+import { GRAZING_COLUMNS, ORGANIC_FEED_COLUMNS, ORGANIC_SPACE_COLUMNS } from "./organic-check";
 
 type RGB = [number, number, number];
 
@@ -29,11 +30,20 @@ const MEDICAL_WIDTHS = [9, 12, 10, 17, 18, 13, 11, 7, 9, 11];
 const BEE_COLONY_WIDTHS = [20, 24, 14, 12, 12];
 const BEE_TREATMENT_WIDTHS = [9, 12, 12, 12, 16, 8, 9, 12, 16];
 
+/** The extra parts of the Bio-Dokumentation (docs/bio.md, B5). */
+export interface OrganicDoc {
+  /** e.g. "Bio · DE-ÖKO-006 · seit 01.03.2024" */
+  status: string;
+  feedRows: string[][];
+  spaceRows: string[][];
+  grazingRows: string[][];
+}
+
 /**
  * Stock list and health history for the veterinary office, A4 landscape.
  * Saves the file and returns its name.
  */
-export async function exportFarmPdf(data: ExportData): Promise<string> {
+export async function exportFarmPdf(data: ExportData, organic?: OrganicDoc): Promise<string> {
   const { jsPDF } = await import("jspdf");
   const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "landscape" });
   const pageW = doc.internal.pageSize.getWidth();
@@ -98,7 +108,7 @@ export async function exportFarmPdf(data: ExportData): Promise<string> {
   }
 
   // ── Header ──────────────────────────────────────────────────────────────────
-  title("Bestandsliste und Medizin-Historie", 15, BRAND);
+  title(organic ? "Bio-Dokumentation" : "Bestandsliste und Medizin-Historie", 15, BRAND);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   color(TEXT);
@@ -107,6 +117,7 @@ export async function exportFarmPdf(data: ExportData): Promise<string> {
       data.farmName,
       data.holdingNumber ? `Registriernummer ${data.holdingNumber}` : null,
       `Zeitraum ${deDate(data.period.from)} – ${deDate(data.period.to)}`,
+      organic?.status ?? null,
     ]
       .filter(Boolean)
       .join(" · "),
@@ -126,15 +137,32 @@ export async function exportFarmPdf(data: ExportData): Promise<string> {
   title(`Medizin-Historie (${countText(data.records.length, "Eintrag", "Einträge")})`, 11);
   table(MEDICAL_COLUMNS, MEDICAL_WIDTHS, data.records.map(medicalRow), "Keine Einträge in diesem Zeitraum.");
 
+  const section = (text: string) => {
+    y += 6;
+    if (y + 20 > bottom) {
+      doc.addPage();
+      y = margin;
+    }
+    title(text, 11);
+  };
+
+  if (organic) {
+    // Shares and areas as of today; "(!)" marks a value outside the Richtwert.
+    section("Fütterung – Anteile der aktuellen Rationen (Trockenmasse, Stand heute)");
+    table(ORGANIC_FEED_COLUMNS, [20, 11, 14, 13, 11, 31], organic.feedRows, "Keine Rationen im Futterplaner.");
+    section("Stall und Auslauf (Stand heute)");
+    table(ORGANIC_SPACE_COLUMNS, [24, 8, 16, 14, 16, 14], organic.spaceRows, "Keine Gruppen mit Bio-Mindestflächen.");
+    section(`Weidegang (${countText(organic.grazingRows.length, "Eintrag", "Einträge")})`);
+    table(GRAZING_COLUMNS, [24, 30, 10, 12, 12], organic.grazingRows, "Kein Weidegang in diesem Zeitraum eingetragen.");
+    y += 4;
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(fontSize);
+    color(MUTED);
+    doc.text("(!) = außerhalb des Richtwerts der EU-Öko-Verordnung. Richtwerte der App, ersetzen nicht die Prüfung durch die Kontrollstelle.", margin, y, { baseline: "top" });
+    y += lineH;
+  }
+
   if (hasBees(data)) {
-    const section = (text: string) => {
-      y += 6;
-      if (y + 20 > bottom) {
-        doc.addPage();
-        y = margin;
-      }
-      title(text, 11);
-    };
     section(`Bienenvölker (${countText(data.beeColonies.length, "Volk", "Völker")})`);
     table(BEE_COLONY_COLUMNS, BEE_COLONY_WIDTHS, data.beeColonies.map(beeColonyRow), "Keine Völker in diesem Zeitraum.");
     section(`Bienen – Bestandsbuch der Behandlungen (${countText(data.beeTreatments.length, "Eintrag", "Einträge")})`);
@@ -154,7 +182,7 @@ export async function exportFarmPdf(data: ExportData): Promise<string> {
     doc.text(label, pageW - margin - doc.getTextWidth(label), pageH - 8, { baseline: "top" });
   }
 
-  const name = exportFileName(data, "pdf");
+  const name = organic ? exportFileName(data, "pdf").replace("_Bestand_", "_Bio-Dokumentation_") : exportFileName(data, "pdf");
   doc.save(name);
   return name;
 }

@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { FileDown, FileSpreadsheet, FileText, Loader2 } from "lucide-react";
-import { getFarmExport, type FarmSummary } from "@workspace/api-client-react";
+import { FileDown, FileSpreadsheet, FileText, Leaf, Loader2 } from "lucide-react";
+import { getFarmExport, getPastures, listHerds, listRations, useGetFarmFarming, type FarmFarming, type FarmSummary } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { countText, exportCsv, exportFileName, exportForPeriod, hasBees } from "@/lib/farm-health";
+import { countText, deDate, exportCsv, exportFileName, exportForPeriod, hasBees } from "@/lib/farm-health";
+import { FARMING_LABELS, certified } from "@/lib/farming-labels";
+import { grazingRows, organicFeedRows, organicSpaceRows } from "@/lib/organic-check";
 import { todayIso } from "@/lib/farm-labels";
 
 function download(content: string, name: string, type: string) {
@@ -19,24 +21,45 @@ function download(content: string, name: string, type: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+/** The status line of the Bio-Dokumentation. */
+function organicStatus(f: FarmFarming): string {
+  return [FARMING_LABELS[f.level], f.controlBody ? `Kontrollstelle ${f.controlBody}` : null, f.organicSince ? `seit ${deDate(f.organicSince)}` : null].filter(Boolean).join(" · ");
+}
+
 /** "Veterinäramt-Export": stock list and health history as CSV or PDF. */
 export function FarmExportCard({ farm }: { farm: FarmSummary }) {
   const { toast } = useToast();
   const today = todayIso();
   const [from, setFrom] = useState(`${today.slice(0, 4)}-01-01`);
   const [to, setTo] = useState(today);
-  const [busy, setBusy] = useState<"csv" | "pdf" | null>(null);
+  const [busy, setBusy] = useState<"csv" | "pdf" | "bio" | null>(null);
+  const farming = useGetFarmFarming(farm.id);
+  const organic = certified(farming.data?.level);
   const invalid = !from || !to || from > to;
 
-  async function run(kind: "csv" | "pdf") {
+  async function run(kind: "csv" | "pdf" | "bio") {
     setBusy(kind);
     try {
       const data = exportForPeriod(await getFarmExport(farm.id), { from, to });
       if (kind === "csv") {
         download(exportCsv(data), exportFileName(data, "csv"), "text/csv;charset=utf-8");
-      } else {
+      } else if (kind === "pdf") {
         const { exportFarmPdf } = await import("@/lib/farm-export-pdf");
         await exportFarmPdf(data);
+      } else {
+        // A member without the feed or pasture module gets those parts empty.
+        const [rations, herds, pastures] = await Promise.all([
+          listRations(farm.id).catch(() => []),
+          listHerds(farm.id).catch(() => []),
+          getPastures(farm.id).then((o) => o.pastures).catch(() => []),
+        ]);
+        const { exportFarmPdf } = await import("@/lib/farm-export-pdf");
+        await exportFarmPdf(data, {
+          status: organicStatus(farming.data!),
+          feedRows: organicFeedRows(rations),
+          spaceRows: organicSpaceRows(herds),
+          grazingRows: grazingRows(pastures, { from, to }, deDate),
+        });
       }
       toast({
         title: "Export erstellt",
@@ -82,6 +105,15 @@ export function FarmExportCard({ farm }: { farm: FarmSummary }) {
           CSV
         </Button>
       </div>
+      {organic && (
+        <div className="space-y-1.5 border-t pt-3">
+          <Button variant="secondary" className="w-full gap-1.5" disabled={invalid || busy !== null} onClick={() => void run("bio")} data-testid="organic-doc">
+            {busy === "bio" ? <Loader2 className="h-4 w-4 animate-spin" /> : <Leaf className="h-4 w-4" />}
+            Bio-Dokumentation (PDF)
+          </Button>
+          <p className="text-xs text-muted-foreground">Für die Öko-Kontrolle: Bestand, Behandlungen mit Bio-Wartezeit, Fütterung mit Bio-Anteilen, Stall und Auslauf, Weidegang.</p>
+        </div>
+      )}
     </section>
   );
 }

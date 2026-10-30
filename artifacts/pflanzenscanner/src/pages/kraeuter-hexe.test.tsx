@@ -40,6 +40,12 @@ vi.mock("@workspace/api-client-react", () => ({
 const mockNavigate = vi.fn();
 vi.mock("wouter", () => ({
   useLocation: () => ["", mockNavigate],
+  // The page header's back link.
+  Link: ({ href, children, className }: { href: string; children: React.ReactNode; className?: string }) => (
+    <a href={href} className={className}>
+      {children}
+    </a>
+  ),
 }));
 
 // Heavy SVG/animation components – replace with simple placeholder nodes.

@@ -1,19 +1,6 @@
 import { useRef, useState } from "react";
 import { useLocation } from "wouter";
-import {
-  Stethoscope,
-  Camera,
-  Image as ImageIcon,
-  Loader2,
-  AlertCircle,
-  Trophy,
-  Leaf,
-  Sprout,
-  FlaskConical,
-  ChevronDown,
-  ChevronUp,
-  BookHeart,
-} from "lucide-react";
+import { Camera, Image as ImageIcon, Loader2, AlertCircle, Trophy, Leaf, Sprout, FlaskConical, ChevronDown, ChevronUp, BookHeart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +12,7 @@ import {
   type PlantHealthResult,
 } from "@workspace/api-client-react";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
 
 /** The server's sentence for a reached daily AI limit (docs/kostenschutz.md). */
 export function limitText(err: unknown): string {
@@ -210,16 +198,8 @@ export default function PflanzendocPage() {
 
   return (
     <div className="flex flex-col items-center p-6 space-y-6 animate-in fade-in duration-500 min-h-[calc(100vh-80px)]">
-      {/* Header */}
-      <div className="text-center space-y-2 mt-8 w-full">
-        <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
-          <Stethoscope className="w-8 h-8 text-primary" />
-        </div>
-        <h1 className="text-4xl font-serif text-foreground">Pflanzendoc</h1>
-        <p className="text-muted-foreground max-w-sm mx-auto text-sm">
-          Fotografiere deine Pflanze und erhalte sofort eine Gesundheitsdiagnose
-          mit biologischen Hausmitteln.
-        </p>
+      <div className="w-full">
+        <PageHeader look="pflanzendoc" subtitle="Fotografiere deine Pflanze und erhalte sofort eine Gesundheitsdiagnose mit biologischen Hausmitteln." />
       </div>
 
       {!result && (

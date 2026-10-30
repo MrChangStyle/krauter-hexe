@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "wouter";
+
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, FlaskConical, Leaf, Loader2, Pencil, Plus, ShoppingBasket, Sprout } from "lucide-react";
+import { FlaskConical, Leaf, Loader2, Pencil, Plus, ShoppingBasket } from "lucide-react";
 import {
   getGetSeedOverviewQueryKey,
   getGetGardenCatalogQueryKey,
@@ -29,6 +29,7 @@ import { todayIso } from "@/lib/farm-labels";
 import { certified, organicAdvice } from "@/lib/farming-labels";
 import { conventionalSeeds } from "@/lib/organic-check";
 import { SAVING_TEXT, SEED_STATUS, SOURCE_LABELS, amountText, seedBasis } from "@/lib/seed-labels";
+import { PageHeader } from "@/components/page-header";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -400,20 +401,7 @@ export default function SaatgutPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/beete" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Beete
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Garten</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Sprout className="h-6 w-6 text-primary" />
-          Saatgut
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Tüten und eigene Samen im Blick: wie lange sie noch keimen, was für die Beete fehlt und wie man selbst Samen gewinnt. Wer im Gartenkalender „gesät“ abhakt, bucht das Saatgut automatisch ab – bei Mengen in Korn oder Gramm.
-        </p>
-      </div>
+      <PageHeader look="saatgut" subtitle="Tüten und eigene Samen im Blick: wie lange sie noch keimen, was für die Beete fehlt und wie man selbst Samen gewinnt. Wer im Gartenkalender „gesät“ abhakt, bucht das Saatgut automatisch ab – bei Mengen in Korn oder Gramm." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Seeds farm={farm} />}
     </div>
   );

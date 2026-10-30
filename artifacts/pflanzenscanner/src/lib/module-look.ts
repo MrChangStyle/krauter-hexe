@@ -104,7 +104,7 @@ export const MODULE_LOOK = {
   legeleistung: { href: "/farm/legeleistung", icon: Egg, label: "Legeleistung", hint: "Eier je Henne und Woche", tone: T.emerald, parent: "ertrag" },
   kameras: { href: "/farm/kameras", icon: Radar, label: "Wildtier-Radar", hint: "Kameras & Raubtier-Alarm", tone: T.stone, parent: "tiere" },
   uebergabe: { href: "/farm/uebergabe", icon: Handshake, label: "Übergabe", hint: "Vertretung für ein paar Tage", tone: T.orange, parent: "tiere" },
-  team: { href: "/team", icon: Users, label: "Farm & Team", hint: "Team, Vertretung, Kontakte", tone: T.violet, parent: "tiere" },
+  team: { href: "/team", icon: Users, label: "Farm & Team", hint: "Team, Vertretung, Kontakte", tone: T.violet, parent: "mehr" },
   export: { href: "/farm/export", icon: FileText, label: "Veterinäramt-Export", hint: "Bestandsliste & Medizin als PDF", tone: T.teal, parent: "tiere" },
   // ── Hof ──
   notizen: { href: "/notizen", icon: NotebookPen, label: "Notizen", hint: "Gedanken, Einkauf, Ideen", tone: T.yellow, parent: "hof" },
@@ -126,4 +126,10 @@ export function backOf(key: LookKey): { href: string; label: string } {
   if (parent in AREA_BACK) return AREA_BACK[parent as ModuleArea];
   const p = (MODULE_LOOK as Record<string, ModuleLook>)[parent]!;
   return { href: p.href, label: p.label };
+}
+
+/** What a hub tile needs of a module. */
+export function tileOf(key: LookKey): Pick<ModuleLook, "href" | "icon" | "label" | "hint" | "tone"> {
+  const { href, icon, label, hint, tone } = MODULE_LOOK[key];
+  return { href, icon, label, hint, tone };
 }

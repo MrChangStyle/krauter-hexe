@@ -4,7 +4,6 @@ import { useListPlants, type Plant } from "@workspace/api-client-react";
 import { X, ChevronDown, Search, Share2, Check, ChevronRight } from "lucide-react";
 import { PlantCard } from "@/components/plant-card";
 import { PeckingChicken } from "@/components/pecking-chicken";
-import { WitchCauldron } from "@/components/witch-cauldron";
 import { ApothekenA } from "@/components/apotheken-a";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ import {
   relevantPlantsFor,
 } from "@/lib/ailment-filter";
 import { parseUrlState, buildSearchString, canonicaliseSymptoms } from "@/lib/url-state";
+import { PageHeader } from "@/components/page-header";
 
 // ─── target card metadata ─────────────────────────────────────────────────────
 
@@ -276,40 +276,36 @@ export default function KraeuterHexePage() {
 
       {/* ── Header ─────────────────────────────────────────────────── */}
       <header className="mb-6">
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-3xl font-serif flex items-center gap-3">
-            <WitchCauldron size={64} />
-            Kräuter-Hexe
-          </h1>
-          <button
-            type="button"
-            onClick={handleShare}
-            aria-label="Ansicht teilen"
-            title="Link kopieren"
-            className={cn(
-              "mt-1 flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors shrink-0",
-              shareCopied
-                ? "border-green-500 bg-green-50 text-green-700"
-                : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-foreground/40",
-            )}
-          >
-            {shareCopied ? (
-              <>
-                <Check className="w-3.5 h-3.5" />
-                Kopiert!
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5" />
-                Teilen
-              </>
-            )}
-          </button>
-        </div>
-        <p className="text-muted-foreground mt-2">
-          Finde Pflanzen, die für dein Ziel essbar sind oder eine Heilwirkung
-          haben – und filtere nach Beschwerden.
-        </p>
+        <PageHeader
+          look="kraeuter"
+          subtitle="Finde Pflanzen, die für dein Ziel essbar sind oder eine Heilwirkung haben – und filtere nach Beschwerden."
+          actions={
+              <button
+                type="button"
+                onClick={handleShare}
+                aria-label="Ansicht teilen"
+                title="Link kopieren"
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors shrink-0",
+                  shareCopied
+                    ? "border-green-500 bg-green-50 text-green-700"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground hover:border-foreground/40",
+                )}
+              >
+                {shareCopied ? (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    Kopiert!
+                  </>
+                ) : (
+                  <>
+                    <Share2 className="w-3.5 h-3.5" />
+                    Teilen
+                  </>
+                )}
+              </button>
+          }
+        />
       </header>
 
       {/* ── Target grid ────────────────────────────────────────────── */}

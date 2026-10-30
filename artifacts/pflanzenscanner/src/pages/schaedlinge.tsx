@@ -3,6 +3,7 @@ import { Bug, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MeineInsektenTab } from "@/pages/mehr";
 import { BackToPflanzen } from "@/components/back-to-pflanzen";
+import { PageHeader } from "@/components/page-header";
 import { BeneficialsHub, GUIDE_HREF } from "@/components/beneficials-guide";
 import { cn } from "@/lib/utils";
 
@@ -23,13 +24,7 @@ export default function SchaedlingePage() {
   return (
     <div className="flex flex-col flex-1">
       <div className="px-4 pt-4 space-y-4">
-        <BackToPflanzen />
-        <div>
-          <h1 className="text-2xl font-bold">Schädlinge &amp; Nützlinge</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Insekten bestimmen, Schädlinge biologisch bekämpfen und Nützlinge in den Garten holen.
-          </p>
-        </div>
+        <PageHeader look="schaedlinge" subtitle="Insekten bestimmen, Schädlinge biologisch bekämpfen und Nützlinge in den Garten holen." />
         <Button asChild className="w-full h-12 gap-2 bg-amber-600 hover:bg-amber-700 text-white">
           <Link href="/insekten-scanner">
             <Bug className="w-5 h-5" />

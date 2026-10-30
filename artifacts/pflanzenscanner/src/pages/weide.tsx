@@ -1,7 +1,7 @@
 import { Suspense, lazy, useEffect, useMemo, useState, type FormEvent, type ReactNode } from "react";
-import { Link } from "wouter";
+
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, ArrowRightLeft, Info, Loader2, LogIn, LogOut, Map as MapIcon, Pencil, Plus, Scissors, Trash2, Trees, Undo2 } from "lucide-react";
+import { AlertTriangle, ArrowRightLeft, Info, Loader2, LogIn, LogOut, Map as MapIcon, Pencil, Plus, Scissors, Trash2, Undo2 } from "lucide-react";
 import {
   getGetPasturesQueryKey,
   useAddPastureCut,
@@ -32,6 +32,7 @@ import { STATUS_COLORS, allowMap, boundaryAreaHa, mapAllowed } from "@/lib/pastu
 import { SPECIES_LABELS, SPECIES_ORDER, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { num } from "@/lib/yield-labels";
+import { PageHeader } from "@/components/page-header";
 
 // Leaflet only loads when a map is shown.
 const PastureMap = lazy(() => import("@/components/pasture-map"));
@@ -694,18 +695,7 @@ export default function WeidePage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Tiere
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Trees className="h-6 w-6 text-lime-600 dark:text-lime-400" />
-          Weide
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Welche Herde wann wo steht, wann eine Fläche wieder bereit ist und wann gemäht wird.</p>
-      </div>
+      <PageHeader look="weide" subtitle="Welche Herde wann wo steht, wann eine Fläche wieder bereit ist und wann gemäht wird." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Pastures farm={farm} />}
     </div>
   );

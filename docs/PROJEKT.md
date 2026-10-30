@@ -239,7 +239,7 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 
 ## 10. Offen und als Nächstes
 
-Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.md`. Den Stand je Modul hält `docs/BESTANDSAUFNAHME.md` fest, größere Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`. Was nur der Betreiber erledigen kann, sammelt `docs/TODO-CHANG.md`. Den Abschluss des Launch-Plans mit Ampel, Tests und Restpunkten fasst `docs/ABSCHLUSSBERICHT.md` zusammen. Bio und Nachhaltigkeit sind als Option in der ganzen App (`docs/bio.md`, Konzept `docs/BIO-KONZEPT.md`): konventionell bleibt der Standard, naturnah und Bio sind jederzeit umschaltbar; nur der Berater-Zugang (B6) ist zurückgestellt. Als Nächstes kommt eine Design-Prüfung aller Module auf das einheitliche Kachel-Design.
+Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.md`. Den Stand je Modul hält `docs/BESTANDSAUFNAHME.md` fest, größere Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`. Was nur der Betreiber erledigen kann, sammelt `docs/TODO-CHANG.md`. Den Abschluss des Launch-Plans mit Ampel, Tests und Restpunkten fasst `docs/ABSCHLUSSBERICHT.md` zusammen. Bio und Nachhaltigkeit sind als Option in der ganzen App (`docs/bio.md`, Konzept `docs/BIO-KONZEPT.md`): konventionell bleibt der Standard, naturnah und Bio sind jederzeit umschaltbar; nur der Berater-Zugang (B6) ist zurückgestellt. Danach wird das Design aller Module auf das Kachel-Bild von Hof, Pflanzen und Tiere vereinheitlicht (`docs/DESIGN.md`).
 
 - **Öffentlicher Start:**
   - Seitenpasswort löschen.
@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #139 | Design D1 (`docs/DESIGN.md`): alle Modulseiten mit demselben Kopf wie die Kacheln der Übersicht (Zurück zum Bereich, farbige Symbol-Kachel, Name, eine Zeile); Aussehen jedes Moduls an einer Stelle |
 | 30.10.2026 | #138 | Nachhaltigkeit (B8): Liste mit zwölf Maßnahmen unter Farm & Team für jeden Hof, Hof-Steckbrief zum Kopieren; Homepage-Abschnitt „Bio & nachhaltig“ und Frage „Ist Little Farming eine Bio-App?“ |
 | 30.10.2026 | #137 | Bio-Erzeugnisse (B7): Eier, Milch, Honig, Ernte usw. auf Bio-Höfen bekommen beim Eintragen das Zeichen „Bio“; Ertrag & Bilanz zeigt „davon Bio“ |
 | 30.10.2026 | #136 | Düngung je Beet (B7): Kompost, Mist, Gründüngung … mit Datum und Menge, für alle Höfe; Kreislauf Stall → Beet (Mist der eigenen Tiere im Jahr, Richtwerte); auf Bio-Höfen Dünger-Ampel im Bio-Check und Düngung in der Bio-Dokumentation |

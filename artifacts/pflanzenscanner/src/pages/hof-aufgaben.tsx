@@ -1,7 +1,7 @@
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, ChevronDown, Leaf, Loader2, NotebookPen, Plus, Repeat, Sparkles, Sprout, Users, X } from "lucide-react";
+import { Check, ChevronDown, Leaf, Loader2, NotebookPen, Plus, Repeat, Sparkles, Sprout, Users, X } from "lucide-react";
 import {
   getListFarmTasksQueryKey,
   getListTasksQueryKey,
@@ -30,6 +30,7 @@ import { cn } from "@/lib/utils";
 import { todayIso } from "@/lib/farm-labels";
 import { farmModuleGranted } from "@/lib/modules";
 import { AREA_LABELS, dayLabel, hofToday, needsPlan, planLocally, splitTaskList, type HofFilter, type Planned, weekdaysText } from "@/lib/hof-tasks";
+import { PageHeader } from "@/components/page-header";
 
 /**
  * /hof-aufgaben – the shared list of the Hof (docs/hof-aufgaben.md): what is
@@ -40,17 +41,7 @@ export default function HofAufgabenPage() {
   const { farm, farms, failed, select } = useActiveFarm();
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Hof
-      </Link>
-      <div>
-        <h1 className="text-2xl font-bold">Hof-Aufgaben</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}
-          {farm ? ` · ${farm.name}` : ""}
-        </p>
-      </div>
+      <PageHeader look="hof-aufgaben" subtitle={`${new Date().toLocaleDateString("de-DE", { weekday: "long", day: "numeric", month: "long" })}${farm ? ` · ${farm.name}` : ""}`} />
       {/* The list of which Hof – the own one or one shared with me. */}
       <FarmSwitcher farms={farms} active={farm} onSelect={select} />
       {!farm ? (

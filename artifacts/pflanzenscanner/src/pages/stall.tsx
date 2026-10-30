@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, CloudOff, Egg, Loader2, Minus, Plus, Warehouse } from "lucide-react";
+import { Check, CloudOff, Egg, Loader2, Minus, Plus } from "lucide-react";
 import {
   getGetEggsTodayQueryKey,
   getListFarmTasksQueryKey,
@@ -16,6 +16,7 @@ import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { todayIso } from "@/lib/farm-labels";
 import { farmModuleGranted } from "@/lib/modules";
 import { addEggs, addTaskDone, flushQueue, pendingFor, readQueue, subscribeQueue, undoEgg } from "@/lib/stall-queue";
+import { PageHeader } from "@/components/page-header";
 
 // Without a connection the page shows what it saw last time.
 const FARMS_CACHE = "lf-stall-farms";
@@ -249,17 +250,7 @@ export default function StallPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Tiere
-      </Link>
-      <div>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Warehouse className="h-6 w-6 text-primary" />
-          Am Stall
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Ein Tipp pro Ei, ein Tipp pro Aufgabe – geht auch ohne Netz.</p>
-      </div>
+      <PageHeader look="stall" subtitle="Ein Tipp pro Ei, ein Tipp pro Aufgabe – geht auch ohne Netz." />
       {farms === null ? (
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       ) : !farm ? (

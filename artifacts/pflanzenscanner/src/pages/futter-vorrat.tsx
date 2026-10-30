@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Coins, Loader2, Package, ShoppingCart, Snowflake, Sprout, Trash2 } from "lucide-react";
+import { Coins, Loader2, Package, ShoppingCart, Snowflake, Sprout, Trash2 } from "lucide-react";
 import {
   getGetFeedStockQueryKey,
   useBuyFeed,
@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { STOCK_STATUS, bales, euro, kg, shortDate } from "@/lib/feed-labels";
 import { cn } from "@/lib/utils";
+import { PageHeader } from "@/components/page-header";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -279,17 +280,7 @@ export default function FutterVorratPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm/futter" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Futterplaner
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          Vorrat & Kosten <PremiumBadge />
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Wie lange das Futter reicht, was es kostet und was der Winter braucht.</p>
-      </div>
+      <PageHeader look="futter-vorrat" title={<>Vorrat & Kosten <PremiumBadge /></>} subtitle="Wie lange das Futter reicht, was es kostet und was der Winter braucht." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Overview farm={farm} />}
     </div>
   );

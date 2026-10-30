@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowLeft, ChevronRight, Egg, Loader2, PiggyBank, Plus, Tag, Trash2 } from "lucide-react";
+import { ChevronRight, Egg, Loader2, Plus, Tag, Trash2 } from "lucide-react";
 import {
   getGetYieldOverviewQueryKey,
   getListFarmPricesQueryKey,
@@ -33,6 +33,7 @@ import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { isPoultry, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { EXPENSE_LABELS, GARDEN_DEFAULT_CATEGORIES, MONTHS, PRODUCTS, changeText, euro, num } from "@/lib/yield-labels";
+import { PageHeader } from "@/components/page-header";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -689,18 +690,7 @@ export default function ErtragPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Tiere
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <PiggyBank className="h-6 w-6 text-primary" />
-          Ertrag & Bilanz
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Was Tiere und Garten im Jahr bringen, was es im Laden kosten würde – und was ihr dafür ausgebt.</p>
-      </div>
+      <PageHeader look="ertrag" subtitle="Was Tiere und Garten im Jahr bringen, was es im Laden kosten würde – und was ihr dafür ausgebt." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Overview farm={farm} />}
     </div>
   );

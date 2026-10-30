@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { Link } from "wouter";
+
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, Baby, CalendarHeart, CheckCircle2, Circle, Egg, Heart, Loader2, Plus, Trash2 } from "lucide-react";
+import { AlertTriangle, Baby, CalendarHeart, CheckCircle2, Circle, Egg, Heart, Loader2, Plus, Trash2 } from "lucide-react";
 import {
   getGetBreedingCyclesQueryKey,
   getListBreedingQueryKey,
@@ -31,6 +31,7 @@ import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { BREEDING_DAYS, birdsFor, breedingTitle, cycleStatusText, nextHeatText, outcomeText, parentChoices, progress, relDay } from "@/lib/breeding-labels";
 import { SPECIES_LABELS, SPECIES_ORDER, isPoultry, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
+import { PageHeader } from "@/components/page-header";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -554,20 +555,7 @@ export default function ZuchtPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Tiere
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Baby className="h-6 w-6 text-primary" />
-          Zucht
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Trächtigkeit und Brut im Blick: Termin, Schritte bis dahin und die Jungtiere mit ihren Eltern. Die Tage sind Durchschnittswerte – jedes Tier ist anders.
-        </p>
-      </div>
+      <PageHeader look="zucht" subtitle="Trächtigkeit und Brut im Blick: Termin, Schritte bis dahin und die Jungtiere mit ihren Eltern. Die Tage sind Durchschnittswerte – jedes Tier ist anders." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Breeding farm={farm} />}
     </div>
   );

@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import { ArrowLeft, Award, BarChart3, Loader2 } from "lucide-react";
+import { Award, Loader2 } from "lucide-react";
 import { useEnsureOwnFarm, useGetHarvestReport, type FarmSummary, type HarvestReport } from "@workspace/api-client-react";
 import { GardenEconomicsSection } from "@/components/garden-economics";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { MONTHS, changeText, euro, num } from "@/lib/yield-labels";
+import { PageHeader } from "@/components/page-header";
 
 function Chart({ data, label, unit }: { data: { name: string; value: number }[]; label: string; unit: string }) {
   if (data.every((d) => d.value === 0)) return null;
@@ -182,18 +183,7 @@ export default function ErnteAuswertungPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/beete" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Beete
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Beet-Architekt</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <BarChart3 className="h-6 w-6 text-primary" />
-          Ernte-Auswertung
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Was jede Kultur und jedes Beet gebracht hat, was der Garten gekostet hat – und was sich gelohnt hat.</p>
-      </div>
+      <PageHeader look="ernte" subtitle="Was jede Kultur und jedes Beet gebracht hat, was der Garten gekostet hat – und was sich gelohnt hat." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Season farm={farm} />}
     </div>
   );

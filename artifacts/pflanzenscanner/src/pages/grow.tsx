@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { AlertTriangle, BookOpen, Bell, ChevronRight, Coins, Plus, Scale, ShieldCheck, Sprout, Trash2, Archive, Loader2 } from "lucide-react";
+import { AlertTriangle, BookOpen, Bell, ChevronRight, Coins, Plus, Scale, ShieldCheck, Trash2, Archive, Loader2 } from "lucide-react";
 import {
   getGetGrowAccessQueryKey,
   getGetGrowOverviewQueryKey,
@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { ENVIRONMENT_LABELS, GROW_ENABLED, MEDIUM_LABELS, PHASE_COLORS, PHASE_LABELS, STRAIN_TYPE_LABELS, FLOWERING_LABELS, dayText } from "@/lib/grow-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { enablePush, isPushEnabled, pushSupported } from "@/lib/push";
+import { PageHeader } from "@/components/page-header";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -40,16 +41,10 @@ function errorText(err: unknown, fallback: string): string {
 
 function Header() {
   return (
-    <div>
-      <p className="text-xs font-semibold uppercase tracking-wider text-primary">Zusatzmodul · ab 18</p>
-      <h1 className="flex items-center gap-2 text-2xl font-bold">
-        <Sprout className="h-6 w-6 text-primary" />
-        Grow
-      </h1>
-      <p className="mt-1 text-sm text-muted-foreground">
-        Eigenanbau für Erwachsene im Rahmen des Konsumcannabisgesetzes: Grow-Plan, Pflege und Tagebuch für Zelt, Garten und Gewächshaus. Keine Rechts- und keine Konsumberatung.
-      </p>
-    </div>
+    <PageHeader
+      look="grow"
+      subtitle="Eigenanbau für Erwachsene im Rahmen des Konsumcannabisgesetzes: Grow-Plan, Pflege und Tagebuch für Zelt, Garten und Gewächshaus. Keine Rechts- und keine Konsumberatung."
+    />
   );
 }
 

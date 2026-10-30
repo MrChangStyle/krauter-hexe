@@ -8,11 +8,11 @@
 import { useState, useEffect } from "react";
 import { BookOpen, Layers } from "lucide-react";
 import { useSearch } from "wouter";
-import { BackToPflanzen } from "@/components/back-to-pflanzen";
 import { cn } from "@/lib/utils";
 import { VIEW_CATEGORIES, type ViewCategory } from "@/lib/view-categories";
 import ArchivePage from "./archive";
 import CategoriesPage from "./categories";
+import { PageHeader } from "@/components/page-header";
 
 type Tab = "archiv" | "arten";
 
@@ -49,9 +49,8 @@ export default function PflanzenPage() {
 
   return (
     <div className="flex flex-col flex-1">
-      <div className="px-4 pt-3">
-        <BackToPflanzen />
-        <h1 className="text-2xl font-bold pb-2">Lexikon</h1>
+      <div className="px-4 pt-3 pb-3">
+        <PageHeader look="lexikon" subtitle="Deine Pflanzen und alle Arten – mit Pilzen und Insekten." />
       </div>
       {/* Tab bar */}
       <div className="sticky top-0 z-10 bg-background border-b border-border px-4">

@@ -1,6 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useLocation } from "wouter";
-import { AlertTriangle, ArrowLeft, ChevronRight, Hexagon, Info, Loader2, Plus } from "lucide-react";
+import { AlertTriangle, ChevronRight, Info, Loader2, Plus } from "lucide-react";
 import {
   useCreateBeeColony,
   useEnsureOwnFarm,
@@ -18,6 +18,7 @@ import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { COLONY_STATUS, HIVE_TYPES, queenColor } from "@/lib/bee-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { num } from "@/lib/yield-labels";
+import { PageHeader } from "@/components/page-header";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -237,18 +238,7 @@ export default function BienenPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <Link href="/farm" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
-        <ArrowLeft className="h-4 w-4" />
-        Tiere
-      </Link>
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-primary">Meine Farm</p>
-        <h1 className="flex items-center gap-2 text-2xl font-bold">
-          <Hexagon className="h-6 w-6 text-amber-500" />
-          Bienen
-        </h1>
-        <p className="mt-1 text-sm text-muted-foreground">Stockkarte für jedes Volk: Durchsicht, Fütterung, Varroa und Honig.</p>
-      </div>
+      <PageHeader look="bienen" subtitle="Stockkarte für jedes Volk: Durchsicht, Fütterung, Varroa und Honig." />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Overview farm={farm} />}
     </div>
   );

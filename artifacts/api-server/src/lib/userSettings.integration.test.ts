@@ -60,11 +60,11 @@ describe.skipIf(!enabled)("Module settings (real database)", () => {
   };
 
   it("hides and shows modules and remembers the assistant", async () => {
-    expect((await api("GET", "/settings")).data).toEqual({ hiddenModules: [], onboarded: false, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null });
-    expect((await api("PUT", "/settings", { hiddenModules: ["grow", "wildlife", "grow"] })).data).toEqual({ hiddenModules: ["grow", "wildlife"], onboarded: false, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null });
+    expect((await api("GET", "/settings")).data).toEqual({ hiddenModules: [], onboarded: false, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null, hiddenAnimals: [] });
+    expect((await api("PUT", "/settings", { hiddenModules: ["grow", "wildlife", "grow"] })).data).toEqual({ hiddenModules: ["grow", "wildlife"], onboarded: false, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null, hiddenAnimals: [] });
     // Only the assistant: the modules stay.
-    expect((await api("PUT", "/settings", { onboarded: true })).data).toEqual({ hiddenModules: ["grow", "wildlife"], onboarded: true, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null });
-    expect((await api("PUT", "/settings", { hiddenModules: [] })).data).toEqual({ hiddenModules: [], onboarded: true, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null });
+    expect((await api("PUT", "/settings", { onboarded: true })).data).toEqual({ hiddenModules: ["grow", "wildlife"], onboarded: true, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null, hiddenAnimals: [] });
+    expect((await api("PUT", "/settings", { hiddenModules: [] })).data).toEqual({ hiddenModules: [], onboarded: true, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null, hiddenAnimals: [] });
     expect((await api("PUT", "/settings", { hiddenModules: ["rocket-science"] })).status).toBe(400);
     // A module the app no longer has drops out when read.
     await q(`UPDATE user_settings SET hidden_modules = '["old", "feed"]' WHERE user_id = 'anna'`);
@@ -72,7 +72,18 @@ describe.skipIf(!enabled)("Module settings (real database)", () => {
     // The assistant again (e.g. "Einrichtung erneut starten").
     expect((await api("PUT", "/settings", { onboarded: false })).data.onboarded).toBe(false);
     as = "bert";
-    expect((await api("GET", "/settings")).data).toEqual({ hiddenModules: [], onboarded: false, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null });
+    expect((await api("GET", "/settings")).data).toEqual({ hiddenModules: [], onboarded: false, pushOff: [], quietHours: null, seasonalCare: true, organicTips: false, organicFarm: null, hiddenAnimals: [] });
+  });
+
+  it("keeps Meine Tierarten: known kinds once, everything else stays", async () => {
+    const r = await api("PUT", "/settings", { hiddenAnimals: ["horse", "cattle", "horse"] });
+    expect(r.data).toMatchObject({ hiddenAnimals: ["horse", "cattle"], hiddenModules: [] });
+    expect((await api("PUT", "/settings", { hiddenAnimals: ["unicorn"] })).status).toBe(400);
+    expect((await api("PUT", "/settings", { organicTips: true })).data.hiddenAnimals).toEqual(["horse", "cattle"]);
+    // A kind the archive no longer has drops out when read.
+    await q(`UPDATE user_settings SET hidden_animals = '["dodo", "pig"]' WHERE user_id = 'anna'`);
+    expect((await api("GET", "/settings")).data.hiddenAnimals).toEqual(["pig"]);
+    expect((await api("PUT", "/settings", { hiddenAnimals: [] })).data.hiddenAnimals).toEqual([]);
   });
 
   it("keeps which pushes come and when it is quiet", async () => {

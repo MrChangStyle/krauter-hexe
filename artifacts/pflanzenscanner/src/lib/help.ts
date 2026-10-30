@@ -458,7 +458,10 @@ export const GENERAL_HELP: HelpTopic[] = [
   {
     id: "module",
     title: "Module ein- und ausblenden",
-    faq: [{ q: "Ich brauche nicht alles – geht das kleiner?", a: "Unter „Mehr → Meine Module“ blendest du ganze Bereiche oder einzelne Module aus. Nichts wird gelöscht; du kannst sie jederzeit wieder einblenden." }],
+    faq: [
+      { q: "Ich brauche nicht alles – geht das kleiner?", a: "Unter „Mehr → Meine Module“ blendest du ganze Bereiche oder einzelne Module aus. Nichts wird gelöscht; du kannst sie jederzeit wieder einblenden." },
+      { q: "Ich habe kein Pferd – muss ich es trotzdem sehen?", a: "Nein. Unter „Mehr → Meine Module → Meine Tierarten“ tippst du die Tiere an, die du nicht hältst. „Essbar für …“ im Lexikon und die Kräuter-Hexe zeigen dann nur noch deine Tierarten. Am Anfang sind alle an." },
+    ],
   },
   {
     id: "push",

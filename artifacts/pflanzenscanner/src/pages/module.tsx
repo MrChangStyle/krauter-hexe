@@ -4,10 +4,11 @@ import { useQueryClient } from "@tanstack/react-query";
 import { getGetSettingsQueryKey, useSetSettings } from "@workspace/api-client-react";
 import { DemoCard } from "@/components/demo-card";
 import { ModuleSwitches } from "@/components/module-switches";
+import { AnimalSwitches } from "@/components/animal-switches";
 import { startTour } from "@/components/tour-card";
 import { Button } from "@/components/ui/button";
 
-/** /module – "Meine Module": which areas and modules this account uses, demo data, setup again. */
+/** /module – "Meine Module": which areas and modules this account uses, its animal kinds, demo data, setup again. */
 export default function ModulePage() {
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
@@ -29,6 +30,7 @@ export default function ModulePage() {
         <span className="font-medium text-foreground">Lite</span> heißt: kostenlos nutzbar, Premium bringt mehr (z. B. die KI). Module ohne Kennzeichnung gehören fest zur App.
       </p>
       <ModuleSwitches />
+      <AnimalSwitches />
       <DemoCard />
       <section className="space-y-2 rounded-2xl border bg-card p-4" data-testid="setup-card">
         <h2 className="font-semibold">Einrichtung und Erklärungen</h2>

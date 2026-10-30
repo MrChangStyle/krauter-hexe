@@ -5,11 +5,14 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { AnimalKind } from './animalKind';
 import type { ModuleId } from './moduleId';
 import type { PushTopic } from './pushTopic';
 import type { QuietHours } from './quietHours';
 
 export interface UserSettings {
+  /** Meine Tierarten (docs/module.md) – animal kinds hidden in "Essbar für" and the Kräuter-Hexe */
+  hiddenAnimals: AnimalKind[];
   /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */
   seasonalCare: boolean;
   /** Bio (docs/bio.md) – the account's own switch for organic plant advice only */

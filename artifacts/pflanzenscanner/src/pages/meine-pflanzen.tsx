@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Camera, Pin } from "lucide-react";
 import { MeinBeetTab, MyScansTab, TabButton } from "@/pages/mehr";
 import { useFavorites } from "@/lib/use-favorites";
-import { BackToPflanzen } from "@/components/back-to-pflanzen";
 import { PageHeader } from "@/components/page-header";
 
 /** Meine Pflanzen: the user's scans and their bed (Mein Beet). */

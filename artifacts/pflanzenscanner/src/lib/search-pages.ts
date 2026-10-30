@@ -11,7 +11,7 @@ export interface AppPage {
 
 export const APP_PAGES: AppPage[] = [
   { title: "Hof", hint: "Startseite mit Wetter und Dashboard", href: "/", words: "start dashboard wetter übersicht" },
-  { title: "Meine Pflanzen", hint: "Deine Scans und Sammlung", href: "/meine-pflanzen", module: "my-plants", words: "sammlung zimmer balkon scans" },
+  { title: "Meine Pflanzen", hint: "Deine Scans und Sammlung", href: "/meine-pflanzen", module: "my-plants", words: "sammlung zimmer balkon scans filter pilze" },
   { title: "Pflegeplan", hint: "Gießen, Düngen, Umtopfen", href: "/aufgaben", module: "care-plan", words: "gießen düngen umtopfen erinnerung pflege" },
   { title: "Bio & Bewirtschaftung", hint: "Konventionell, naturnah oder bio – umschaltbar", href: "/team", words: "bio biologisch ökologisch öko ökolandbau naturnah nachhaltig konventionell bewirtschaftung demeter bioland naturland kontrollstelle umstellung naturheilverfahren homöopathie wartezeit doppelt behandlungen biofütterung fütterung herkunft region platz stallfläche auslauf quadratmeter nachhaltigkeit steckbrief nistkasten blühstreifen hecke regenwasser kompost" },
   { title: "Pflanzendoc", hint: "Kranke Pflanze per Foto", href: "/pflanzendoc", module: "plant-doc", words: "krank diagnose blätter flecken doktor" },

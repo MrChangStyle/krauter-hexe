@@ -49,8 +49,9 @@ export const APP_PAGES: AppPage[] = [
   { title: "Veterinäramt-Export", hint: "Bestandsliste als PDF", href: "/farm/export", module: "export", words: "pdf veterinäramt liste bio-dokumentation öko-kontrolle kontrollstelle" },
   { title: "Meine Module", hint: "Ein- und ausblenden, Demo-Daten", href: "/module", words: "module demo einrichtung tour tierarten tiere auswählen" },
   { title: "Hilfe & FAQ", hint: "Alle Module erklärt, häufige Fragen", href: "/hilfe", words: "hilfe faq fragen anleitung erklärung wie geht" },
-  { title: "Benachrichtigungen", hint: "Was kommt, Ruhezeit", href: "/mehr#push", words: "push erinnerungen ruhezeit" },
-  { title: "Konto", hint: "Name, Passwort, Daten", href: "/mehr#konto", words: "passwort ändern vergessen zurücksetzen löschen konto daten" },
+  { title: "Benachrichtigungen", hint: "Was kommt, Ruhezeit", href: "/mehr/benachrichtigungen", words: "push erinnerungen ruhezeit" },
+  { title: "Darstellung", hint: "Hell, dunkel oder wie das Gerät", href: "/mehr/darstellung", words: "dunkel hell dark mode nachtmodus farbe design" },
+  { title: "Konto", hint: "Name, Passwort, Daten", href: "/mehr/konto", words: "passwort ändern vergessen zurücksetzen löschen konto daten" },
   { title: "Paket & Abo", hint: "Basis, Lite, Premium, kündigen", href: "/abo", words: "premium lite basis abo bezahlen kündigen preis paket ki limit rechnung" },
 ];
 

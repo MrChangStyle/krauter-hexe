@@ -2,6 +2,7 @@ import type { ComponentType } from "react";
 import {
   Baby,
   BarChart3,
+  Bell,
   BookOpen,
   Bug,
   CalendarCheck,
@@ -29,7 +30,9 @@ import {
   Sparkles,
   Sprout,
   Stethoscope,
+  SunMoon,
   Trees,
+  UserCog,
   Users,
   Wand2,
   Warehouse,
@@ -108,6 +111,10 @@ export const MODULE_LOOK = {
   kameras: { href: "/farm/kameras", icon: Radar, label: "Wildtier-Radar", hint: "Kameras & Raubtier-Alarm", tone: T.stone, parent: "tiere" },
   uebergabe: { href: "/farm/uebergabe", icon: Handshake, label: "Übergabe", hint: "Vertretung für ein paar Tage", tone: T.orange, parent: "tiere" },
   team: { href: "/team", icon: Users, label: "Farm & Team", hint: "Team, Vertretung, Kontakte", tone: T.violet, parent: "mehr" },
+  // Mehr's settings, each on its own page (docs/DESIGN.md, D4).
+  benachrichtigungen: { href: "/mehr/benachrichtigungen", icon: Bell, label: "Benachrichtigungen", hint: "Erinnerungen aufs Handy", tone: T.amber, parent: "mehr" },
+  darstellung: { href: "/mehr/darstellung", icon: SunMoon, label: "Darstellung", hint: "Hell, dunkel oder wie das Gerät", tone: T.sky, parent: "mehr" },
+  konto: { href: "/mehr/konto", icon: UserCog, label: "Konto", hint: "Name, Passwort, Rechtliches", tone: T.stone, parent: "mehr" },
   // Farm & Team's parts, each on its own page (docs/team.md).
   "team-mitglieder": { href: "/team/mitglieder", icon: Users, label: "Team", hint: "Wer mithilft, Rollen, Einladen", tone: T.violet, parent: "team" },
   "team-vertretung": { href: "/team/vertretung", icon: CalendarClock, label: "Vertretung", hint: "Zugang auf Zeit, Tierarzt", tone: T.sky, parent: "team" },

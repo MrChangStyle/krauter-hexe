@@ -35,6 +35,7 @@ const InsectScanPage = lazy(() => import('@/pages/insect-scan'));
 const InsectDetailPage = lazy(() => import('@/pages/insect-detail'));
 import PendingPage from '@/pages/pending';
 const MehrPage = lazy(() => import('@/pages/mehr'));
+const MehrSectionPage = lazy(() => import('@/pages/mehr').then((m) => ({ default: m.MehrSectionPage })));
 const PflegeGuidesPage = lazy(() => import('@/pages/pflege-guides'));
 const PflegeGuideDetailPage = lazy(() => import('@/pages/pflege-guide-detail'));
 import { AuthProvider } from '@/lib/auth-context';
@@ -182,6 +183,7 @@ function Router() {
         <Route path="/schaedlinge/nuetzling/:id" component={BeneficialPage} />
         <Route path="/tiere"><Redirect to="/farm" replace /></Route>
         <Route path="/mehr" component={MehrPage} />
+        <Route path="/mehr/:section" component={MehrSectionPage} />
         <Route path="/abo" component={AboPage} />
         <Route path="/abo/testkasse" component={TestkassePage} />
         <Route path="/verwaltung" component={VerwaltungPage} />

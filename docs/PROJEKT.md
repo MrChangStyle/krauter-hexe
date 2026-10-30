@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #151 | Design D4, Schritt 3: Mehr nur noch als Kacheln – Benachrichtigungen, Darstellung (neue Kachel) und Konto je auf eigener Seite (`/mehr/…`); Suche zeigt direkt dorthin |
 | 30.10.2026 | #150 | Design D4, Schritt 2: Seite eines Tiers – oben Steckbrief, darunter Kacheln Gesundheit, Gewicht, Futter, Abstammung, Heil- & Futterpflanzen, Haltung, je auf eigener Seite; Heil- & Futterpflanzen jetzt auch für Hund, Ziege, Schaf, Rind, Schwein und Alpaka |
 | 30.10.2026 | #149 | Design D4, Schritt 1: Farm & Team nur noch als Kacheln – Team, Vertretung, Übergabe, Kontakte, Bewirtschaftung, Nachhaltigkeit je auf eigener Seite (`/team/…`), Zahlen auf den Kacheln; Links aus Pflanzendoc, Übergabe, Hof-Aufgaben, Hof einrichten und Suche zeigen direkt auf die Unterseite |
 | 30.10.2026 | #148 | Meine Pflanzen: Filter-Leiste schnitt den Ring der gewählten Art ab (Handy und PC) – behoben; kein Scrollbalken mehr, am PC Pfeile links und rechts (`ScrollRow`, auch in der ABC-Leiste des Lexikons); neu ABC-Filter unter den Arten |

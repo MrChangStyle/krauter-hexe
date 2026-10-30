@@ -43,6 +43,7 @@ import { CATEGORY_LABELS, NUTRIENT_LABELS, SEASON_LABELS, STAGE_LABELS, formatRa
 import { berlinToday, dayLabel } from "@/lib/weather-labels";
 import { cn } from "@/lib/utils";
 import { PageHeader } from "@/components/page-header";
+import { OrganicAreaSwitch } from "@/components/organic-area-switch";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { tileOf } from "@/lib/module-look";
 
@@ -839,6 +840,7 @@ export default function FutterplanerPage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="futter" subtitle="Was deine Tiere bekommen – abgeglichen mit dem, was sie brauchen." />
+      <OrganicAreaSwitch area="feed" />
       <HubGrid>
         <HubTile {...tileOf("futter-vorrat")} tag="Premium" />
         <HubTile {...tileOf("futter-tipps")} />

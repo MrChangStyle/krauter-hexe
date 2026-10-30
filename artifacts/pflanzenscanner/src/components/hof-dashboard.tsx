@@ -43,6 +43,7 @@ import {
 } from "@workspace/api-client-react";
 import { useActiveFarm } from "@/hooks/use-active-farm";
 import { useModules } from "@/hooks/use-modules";
+import { FarmingStrip } from "@/components/organic-area-switch";
 import { WIDGET_MODULE, farmModuleGranted } from "@/lib/modules";
 import { HofTools } from "@/components/hof-tasks";
 import { FarmSwitcher } from "@/components/farm-switcher";
@@ -567,6 +568,8 @@ export function HofDashboard() {
       <FarmSwitcher farms={farms} active={farm} onSelect={select} />
       {farm ? <WeatherStrip farm={farm} /> : <div className="h-[72px] rounded-2xl border bg-card animate-pulse" />}
       <LeaderboardStrip />
+      {/* How the farm works and where to switch to Bio (docs/bio.md). */}
+      <FarmingStrip />
       <HofTools farm={farm} />
       {farm && !saved.isLoading && (
         <>

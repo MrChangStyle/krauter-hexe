@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { BED_TYPE_LABELS, bedArea, bedSize, dayMonth } from "@/lib/garden-labels";
 import { PageHeader } from "@/components/page-header";
+import { OrganicAreaSwitch } from "@/components/organic-area-switch";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { tileOf } from "@/lib/module-look";
 
@@ -98,6 +99,7 @@ export default function BeetePage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="beete" subtitle={<>{farm ? `Beete von „${farm.name}“ – geteilt mit allen Mitgliedern der Farm.` : "Beete deiner Farm."}</>} />
+      <OrganicAreaSwitch area="garden" />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <BedList farm={farm} />}
     </div>
   );

@@ -30,6 +30,7 @@ import { certifiedIn, organicAdviceIn } from "@/lib/farming-labels";
 import { conventionalSeeds } from "@/lib/organic-check";
 import { SAVING_TEXT, SEED_STATUS, SOURCE_LABELS, amountText, seedBasis } from "@/lib/seed-labels";
 import { PageHeader } from "@/components/page-header";
+import { OrganicAreaSwitch } from "@/components/organic-area-switch";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -402,6 +403,7 @@ export default function SaatgutPage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="saatgut" subtitle="Tüten und eigene Samen im Blick: wie lange sie noch keimen, was für die Beete fehlt und wie man selbst Samen gewinnt. Wer im Gartenkalender „gesät“ abhakt, bucht das Saatgut automatisch ab – bei Mengen in Korn oder Gramm." />
+      <OrganicAreaSwitch area="garden" />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Seeds farm={farm} />}
     </div>
   );

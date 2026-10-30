@@ -35,6 +35,14 @@ Nicht jeder Hof ist ein zertifizierter Betrieb – wer privat Bio-Gemüse anbaut
 - Was beim Eintragen schon fest wurde (Bio-Zeichen, doppelte Wartezeit), bleibt beim Umschalten erhalten.
 - Mitarbeiter und Gäste sehen die Auswahl, ändern kann sie nur ein Admin.
 
+### Wo man Bio sieht und umschaltet
+
+- **Hof-Startseite:** eine Zeile unter dem Wetter mit der Bewirtschaftung – „Konventionell · Auf Bio oder naturnah umstellen“ bzw. „Bio · Bio in 5 von 6 Bereichen“; ein Tipp öffnet Farm & Team → Bewirtschaftung.
+- **In jedem Modul mit Bio-Regeln** oben eine Bio-Zeile (`components/organic-area-switch.tsx`): Futterplaner (Fütterung), Saatgut, Beet-Architekt und Ernte-Auswertung (Garten), Arzneimittel und Gesundheit am Tier (Behandlungen), Ertrag & Bilanz und Bienen (Erzeugnisse), Meine Tiere (Stall & Auslauf). Pflanzendoc hat seinen Schalter „Nur biologische Empfehlungen“.
+  - Bio-Hof: grün mit „Bio: Fütterung“ bzw. „Fütterung: konventionell“; Admins schalten den Bereich dort direkt um, alle anderen sehen den Stand. „Alle Bereiche“ führt zur Bewirtschaftung.
+  - Konventioneller Hof: dezente Zeile „Konventionell – Bio ist aus. Auf Bio umstellen“.
+  - Naturnah bei Bereichen, die erst ab Bio gelten: „Naturnah – die Bio-Regeln für … gelten ab ‚Bio‘“.
+
 ### Keine Gewähr
 
 Die Bio-Funktionen sind eine Hilfe mit Richtwerten nach EU-Öko-Verordnung, kein Zertifikat. Little Farming übernimmt keine Gewähr, dass damit Verordnung, Verband oder Kontrollstelle zufrieden sind. Der Hinweis steht in der Bewirtschaftung, im Bio-Check, in der Bio-Dokumentation (PDF), in den Nutzungsbedingungen (`/rechtliches`, Abschnitt „Keine Gewähr“) und in der Antwort „Ist Little Farming eine Bio-App?“ auf der Homepage.

@@ -34,6 +34,7 @@ import { isPoultry, todayIso } from "@/lib/farm-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { EXPENSE_LABELS, GARDEN_DEFAULT_CATEGORIES, MONTHS, PRODUCTS, changeText, euro, num } from "@/lib/yield-labels";
 import { PageHeader } from "@/components/page-header";
+import { OrganicAreaSwitch } from "@/components/organic-area-switch";
 
 const selectClass = "h-10 w-full rounded-md border border-input bg-background px-2 text-sm";
 
@@ -691,6 +692,7 @@ export default function ErtragPage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="ertrag" subtitle="Was Tiere und Garten im Jahr bringen, was es im Laden kosten würde – und was ihr dafür ausgebt." />
+      <OrganicAreaSwitch area="products" />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Overview farm={farm} />}
     </div>
   );

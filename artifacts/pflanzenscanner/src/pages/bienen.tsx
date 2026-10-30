@@ -19,6 +19,7 @@ import { COLONY_STATUS, HIVE_TYPES, queenColor } from "@/lib/bee-labels";
 import { deDay } from "@/lib/medicine-labels";
 import { num } from "@/lib/yield-labels";
 import { PageHeader } from "@/components/page-header";
+import { OrganicAreaSwitch } from "@/components/organic-area-switch";
 
 function errorText(err: unknown, fallback: string): string {
   return (err as { data?: { error?: string } } | null)?.data?.error ?? fallback;
@@ -239,6 +240,7 @@ export default function BienenPage() {
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
       <PageHeader look="bienen" subtitle="Stockkarte für jedes Volk: Durchsicht, Fütterung, Varroa und Honig." />
+      <OrganicAreaSwitch area="products" />
       {!farm ? <Loader2 className="h-6 w-6 animate-spin text-primary" /> : <Overview farm={farm} />}
     </div>
   );

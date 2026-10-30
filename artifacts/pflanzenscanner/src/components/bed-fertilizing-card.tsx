@@ -50,7 +50,7 @@ export function BedFertilizingCard({ farmId, bedId, canWrite }: { farmId: number
   const entries = (list.data ?? []).filter((f) => f.bedId === bedId);
   const level = farming.data?.level;
   // Natural and organic farms are not offered mineral fertiliser first; organic ones get a warning.
-  const kinds = organicAdvice(level) ? FERTILIZER_ORDER.filter((k) => k !== "mineral").concat("mineral") : FERTILIZER_ORDER;
+  const kinds: FertilizerKind[] = organicAdvice(level) ? [...FERTILIZER_ORDER.filter((k) => k !== "mineral"), "mineral"] : FERTILIZER_ORDER;
   const manure = herds.data ? manureEstimate(herds.data) : null;
 
   function submit(event: FormEvent) {

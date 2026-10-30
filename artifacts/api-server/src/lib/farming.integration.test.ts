@@ -77,10 +77,10 @@ describe.skipIf(!enabled)("Bewirtschaftung (real database)", () => {
   };
 
   it("is conventional until the admin switches – and can always switch back", async () => {
-    expect((await api("GET", `/farms/${farmId}/farming`)).data).toEqual({ level: "conventional", controlBody: null, organicSince: null });
+    expect((await api("GET", `/farms/${farmId}/farming`)).data).toEqual({ level: "conventional", controlBody: null, organicSince: null, organicOff: [] });
 
     const bio = await api("PUT", `/farms/${farmId}/farming`, { level: "organic", controlBody: " DE-ÖKO-006 ", organicSince: "2025-03-01" });
-    expect(bio.data).toEqual({ level: "organic", controlBody: "DE-ÖKO-006", organicSince: "2025-03-01" });
+    expect(bio.data).toEqual({ level: "organic", controlBody: "DE-ÖKO-006", organicSince: "2025-03-01", organicOff: [] });
 
     // A caretaker reads, but does not switch.
     as = "pia";
@@ -89,7 +89,7 @@ describe.skipIf(!enabled)("Bewirtschaftung (real database)", () => {
 
     // Back to conventional: the certificate data goes with it.
     as = "anna";
-    expect((await api("PUT", `/farms/${farmId}/farming`, { level: "conventional" })).data).toEqual({ level: "conventional", controlBody: null, organicSince: null });
+    expect((await api("PUT", `/farms/${farmId}/farming`, { level: "conventional" })).data).toEqual({ level: "conventional", controlBody: null, organicSince: null, organicOff: [] });
     expect((await q("SELECT organic_control_body, organic_since FROM farms"))[0]).toEqual({ organic_control_body: null, organic_since: null });
   });
 
@@ -99,7 +99,18 @@ describe.skipIf(!enabled)("Bewirtschaftung (real database)", () => {
     expect(future.status).toBe(400);
     expect(future.data.error).toContain("Umstellung");
     // Natural keeps no certificate data, even when sent.
-    expect((await api("PUT", `/farms/${farmId}/farming`, { level: "natural", controlBody: "DE-ÖKO-006" })).data).toEqual({ level: "natural", controlBody: null, organicSince: null });
+    expect((await api("PUT", `/farms/${farmId}/farming`, { level: "natural", controlBody: "DE-ÖKO-006" })).data).toEqual({ level: "natural", controlBody: null, organicSince: null, organicOff: [] });
+
+    // Bio je Bereich: known areas, each once, in a fixed order; kept when the level changes.
+    const areas = await api("PUT", `/farms/${farmId}/farming`, { organicOff: ["feed", "plants", "feed"] });
+    expect(areas.data.organicOff).toEqual(["plants", "feed"]);
+    expect((await api("PUT", `/farms/${farmId}/farming`, { organicOff: ["stall"] })).status).toBe(400);
+    expect((await api("PUT", `/farms/${farmId}/farming`, { level: "organic" })).data.organicOff).toEqual(["plants", "feed"]);
+    const { certifiedIn } = await import("./farming");
+    expect(certifiedIn({ level: "organic", organicOff: ["feed"] }, "feed")).toBe(false);
+    expect(certifiedIn({ level: "organic", organicOff: ["feed"] }, "products")).toBe(true);
+    expect(certifiedIn({ level: "natural", organicOff: [] }, "products")).toBe(false);
+    await api("PUT", `/farms/${farmId}/farming`, { level: "natural", organicOff: [] });
   });
 
   it("keeps the Nachhaltigkeit list for every level: known measures in a fixed order (B8)", async () => {
@@ -135,6 +146,13 @@ describe.skipIf(!enabled)("Bewirtschaftung (real database)", () => {
     expect(await organicTipsOn("anna")).toBe(true);
     expect(await organicTipsOn("pia")).toBe(true);
     expect((await api("GET", "/settings")).data).toMatchObject({ organicTips: false, organicFarm: "Hof Sonnenblick" });
+
+    // Bio je Bereich: the farm keeps the plant advice conventional – the own switch decides again.
+    await api("PUT", `/farms/${farmId}/farming`, { organicOff: ["plants"] });
+    expect(await organicTipsOn("anna")).toBe(false);
+    expect((await api("GET", "/settings")).data).toMatchObject({ organicFarm: null });
+    await api("PUT", `/farms/${farmId}/farming`, { organicOff: [] });
+    expect(await organicTipsOn("anna")).toBe(true);
 
     // A natural demo farm does not count.
     const [demo] = await q<{ id: number }>("INSERT INTO farms (name, is_demo, farming) VALUES ('Demo-Hof', true, 'natural') RETURNING id");

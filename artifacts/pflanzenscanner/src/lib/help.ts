@@ -76,7 +76,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       { q: "Ersetzt das einen Fachbetrieb?", a: "Nein. Bei wertvollen Pflanzen oder Unsicherheit lieber eine Gärtnerei fragen." },
       {
         q: "Bekomme ich nur Bio-Tipps?",
-        a: "Nur wenn du willst. Standard sind biologische und mineralische Dünger-Tipps. Mit „Nur biologische Empfehlungen“ nennt der Pflanzendoc – und der Pflege-Guide daraus – nur Mittel aus dem Ökolandbau. Wirtschaftet euer Hof naturnah oder bio (Farm & Team → Bewirtschaftung), ist das automatisch an.",
+        a: "Nur wenn du willst. Standard sind biologische und mineralische Dünger-Tipps. Mit „Nur biologische Empfehlungen“ nennt der Pflanzendoc – und der Pflege-Guide daraus – nur Mittel aus dem Ökolandbau. Wirtschaftet euer Hof naturnah oder bio (Farm & Team → Bewirtschaftung), ist das automatisch an – außer der Hof hat Bio für „Pflanzendoc & Pflege-Guide“ ausgeschaltet.",
       },
     ],
   },
@@ -398,7 +398,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       "Optional Module freigeben – etwa nur Stall-Aufgaben.",
       "Bei der Vertretung „Tierarzt einladen“: Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export.",
       "Kontakte eintragen; sie stehen auch in der Übergabe.",
-      "Unter „Bewirtschaftung“ festlegen, wie ihr wirtschaftet: konventionell, naturnah oder bio – jederzeit umschaltbar.",
+      "Unter „Bewirtschaftung“ festlegen, wie ihr wirtschaftet: konventionell, naturnah oder bio – jederzeit umschaltbar. Darunter Bio je Bereich an- oder ausschalten, z. B. Garten bio, Fütterung konventionell.",
       "Unter „Nachhaltigkeit“ abhaken, was ihr für Natur und Klima tut – daraus wird der Hof-Steckbrief.",
     ],
     faq: [
@@ -407,6 +407,14 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
         a: "Ein, zwei Sätze aus Bewirtschaftung und den abgehakten Maßnahmen (Nistkästen, Blühstreifen, Hecken, Regenwasser, Kompost …). Mit „Text kopieren“ kommt er auf eure Website, ins Schaufenster oder an den Hofladen. Die Liste gibt es für jeden Hof, auch konventionell. Abhaken dürfen Admins und Mitarbeiter.",
       },
       { q: "Was dürfen Gäste?", a: "Lesen, aber nichts ändern." },
+      {
+        q: "Wir bauen bio an, füttern aber nicht bio – geht das?",
+        a: "Ja. Unter Farm & Team → Bewirtschaftung schaltet ein Admin Bio je Bereich an oder aus: Pflanzendoc & Pflege-Guide, Garten (Saatgut, Düngung, Ernte), Fütterung, Stall & Auslauf, Behandlungen und Erzeugnisse. Was aus ist, verhält sich wie auf einem konventionellen Hof; der Bio-Check und die Bio-Dokumentation zeigen nur die Bereiche, die an sind. Bei „Naturnah“ gibt es nur die ersten beiden Bereiche.",
+      },
+      {
+        q: "Ist ein „Bio“ in der App ein Nachweis?",
+        a: "Nein. Die Bio-Funktionen sind eine Hilfe mit Richtwerten nach EU-Öko-Verordnung. Little Farming übernimmt keine Gewähr, dass damit Verordnung, Verband oder Kontrollstelle zufrieden sind – verbindlich ist allein deren Prüfung.",
+      },
       {
         q: "Müssen wir bio wirtschaften?",
         a: "Nein. Bio ist eine Option: „Konventionell“ ist Standard und lässt alle Empfehlungen wie gehabt. „Naturnah“ und „Bio“ stellen Pflanzendoc und Pflege-Guide auf biologische Mittel um; bei Bio lassen sich Kontrollstelle und Umstellungsdatum eintragen. Umschalten geht jederzeit, nur Admins können es.",

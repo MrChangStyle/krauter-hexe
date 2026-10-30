@@ -56,6 +56,7 @@ export const FARM_SCHEMA_STATEMENTS: readonly string[] = [
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "farming" text DEFAULT 'conventional' NOT NULL`,
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "organic_control_body" text`,
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "organic_since" date`,
+  `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "organic_off" text[] DEFAULT ARRAY[]::text[] NOT NULL`,
   // Nachhaltigkeit (docs/bio.md, B8).
   `ALTER TABLE "farms" ADD COLUMN IF NOT EXISTS "sustainability" text[] DEFAULT ARRAY[]::text[] NOT NULL`,
   `CREATE TABLE IF NOT EXISTS "farm_memberships" (

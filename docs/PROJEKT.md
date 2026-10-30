@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #146 | Bio je Bereich: Admins schalten Bio für Pflanzendoc, Garten, Fütterung, Stall & Auslauf, Behandlungen und Erzeugnisse einzeln an oder aus (auch für Privathaushalte); Bio-Richtwerte freigegeben mit Hinweis „keine Gewähr“ in App, PDF, Nutzungsbedingungen und Homepage |
 | 30.10.2026 | #145 | Meine Tierarten unter „Meine Module“: jedes Konto wählt seine Tiere, „Essbar für“ und Kräuter-Hexe zeigen nur diese (Mensch immer); Standard: alle |
 | 30.10.2026 | #144 | „Essbar für“ und Kräuter-Hexe mit allen Tierarten der App: neu Hund, Ziege, Schaf, Rind, Schwein, Alpaka, Esel; ältere Pflanzen bekommen sie im Hintergrund, Gespeichertes bleibt |
 | 30.10.2026 | #143 | Kräuter-Hexe: im Beschwerden-Menü stehen „Übernehmen“ und „Zurücksetzen“ fest unten, die Liste darüber blättert; das Menü bleibt auf dem Handy ganz im Bild |

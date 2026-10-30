@@ -3173,7 +3173,24 @@ export interface FarmSustainability {
   keys: SustainabilityKey[];
 }
 
+/**
+ * Bio je Bereich: plants = Pflanzendoc und Pflege-Guide, garden = Saatgut, Düngung, Ernte, feed = Futterplaner, space = Stall und Auslauf, treatments = Behandlungen, products = tierische Erzeugnisse und Honig
+ */
+export type OrganicArea = typeof OrganicArea[keyof typeof OrganicArea];
+
+
+export const OrganicArea = {
+  plants: 'plants',
+  garden: 'garden',
+  feed: 'feed',
+  space: 'space',
+  treatments: 'treatments',
+  products: 'products',
+} as const;
+
 export interface FarmFarming {
+  /** Bio je Bereich (docs/bio.md) – areas the farm keeps conventional; empty = Bio wherever the level applies */
+  organicOff: OrganicArea[];
   level: FarmingLevel;
   /**
      * Öko-Kontrollstelle, e.g. DE-ÖKO-006 (organic and association only)
@@ -3196,6 +3213,8 @@ export interface FarmFarmingInput {
   controlBody?: string | null;
   /** @nullable */
   organicSince?: string | null;
+  /** @maxItems 10 */
+  organicOff?: OrganicArea[];
 }
 
 export interface FarmDutySettingsInput {

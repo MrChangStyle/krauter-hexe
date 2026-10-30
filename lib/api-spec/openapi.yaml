@@ -10888,8 +10888,13 @@ components:
             $ref: "#/components/schemas/SustainabilityKey"
     FarmFarming:
       type: object
-      required: [level, controlBody, organicSince]
+      required: [level, controlBody, organicSince, organicOff]
       properties:
+        organicOff:
+          type: array
+          description: Bio je Bereich (docs/bio.md) – areas the farm keeps conventional; empty = Bio wherever the level applies
+          items:
+            $ref: "#/components/schemas/OrganicArea"
         level:
           $ref: "#/components/schemas/FarmingLevel"
         controlBody:
@@ -10908,6 +10913,15 @@ components:
           maxLength: 40
         organicSince:
           type: [string, 'null']
+        organicOff:
+          type: array
+          maxItems: 10
+          items:
+            $ref: "#/components/schemas/OrganicArea"
+    OrganicArea:
+      type: string
+      description: "Bio je Bereich: plants = Pflanzendoc und Pflege-Guide, garden = Saatgut, Düngung, Ernte, feed = Futterplaner, space = Stall und Auslauf, treatments = Behandlungen, products = tierische Erzeugnisse und Honig"
+      enum: [plants, garden, feed, space, treatments, products]
     FarmDutySettingsInput:
       type: object
       properties:

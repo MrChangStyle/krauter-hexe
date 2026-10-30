@@ -367,6 +367,7 @@ export * from './nutrientCheckStatus';
 export * from './officialAlert';
 export * from './officialAlertSeverity';
 export * from './okResult';
+export * from './organicArea';
 export * from './organicShares';
 export * from './organicSharesChecksItem';
 export * from './organicSharesChecksItemBound';

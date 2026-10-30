@@ -26,7 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { pickActiveFarm, readActiveFarmId } from "@/lib/active-farm";
 import { todayIso } from "@/lib/farm-labels";
-import { certified, organicAdvice } from "@/lib/farming-labels";
+import { certifiedIn, organicAdviceIn } from "@/lib/farming-labels";
 import { conventionalSeeds } from "@/lib/organic-check";
 import { SAVING_TEXT, SEED_STATUS, SOURCE_LABELS, amountText, seedBasis } from "@/lib/seed-labels";
 import { PageHeader } from "@/components/page-header";
@@ -307,8 +307,8 @@ function Seeds({ farm }: { farm: FarmSummary }) {
   if (!overview.data) return <Loader2 className="h-6 w-6 animate-spin text-primary" />;
   const { seeds, plan } = overview.data;
   const active = seeds.filter((s) => !s.archived);
-  const showOrganic = organicAdvice(farming.data?.level);
-  const notOrganic = certified(farming.data?.level) ? conventionalSeeds(active) : null;
+  const showOrganic = organicAdviceIn(farming.data, "garden");
+  const notOrganic = certifiedIn(farming.data, "garden") ? conventionalSeeds(active) : null;
   const archived = seeds.filter((s) => s.archived);
 
   return (

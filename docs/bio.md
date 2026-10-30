@@ -17,6 +17,28 @@ Unter **Mehr → Farm & Team → Bewirtschaftung** legen Admins fest, wie der Ho
 
 Wer zurück auf konventionell oder naturnah stellt, verliert Kontrollstelle und Umstellungsdatum. Alle anderen Daten bleiben.
 
+### Bio je Bereich
+
+Nicht jeder Hof ist ein zertifizierter Betrieb – wer privat Bio-Gemüse anbaut, will seine Hühner vielleicht trotzdem nicht bio füttern. Darum schalten Admins unter der Bewirtschaftung **Bio je Bereich** an oder aus (Standard: alles an):
+
+| Bereich | Was Bio dort bedeutet | ab Stufe |
+|---|---|---|
+| Pflanzendoc & Pflege-Guide | nur biologische Mittel und Dünger | naturnah |
+| Garten | Feld „Bio-Saatgut?“, Mineraldünger zuletzt; ab Bio: Warnungen, Bio-Ernte, Saatgut und Düngung im Bio-Check | naturnah |
+| Fütterung | Herkunft der Futtermittel, Bio-Anteile je Ration | Bio |
+| Stall & Auslauf | Platz-Check, Weidegang in der Bio-Dokumentation | Bio |
+| Behandlungen | doppelte Wartezeit, Zähler chemisch-synthetischer Behandlungen | Bio |
+| Erzeugnisse | Eier, Milch, Fleisch, Wolle, Honig bekommen das Zeichen „Bio“ | Bio |
+
+- Ein ausgeschalteter Bereich verhält sich wie auf einem konventionellen Hof. Der Bio-Check zeigt nur die Bereiche, die an sind; die Bio-Dokumentation lässt die anderen weg und nennt sie unter „Konventionell geführt“.
+- Ist „Pflanzendoc & Pflege-Guide“ aus, entscheidet wieder der eigene Schalter „Nur biologische Empfehlungen“ jedes Kontos.
+- Was beim Eintragen schon fest wurde (Bio-Zeichen, doppelte Wartezeit), bleibt beim Umschalten erhalten.
+- Mitarbeiter und Gäste sehen die Auswahl, ändern kann sie nur ein Admin.
+
+### Keine Gewähr
+
+Die Bio-Funktionen sind eine Hilfe mit Richtwerten nach EU-Öko-Verordnung, kein Zertifikat. Little Farming übernimmt keine Gewähr, dass damit Verordnung, Verband oder Kontrollstelle zufrieden sind. Der Hinweis steht in der Bewirtschaftung, im Bio-Check, in der Bio-Dokumentation (PDF), in den Nutzungsbedingungen (`/rechtliches`, Abschnitt „Keine Gewähr“) und in der Antwort „Ist Little Farming eine Bio-App?“ auf der Homepage.
+
 ### Nur biologische Empfehlungen (Pflanzendoc, Pflege-Guide)
 
 - Oben im **Pflanzendoc** gibt es den Schalter „Nur biologische Empfehlungen“. Er ist standardmäßig **aus**: Dann gibt es Dünger-Tipps biologisch und mineralisch, wie bisher.
@@ -133,9 +155,11 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
 - **Datenbank** (additiv, `farmSchemaStatements.ts`, `schemaUpgrade.ts`):
   - `farms.farming` (`conventional` | `natural` | `organic` | `association`, Standard `conventional`), `farms.organic_control_body`, `farms.organic_since`.
   - `user_settings.organic_tips` (Standard `false`).
+  - `farms.organic_off` (text[], Standard leer): Bio je Bereich, Schlüssel aus `ORGANIC_AREAS` (`plants`, `garden`, `feed`, `space`, `treatments`, `products`).
 - **Server:** `lib/farming.ts`
   - `getFarming`, `setFarming`; ein Datum in der Zukunft wird abgelehnt.
-  - `organicTipsFor` und `organicTipsOn`: eigener Schalter oder ein Hof des Kontos mit Stufe ≠ konventionell, ohne Demo-Hof.
+  - `organicTipsFor` und `organicTipsOn`: eigener Schalter oder ein Hof des Kontos mit Stufe ≠ konventionell, ohne Demo-Hof und ohne `plants` in `organic_off`.
+  - `certifiedIn(farming, area)` und `certifiedAt(farmId, area)`: Bio-Regeln eines Bereichs; genutzt von Behandlungen (`farmHealth`), Futterplaner, Ertrag und Honig (`products`), Ernte (`garden`). App: `certifiedIn`, `organicAdviceIn`, `organicAreasFor`, `ORGANIC_DISCLAIMER` in `lib/farming-labels.ts`.
 - **Endpunkte:**
   - `GET /farms/:farmId/farming` für alle Mitglieder, `PUT` nur für Admins.
   - `GET/PUT /settings` mit `organicTips` und `organicFarm` (Name des Hofs, der Bio vorgibt, sonst `null`).
@@ -178,6 +202,8 @@ Nur auf Höfen mit „Bio“ oder „Bio-Verband“:
   - `bedFertilizing.integration.test.ts`: Düngung eintragen, prüfen, löschen, Rollen, Trennung der Höfe; App `fertilizing.test.ts`: Kreislauf-Rechnung.
 
 ## Offen
+
+**Freigabe (30.10.2026):** Der Betreiber hat die Bio-Richtwerte unten so freigegeben – mit dem Hinweis „keine Gewähr“ in App, PDF und Nutzungsbedingungen (siehe oben). Die Punkte bleiben als Merkliste für eine spätere fachliche Prüfung stehen.
 
 - Richtwerte zur fachlichen Prüfung: doppelte Wartezeit, mindestens 48 Stunden; höchstens 3 chemisch-synthetische Behandlungen in 12 Monaten, bei Tieren mit weniger als einem Jahr Nutzungsdauer 1 (die App zeigt dafür nur einen Hinweis, sie kennt die Nutzungsdauer nicht); dass Impfungen und Parasitenbehandlungen nicht zählen (VO (EU) 2018/848, Anhang II Teil II).
 - Futter-Richtwerte zur fachlichen Prüfung: Anteil vom Hof oder aus der Region, zugekauftes Umstellungsfutter, Raufutter (bei Milchkühen in der Frühlaktation 50 %), Ausnahmen für Eiweißfutter bei Jungtieren (VO (EU) 2018/848, Anhang II Teil II 1.4). „Region“ prüft die App nicht, das Häkchen setzt der Hof selbst.

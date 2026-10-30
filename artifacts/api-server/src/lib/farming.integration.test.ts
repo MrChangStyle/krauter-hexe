@@ -102,6 +102,20 @@ describe.skipIf(!enabled)("Bewirtschaftung (real database)", () => {
     expect((await api("PUT", `/farms/${farmId}/farming`, { level: "natural", controlBody: "DE-ÖKO-006" })).data).toEqual({ level: "natural", controlBody: null, organicSince: null });
   });
 
+  it("keeps the Nachhaltigkeit list for every level: known measures in a fixed order (B8)", async () => {
+    const S = `/farms/${farmId}/sustainability`;
+    expect((await api("GET", S)).data).toEqual({ keys: [] });
+    // A caretaker ticks; order and doubles do not matter.
+    as = "pia";
+    expect((await api("PUT", S, { keys: ["compost", "nest_boxes", "compost"] })).data).toEqual({ keys: ["nest_boxes", "compost"] });
+    expect((await api("PUT", S, { keys: ["kunstrasen"] })).status).toBe(400);
+    expect((await api("PUT", S, { keys: "compost" })).status).toBe(400);
+    expect((await api("GET", S)).data).toEqual({ keys: ["nest_boxes", "compost"] });
+    as = "olaf";
+    expect((await api("GET", S)).status).toBe(404);
+    expect((await api("PUT", S, { keys: [] })).status).toBe(404);
+  });
+
   it("gives organic plant advice by the account's own switch or by a natural/organic farm – not by the demo farm", async () => {
     const { organicTipsOn } = await import("./farming");
     // Conventional farm, switch off: both kinds of advice.

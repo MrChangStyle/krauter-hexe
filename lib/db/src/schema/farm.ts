@@ -117,6 +117,9 @@ export const farmsTable = pgTable("farms", {
   farming: text("farming").notNull().default("conventional"),
   organicControlBody: text("organic_control_body"),
   organicSince: date("organic_since", { mode: "string" }),
+  // Nachhaltigkeit (docs/bio.md, B8): ticked measures, keys of SUSTAINABILITY_KEYS
+  // in api-server lib/sustainability.ts – for every level of farming.
+  sustainability: text("sustainability").array().notNull().default(sql`ARRAY[]::text[]`),
 });
 
 export const farmMembershipsTable = pgTable(

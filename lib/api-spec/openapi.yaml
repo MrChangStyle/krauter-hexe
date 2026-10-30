@@ -3879,6 +3879,49 @@ paths:
           description: Age not confirmed.
         "404":
           description: Not found.
+  /farms/{farmId}/sustainability:
+    get:
+      tags: [farm]
+      operationId: getFarmSustainability
+      summary: Nachhaltigkeit – the measures the farm ticked (docs/bio.md, B8)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: The ticked measures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmSustainability"
+    put:
+      tags: [farm]
+      operationId: setFarmSustainability
+      summary: Tick the farm's measures (caretaker or admin)
+      parameters:
+        - name: farmId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FarmSustainability"
+      responses:
+        "200":
+          description: The ticked measures.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FarmSustainability"
+        "400":
+          description: Unknown measure.
   /farms/{farmId}/farming:
     get:
       tags: [farm]
@@ -10817,6 +10860,18 @@ components:
       type: string
       enum: [conventional, natural, organic, association]
       description: conventional; natural = naturnah without certificate; organic = EU-Öko-Verordnung; association = Bio-Verband (Bioland, Demeter …)
+    SustainabilityKey:
+      type: string
+      enum: [nest_boxes, insect_hotel, flower_strip, hedge, deadwood, pond, rainwater, compost, mulch, peat_free, old_breeds, solar]
+    FarmSustainability:
+      type: object
+      required: [keys]
+      properties:
+        keys:
+          type: array
+          maxItems: 20
+          items:
+            $ref: "#/components/schemas/SustainabilityKey"
     FarmFarming:
       type: object
       required: [level, controlBody, organicSince]

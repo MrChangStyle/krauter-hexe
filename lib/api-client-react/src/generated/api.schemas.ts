@@ -3125,6 +3125,29 @@ export const FarmingLevel = {
   association: 'association',
 } as const;
 
+export type SustainabilityKey = typeof SustainabilityKey[keyof typeof SustainabilityKey];
+
+
+export const SustainabilityKey = {
+  nest_boxes: 'nest_boxes',
+  insect_hotel: 'insect_hotel',
+  flower_strip: 'flower_strip',
+  hedge: 'hedge',
+  deadwood: 'deadwood',
+  pond: 'pond',
+  rainwater: 'rainwater',
+  compost: 'compost',
+  mulch: 'mulch',
+  peat_free: 'peat_free',
+  old_breeds: 'old_breeds',
+  solar: 'solar',
+} as const;
+
+export interface FarmSustainability {
+  /** @maxItems 20 */
+  keys: SustainabilityKey[];
+}
+
 export interface FarmFarming {
   level: FarmingLevel;
   /**

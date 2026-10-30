@@ -14,12 +14,14 @@ import {
   Crown,
   Egg,
   FileText,
+  Flower2,
   FlaskConical,
   Hexagon,
   HeartPulse,
   Leaf,
   LayoutGrid,
   ListChecks,
+  Recycle,
   type LucideIcon,
   Map as MapIcon,
   MessageCircle,
@@ -346,6 +348,34 @@ export function StartPage({ actions }: { actions: SiteActions }) {
           </ul>
           <PhoneShot screen="hof" alt="Die Hof-Startseite der App mit Wetter und Aufgaben" />
         </div>
+      </Section>
+
+      {/* Bio & nachhaltig (docs/bio.md, B8): an option, never a must. */}
+      <Section
+        id="bio"
+        eyebrow="Bio & nachhaltig"
+        title="Bio, wenn du willst – nachhaltig für alle"
+        intro="Little Farming ist keine reine Bio-App: Jeder Hof stellt ein, ob er konventionell, naturnah oder Bio wirtschaftet, und kann jederzeit wechseln. Wer Bio wählt, bekommt die passenden Prüfungen dazu."
+      >
+        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4" data-testid="site-bio">
+          {[
+            [Leaf, "Bio-Check", "Eine Ampel für Futter, Platz, Behandlungen, Saatgut und Dünger – ein Tipp zeigt, was fehlt."],
+            [Recycle, "Kreislauf Stall → Beet", "Wie viel Mist deine Tiere geben und für wie viel Beet er reicht. Düngung je Beet eintragen."],
+            [FileText, "Bio-Dokumentation", "Ein PDF für die Öko-Kontrolle: Bestand, Behandlungen mit Bio-Wartezeit, Futter, Auslauf, Weide, Saatgut, Düngung."],
+            [Flower2, "Nachhaltig auf jedem Hof", "Nistkästen, Blühstreifen, Hecken, Regenwasser, Kompost abhaken – daraus wird ein Hof-Steckbrief."],
+          ].map(([Icon, title, text]) => {
+            const I = Icon as LucideIcon;
+            return (
+              <li key={title as string} className="rounded-3xl border bg-card p-5">
+                <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <I className="h-6 w-6" />
+                </span>
+                <p className="mt-3 font-semibold">{title as string}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{text as string}</p>
+              </li>
+            );
+          })}
+        </ul>
       </Section>
 
       <Section eyebrow="Pakete" title="Kostenlos starten, KI dazu, wenn du magst" intro="Alles ohne KI ist kostenlos. Für Foto-Checks und KI-Vorschläge gibt es Lite und Premium.">

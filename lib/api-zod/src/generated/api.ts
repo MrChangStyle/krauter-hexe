@@ -6846,6 +6846,46 @@ export const DeleteGrowLogResponse = zod.void()
 
 
 /**
+ * @summary Nachhaltigkeit – the measures the farm ticked (docs/bio.md, B8)
+ */
+export const GetFarmSustainabilityParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const getFarmSustainabilityResponseKeysMax = 20;
+
+
+
+export const GetFarmSustainabilityResponse = zod.object({
+  "keys": zod.array(zod.enum(['nest_boxes', 'insect_hotel', 'flower_strip', 'hedge', 'deadwood', 'pond', 'rainwater', 'compost', 'mulch', 'peat_free', 'old_breeds', 'solar'])).max(getFarmSustainabilityResponseKeysMax)
+})
+
+
+/**
+ * @summary Tick the farm's measures (caretaker or admin)
+ */
+export const SetFarmSustainabilityParams = zod.object({
+  "farmId": zod.coerce.number()
+})
+
+export const setFarmSustainabilityBodyKeysMax = 20;
+
+
+
+export const SetFarmSustainabilityBody = zod.object({
+  "keys": zod.array(zod.enum(['nest_boxes', 'insect_hotel', 'flower_strip', 'hedge', 'deadwood', 'pond', 'rainwater', 'compost', 'mulch', 'peat_free', 'old_breeds', 'solar'])).max(setFarmSustainabilityBodyKeysMax)
+})
+
+export const setFarmSustainabilityResponseKeysMax = 20;
+
+
+
+export const SetFarmSustainabilityResponse = zod.object({
+  "keys": zod.array(zod.enum(['nest_boxes', 'insect_hotel', 'flower_strip', 'hedge', 'deadwood', 'pond', 'rainwater', 'compost', 'mulch', 'peat_free', 'old_breeds', 'solar'])).max(setFarmSustainabilityResponseKeysMax)
+})
+
+
+/**
  * @summary Bewirtschaftung – conventional, natural or organic (docs/bio.md)
  */
 export const GetFarmFarmingParams = zod.object({

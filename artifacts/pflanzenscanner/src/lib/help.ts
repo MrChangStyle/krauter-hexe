@@ -395,8 +395,13 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
       "Bei der Vertretung „Tierarzt einladen“: Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export.",
       "Kontakte eintragen; sie stehen auch in der Übergabe.",
       "Unter „Bewirtschaftung“ festlegen, wie ihr wirtschaftet: konventionell, naturnah oder bio – jederzeit umschaltbar.",
+      "Unter „Nachhaltigkeit“ abhaken, was ihr für Natur und Klima tut – daraus wird der Hof-Steckbrief.",
     ],
     faq: [
+      {
+        q: "Was ist der Hof-Steckbrief?",
+        a: "Ein, zwei Sätze aus Bewirtschaftung und den abgehakten Maßnahmen (Nistkästen, Blühstreifen, Hecken, Regenwasser, Kompost …). Mit „Text kopieren“ kommt er auf eure Website, ins Schaufenster oder an den Hofladen. Die Liste gibt es für jeden Hof, auch konventionell. Abhaken dürfen Admins und Mitarbeiter.",
+      },
       { q: "Was dürfen Gäste?", a: "Lesen, aber nichts ändern." },
       {
         q: "Müssen wir bio wirtschaften?",

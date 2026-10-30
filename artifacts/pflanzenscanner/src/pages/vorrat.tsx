@@ -252,7 +252,7 @@ function ItemCard({ farm, item, canWrite, onEdit }: { farm: FarmSummary; item: P
   const last = item.uses[0];
   const step = item.amount >= 1 ? 1 : item.amount;
   return (
-    <li className="rounded-xl border border-border bg-card p-3 text-sm" data-testid="pantry-item">
+    <li className="rounded-xl border bg-card p-3 text-sm" data-testid="pantry-item">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <p className="font-medium">{item.name}</p>
@@ -317,15 +317,15 @@ function Pantry({ farm }: { farm: FarmSummary }) {
   return (
     <div className="space-y-5">
       <section className="grid grid-cols-3 gap-2 text-sm">
-        <div className="rounded-xl border border-border bg-card p-3">
+        <div className="rounded-xl border bg-card p-3">
           <p className="text-xs text-muted-foreground">Vorräte</p>
           <p className="text-lg font-semibold" data-testid="pantry-stocked">{d.stocked}</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-3">
+        <div className="rounded-xl border bg-card p-3">
           <p className="text-xs text-muted-foreground">Bald aufbrauchen</p>
           <p className={`text-lg font-semibold ${d.soon > 0 ? "text-amber-700 dark:text-amber-300" : ""}`}>{d.soon}</p>
         </div>
-        <div className="rounded-xl border border-border bg-card p-3">
+        <div className="rounded-xl border bg-card p-3">
           <p className="text-xs text-muted-foreground">Abgelaufen</p>
           <p className={`text-lg font-semibold ${d.expired > 0 ? "text-red-700 dark:text-red-300" : ""}`}>{d.expired}</p>
         </div>

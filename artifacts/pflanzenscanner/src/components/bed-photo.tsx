@@ -330,7 +330,7 @@ export function BedPhoto({
         </div>
       )}
       {(bed.photoAnalysis || canWrite) && (
-        <div className="space-y-2 rounded-2xl border border-border bg-card p-3 text-sm">
+        <div className="space-y-2 rounded-xl border bg-card p-3 text-sm">
           <div className="flex items-center justify-between gap-2">
             <p className="flex items-center gap-1.5 font-semibold">
               <ScanSearch className="h-4 w-4 text-primary" />

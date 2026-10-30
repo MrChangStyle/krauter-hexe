@@ -13,7 +13,7 @@ const OPTIONS: { value: ThemeChoice; label: string; icon: typeof Sun }[] = [
 export function ThemeCard() {
   const [choice, setChoice] = useState<ThemeChoice>(readTheme);
   return (
-    <section className="space-y-3 rounded-xl border bg-card p-4" data-testid="theme-card">
+    <section className="space-y-3 rounded-2xl border bg-card p-4" data-testid="theme-card">
       <h2 className="font-semibold">Darstellung</h2>
       <div role="radiogroup" aria-label="Darstellung" className="grid grid-cols-3 gap-2">
         {OPTIONS.map(({ value, label, icon: Icon }) => (

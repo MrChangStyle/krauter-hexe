@@ -13,7 +13,7 @@ export default function GrowRechtPage() {
       </p>
       <ul className="space-y-3">
         {LEGAL_POINTS.map((p) => (
-          <li key={p.title} className="space-y-1 rounded-xl border border-border bg-card p-4 text-sm">
+          <li key={p.title} className="space-y-1 rounded-2xl border bg-card p-4 text-sm">
             <h2 className="font-semibold">{p.title}</h2>
             <p>{p.text}</p>
             <p className="text-xs text-muted-foreground">{p.ref}</p>

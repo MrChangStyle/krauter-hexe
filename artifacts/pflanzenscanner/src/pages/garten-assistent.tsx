@@ -89,7 +89,7 @@ function GoalsForm({ farm, goals }: { farm: FarmSummary; goals: GardenGoals }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-2xl border border-border bg-card p-4">
+    <form onSubmit={submit} className="space-y-4 rounded-2xl border bg-card p-4">
       <fieldset disabled={!canWrite} className="space-y-4">
         <div className="grid grid-cols-2 gap-3">
           <div className="flex flex-col gap-1.5">
@@ -149,7 +149,7 @@ function GoalsForm({ farm, goals }: { farm: FarmSummary; goals: GardenGoals }) {
 
 function Tile({ label, value, note }: { label: string; value: string; note?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-3">
+    <div className="rounded-xl border bg-card p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-lg font-semibold tabular-nums">{value}</p>
       {note && <p className="text-xs text-muted-foreground">{note}</p>}
@@ -187,7 +187,7 @@ function Assistant({ farm }: { farm: FarmSummary }) {
             <HenniTip key={tip}>{tip}</HenniTip>
           ))}
           {p.fodder.animals.length > 0 && (
-            <section className="space-y-2 rounded-2xl border border-border bg-card p-4 text-sm">
+            <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm">
               <h2 className="font-semibold">Tiere aus „Meine Farm“</h2>
               <ul className="space-y-1">
                 {p.fodder.animals.map((a) => (
@@ -214,7 +214,7 @@ function Assistant({ farm }: { farm: FarmSummary }) {
             ) : (
               <ul className="space-y-2">
                 {p.beds.map((b) => (
-                  <li key={b.bedId} className="space-y-2 rounded-xl border border-border bg-card p-3 text-sm">
+                  <li key={b.bedId} className="space-y-2 rounded-xl border bg-card p-3 text-sm">
                     <div className="flex items-center justify-between gap-2">
                       <Link href={`/beete/${farm.id}/${b.bedId}`} className="font-medium hover:underline">
                         {b.name}
@@ -243,7 +243,7 @@ function Assistant({ farm }: { farm: FarmSummary }) {
             )}
           </section>
           {p.calculation.length > 0 && (
-            <details className="rounded-xl border border-border bg-card p-3 text-sm" data-testid="garden-calculation">
+            <details className="rounded-xl border bg-card p-3 text-sm" data-testid="garden-calculation">
               <summary className="cursor-pointer font-medium">So rechnet der Assistent</summary>
               <ul className="mt-2 space-y-1.5 text-muted-foreground">
                 {p.calculation.map((line) => (

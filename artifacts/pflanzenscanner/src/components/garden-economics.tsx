@@ -140,7 +140,7 @@ function EntryDialog({ farm, season, kind, onClose }: { farm: FarmSummary; seaso
 
 function Tile({ label, value, sub, testId }: { label: string; value: string; sub?: string; testId?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-card p-3">
+    <div className="rounded-xl border bg-card p-3">
       <p className="text-xs text-muted-foreground">{label}</p>
       <p className="text-lg font-semibold" data-testid={testId}>
         {value}

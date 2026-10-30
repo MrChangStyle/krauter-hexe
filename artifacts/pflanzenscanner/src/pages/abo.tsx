@@ -35,7 +35,7 @@ function Status({ billing }: { billing: Billing }) {
   const limit = aiPerDay(p);
   const until = untilText(p.until);
   return (
-    <section className="space-y-1 rounded-xl border border-border bg-card p-4 text-sm" data-testid="abo-status">
+    <section className="space-y-1 rounded-2xl border bg-card p-4 text-sm" data-testid="abo-status">
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Dein Paket</p>
       <p className="text-lg font-semibold">{paketLabel(p)}</p>
       <p>{limit === null ? "KI ohne Tageslimit" : `${limit} KI-Anfragen am Tag je Bereich`}</p>
@@ -64,7 +64,7 @@ function Order({ billing }: { billing: Billing }) {
   });
   const ready = terms && start;
   return (
-    <section className="space-y-4 rounded-xl border border-border bg-card p-4 text-sm" data-testid="abo-order">
+    <section className="space-y-4 rounded-2xl border bg-card p-4 text-sm" data-testid="abo-order">
       <h2 className="font-semibold">Paket wählen</h2>
       <div className="grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Paket">
         {(["lite", "premium"] as const).map((t) => {
@@ -157,7 +157,7 @@ function Manage({ billing }: { billing: Billing }) {
   });
   const p = billing.premium;
   return (
-    <section className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm" data-testid="abo-manage">
+    <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm" data-testid="abo-manage">
       <h2 className="font-semibold">Abo verwalten</h2>
       {billing.provider === "stripe" && (
         <Button variant="outline" className="w-full gap-2" disabled={portal.isPending} onClick={() => portal.mutate()}>
@@ -229,12 +229,12 @@ export default function AboPage() {
           {p!.subscribed && b.enabled && <Manage billing={b} />}
           {canOrder && <Order billing={b} />}
           {nativeApp && b.enabled && !free && !p!.subscribed && (
-            <p className="rounded-xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground" data-testid="abo-native">
+            <p className="rounded-2xl border border-border bg-muted/40 p-4 text-sm text-muted-foreground" data-testid="abo-native">
               In dieser App lassen sich keine Pakete buchen.
             </p>
           )}
           {b.enabled && free && p!.source !== "owner" && (
-            <section className="rounded-xl border border-border bg-muted/40 p-4 text-sm" data-testid="abo-free">
+            <section className="rounded-2xl border border-border bg-muted/40 p-4 text-sm" data-testid="abo-free">
               <p className="font-semibold">Für dich kostenlos</p>
               <p className="mt-1 text-muted-foreground">
                 {p!.source === "tester" ? "Als Tester behältst du die App dauerhaft kostenlos – ein Abo brauchst du nicht." : "In der Testphase ist alles offen – ein Abo brauchst du gerade nicht."}
@@ -242,7 +242,7 @@ export default function AboPage() {
             </section>
           )}
           {!b.enabled && (
-            <section className="rounded-xl border border-border bg-muted/40 p-4 text-sm" data-testid="abo-soon">
+            <section className="rounded-2xl border border-border bg-muted/40 p-4 text-sm" data-testid="abo-soon">
               <p className="font-semibold">Bezahlen geht noch nicht</p>
               <p className="mt-1 text-muted-foreground">
                 {TEST_PHASE

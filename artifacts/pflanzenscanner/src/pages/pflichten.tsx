@@ -62,7 +62,7 @@ function Settings({ farm, duties }: { farm: FarmSummary; duties: FarmDuties }) {
 
   if (!isAdmin) {
     return (
-      <section className="space-y-1 rounded-xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-1 rounded-2xl border bg-card p-4 text-sm">
         <h2 className="font-semibold">Betrieb</h2>
         <p>Bundesland: {stateName ?? <span className="text-muted-foreground">nicht eingetragen</span>}</p>
         <p>Registriernummer: {duties.holdingNumber ?? <span className="text-muted-foreground">nicht eingetragen</span>}</p>
@@ -71,7 +71,7 @@ function Settings({ farm, duties }: { farm: FarmSummary; duties: FarmDuties }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
+    <form onSubmit={submit} className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
       <h2 className="font-semibold">Betrieb</h2>
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="duty-state">Bundesland</Label>
@@ -126,7 +126,7 @@ function DutyCard({ farm, duty }: { farm: FarmSummary; duty: FarmDuty }) {
   const done = duty.status === "done";
 
   return (
-    <li className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm" data-testid={`duty-${duty.key}`}>
+    <li className="space-y-2 rounded-2xl border bg-card p-4 text-sm" data-testid={`duty-${duty.key}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <h3 className="font-semibold">{duty.title}</h3>
         {badge && <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.tone}`}>{badge.label}</span>}
@@ -187,11 +187,11 @@ function Duties({ farm }: { farm: FarmSummary }) {
     <div className="space-y-5">
       <HousingOrderBanner farm={farm} />
       {data.species.length === 0 && !data.bees ? (
-        <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+        <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
           Noch keine Tiere auf dem Hof. Sobald ihr Tiere oder Gruppen anlegt, steht hier, was ihr anmelden und melden müsst.
         </p>
       ) : data.duties.length === 0 ? (
-        <p className="rounded-xl border border-border bg-card p-4 text-sm">
+        <p className="rounded-2xl border bg-card p-4 text-sm">
           Für {[...data.species.map((s) => SPECIES_LABELS[s]), ...(data.bees ? ["Bienen"] : [])].join(", ")} gibt es keine Melde- oder Registrierpflicht.
         </p>
       ) : (

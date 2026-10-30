@@ -71,7 +71,7 @@ function Targets({ plan }: { plan: GrowPlan }) {
     ["Gießen", t.watering],
   ];
   return (
-    <section className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm">
+    <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm">
       <h2 className="flex items-center gap-2 font-semibold">
         <Thermometer className="h-4 w-4 text-primary" />
         Jetzt: {PHASE_LABELS[plan.current]}
@@ -120,7 +120,7 @@ function LogForm({ detail }: { detail: GrowPlantDetail }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
+    <form onSubmit={submit} className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
       <div className="grid grid-cols-3 gap-3">
         <div className="col-span-3 flex flex-col gap-1.5 sm:col-span-1">
           <Label htmlFor="l-date">Datum</Label>
@@ -205,7 +205,7 @@ function Plant({ detail }: { detail: GrowPlantDetail }) {
         </Button>
       </div>
 
-      <section className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
+      <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <p className="font-semibold">{p.plan.current === "done" ? "Abgeschlossen" : dayText(p.plan.day)}</p>
           <p className="text-xs text-muted-foreground">

@@ -120,7 +120,7 @@ export function BedCalendar({ farmId, bedId, season, canWrite, plantings, crops 
               </span>
             ))}
           </div>
-          <div className="rounded-2xl border border-border bg-card p-3">
+          <div className="rounded-xl border bg-card p-3">
             <div className="ml-[5.5rem] grid grid-cols-12 text-center text-[10px] text-muted-foreground">
               {MONTHS.map((m) => (
                 <span key={m}>{m[0]}</span>

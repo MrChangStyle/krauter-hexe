@@ -83,7 +83,7 @@ export function BeneficialsHub() {
         Viele Schädlinge erledigen Nützlinge von selbst. Wähle, wobei du Hilfe brauchst – oder lerne die Helfer kennen und erfahre, wie du sie in deinen Garten holst.
       </p>
       <section className="space-y-3">
-        <h2 className="text-base font-semibold">Wobei brauchst du Hilfe?</h2>
+        <h2 className="font-semibold">Wobei brauchst du Hilfe?</h2>
         <CollapsibleHubGrid>
           {PROBLEMS.map((p) => (
             <HubTile key={p.id} href={problemHref(p.id)} icon={PROBLEM_LOOK[p.id].icon} tone={PROBLEM_LOOK[p.id].tone} label={p.title} hint={p.hint} />
@@ -91,7 +91,7 @@ export function BeneficialsHub() {
         </CollapsibleHubGrid>
       </section>
       <section className="space-y-3">
-        <h2 className="text-base font-semibold">Nützlinge kennenlernen</h2>
+        <h2 className="font-semibold">Nützlinge kennenlernen</h2>
         <CollapsibleHubGrid>
           {Object.values(BENEFICIALS).map((b) => (
             <HubTile key={b.id} href={beneficialHref(b.id)} icon={BENEFICIAL_LOOK[b.id].icon} tone={BENEFICIAL_LOOK[b.id].tone} label={b.name} hint={b.buy ? "Auch zu kaufen" : "Selbst ansiedeln"} />
@@ -133,7 +133,7 @@ export function BeneficialRow({ beneficial: b }: { beneficial: Beneficial }) {
   const look = BENEFICIAL_LOOK[b.id];
   const Icon = look.icon;
   return (
-    <Link href={beneficialHref(b.id)} className="flex items-center gap-3 rounded-2xl border bg-card p-3 hover:shadow-md active:scale-[0.99] transition-all" data-testid={`beneficial-${b.id}`}>
+    <Link href={beneficialHref(b.id)} className="flex items-center gap-3 rounded-xl border bg-card p-3 hover:shadow-md active:scale-[0.99] transition-all" data-testid={`beneficial-${b.id}`}>
       <span className={cn("w-10 h-10 shrink-0 rounded-xl flex items-center justify-center", look.tone)}>
         <Icon className="w-5 h-5" strokeWidth={2} />
       </span>
@@ -178,7 +178,7 @@ export function MeasureList({ measures }: { measures: Measure[] }) {
   const [open, setOpen] = useState<string | null>(null);
   return (
     <section className="space-y-3">
-      <h2 className="text-base font-semibold">So holst du sie in deinen Garten</h2>
+      <h2 className="font-semibold">So holst du sie in deinen Garten</h2>
       <div className="space-y-2">
         {measures.map((m) => (
           <MeasureCard key={m.id} measure={m} open={open === m.id} onToggle={() => setOpen(open === m.id ? null : m.id)} />

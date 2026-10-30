@@ -128,7 +128,7 @@ export function AccountCard() {
   }
 
   return (
-    <section className="rounded-xl border border-border bg-card p-4 space-y-3">
+    <section className="rounded-2xl border bg-card p-4 space-y-3">
       <h2 className="flex items-center gap-2 font-semibold">
         <UserRound className="h-4 w-4 text-primary" />
         Dein Konto

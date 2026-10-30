@@ -33,7 +33,7 @@ export function PremiumAdminCard() {
   }
 
   return (
-    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+    <section className="space-y-3 rounded-2xl border bg-card p-4">
       <h2 className="flex items-center gap-2 font-semibold">
         <Crown className="h-4 w-4 text-primary" />
         Premium vergeben

@@ -25,7 +25,7 @@ function Faq({ items }: { items: { q: string; a: string }[] }) {
 function ModuleHelp({ id }: { id: ModuleId }) {
   const e = MODULE_HELP[id];
   return (
-    <details id={id} className="scroll-mt-20 rounded-xl border border-border bg-card p-3 text-sm" data-testid="help-module">
+    <details id={id} className="scroll-mt-20 rounded-xl border bg-card p-3 text-sm" data-testid="help-module">
       <summary className="cursor-pointer">
         <span className="font-semibold">{e.title}</span>
         <span className="block text-xs text-muted-foreground">{e.intro}</span>
@@ -93,7 +93,7 @@ export default function HilfePage() {
         <section className="space-y-2">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Allgemein</h2>
           {general.map((t) => (
-            <div key={t.id} id={t.id} className="scroll-mt-20 rounded-xl border border-border bg-card p-3 text-sm">
+            <div key={t.id} id={t.id} className="scroll-mt-20 rounded-xl border bg-card p-3 text-sm">
               <p className="font-semibold">{t.title}</p>
               <Faq items={t.faq} />
             </div>

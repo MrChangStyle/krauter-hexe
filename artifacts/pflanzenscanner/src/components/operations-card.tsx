@@ -213,7 +213,7 @@ function Errors() {
 /** App owner: Betrieb – status notice, usage and errors. */
 export function OperationsCard() {
   return (
-    <section className="space-y-4 rounded-xl border border-border bg-card p-4">
+    <section className="space-y-4 rounded-2xl border bg-card p-4">
       <h2 className="flex items-center gap-2 font-semibold">
         <Activity className="h-4 w-4 text-primary" />
         Betrieb

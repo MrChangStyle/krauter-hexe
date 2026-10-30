@@ -704,7 +704,7 @@ export function BedPlanner({ farmId, bed, canWrite }: { farmId: number; bed: Gar
       )}
 
       {earlier.length > 0 && (
-        <div className="rounded-2xl border border-border bg-card p-3 text-sm">
+        <div className="rounded-xl border bg-card p-3 text-sm">
           <p className="mb-1.5 flex items-center gap-1.5 font-medium">
             <History className="h-4 w-4 text-primary" />
             Belegung der letzten Jahre

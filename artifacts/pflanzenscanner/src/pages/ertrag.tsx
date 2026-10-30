@@ -71,7 +71,7 @@ function EntryForm({ farm, year }: { farm: FarmSummary; year: number }) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
+    <form onSubmit={submit} className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
       <h2 className="flex items-center gap-2 font-semibold">
         <Egg className="h-4 w-4 text-primary" />
         Eintragen
@@ -421,7 +421,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
           {tab === "yield" ? (
             <EntryForm farm={farm} year={year} />
           ) : (
-            <div className="rounded-xl border border-border bg-card p-4 text-sm">
+            <div className="rounded-2xl border bg-card p-4 text-sm">
               {tab === "sale" ? (
                 <SaleForm farm={farm} year={year} crops={(d?.summary.garden.lines ?? []).filter((l) => !l.key.startsWith("label:")).map((l) => ({ key: l.key, name: l.name }))} />
               ) : (
@@ -450,7 +450,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
         <Loader2 className="h-6 w-6 animate-spin text-primary" />
       ) : (
         <>
-          <section className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
+          <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
             <div className="flex items-baseline justify-between gap-2">
               <h2 className="font-semibold">Wert {year}</h2>
               <span className="text-2xl font-bold" data-testid="yield-total">
@@ -498,7 +498,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
           {(d.laying || d.feedCost) && (
             <section className="grid grid-cols-2 gap-3 text-sm">
               {d.laying && (
-                <Link href="/farm/legeleistung" className="block rounded-xl border border-border bg-card p-3 hover:bg-muted/50">
+                <Link href="/farm/legeleistung" className="block rounded-xl border bg-card p-3 hover:bg-muted/50">
                   <p className="text-xs text-muted-foreground">Legeleistung (30 Tage)</p>
                   <p className="text-lg font-semibold">{num(d.laying.perHenDay)} Eier</p>
                   <p className="text-xs text-muted-foreground">
@@ -510,7 +510,7 @@ function Overview({ farm }: { farm: FarmSummary }) {
                 </Link>
               )}
               {d.feedCost && (
-                <div className="rounded-xl border border-border bg-card p-3">
+                <div className="rounded-xl border bg-card p-3">
                   <p className="text-xs text-muted-foreground">Futterkosten</p>
                   <p className="text-lg font-semibold">{euro(d.feedCost.perMonth)}</p>
                   <p className="text-xs text-muted-foreground">

@@ -30,7 +30,7 @@ export default function ModulePage() {
       </p>
       <ModuleSwitches />
       <DemoCard />
-      <section className="space-y-2 rounded-xl border bg-card p-4" data-testid="setup-card">
+      <section className="space-y-2 rounded-2xl border bg-card p-4" data-testid="setup-card">
         <h2 className="font-semibold">Einrichtung und Erklärungen</h2>
         <p className="text-sm text-muted-foreground">Den Einrichtungsassistenten vom ersten Start noch einmal durchgehen oder die kurze Tour durch die App ansehen.</p>
         <div className="flex flex-wrap gap-2">

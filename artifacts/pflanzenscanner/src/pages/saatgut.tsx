@@ -260,7 +260,7 @@ function TestDialog({ farm, seed, onClose }: { farm: FarmSummary; seed: Seed; on
 function SeedCard({ seed, canWrite, showOrganic, onEdit, onTest }: { seed: Seed; canWrite: boolean; showOrganic: boolean; onEdit: () => void; onTest: () => void }) {
   const badge = SEED_STATUS[seed.status];
   return (
-    <li className={`space-y-1.5 rounded-xl border border-border bg-card p-4 text-sm ${seed.archived ? "opacity-60" : ""}`} data-testid={`seed-${seed.id}`}>
+    <li className={`space-y-1.5 rounded-2xl border bg-card p-4 text-sm ${seed.archived ? "opacity-60" : ""}`} data-testid={`seed-${seed.id}`}>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0">
           <h3 className="font-semibold">
@@ -314,7 +314,7 @@ function Seeds({ farm }: { farm: FarmSummary }) {
   return (
     <div className="space-y-5">
       {(plan.missing.length > 0 || plan.check.length > 0) && (
-        <section className="space-y-2 rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
+        <section className="space-y-2 rounded-2xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100">
           <h2 className="flex items-center gap-2 font-semibold">
             <ShoppingBasket className="h-4 w-4" />
             Für den Beetplan {plan.season}
@@ -343,7 +343,7 @@ function Seeds({ farm }: { farm: FarmSummary }) {
       )}
 
       {notOrganic && (notOrganic.conventional.length > 0 || notOrganic.unknown.length > 0) && (
-        <section className="space-y-1 rounded-xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100" data-testid="seed-organic-warning">
+        <section className="space-y-1 rounded-2xl border border-amber-400 bg-amber-50 p-4 text-sm text-amber-950 dark:border-amber-700 dark:bg-amber-950/40 dark:text-amber-100" data-testid="seed-organic-warning">
           <h2 className="flex items-center gap-2 font-semibold">
             <Leaf className="h-4 w-4" />
             Bio-Saatgut
@@ -363,7 +363,7 @@ function Seeds({ farm }: { farm: FarmSummary }) {
       )}
 
       {seeds.length === 0 ? (
-        <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+        <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
           Noch kein Saatgut eingetragen. Die App zeigt dann, wie lange es noch keimt, was für den Beetplan fehlt und wie man selbst Samen gewinnt.
         </p>
       ) : (

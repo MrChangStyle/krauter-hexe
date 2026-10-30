@@ -284,13 +284,13 @@ function CamerasCard({ farm }: { farm: FarmSummary }) {
                 {isAdmin ? (
                   <button
                     type="button"
-                    className="w-full space-y-0.5 rounded-xl border border-border bg-card p-3 text-left text-sm hover:bg-muted/50"
+                    className="w-full space-y-0.5 rounded-xl border bg-card p-3 text-left text-sm hover:bg-muted/50"
                     onClick={() => setDialog({ camera: c, key: Date.now() })}
                   >
                     {body}
                   </button>
                 ) : (
-                  <div className="space-y-0.5 rounded-xl border border-border bg-card p-3 text-sm">{body}</div>
+                  <div className="space-y-0.5 rounded-xl border bg-card p-3 text-sm">{body}</div>
                 )}
               </li>
             );

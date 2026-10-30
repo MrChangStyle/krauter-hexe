@@ -47,7 +47,7 @@ export function FarmFarmingCard({ farm }: { farm: FarmSummary }) {
 
   if (!draft || !current) {
     return (
-      <section className="rounded-xl border bg-card p-4">
+      <section className="rounded-2xl border bg-card p-4">
         <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
       </section>
     );
@@ -58,7 +58,7 @@ export function FarmFarmingCard({ farm }: { farm: FarmSummary }) {
     (certified(draft.level) && ((draft.controlBody ?? "") !== (current.controlBody ?? "") || (draft.organicSince ?? "") !== (current.organicSince ?? "")));
 
   return (
-    <section className="space-y-3 rounded-xl border bg-card p-4 text-sm" data-testid="farm-farming">
+    <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm" data-testid="farm-farming">
       <div className="flex items-center gap-2">
         <Leaf className="h-5 w-5 text-primary" />
         <h2 className="font-semibold">Bewirtschaftung</h2>

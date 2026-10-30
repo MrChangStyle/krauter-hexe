@@ -764,7 +764,7 @@ export function PflegeGuidesSection() {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="font-semibold flex items-center gap-2">
+        <h2 className="flex items-center gap-2 font-semibold">
           <BookHeart className="w-4 h-4 text-rose-500" />
           Meine Pflege-Guides
         </h2>
@@ -958,7 +958,7 @@ export function Benutzerverwaltung() {
     <div className="space-y-4">
       <div className="flex items-center gap-2 pt-2">
         <Users className="w-5 h-5 text-primary" />
-        <h2 className="text-base font-semibold">Benutzerverwaltung</h2>
+        <h2 className="font-semibold">Benutzerverwaltung</h2>
       </div>
       <p className="text-sm text-muted-foreground">
         Neue Konten erscheinen hier automatisch, sobald sich jemand zum ersten Mal
@@ -981,7 +981,7 @@ export function Benutzerverwaltung() {
         return (
           <div
             key={u.id}
-            className="rounded-xl border border-border bg-card p-4 space-y-3"
+            className="rounded-2xl border bg-card p-4 space-y-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

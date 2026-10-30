@@ -24,7 +24,7 @@ import { PageHeader } from "@/components/page-header";
 
 function Section({ icon: Icon, title, children }: { icon: typeof Handshake; title: string; children: ReactNode }) {
   return (
-    <section className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm">
+    <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm">
       <h2 className="flex items-center gap-2 font-semibold">
         <Icon className="h-4 w-4 text-primary" />
         {title}
@@ -139,7 +139,7 @@ function Handover({ farm }: { farm: FarmSummary }) {
       </Section>
 
       {h.withdrawals.length > 0 && (
-        <section role="alert" className="space-y-1.5 rounded-xl border-2 border-red-600 bg-red-50 p-4 text-sm text-red-950 dark:bg-red-950/40 dark:text-red-100">
+        <section role="alert" className="space-y-1.5 rounded-2xl border-2 border-red-600 bg-red-50 p-4 text-sm text-red-950 dark:bg-red-950/40 dark:text-red-100">
           <h2 className="flex items-center gap-2 font-semibold">
             <AlertOctagon className="h-4 w-4" />
             Wartezeit läuft – Eier, Milch und Fleisch nicht verwenden

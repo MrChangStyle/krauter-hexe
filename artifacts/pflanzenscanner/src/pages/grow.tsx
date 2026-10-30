@@ -69,7 +69,7 @@ function AgeGate() {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-4 rounded-xl border border-border bg-card p-4 text-sm">
+    <form onSubmit={submit} className="space-y-4 rounded-2xl border bg-card p-4 text-sm">
       <h2 className="flex items-center gap-2 font-semibold">
         <ShieldCheck className="h-4 w-4 text-primary" />
         Bevor es losgeht
@@ -181,7 +181,7 @@ function PushCard({ access }: { access: GrowAccess }) {
     }
   }
   return (
-    <section className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm">
+    <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm">
       <h2 className="flex items-center gap-2 font-semibold">
         <Bell className="h-4 w-4 text-primary" />
         Erinnerungen
@@ -335,7 +335,7 @@ function GrowCard({ grow }: { grow: Grow }) {
   const growInput = { name: grow.name, environment: grow.environment, medium: grow.medium, tentSize: grow.tentSize, lightType: grow.lightType, lightWatts: grow.lightWatts, notes: grow.notes };
 
   return (
-    <section className={`space-y-3 rounded-xl border border-border bg-card p-4 text-sm ${grow.archived ? "opacity-60" : ""}`} data-testid={`grow-${grow.id}`}>
+    <section className={`space-y-3 rounded-2xl border bg-card p-4 text-sm ${grow.archived ? "opacity-60" : ""}`} data-testid={`grow-${grow.id}`}>
       <div className="flex items-start justify-between gap-2">
         <div>
           <h2 className="font-semibold">{grow.name}</h2>
@@ -429,7 +429,7 @@ function Overview({ access }: { access: GrowAccess }) {
         Grow anlegen
       </Button>
       {d.grows.length === 0 && (
-        <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">
+        <p className="rounded-2xl border bg-card p-4 text-sm text-muted-foreground">
           Leg zuerst einen Grow an – ein Zelt, einen Platz im Garten oder ein Gewächshaus – und dann die Pflanzen darin. Die App plant jede Phase von der Keimung bis zum Curing.
         </p>
       )}

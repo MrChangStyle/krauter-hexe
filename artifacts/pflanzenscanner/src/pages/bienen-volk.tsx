@@ -545,7 +545,7 @@ function ColonyCardPage({ farm, colonyId }: { farm: FarmSummary; colonyId: numbe
       )}
 
       {canWrite && c.status === "active" && (
-        <section className="space-y-3 rounded-xl border border-border bg-card p-4 text-sm">
+        <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm">
           <div role="tablist" className="flex gap-1 rounded-lg bg-muted p-1">
             {TABS.map((t) => (
               <button

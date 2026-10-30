@@ -89,7 +89,7 @@ export default function NotizenPage() {
               <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">Nichts auf der Einkaufsliste.</p>
             ) : (
               groups.shopping.map((g) => (
-                <div key={g.category} className="rounded-2xl border bg-card p-3">
+                <div key={g.category} className="rounded-xl border bg-card p-3">
                   <p className="mb-1 text-xs font-semibold text-orange-700 dark:text-orange-400">{CATEGORY_LABELS[g.category]}</p>
                   <ul className="divide-y">
                     {g.notes.map((n) => (

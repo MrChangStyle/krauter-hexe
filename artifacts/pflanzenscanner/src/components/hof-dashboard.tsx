@@ -289,7 +289,7 @@ function Widget({
   alert?: boolean;
 }) {
   return (
-    <Link href={href} className="flex min-h-[96px] flex-col gap-1 rounded-2xl border bg-card p-3 transition-all hover:shadow-md active:scale-[0.98]">
+    <Link href={href} className="flex min-h-[96px] flex-col gap-1 rounded-xl border bg-card p-3 transition-all hover:shadow-md active:scale-[0.98]">
       <span className="flex items-center gap-2">
         <span className={cn("flex h-7 w-7 shrink-0 items-center justify-center rounded-lg", tone)}>
           <Icon className="h-4 w-4" />

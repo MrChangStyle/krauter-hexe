@@ -25,7 +25,7 @@ export function ProblemPage() {
         <p className="mt-1 text-foreground/80">{problem.first}</p>
       </div>
       <section className="space-y-3">
-        <h2 className="text-base font-semibold">Diese Nützlinge helfen</h2>
+        <h2 className="font-semibold">Diese Nützlinge helfen</h2>
         <div className="space-y-2">
           {problem.beneficials.map((id) => (
             <BeneficialRow key={id} beneficial={BENEFICIALS[id]} />
@@ -63,7 +63,7 @@ export function BeneficialPage() {
       </div>
       {helpsWith.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-base font-semibold">Hilft bei</h2>
+          <h2 className="font-semibold">Hilft bei</h2>
           <div className="flex flex-wrap gap-2">
             {helpsWith.map((p) => (
               <Link key={p.id} href={problemHref(p.id)} className="rounded-full border px-3 py-1 text-xs text-muted-foreground hover:border-primary hover:text-primary">

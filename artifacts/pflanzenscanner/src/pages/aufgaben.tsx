@@ -358,8 +358,8 @@ export default function AufgabenPage() {
 
       {/* Form (create OR edit) */}
       {showForm && (
-        <div className="mx-6 mb-6 rounded-2xl border bg-card p-5 space-y-4 shadow-sm animate-in slide-in-from-top-2 duration-200">
-          <h2 className="font-serif text-lg font-semibold">
+        <div className="mx-6 mb-6 rounded-2xl border bg-card p-4 space-y-4 shadow-sm animate-in slide-in-from-top-2 duration-200">
+          <h2 className="flex items-center gap-2 font-semibold">
             {editingTask ? "Aufgabe bearbeiten" : "Aufgabe erstellen"}
           </h2>
 

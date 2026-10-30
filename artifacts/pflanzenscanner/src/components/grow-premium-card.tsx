@@ -10,7 +10,7 @@ export function GrowPremiumCard() {
   const p = premium.data;
   if (!p) return null;
   return (
-    <section className="space-y-2 rounded-xl border border-border bg-card p-4 text-sm" data-testid="grow-premium">
+    <section className="space-y-2 rounded-2xl border bg-card p-4 text-sm" data-testid="grow-premium">
       <h2 className="flex items-center gap-2 font-semibold">
         <Crown className="h-4 w-4 text-primary" />
         {p.active ? "Premium aktiv" : "Kostenlos – Premium für die KI"}

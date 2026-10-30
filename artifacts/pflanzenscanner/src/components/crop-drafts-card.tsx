@@ -44,7 +44,7 @@ export function CropDraftsCard() {
   const busy = approve.isPending || reject.isPending;
 
   return (
-    <section className="space-y-3 rounded-xl border border-border bg-card p-4">
+    <section className="space-y-3 rounded-2xl border bg-card p-4">
       <h2 className="flex items-center gap-2 font-semibold">
         <Sprout className="h-4 w-4 text-primary" />
         Anbaudaten-Entwürfe

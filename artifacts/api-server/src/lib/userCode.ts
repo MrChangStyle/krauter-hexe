@@ -35,6 +35,7 @@ export function parseUserCode(raw: unknown): number | null {
 
 /** Hands the account its Nutzer-ID unless it has one; returns it. */
 export async function assignUserCode(userId: string): Promise<number> {
+  let lastError: unknown;
   for (let attempt = 0; attempt < 30; attempt++) {
     const [row] = await db.select({ code: usersTable.userCode }).from(usersTable).where(eq(usersTable.id, userId));
     if (!row) throw new Error('No such account');
@@ -49,11 +50,12 @@ export async function assignUserCode(userId: string): Promise<number> {
         .where(and(eq(usersTable.id, userId), isNull(usersTable.userCode)))
         .returning({ code: usersTable.userCode });
       if (set?.code !== null && set?.code !== undefined) return set.code;
-    } catch {
+    } catch (err) {
       // Taken by someone else meanwhile (unique index) – draw again.
+      lastError = err;
     }
   }
-  throw new Error('No free Nutzer-ID found');
+  throw new Error('No free Nutzer-ID found', { cause: lastError });
 }
 
 /** At start: every account without a Nutzer-ID gets one. */

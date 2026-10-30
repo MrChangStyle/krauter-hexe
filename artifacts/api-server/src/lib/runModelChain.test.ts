@@ -29,6 +29,7 @@ vi.mock("./geminiClient", () => ({
   },
 }));
 
+import { AiTimeoutError, isAiTimeout } from "./aiTimeout";
 import { runModelChain } from "./plantIdentification";
 
 describe("runModelChain with timeoutMs", () => {
@@ -36,7 +37,7 @@ describe("runModelChain with timeoutMs", () => {
     const started = Date.now();
     await expect(
       runModelChain([], [{ name: "a", attempts: 2 }, { name: "b", attempts: 1 }], { maxOutputTokens: 10, responseMimeType: "application/json" }, { timeoutMs: 300 }),
-    ).rejects.toThrow();
+    ).rejects.toThrow(AiTimeoutError);
     const took = Date.now() - started;
     expect(took).toBeGreaterThanOrEqual(250);
     expect(took).toBeLessThan(2000);
@@ -77,5 +78,15 @@ describe("aiErrorDetail", () => {
       "404 · models/gemini-x is not found ?key=…",
     );
     expect(aiErrorDetail(Object.assign(new Error("This operation was aborted"), { name: "AbortError" }))).toBe("AbortError · This operation was aborted");
+  });
+});
+
+describe("isAiTimeout", () => {
+  it("tells running out of time apart from real faults", () => {
+    expect(isAiTimeout(new AiTimeoutError())).toBe(true);
+    expect(isAiTimeout(Object.assign(new Error("This operation was aborted"), { name: "AbortError" }))).toBe(true);
+    expect(isAiTimeout(Object.assign(new Error("The operation timed out"), { name: "TimeoutError" }))).toBe(true);
+    expect(isAiTimeout(Object.assign(new Error("API key not valid"), { status: 400 }))).toBe(false);
+    expect(isAiTimeout(null)).toBe(false);
   });
 });

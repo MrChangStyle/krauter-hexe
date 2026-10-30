@@ -164,6 +164,17 @@ describe.skipIf(!enabled)("Alltagsnotizen (real database)", () => {
     expect(await q("SELECT scan_type FROM scan_attempts")).toHaveLength(1);
   });
 
+  it("answers a too slow AI with its own message, gives the attempt back and only counts it", async () => {
+    const { AiTimeoutError } = await import("./aiTimeout");
+    await q("DELETE FROM usage_daily WHERE metric = 'ai_timeouts'");
+    runModelChain.mockRejectedValue(new AiTimeoutError());
+    const r = await api("POST", "/notes/plan", { text: "Nudeln Eier Milch" });
+    expect(r.status).toBe(502);
+    expect(r.data.error).toContain("zu lange gebraucht");
+    expect(await q("SELECT id FROM scan_attempts")).toEqual([]);
+    expect(await q("SELECT value FROM usage_daily WHERE metric = 'ai_timeouts'")).toEqual([{ value: 1 }]);
+  });
+
   it("tells the others on a shared list in one push – not the writer, not on a list of one", async () => {
     const { flushNotesPush, pendingNotesPushes } = await import("./notesPush");
     // Earlier tests share lists too: send what they left waiting.

@@ -1,4 +1,5 @@
 import { ai } from "./geminiClient";
+import { AiTimeoutError, isAiTimeout } from "./aiTimeout";
 import { coerceQuality } from "./imageQualityPolicy";
 import { SYMPTOM_NAMES, canonicalSymptom } from "./symptomVocabulary";
 import {
@@ -237,7 +238,7 @@ export async function runModelChain(
         opts.attemptTimeoutMs === undefined ? toDeadline : Math.min(toDeadline ?? Infinity, opts.attemptTimeoutMs);
       // A request with a few milliseconds left can never answer – and the abort
       // timer may fire a moment before Date.now() reaches the deadline.
-      if (toDeadline !== null && toDeadline <= MIN_ATTEMPT_MS) throw lastError ?? new Error("AI request timed out");
+      if (toDeadline !== null && toDeadline <= MIN_ATTEMPT_MS) throw isAiTimeout(lastError) || !lastError ? new AiTimeoutError() : lastError;
       const thinkingConfig = QUICK_THINKING[thinking];
       try {
         const response = await ai.models.generateContent({
@@ -275,7 +276,7 @@ export async function runModelChain(
       }
     }
   }
-  throw lastError ?? new Error("AI request failed");
+  throw isAiTimeout(lastError) ? new AiTimeoutError() : (lastError ?? new Error("AI request failed"));
 }
 
 // Calls Gemini with the reliable-model-first fallback chain and transient-error

@@ -239,7 +239,7 @@ Premium sind die Funktionen, die im Betrieb Geld kosten, vor allem KI (`docs/pre
 
 ## 10. Offen und als Nächstes
 
-Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.md`. Den Stand je Modul hält `docs/BESTANDSAUFNAHME.md` fest, größere Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`. Was nur der Betreiber erledigen kann, sammelt `docs/TODO-CHANG.md`. Den Abschluss des Launch-Plans mit Ampel, Tests und Restpunkten fasst `docs/ABSCHLUSSBERICHT.md` zusammen.
+Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.md`. Den Stand je Modul hält `docs/BESTANDSAUFNAHME.md` fest, größere Entscheidungen stehen in `docs/ENTSCHEIDUNGEN.md`. Was nur der Betreiber erledigen kann, sammelt `docs/TODO-CHANG.md`. Den Abschluss des Launch-Plans mit Ampel, Tests und Restpunkten fasst `docs/ABSCHLUSSBERICHT.md` zusammen. Als Nächstes kommt Bio und Nachhaltigkeit in die ganze App (`docs/BIO-KONZEPT.md`, Schritte B1–B8).
 
 - **Öffentlicher Start:**
   - Seitenpasswort löschen.
@@ -261,6 +261,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 30.10.2026 | #126 | Konzept Bio und Nachhaltigkeit (`docs/BIO-KONZEPT.md`): Hof-Einstellung „Bewirtschaftung“, Auswirkungen je Modul, Berater-Zugang, Vermarktung, Schritte B1–B8 |
 | 30.10.2026 | #125 | KI zu langsam: Notizen und Hof-Aufgaben melden „Die KI hat zu lange gebraucht“ statt „nicht erreichbar“; in der Verwaltung zählt das als „Langsam“ in den Tageszahlen statt als Fehlergruppe |
 | 29.10.2026 | #124 | Abschlussbericht des Launch-Plans (`docs/ABSCHLUSSBERICHT.md`): Ampel je Bereich, was geprüft, behoben und gebaut wurde, Tests, Restpunkte vor und nach dem Start |
 | 29.10.2026 | #123 | Store-Apps vorbereitet: Capacitor-Hülle für Android und iOS (`artifacts/mobile`) mit Berechtigungen, Offline-Seite, Icon- und Startbild-Vorlagen; in der App kein Google-Login und keine Bestellung |

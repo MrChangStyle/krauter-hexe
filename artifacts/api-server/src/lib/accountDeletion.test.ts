@@ -43,6 +43,11 @@ vi.mock("@workspace/db", async () => {
             expect([{ assigneeId: null }, { lastCompletedBy: null }, { addedBy: null }, { doneBy: null }]).toContainEqual(values);
             return Promise.resolve();
           }
+          // Payments stay for the bookkeeping, without the account.
+          if (getTableName(table) === "payments") {
+            expect(values).toEqual({ accountId: null });
+            return Promise.resolve();
+          }
           expect(values).toEqual({ scannedByUserId: null });
           state.unlinked.push(getTableName(table));
           return Promise.resolve();

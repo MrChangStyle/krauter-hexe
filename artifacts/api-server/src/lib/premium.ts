@@ -78,28 +78,40 @@ export function testerSource(createdAt: Date | null, end: Date | null, now: Date
   return createdAt !== null && createdAt < end ? 'tester' : null;
 }
 
-export async function premiumOf(userId: string, isOwner: boolean, now = new Date()): Promise<Premium> {
+/** The Paket from what is stored – the same rules as premiumOf, without queries. Pure. */
+export function premiumFrom(
+  row: { activeUntil: Date | null; source: string; tier: string; plan: string | null; cancelAtPeriodEnd: boolean; subscriptionId: string | null } | null,
+  isOwner: boolean,
+  createdAt: Date | null,
+  end: Date | null,
+  now: Date,
+): Premium {
   if (isOwner) return { ...NONE, active: true, source: 'owner', tier: 'premium' };
-  const [row] = await db.select().from(premiumTable).where(eq(premiumTable.userId, userId));
-  if (isActive(row, now)) {
+  if (row && isActive(row, now)) {
     return {
       active: true,
-      until: row!.activeUntil?.toISOString() ?? null,
-      source: row!.source,
-      tier: row!.tier === 'lite' ? 'lite' : 'premium',
-      plan: row!.plan === 'monthly' || row!.plan === 'yearly' ? row!.plan : null,
-      cancelAtPeriodEnd: row!.cancelAtPeriodEnd,
-      subscribed: row!.subscriptionId !== null,
+      until: row.activeUntil?.toISOString() ?? null,
+      source: row.source,
+      tier: row.tier === 'lite' ? 'lite' : 'premium',
+      plan: row.plan === 'monthly' || row.plan === 'yearly' ? row.plan : null,
+      cancelAtPeriodEnd: row.cancelAtPeriodEnd,
+      subscribed: row.subscriptionId !== null,
     };
-  }
-  const end = testPhaseEnd();
-  let createdAt: Date | null = null;
-  if (end !== null && now >= end) {
-    const [user] = await db.select({ createdAt: usersTable.createdAt }).from(usersTable).where(eq(usersTable.id, userId));
-    createdAt = user?.createdAt ?? null;
   }
   const source = testerSource(createdAt, end, now);
   return source ? { ...NONE, active: true, source, tier: 'premium' } : NONE;
+}
+
+export async function premiumOf(userId: string, isOwner: boolean, now = new Date()): Promise<Premium> {
+  if (isOwner) return premiumFrom(null, true, null, null, now);
+  const [row] = await db.select().from(premiumTable).where(eq(premiumTable.userId, userId));
+  const end = testPhaseEnd();
+  let createdAt: Date | null = null;
+  if (!isActive(row, now) && end !== null && now >= end) {
+    const [user] = await db.select({ createdAt: usersTable.createdAt }).from(usersTable).where(eq(usersTable.id, userId));
+    createdAt = user?.createdAt ?? null;
+  }
+  return premiumFrom(row ?? null, false, createdAt, end, now);
 }
 
 export interface PremiumEntry {

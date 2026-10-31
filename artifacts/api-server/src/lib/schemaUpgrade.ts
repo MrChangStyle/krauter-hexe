@@ -288,6 +288,20 @@ const STATEMENTS = [
   `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "customer_id" text`,
   `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "subscription_id" text`,
   `ALTER TABLE "premium" ADD COLUMN IF NOT EXISTS "cancel_at_period_end" boolean DEFAULT false NOT NULL`,
+  // Finanzen (schema/premium.ts, docs/finanzen.md).
+  `CREATE TABLE IF NOT EXISTS "payments" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"account_id" text,
+	"source" text NOT NULL,
+	"external_id" text NOT NULL,
+	"amount_cents" integer NOT NULL,
+	"currency" text DEFAULT 'eur' NOT NULL,
+	"tier" text,
+	"plan" text,
+	"paid_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "payments_external_id_unique" UNIQUE ("external_id")
+)`,
+  `CREATE INDEX IF NOT EXISTS "payments_paid_at_idx" ON "payments" ("paid_at")`,
   // Passwort vergessen (docs/konto.md).
   "ALTER TABLE users ADD COLUMN IF NOT EXISTS password_changed_at timestamp with time zone",
   // Nutzer-ID (docs/konto.md); codes for older accounts are handed out at start (lib/userCode.ts).

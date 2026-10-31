@@ -25,6 +25,7 @@ import {
   dailyNotesTable,
   noteSharesTable,
   passwordResetsTable,
+  paymentsTable,
   farmTasksTable,
   farmsTable,
   favoritesTable,
@@ -187,6 +188,9 @@ export async function deleteAccount(userId: string): Promise<boolean> {
     await tx
       .delete(reportsTable)
       .where(and(eq(reportsTable.contentType, 'username'), eq(reportsTable.contentId, userId)));
+
+    // Payments stay for the bookkeeping (Stripe keeps the invoice), without the account.
+    await tx.update(paymentsTable).set({ accountId: null }).where(eq(paymentsTable.accountId, userId));
 
     // Shared archive: stays, without the link to the person.
     for (const { table, userId: column } of ARCHIVE_TABLES) {

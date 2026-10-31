@@ -134,6 +134,7 @@ import type {
   FeedbackMarkInput,
   Fertilizing,
   FertilizingInput,
+  FinanceOverview,
   FindSpotInput,
   FindSpotMap,
   FindSpotOverview,
@@ -23766,6 +23767,77 @@ export const useCancelBilling = <TError = ErrorType<void>,
       return useMutation(getCancelBillingMutationOptions(options));
     }
 
+export const getChangeBillingPlanUrl = () => {
+
+
+
+
+  return `/api/billing/change`
+}
+
+/**
+ * @summary Paket wechseln – Lite ↔ Premium or monthly ↔ yearly on the running subscription, at once; the provider settles the difference
+ */
+export const changeBillingPlan = async (billingOrderInput: BillingOrderInput, options?: RequestInit): Promise<Premium> => {
+
+  return customFetch<Premium>(getChangeBillingPlanUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(billingOrderInput)
+  }
+);}
+
+
+
+
+
+export const getChangeBillingPlanMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeBillingPlan>>, TError,{data: BodyType<BillingOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof changeBillingPlan>>, TError,{data: BodyType<BillingOrderInput>}, TContext> => {
+
+const mutationKey = ['changeBillingPlan'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof changeBillingPlan>>, {data: BodyType<BillingOrderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  changeBillingPlan(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChangeBillingPlanMutationResult = NonNullable<Awaited<ReturnType<typeof changeBillingPlan>>>
+    export type ChangeBillingPlanMutationBody = BodyType<BillingOrderInput>
+    export type ChangeBillingPlanMutationError = ErrorType<void>
+
+    /**
+ * @summary Paket wechseln – Lite ↔ Premium or monthly ↔ yearly on the running subscription, at once; the provider settles the difference
+ */
+export const useChangeBillingPlan = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeBillingPlan>>, TError,{data: BodyType<BillingOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof changeBillingPlan>>,
+        TError,
+        {data: BodyType<BillingOrderInput>},
+        TContext
+      > => {
+      return useMutation(getChangeBillingPlanMutationOptions(options));
+    }
+
 export const getBillingPortalUrl = () => {
 
 
@@ -23907,6 +23979,83 @@ export const useCompleteMockCheckout = <TError = ErrorType<void>,
       > => {
       return useMutation(getCompleteMockCheckoutMutationOptions(options));
     }
+
+export const getGetFinanceUrl = () => {
+
+
+
+
+  return `/api/admin/finance`
+}
+
+/**
+ * @summary Finanzen (docs/finanzen.md) – Paket of every account, revenue per month, AI requests and their estimated cost; owner only
+ */
+export const getFinance = async ( options?: RequestInit): Promise<FinanceOverview> => {
+
+  return customFetch<FinanceOverview>(getGetFinanceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFinanceQueryKey = () => {
+    return [
+    `/api/admin/finance`
+    ] as const;
+    }
+
+
+export const getGetFinanceQueryOptions = <TData = Awaited<ReturnType<typeof getFinance>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFinance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFinanceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFinance>>> = ({ signal }) => getFinance({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFinance>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFinanceQueryResult = NonNullable<Awaited<ReturnType<typeof getFinance>>>
+export type GetFinanceQueryError = ErrorType<void>
+
+
+/**
+ * @summary Finanzen (docs/finanzen.md) – Paket of every account, revenue per month, AI requests and their estimated cost; owner only
+ */
+
+export function useGetFinance<TData = Awaited<ReturnType<typeof getFinance>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFinance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFinanceQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListPremiumUrl = () => {
 

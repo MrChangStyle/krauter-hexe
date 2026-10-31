@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { aiPerDay, paketLabel, priceLine, untilText } from "./billing-labels";
+import { aiPerDay, changeDirection, paketLabel, priceLine, untilText } from "./billing-labels";
 
 describe("Paket & Abo", () => {
   it("names the Paket and its daily AI limit like the server does", () => {
@@ -17,5 +17,13 @@ describe("Paket & Abo", () => {
     expect(priceLine("premium", "yearly")).toBe("59,90 € im Jahr");
     expect(untilText("2026-12-31T22:59:59.000Z")).toBe("31.12.2026");
     expect(untilText(null)).toBeNull();
+  });
+});
+
+describe("changeDirection", () => {
+  it("names upgrade, downgrade and a change of period", () => {
+    expect(changeDirection("lite", "premium")).toBe("up");
+    expect(changeDirection("premium", "lite")).toBe("down");
+    expect(changeDirection("lite", "lite")).toBe("same");
   });
 });

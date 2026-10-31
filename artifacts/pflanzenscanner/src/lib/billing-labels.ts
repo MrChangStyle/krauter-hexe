@@ -38,3 +38,10 @@ export function untilText(iso: string | null): string | null {
   if (!iso) return null;
   return new Date(iso).toLocaleDateString("de-DE", { timeZone: "Europe/Berlin", day: "numeric", month: "numeric", year: "numeric" });
 }
+
+const TIER_RANK: Record<BillingTier, number> = { lite: 1, premium: 2 };
+
+/** Upgrade, downgrade, or the same Paket with another period. Mirrors changeDirection on the server. */
+export function changeDirection(from: BillingTier, to: BillingTier): "up" | "down" | "same" {
+  return TIER_RANK[to] > TIER_RANK[from] ? "up" : TIER_RANK[to] < TIER_RANK[from] ? "down" : "same";
+}

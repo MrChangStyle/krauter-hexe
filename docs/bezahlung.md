@@ -44,8 +44,14 @@ Schritt 16 des Launch-Plans (`docs/LAUNCH-PLAN.md`). Lite und Premium als Monats
 4. **Kündigen** (§ 312k BGB):
    - Der Knopf „Abo kündigen“ führt zu einer Bestätigung mit Paket, Ende und Folgen, dort steht „Jetzt kündigen“.
    - Das Abo endet zum Ende des bezahlten Zeitraums, bis dahin bleibt alles.
-5. **Zahlung verwalten** (nur Stripe): Das Kundenportal von Stripe bietet Zahlungsart, Rechnungen, Paketwechsel und Fortsetzen nach einer Kündigung.
-6. **Konto löschen:**
+5. **Paket wechseln** (Upgrade und Downgrade, Kasten „Paket wechseln“ über „Abo verwalten“):
+   - Lite ↔ Premium und monatlich ↔ jährlich auf dem laufenden Abo, wirksam sofort.
+   - Upgrade: Knopf „Kostenpflichtig zu … wechseln“; für den Rest des Zeitraums wird nur der Unterschied berechnet. Downgrade: „Zu … wechseln“; zu viel Gezahltes wird mit der nächsten Zahlung verrechnet (Stripe `proration_behavior=create_prorations`).
+   - Ein gekündigtes Abo läuft mit einem Wechsel weiter (die Kündigung wird aufgehoben).
+   - Zurück zu Basis ist „Abo kündigen“.
+   - Technik: `POST /billing/change` (`changePlan` in `lib/billing.ts`): bei Stripe Preis des Abo-Postens tauschen und Metadaten `tier`/`interval` setzen, der Webhook bestätigt; in der Testkasse direkt, bei neuem Zeitraum beginnt ein neuer.
+6. **Zahlung verwalten** (nur Stripe): Das Kundenportal von Stripe bietet Zahlungsart, Rechnungen und Fortsetzen nach einer Kündigung.
+7. **Konto löschen:**
    - Ein laufendes Stripe-Abo endet vorher sofort.
    - Ist Stripe nicht erreichbar, bleibt das Konto und die Meldung bittet, es gleich noch einmal zu versuchen. So wird niemand ohne Konto weiter belastet.
 
@@ -121,5 +127,6 @@ Schritt 16 des Launch-Plans (`docs/LAUNCH-PLAN.md`). Lite und Premium als Monats
 - **Rechtstexte prüfen lassen** (`docs/rechtstexte.md`) und danach `PAYMENT_TEXTS_DRAFT` ausschalten.
 - **Richtwerte:** 3 Tage Kulanz nach dem Periodenende und die Limits 3, 15 und 40. Die Limits gelten je Bereich, nicht für alle zusammen. Nach den ersten Wochen mit echten Kosten prüfen.
 - **Funktionen je Paket:** Heute unterscheidet die App Lite und Premium beim Tageslimit und beim Grow-KI-Check. Die Zuordnung weiterer KI-Funktionen zu Premium (Hof-KI, Wildtier-Radar-KI, Bienen-Standort-Check) wie auf der Seite „Preise & Pakete“ ist noch nicht durchgesetzt, alle KI zählt nur gegen das Limit. Vor dem Start der Bezahlung entscheiden und angleichen.
+- **Paketwechsel rechtlich prüfen:** Upgrade sofort mit anteiliger Berechnung, Downgrade sofort mit Gutschrift – in AGB und Widerrufsbelehrung erwähnen und prüfen lassen. Im Stripe-Kundenportal den Paketwechsel ausschalten, damit es nur einen Weg gibt.
 - **Rechnungen:** Stripe verschickt Belege. Eine eigene Rechnungsnummer und die Aufbewahrung (10 Jahre) laufen über Stripe; das mit dem Steuerberater abstimmen.
 - **App-Stores:** In den Store-Apps (Schritt 19) gelten die Bezahlregeln von Google und Apple. Dort wird vorerst nicht verkauft.

@@ -167,7 +167,7 @@ const MAP_LOADING = (
 );
 
 /**
- * Lexikon → Karte: every plant of the archive found with a location, on one
+ * Lexikon → Karte: every scan with a location (plants, mushrooms, insects) on one
  * map. "Alle Funde" are everyone's shared finds (anonymous, coarsened like
  * on the species page), "Meine Funde" only the account's own.
  */
@@ -189,7 +189,7 @@ export function FindSpotsOverview() {
           <MapIcon className="h-5 w-5 text-primary" />
           Karte
         </h2>
-        <p className="text-sm text-muted-foreground">Alle Pflanzen und Pilze, die mit Standort erfasst wurden – anonym und auf Felder gerundet.</p>
+        <p className="text-sm text-muted-foreground">Alle Scans mit Standort – Pflanzen, Pilze und Insekten, anonym und auf Felder gerundet.</p>
       </div>
       <div className="grid grid-cols-2 gap-1 rounded-full bg-muted p-1 text-sm" role="tablist">
         {(
@@ -215,7 +215,7 @@ export function FindSpotsOverview() {
       </div>
       {!shown ? (
         <div className="rounded-xl border border-dashed p-3 text-sm">
-          <p className="text-muted-foreground">Die Karte zeigt, wo Pflanzen aus dem Archiv gefunden wurden.</p>
+          <p className="text-muted-foreground">Die Karte zeigt, wo Pflanzen, Pilze und Insekten gescannt wurden.</p>
           <p className="mt-1 text-xs text-muted-foreground">{OSM_NOTE}</p>
           <Button
             size="sm"
@@ -239,7 +239,7 @@ export function FindSpotsOverview() {
           {scope === "mine"
             ? consent === true
               ? "Noch keine eigenen Funde mit Standort. Scanne unterwegs mit erlaubtem Standort – dann erscheint dein Fund hier."
-              : "Deine Funde kommen auf die Karte, wenn du unter Mehr → Konto „Fundorte anonym teilen“ einschaltest und mit erlaubtem Standort scannst."
+              : "Deine Funde kommen auf die Karte, wenn du unter Mehr → Konto „Fundorte anonym teilen“ einschaltest und mit erlaubtem Standort scannst. Ältere Scans erscheinen hier, wenn beim Scan ein Ort gespeichert wurde."
             : "Noch keine geteilten Fundorte."}
         </p>
       ) : (
@@ -250,18 +250,26 @@ export function FindSpotsOverview() {
           <p className="text-xs text-muted-foreground">
             {data.finds} {data.finds === 1 ? "Fund" : "Funde"} von {data.species} {data.species === 1 ? "Art" : "Arten"}. Tippe auf ein Feld, um zu sehen, was dort wächst.
           </p>
+          {data.cells.some((c) => c.approx) && (
+            <p className="text-xs text-muted-foreground" data-testid="find-spots-overview-approx">
+              Gestrichelt: ältere Scans, von denen nur der Ort bekannt ist – ungefähr dort eingezeichnet und nur für dich sichtbar.
+              {consent !== true && " Neue Funde mit genauem Feld kommen dazu, wenn du unter Mehr → Konto „Fundorte anonym teilen“ einschaltest."}
+            </p>
+          )}
           {cell && (
             <div className="rounded-2xl border bg-card p-4" data-testid="find-spots-overview-cell">
               <p className="text-sm font-medium">
                 {cell.finds} {cell.finds === 1 ? "Fund" : "Funde"} · zuletzt {cell.lastMonth.slice(5)}/{cell.lastMonth.slice(0, 4)}
               </p>
               <p className="text-xs text-muted-foreground">
-                Feld etwa {cell.km} × {cell.km} km{cell.km > 2 ? " – geschützte Arten nur grob, bitte nicht ausgraben oder pflücken" : ""}
+                {cell.approx
+                  ? `Ungefähr bei ${cell.place} – ältere Scans haben nur den Ort gespeichert, nicht die genaue Stelle. Nur für dich sichtbar.`
+                  : `Feld etwa ${cell.km} × ${cell.km} km${cell.km > 2 ? " – geschützte Arten nur grob, bitte nicht ausgraben oder pflücken" : ""}`}
               </p>
               <ul className="mt-2 divide-y">
                 {cell.species.map((sp) => (
-                  <li key={sp.id}>
-                    <Link href={`/pflanze/${sp.id}`} className="flex items-center justify-between gap-2 py-2 text-sm hover:text-primary">
+                  <li key={`${sp.kind}:${sp.id}`}>
+                    <Link href={sp.kind === "insect" ? `/insekt/${sp.id}` : `/pflanze/${sp.id}`} className="flex items-center justify-between gap-2 py-2 text-sm hover:text-primary">
                       <span className="min-w-0 truncate">{sp.name}</span>
                       <span className="shrink-0 text-xs text-muted-foreground">{sp.finds}×</span>
                     </Link>

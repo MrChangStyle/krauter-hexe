@@ -83,12 +83,12 @@ const DACH_CITIES: CityEntry[] = [
   [53.630, 11.413, "Schwerin"],
   [47.668, 9.175, "Konstanz"],
   [47.814, 9.836, "Kempten (Allgäu)"],
-  [47.997, 12.576, "Rosenheim"],
+  [47.856, 12.129, "Rosenheim"],
   [54.085, 13.381, "Greifswald"],
   [51.453, 6.626, "Moers"],
   [50.699, 12.464, "Zwickau"],
   [52.410, 12.546, "Brandenburg an der Havel"],
-  [48.882, 10.081, "Schwäbisch Gmünd"],
+  [48.799, 9.800, "Schwäbisch Gmünd"],
   [49.872, 8.651, "Darmstadt"],
   [51.965, 7.626, "Münster"], // already listed, skip
   [49.240, 7.369, "Kaiserslautern"],
@@ -96,9 +96,9 @@ const DACH_CITIES: CityEntry[] = [
   [53.549, 9.995, "Hamburg"], // already listed - skip
   [48.520, 9.057, "Tübingen"],
   [51.963, 10.795, "Goslar"],
-  [50.553, 11.917, "Hof"],
+  [50.313, 11.912, "Hof"],
   [47.563, 9.677, "Lindau"],
-  [48.144, 12.584, "Mühldorf am Inn"],
+  [48.247, 12.523, "Mühldorf am Inn"],
   [54.317, 13.092, "Stralsund"],
   [51.100, 17.033, "Wrocław"], // Poland - for eastern border coverage
   // ── Austria ──────────────────────────────────────────────────────────────────
@@ -185,4 +185,14 @@ export function reverseGeocode(lat: number, lon: number): string {
   }
 
   return best;
+}
+
+/**
+ * Position of a city of the list by its name (case-insensitive), or null.
+ * Older scans kept only this name (Archiv → Karte, docs/fundorte.md).
+ */
+export function cityPosition(name: string): { lat: number; lon: number } | null {
+  const key = name.trim().toLocaleLowerCase("de");
+  const hit = DACH_CITIES.find(([, , city]) => city.toLocaleLowerCase("de") === key);
+  return hit ? { lat: hit[0], lon: hit[1] } : null;
 }

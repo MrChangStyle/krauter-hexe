@@ -6968,7 +6968,7 @@ paths:
     get:
       tags: [settings]
       operationId: getFindSpotOverview
-      summary: Archiv → Karte (docs/fundorte.md) – every plant of the archive with a find on one map, own finds or everyone's shared ones
+      summary: Lexikon → Karte (docs/fundorte.md) – every scan with a find (plants, mushrooms, insects) on one map, own finds or everyone's shared ones
       parameters:
         - name: scope
           in: query
@@ -9973,7 +9973,7 @@ components:
           description: Month of the latest find in the cell, YYYY-MM
     FindSpotOverviewCell:
       type: object
-      required: [lat, lon, km, finds, lastMonth, species]
+      required: [lat, lon, km, finds, lastMonth, species, approx, place]
       properties:
         lat:
           type: number
@@ -9982,6 +9982,12 @@ components:
         km:
           type: integer
           description: Edge length of the cell – 2 km, 25 km for protected species on the shared map
+        approx:
+          type: boolean
+          description: Own map only – an older scan that kept only its town, drawn there
+        place:
+          type: [string, 'null']
+          description: The town of an approximate cell
         finds:
           type: integer
         lastMonth:
@@ -9991,8 +9997,10 @@ components:
           type: array
           items:
             type: object
-            required: [id, name, finds]
+            required: [kind, id, name, finds]
             properties:
+              kind:
+                $ref: "#/components/schemas/FindSpotKind"
               id:
                 type: integer
               name:
@@ -10011,7 +10019,7 @@ components:
           type: integer
         species:
           type: integer
-          description: Number of different plants on the map
+          description: Number of different species (plants, mushrooms, insects) on the map
     FindSpotMap:
       type: object
       required: [cells, cellKm, protectedSpecies, finds]

@@ -4,9 +4,9 @@ import "leaflet/dist/leaflet.css";
 import type { FindSpotOverviewCell } from "@workspace/api-client-react";
 
 /**
- * Archiv → Karte (docs/fundorte.md): all plants with a find on one map,
+ * Lexikon → Karte (docs/fundorte.md): all scans with a find on one map,
  * loaded lazily. One square per cell with the number of finds; tapping a
- * square hands it to `onSelect`, which lists the plants found there.
+ * square hands it to `onSelect`, which lists the species found there.
  */
 export default function FindSpotsOverviewMap({
   cells,
@@ -34,7 +34,10 @@ export default function FindSpotsOverviewMap({
           [c.lat - halfLat, c.lon - halfLon],
           [c.lat + halfLat, c.lon + halfLon],
         ],
-        { color: "#15803d", weight: 1, fillColor: "#16a34a", fillOpacity: Math.min(0.25 + c.finds * 0.1, 0.7) },
+        c.approx
+          ? // Older scans only know their town: a dashed, paler square.
+            { color: "#b45309", weight: 1.5, dashArray: "4 4", fillColor: "#f59e0b", fillOpacity: 0.2 }
+          : { color: "#15803d", weight: 1, fillColor: "#16a34a", fillOpacity: Math.min(0.25 + c.finds * 0.1, 0.7) },
       );
       square.bindTooltip(String(c.finds), { permanent: true, direction: "center", className: "find-spot-label" });
       square.on("click", () => select.current(c));

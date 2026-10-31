@@ -12,6 +12,13 @@ export interface FindSpotOverviewCell {
   lon: number;
   /** Edge length of the cell – 2 km, 25 km for protected species on the shared map */
   km: number;
+  /** Own map only – an older scan that kept only its town, drawn there */
+  approx: boolean;
+  /**
+     * The town of an approximate cell
+     * @nullable
+     */
+  place: string | null;
   finds: number;
   /** Month of the latest find in the cell, YYYY-MM */
   lastMonth: string;

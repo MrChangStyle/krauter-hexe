@@ -56,7 +56,7 @@ describe.skipIf(!enabled)("Fundorte (real database)", () => {
     )[0]!.id;
 
   beforeEach(async () => {
-    await q("TRUNCATE users, user_settings, find_spots, plant_scans, plants RESTART IDENTITY CASCADE");
+    await q("TRUNCATE users, user_settings, find_spots, plant_scans, plants, insect_scans, insects RESTART IDENTITY CASCADE");
     await q(`INSERT INTO users (id, email, approved) VALUES ('anna', 'anna@x.de', true), ('bert', 'bert@x.de', true)`);
     plantId = await plant("Urtica dioica");
     orchidId = await plant("Ophrys apifera");
@@ -141,9 +141,9 @@ describe.skipIf(!enabled)("Fundorte (real database)", () => {
     expect(all).toMatchObject({ finds: 4, species: 2 });
     // Rosenheim: nettle by both, in the same 2-km cell; the orchid only on the 25-km grid.
     const nettle = all.cells.find((c: any) => c.km === 2 && c.finds === 2);
-    expect(nettle.species).toEqual([{ id: plantId, name: "Urtica dioica", finds: 2 }]);
+    expect(nettle.species).toEqual([{ kind: "plant", id: plantId, name: "Urtica dioica", finds: 2 }]);
     const orchid = all.cells.find((c: any) => c.km === 25);
-    expect(orchid.species).toEqual([{ id: orchidId, name: "Ophrys apifera", finds: 1 }]);
+    expect(orchid.species).toEqual([{ kind: "plant", id: orchidId, name: "Ophrys apifera", finds: 1 }]);
     expect(all.cells).toHaveLength(3);
 
     as = "anna";
@@ -154,5 +154,36 @@ describe.skipIf(!enabled)("Fundorte (real database)", () => {
     expect(mine.cells.flatMap((c: any) => c.species.map((sp: any) => sp.finds))).toEqual([1, 1, 1]);
 
     expect((await api("GET", "/find-spots/overview?scope=nobody")).status).toBe(400);
+
+    // Older scans kept only the nearest town: on the own map, approximately and marked.
+    const mint = await plant("Mentha aquatica");
+    const thyme = await plant("Thymus vulgaris");
+    await q(`UPDATE plants SET scanned_by_user_id = 'anna', location_region = 'Rosenheim' WHERE id IN ($1, $2)`, [mint, plantId]);
+    await q(`UPDATE plants SET scanned_by_user_id = 'anna', location_region = 'Irgendwo' WHERE id = $1`, [thyme]);
+    const withOlder = (await api("GET", "/find-spots/overview?scope=mine")).data;
+    // The nettle already has a real find – no second, approximate one; the unknown place is left out.
+    expect(withOlder).toMatchObject({ finds: 4, species: 3 });
+    const approx = withOlder.cells.filter((c: any) => c.approx);
+    expect(approx).toHaveLength(1);
+    expect(approx[0]).toMatchObject({ place: "Rosenheim", lat: 47.856, lon: 12.129, species: [{ kind: "plant", id: mint, name: "Mentha aquatica", finds: 1 }] });
+    // Never on the shared map.
+    expect((await api("GET", "/find-spots/overview?scope=all")).data.cells.some((c: any) => c.approx)).toBe(false);
+
+    // Insect scans too: a real find and an older one with only its town.
+    const [{ id: bee }] = await q<{ id: number }>(
+      `INSERT INTO insects (german_name, scientific_name, category, relation_status, description) VALUES ('Honigbiene', 'Apis mellifera', 'beetle', 'neutral', '') RETURNING id`,
+    );
+    const [{ id: ladybird }] = await q<{ id: number }>(
+      `INSERT INTO insects (german_name, scientific_name, category, relation_status, description, scanned_by_user_id, location_region)
+       VALUES ('Marienkäfer', 'Coccinella septempunctata', 'beetle', 'neutral', '', 'anna', 'Rosenheim') RETURNING id`,
+    );
+    await q(`INSERT INTO insect_scans (user_id, insect_id) VALUES ('anna', $1)`, [bee]);
+    expect((await api("POST", "/find-spots", { kind: "insect", speciesId: bee, lat: 47.8723, lon: 12.1189 })).data).toEqual({ saved: true });
+    const withInsects = (await api("GET", "/find-spots/overview?scope=mine")).data;
+    expect(withInsects).toMatchObject({ finds: 6, species: 5 });
+    const species = withInsects.cells.flatMap((c: any) => c.species);
+    expect(species).toContainEqual({ kind: "insect", id: bee, name: "Honigbiene", finds: 1 });
+    expect(withInsects.cells.find((c: any) => c.approx).species).toContainEqual({ kind: "insect", id: ladybird, name: "Marienkäfer", finds: 1 });
+    expect((await api("GET", "/find-spots/overview?scope=all")).data).toMatchObject({ finds: 5, species: 3 });
   });
 });

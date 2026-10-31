@@ -262,6 +262,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 31.10.2026 | #162 | Lexikon → Karte zeigt alle Scans, auch Insekten; ältere Scans mit gespeichertem Ort erscheinen unter „Meine Funde“ gestrichelt und ungefähr an diesem Ort (nur für einen selbst); Koordinaten von Rosenheim und drei weiteren Städten korrigiert |
 | 31.10.2026 | #161 | Lexikon: neuer Reiter „Karte“ neben Archiv und Arten – alle Pflanzen und Pilze mit Fundort auf einer Karte, „Alle Funde“ oder „Meine Funde“, Tipp aufs Feld zeigt die Arten; Hilfe, Suche und Datenschutz ergänzt |
 | 31.10.2026 | #160 | Fundorte: gemeinsame Karte im Archiv, wo eine Art gefunden wurde – nur mit Einwilligung, anonym, auf 2 km gerundet (geschützte Arten 25 km); Datenschutzerklärung ergänzt, EXIF aus nicht verkleinerbaren Fotos entfernt |
 | 31.10.2026 | #159 | Name ändern unter Mehr → Konto (Vor- und Nachname, z. B. nach Hochzeit); Alltagsnotizen: eigenes Eingabefeld für To-dos unter „Merken & Erledigen“ |

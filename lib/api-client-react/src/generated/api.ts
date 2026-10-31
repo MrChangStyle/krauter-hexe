@@ -22209,7 +22209,7 @@ export const getGetFindSpotOverviewUrl = (params: GetFindSpotOverviewParams,) =>
 }
 
 /**
- * @summary Archiv → Karte (docs/fundorte.md) – every plant of the archive with a find on one map, own finds or everyone's shared ones
+ * @summary Lexikon → Karte (docs/fundorte.md) – every scan with a find (plants, mushrooms, insects) on one map, own finds or everyone's shared ones
  */
 export const getFindSpotOverview = async (params: GetFindSpotOverviewParams, options?: RequestInit): Promise<FindSpotOverview> => {
 
@@ -22256,7 +22256,7 @@ export type GetFindSpotOverviewQueryError = ErrorType<void>
 
 
 /**
- * @summary Archiv → Karte (docs/fundorte.md) – every plant of the archive with a find on one map, own finds or everyone's shared ones
+ * @summary Lexikon → Karte (docs/fundorte.md) – every scan with a find (plants, mushrooms, insects) on one map, own finds or everyone's shared ones
  */
 
 export function useGetFindSpotOverview<TData = Awaited<ReturnType<typeof getFindSpotOverview>>, TError = ErrorType<void>>(

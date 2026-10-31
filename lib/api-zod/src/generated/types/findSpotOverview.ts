@@ -10,6 +10,6 @@ import type { FindSpotOverviewCell } from './findSpotOverviewCell';
 export interface FindSpotOverview {
   cells: FindSpotOverviewCell[];
   finds: number;
-  /** Number of different plants on the map */
+  /** Number of different species (plants, mushrooms, insects) on the map */
   species: number;
 }

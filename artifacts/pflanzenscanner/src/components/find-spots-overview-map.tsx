@@ -4,9 +4,9 @@ import "leaflet/dist/leaflet.css";
 import type { FindSpotOverviewCell } from "@workspace/api-client-react";
 
 /**
- * Archiv → Karte (docs/fundorte.md): all plants with a find on one map,
+ * Lexikon → Karte (docs/fundorte.md): all scans with a find on one map,
  * loaded lazily. One square per cell with the number of finds; tapping a
- * square hands it to `onSelect`, which lists the plants found there.
+ * square hands it to `onSelect`, which lists the species found there.
  */
 export default function FindSpotsOverviewMap({
   cells,

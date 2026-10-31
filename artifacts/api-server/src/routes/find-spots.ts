@@ -7,7 +7,7 @@ import {
   RecordFindSpotResponse,
 } from '@workspace/api-zod';
 
-import { findSpotMap, plantFindSpotOverview, recordFindSpot } from '../lib/findSpots';
+import { findSpotMap, findSpotOverview, recordFindSpot } from '../lib/findSpots';
 import { getSettings } from '../lib/userSettings';
 import { requireApproved } from '../middlewares/requireApproved';
 import { badRequest, handle } from './farmRouteHelpers';
@@ -32,14 +32,14 @@ router.get(
   }),
 );
 
-// Archiv → Karte: all plants with a find on one map – the caller's own or everyone's shared.
+// Lexikon → Karte: all scans (plants, mushrooms, insects) with a find on one map – the caller's own or everyone's shared.
 router.get(
   '/find-spots/overview',
   requireApproved,
   handle(async (req, res) => {
     const query = GetFindSpotOverviewQueryParams.safeParse(req.query);
     if (!query.success) return badRequest(res);
-    const overview = await plantFindSpotOverview(query.data.scope === 'mine' ? req.user!.id : null);
+    const overview = await findSpotOverview(query.data.scope === 'mine' ? req.user!.id : null);
     res.json(GetFindSpotOverviewResponse.parse(overview));
   }),
 );

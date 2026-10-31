@@ -11265,7 +11265,7 @@ export const SendTestPushResponse = zod.object({
 
 
 /**
- * @summary Archiv → Karte (docs/fundorte.md) – every plant of the archive with a find on one map, own finds or everyone's shared ones
+ * @summary Lexikon → Karte (docs/fundorte.md) – every scan with a find (plants, mushrooms, insects) on one map, own finds or everyone's shared ones
  */
 export const GetFindSpotOverviewQueryParams = zod.object({
   "scope": zod.enum(['mine', 'all'])
@@ -11281,13 +11281,14 @@ export const GetFindSpotOverviewResponse = zod.object({
   "finds": zod.number(),
   "lastMonth": zod.string().describe('Month of the latest find in the cell, YYYY-MM'),
   "species": zod.array(zod.object({
+  "kind": zod.enum(['plant', 'insect']),
   "id": zod.number(),
   "name": zod.string(),
   "finds": zod.number()
 }))
 })),
   "finds": zod.number(),
-  "species": zod.number().describe('Number of different plants on the map')
+  "species": zod.number().describe('Number of different species (plants, mushrooms, insects) on the map')
 })
 
 

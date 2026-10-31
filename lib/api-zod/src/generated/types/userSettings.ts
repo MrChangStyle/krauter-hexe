@@ -11,6 +11,11 @@ import type { PushTopic } from './pushTopic';
 import type { QuietHours } from './quietHours';
 
 export interface UserSettings {
+  /**
+     * Fundorte (docs/fundorte.md) – consent to show own finds anonymously on the shared map; null = not asked yet
+     * @nullable
+     */
+  shareFindSpots?: boolean | null;
   /** Meine Tierarten (docs/module.md) – animal kinds hidden in "Essbar für" and the Kräuter-Hexe */
   hiddenAnimals: AnimalKind[];
   /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */

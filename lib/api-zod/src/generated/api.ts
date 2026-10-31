@@ -11265,6 +11265,31 @@ export const SendTestPushResponse = zod.object({
 
 
 /**
+ * @summary Archiv → Karte (docs/fundorte.md) – every plant of the archive with a find on one map, own finds or everyone's shared ones
+ */
+export const GetFindSpotOverviewQueryParams = zod.object({
+  "scope": zod.enum(['mine', 'all'])
+})
+
+export const GetFindSpotOverviewResponse = zod.object({
+  "cells": zod.array(zod.object({
+  "lat": zod.number(),
+  "lon": zod.number(),
+  "km": zod.number().describe('Edge length of the cell – 2 km, 25 km for protected species on the shared map'),
+  "finds": zod.number(),
+  "lastMonth": zod.string().describe('Month of the latest find in the cell, YYYY-MM'),
+  "species": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "finds": zod.number()
+}))
+})),
+  "finds": zod.number(),
+  "species": zod.number().describe('Number of different plants on the map')
+})
+
+
+/**
  * @summary Fundorte (docs/fundorte.md) – where a species of the shared archive was found, anonymous and coarsened
  */
 

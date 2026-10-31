@@ -6964,6 +6964,29 @@ paths:
                 $ref: "#/components/schemas/PushTestResult"
         "401":
           description: Not signed in
+  /find-spots/overview:
+    get:
+      tags: [settings]
+      operationId: getFindSpotOverview
+      summary: Archiv → Karte (docs/fundorte.md) – every plant of the archive with a find on one map, own finds or everyone's shared ones
+      parameters:
+        - name: scope
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [mine, all]
+      responses:
+        "200":
+          description: Map cells with the plants found there
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindSpotOverview"
+        "400":
+          description: Invalid input.
+        "401":
+          description: Not signed in
   /find-spots:
     get:
       tags: [settings]
@@ -9948,6 +9971,47 @@ components:
         lastMonth:
           type: string
           description: Month of the latest find in the cell, YYYY-MM
+    FindSpotOverviewCell:
+      type: object
+      required: [lat, lon, km, finds, lastMonth, species]
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+        km:
+          type: integer
+          description: Edge length of the cell – 2 km, 25 km for protected species on the shared map
+        finds:
+          type: integer
+        lastMonth:
+          type: string
+          description: Month of the latest find in the cell, YYYY-MM
+        species:
+          type: array
+          items:
+            type: object
+            required: [id, name, finds]
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              finds:
+                type: integer
+    FindSpotOverview:
+      type: object
+      required: [cells, finds, species]
+      properties:
+        cells:
+          type: array
+          items:
+            $ref: "#/components/schemas/FindSpotOverviewCell"
+        finds:
+          type: integer
+        species:
+          type: integer
+          description: Number of different plants on the map
     FindSpotMap:
       type: object
       required: [cells, cellKm, protectedSpecies, finds]

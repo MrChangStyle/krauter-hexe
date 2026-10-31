@@ -206,8 +206,8 @@ export function DatenschutzPage() {
             speichern wir zu einer Art, die du gescannt hast, das Feld von etwa
             2 × 2 km, in dem du warst, und den Monat. Den genauen Standort
             rundet die App schon auf deinem Gerät; er wird nicht übertragen.
-            Andere sehen nur, wie viele Funde es je Feld gibt – ohne Namen,
-            ohne Uhrzeit. Bei geschützten Arten zeigt die Karte nur Felder von
+            Andere sehen nur, wie viele Funde welcher Arten es je Feld gibt –
+            bei der Art und auf der Karte im Lexikon, ohne Namen, ohne Uhrzeit. Bei geschützten Arten zeigt die Karte nur Felder von
             etwa 25 × 25 km. Du kannst die Einwilligung jederzeit unter „Mehr →
             Konto“ widerrufen; dann löschen wir deine Fundorte sofort. Aus
             Fotos, die die App nicht verkleinern kann, entfernt sie vor dem

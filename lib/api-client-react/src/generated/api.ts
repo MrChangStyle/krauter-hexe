@@ -136,6 +136,7 @@ import type {
   FertilizingInput,
   FindSpotInput,
   FindSpotMap,
+  FindSpotOverview,
   FindSpotSaved,
   FrostWarning,
   GardenBed,
@@ -151,6 +152,7 @@ import type {
   GeoReverseInput,
   GeoReverseResult,
   GerminationTestInput,
+  GetFindSpotOverviewParams,
   GrazingEndInput,
   GrazingInput,
   GrowAccess,
@@ -22190,6 +22192,90 @@ export const useSendTestPush = <TError = ErrorType<void>,
       > => {
       return useMutation(getSendTestPushMutationOptions(options));
     }
+
+export const getGetFindSpotOverviewUrl = (params: GetFindSpotOverviewParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/find-spots/overview?${stringifiedParams}` : `/api/find-spots/overview`
+}
+
+/**
+ * @summary Archiv → Karte (docs/fundorte.md) – every plant of the archive with a find on one map, own finds or everyone's shared ones
+ */
+export const getFindSpotOverview = async (params: GetFindSpotOverviewParams, options?: RequestInit): Promise<FindSpotOverview> => {
+
+  return customFetch<FindSpotOverview>(getGetFindSpotOverviewUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFindSpotOverviewQueryKey = (params?: GetFindSpotOverviewParams,) => {
+    return [
+    `/api/find-spots/overview`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getGetFindSpotOverviewQueryOptions = <TData = Awaited<ReturnType<typeof getFindSpotOverview>>, TError = ErrorType<void>>(params: GetFindSpotOverviewParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFindSpotOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFindSpotOverviewQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFindSpotOverview>>> = ({ signal }) => getFindSpotOverview(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFindSpotOverview>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFindSpotOverviewQueryResult = NonNullable<Awaited<ReturnType<typeof getFindSpotOverview>>>
+export type GetFindSpotOverviewQueryError = ErrorType<void>
+
+
+/**
+ * @summary Archiv → Karte (docs/fundorte.md) – every plant of the archive with a find on one map, own finds or everyone's shared ones
+ */
+
+export function useGetFindSpotOverview<TData = Awaited<ReturnType<typeof getFindSpotOverview>>, TError = ErrorType<void>>(
+ params: GetFindSpotOverviewParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFindSpotOverview>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFindSpotOverviewQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListFindSpotsUrl = (params: ListFindSpotsParams,) => {
   const normalizedParams = new URLSearchParams();

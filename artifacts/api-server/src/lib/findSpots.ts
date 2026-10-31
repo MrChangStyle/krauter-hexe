@@ -205,3 +205,60 @@ export async function findSpotMap(kind: FindSpotKind, speciesId: number) {
     finds: rows.length,
   };
 }
+
+export interface OverviewCell extends FindSpotCell {
+  /** Edge length of this cell – 2 km, 25 km where a protected species was found. */
+  km: number;
+  species: Array<{ id: number; name: string; finds: number }>;
+}
+
+/**
+ * Archiv → Karte: every plant of the archive with a find on one map. `userId`
+ * shows only that account's own finds at their 2-km cell; without it the map
+ * shows everyone's shared finds, protected species merged to 25 km as on the
+ * species page.
+ */
+export async function plantFindSpotOverview(userId: string | null) {
+  const rows = await db
+    .select({
+      cellRow: findSpotsTable.cellRow,
+      cellCol: findSpotsTable.cellCol,
+      foundMonth: findSpotsTable.foundMonth,
+      plantId: plantsTable.id,
+      name: plantsTable.germanName,
+      botanicalName: plantsTable.botanicalName,
+    })
+    .from(findSpotsTable)
+    .innerJoin(plantsTable, eq(findSpotsTable.plantId, plantsTable.id))
+    .where(userId ? eq(findSpotsTable.userId, userId) : undefined)
+    .orderBy(sql`${findSpotsTable.id} DESC`)
+    .limit(10000);
+  const cells = new Map<string, OverviewCell & { byId: Map<number, { id: number; name: string; finds: number }> }>();
+  for (const r of rows) {
+    const coarse = !userId && isProtectedSpecies(r.botanicalName);
+    const km = coarse ? PROTECTED_CELL_KM : CELL_KM;
+    const fine = { row: r.cellRow, col: r.cellCol };
+    const centre = cellCentre(fine);
+    const cell = coarse ? cellOf(centre.lat, centre.lon, km) : fine;
+    const key = `${km}:${cell.row}:${cell.col}`;
+    let hit = cells.get(key);
+    if (!hit) {
+      hit = { ...cellCentre(cell, km), km, finds: 0, lastMonth: r.foundMonth, species: [], byId: new Map() };
+      cells.set(key, hit);
+    }
+    hit.finds += 1;
+    if (r.foundMonth > hit.lastMonth) hit.lastMonth = r.foundMonth;
+    const sp = hit.byId.get(r.plantId);
+    if (sp) sp.finds += 1;
+    else hit.byId.set(r.plantId, { id: r.plantId, name: r.name, finds: 1 });
+  }
+  const list = [...cells.values()].map(({ byId, ...c }) => ({
+    ...c,
+    species: [...byId.values()].sort((a, b) => b.finds - a.finds || a.name.localeCompare(b.name, 'de')),
+  }));
+  return {
+    cells: list.sort((a, b) => b.finds - a.finds),
+    finds: rows.length,
+    species: new Set(rows.map((r) => r.plantId)).size,
+  };
+}

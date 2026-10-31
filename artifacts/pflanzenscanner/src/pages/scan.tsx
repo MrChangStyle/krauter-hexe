@@ -28,6 +28,7 @@ import {
 import { downscaleFile, downscaleScan } from "@/lib/image";
 import { useLocationRegion } from "@/lib/use-location-region";
 import { LocationCard } from "@/components/location-card";
+import { FindSpotsConsentCard } from "@/components/find-spots";
 import { putImage } from "@/lib/image-store";
 import { recordScanPhoto } from "@/lib/my-photos";
 
@@ -665,6 +666,7 @@ export default function ScanPage() {
     <div className="flex flex-col h-full items-center justify-start pt-6 px-4 pb-6 gap-5 animate-in fade-in duration-500 min-h-[calc(100vh-80px)]">
 
       <LocationCard loc={loc} />
+      <FindSpotsConsentCard />
 
       {user?.username ? (
         /* ── Personalised greeting + leaf ring ────────────────────────── */

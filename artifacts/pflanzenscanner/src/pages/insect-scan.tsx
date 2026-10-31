@@ -29,6 +29,7 @@ import { PeckingChicken } from "@/components/pecking-chicken";
 import { cn } from "@/lib/utils";
 import { useLocationRegion } from "@/lib/use-location-region";
 import { LocationCard } from "@/components/location-card";
+import { FindSpotsConsentCard } from "@/components/find-spots";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -505,6 +506,7 @@ function ScanTab() {
   return (
     <div className="space-y-6">
       <LocationCard loc={loc} />
+      <FindSpotsConsentCard />
       <input
         ref={fileInputRef}
         type="file"

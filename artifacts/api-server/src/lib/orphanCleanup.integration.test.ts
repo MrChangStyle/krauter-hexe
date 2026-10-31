@@ -19,7 +19,7 @@ const enabled =
 
 describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", () => {
   const TABLES =
-    "daily_notes, note_shares, password_resets, favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, grow_access, grows, grow_push_log, premium, dashboard_layouts, user_settings, move_parcels, feedback, farm_memberships, farms, plants, insects, users";
+    "find_spots, daily_notes, note_shares, password_resets, favorites, tasks, care_guides, push_subscriptions, plant_scans, insect_scans, scan_attempts, reports, grow_access, grows, grow_push_log, premium, dashboard_layouts, user_settings, move_parcels, feedback, farm_memberships, farms, plants, insects, users";
 
   async function load() {
     const { pool } = await import("@workspace/db");
@@ -69,6 +69,10 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
     await pool.query(`INSERT INTO plant_scans (user_id, plant_id) VALUES ($1, $2)`, [userId, plantId]);
     await pool.query(`INSERT INTO insect_scans (user_id, insect_id) VALUES ($1, $2)`, [userId, insectId]);
     await pool.query(`INSERT INTO scan_attempts (user_id, scan_type) VALUES ($1, 'plant')`, [userId]);
+    await pool.query(
+      `INSERT INTO find_spots (user_id, plant_id, species_key, cell_row, cell_col, found_month) VALUES ($1, $2, $3, 2649, 400, '2026-10')`,
+      [userId, plantId, `p:${plantId}`],
+    );
     await pool.query(
       `INSERT INTO reports (user_id, content_type, content_id, reason) VALUES ($1, 'plant_image', $2, 'falsch')`,
       [userId, String(plantId)],
@@ -129,6 +133,7 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       plant_scans: 1,
       insect_scans: 1,
       scan_attempts: 1,
+      find_spots: 1,
       reports: 1,
       grow_access: 1,
       grows: 1,
@@ -166,6 +171,7 @@ describe.skipIf(!enabled)("orphan cleanup and deleteAccount (real database)", ()
       "plant_scans",
       "insect_scans",
       "scan_attempts",
+      "find_spots",
       "reports",
     ]) {
       expect(await count(table, "user_id = 'gone'")).toBe(0);

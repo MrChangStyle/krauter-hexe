@@ -2194,6 +2194,52 @@ export const ModuleId = {
   pasture: 'pasture',
 } as const;
 
+export type FindSpotKind = typeof FindSpotKind[keyof typeof FindSpotKind];
+
+
+export const FindSpotKind = {
+  plant: 'plant',
+  insect: 'insect',
+} as const;
+
+export interface FindSpotInput {
+  kind: FindSpotKind;
+  /** @minimum 1 */
+  speciesId: number;
+  /**
+     * Centre of the 2-km cell the app rounded the position to; the server rounds again
+     * @minimum -90
+     * @maximum 90
+     */
+  lat: number;
+  /**
+     * @minimum -180
+     * @maximum 180
+     */
+  lon: number;
+}
+
+export interface FindSpotSaved {
+  /** False without consent or when the caller never scanned that species */
+  saved: boolean;
+}
+
+export interface FindSpotCell {
+  lat: number;
+  lon: number;
+  finds: number;
+  /** Month of the latest find in the cell, YYYY-MM */
+  lastMonth: string;
+}
+
+export interface FindSpotMap {
+  cells: FindSpotCell[];
+  /** Edge length of a cell – 2 km, 25 km for protected species */
+  cellKm: number;
+  protectedSpecies: boolean;
+  finds: number;
+}
+
 /**
  * An animal kind of the plant archive (ANIMAL_KINDS in lib/db schema/plants.ts)
  */
@@ -2250,6 +2296,11 @@ export interface QuietHours {
 }
 
 export interface UserSettings {
+  /**
+     * Fundorte (docs/fundorte.md) – consent to show own finds anonymously on the shared map; null = not asked yet
+     * @nullable
+     */
+  shareFindSpots?: boolean | null;
   /** Meine Tierarten (docs/module.md) – animal kinds hidden in "Essbar für" and the Kräuter-Hexe */
   hiddenAnimals: AnimalKind[];
   /** Winter – water less often, no fertilising (docs/pflege-wetter.md) */
@@ -2277,6 +2328,8 @@ export interface UserSettingsInput {
   quietHours?: QuietHours | null;
   seasonalCare?: boolean;
   organicTips?: boolean;
+  /** Consent to the shared find map; false also deletes the own finds from it */
+  shareFindSpots?: boolean;
   /** @maxItems 20 */
   hiddenAnimals?: AnimalKind[];
 }
@@ -6212,6 +6265,14 @@ export type AuthorizationSessionHeaderParameter = string;
 
 export type ListPlantsParams = {
 category?: PlantCategory;
+};
+
+export type ListFindSpotsParams = {
+kind: FindSpotKind;
+/**
+ * @minimum 1
+ */
+speciesId: number;
 };
 
 export type SearchParams = {

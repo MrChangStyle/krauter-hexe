@@ -192,6 +192,20 @@
   font-weight: 600;
 }
 
+/* Fundorte (docs/fundorte.md): the number of finds in a cell. */
+.leaflet-tooltip.find-spot-label {
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  color: #14532d;
+}
+.leaflet-tooltip.find-spot-label::before {
+  display: none;
+}
+
 /* Zoom is allowed (accessibility). iOS zooms into form fields under 16px on
    focus – at least 16px there keeps the page still. */
 @supports (-webkit-touch-callout: none) {

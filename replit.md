@@ -219,6 +219,8 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 
 ## Module
 
+Fundorte (`docs/fundorte.md`): table `find_spots` (2-km cell numbers + month, no coordinates; the app rounds on the device), consent `user_settings.share_find_spots`, `GET/POST /find-spots`, map section on plant/insect detail pages (Leaflet/OSM, lazy), protected species merged to 25 km, EXIF stripped from fallback JPEGs.
+
 Name ändern (`docs/konto.md`): `PATCH /auth/user` also takes `firstName`/`lastName` (`lib/personName.ts`), edited under Mehr → Konto. Alltagsnotizen: own input field under „Merken & Erledigen“ (always `kind: merken`).
 
 Nutzer-ID (`docs/konto.md`): `users.user_code` (4 digits, 5 once 80 % are taken; `lib/userCode.ts`) – farms (`POST /farms/:farmId/members`) and note shares add people by it, not by email.

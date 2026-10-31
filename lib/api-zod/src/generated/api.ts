@@ -11265,6 +11265,54 @@ export const SendTestPushResponse = zod.object({
 
 
 /**
+ * @summary Fundorte (docs/fundorte.md) – where a species of the shared archive was found, anonymous and coarsened
+ */
+
+
+
+export const ListFindSpotsQueryParams = zod.object({
+  "kind": zod.enum(['plant', 'insect']),
+  "speciesId": zod.coerce.number().min(1)
+})
+
+export const ListFindSpotsResponse = zod.object({
+  "cells": zod.array(zod.object({
+  "lat": zod.number(),
+  "lon": zod.number(),
+  "finds": zod.number(),
+  "lastMonth": zod.string().describe('Month of the latest find in the cell, YYYY-MM')
+})),
+  "cellKm": zod.number().describe('Edge length of a cell – 2 km, 25 km for protected species'),
+  "protectedSpecies": zod.boolean(),
+  "finds": zod.number()
+})
+
+
+/**
+ * @summary Add the caller's find of a species they scanned – only with consent; the app sends the 2-km cell, never the exact position
+ */
+
+export const recordFindSpotBodyLatMin = -90;
+export const recordFindSpotBodyLatMax = 90;
+
+export const recordFindSpotBodyLonMin = -180;
+export const recordFindSpotBodyLonMax = 180;
+
+
+
+export const RecordFindSpotBody = zod.object({
+  "kind": zod.enum(['plant', 'insect']),
+  "speciesId": zod.number().min(1),
+  "lat": zod.number().min(recordFindSpotBodyLatMin).max(recordFindSpotBodyLatMax).describe('Centre of the 2-km cell the app rounded the position to; the server rounds again'),
+  "lon": zod.number().min(recordFindSpotBodyLonMin).max(recordFindSpotBodyLonMax)
+})
+
+export const RecordFindSpotResponse = zod.object({
+  "saved": zod.boolean().describe('False without consent or when the caller never scanned that species')
+})
+
+
+/**
  * @summary Modules the account hides and whether it went through the first-start assistant
  */
 export const getSettingsResponseQuietHoursOneFromRegExp = new RegExp('^([01][0-9]|2[0-3]):[0-5][0-9]$');
@@ -11272,6 +11320,7 @@ export const getSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 
 export const GetSettingsResponse = zod.object({
+  "shareFindSpots": zod.boolean().nullish().describe('Fundorte (docs\/fundorte.md) – consent to show own finds anonymously on the shared map; null = not asked yet'),
   "hiddenAnimals": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'donkey']).describe('An animal kind of the plant archive (ANIMAL_KINDS in lib\/db schema\/plants.ts)')).describe('Meine Tierarten (docs\/module.md) – animal kinds hidden in \"Essbar für\" and the Kräuter-Hexe'),
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
   "organicTips": zod.boolean().describe('Bio (docs\/bio.md) – the account\'s own switch for organic plant advice only'),
@@ -11309,6 +11358,7 @@ export const SetSettingsBody = zod.object({
 }).describe('No pushes from `from` to `to` (Berlin time, may cross midnight); the predator alarm still comes'),zod.null()]).optional(),
   "seasonalCare": zod.boolean().optional(),
   "organicTips": zod.boolean().optional(),
+  "shareFindSpots": zod.boolean().optional().describe('Consent to the shared find map; false also deletes the own finds from it'),
   "hiddenAnimals": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'donkey']).describe('An animal kind of the plant archive (ANIMAL_KINDS in lib\/db schema\/plants.ts)')).max(setSettingsBodyHiddenAnimalsMax).optional()
 })
 
@@ -11317,6 +11367,7 @@ export const setSettingsResponseQuietHoursOneToRegExp = new RegExp('^([01][0-9]|
 
 
 export const SetSettingsResponse = zod.object({
+  "shareFindSpots": zod.boolean().nullish().describe('Fundorte (docs\/fundorte.md) – consent to show own finds anonymously on the shared map; null = not asked yet'),
   "hiddenAnimals": zod.array(zod.enum(['poultry', 'rabbit', 'guineaPig', 'cat', 'horse', 'dog', 'goat', 'sheep', 'cattle', 'pig', 'alpaca', 'donkey']).describe('An animal kind of the plant archive (ANIMAL_KINDS in lib\/db schema\/plants.ts)')).describe('Meine Tierarten (docs\/module.md) – animal kinds hidden in \"Essbar für\" and the Kräuter-Hexe'),
   "seasonalCare": zod.boolean().describe('Winter – water less often, no fertilising (docs\/pflege-wetter.md)'),
   "organicTips": zod.boolean().describe('Bio (docs\/bio.md) – the account\'s own switch for organic plant advice only'),

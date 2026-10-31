@@ -134,6 +134,9 @@ import type {
   FeedbackMarkInput,
   Fertilizing,
   FertilizingInput,
+  FindSpotInput,
+  FindSpotMap,
+  FindSpotSaved,
   FrostWarning,
   GardenBed,
   GardenBedInput,
@@ -182,6 +185,7 @@ import type {
   LeaderboardResult,
   Lineage,
   LineageInput,
+  ListFindSpotsParams,
   ListPlantsParams,
   LoginInput,
   ManagedUser,
@@ -22185,6 +22189,161 @@ export const useSendTestPush = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getSendTestPushMutationOptions(options));
+    }
+
+export const getListFindSpotsUrl = (params: ListFindSpotsParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value))
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/find-spots?${stringifiedParams}` : `/api/find-spots`
+}
+
+/**
+ * @summary Fundorte (docs/fundorte.md) – where a species of the shared archive was found, anonymous and coarsened
+ */
+export const listFindSpots = async (params: ListFindSpotsParams, options?: RequestInit): Promise<FindSpotMap> => {
+
+  return customFetch<FindSpotMap>(getListFindSpotsUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListFindSpotsQueryKey = (params?: ListFindSpotsParams,) => {
+    return [
+    `/api/find-spots`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getListFindSpotsQueryOptions = <TData = Awaited<ReturnType<typeof listFindSpots>>, TError = ErrorType<void>>(params: ListFindSpotsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFindSpots>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListFindSpotsQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listFindSpots>>> = ({ signal }) => listFindSpots(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listFindSpots>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListFindSpotsQueryResult = NonNullable<Awaited<ReturnType<typeof listFindSpots>>>
+export type ListFindSpotsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Fundorte (docs/fundorte.md) – where a species of the shared archive was found, anonymous and coarsened
+ */
+
+export function useListFindSpots<TData = Awaited<ReturnType<typeof listFindSpots>>, TError = ErrorType<void>>(
+ params: ListFindSpotsParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listFindSpots>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListFindSpotsQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getRecordFindSpotUrl = () => {
+
+
+
+
+  return `/api/find-spots`
+}
+
+/**
+ * @summary Add the caller's find of a species they scanned – only with consent; the app sends the 2-km cell, never the exact position
+ */
+export const recordFindSpot = async (findSpotInput: FindSpotInput, options?: RequestInit): Promise<FindSpotSaved> => {
+
+  return customFetch<FindSpotSaved>(getRecordFindSpotUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(findSpotInput)
+  }
+);}
+
+
+
+
+
+export const getRecordFindSpotMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordFindSpot>>, TError,{data: BodyType<FindSpotInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof recordFindSpot>>, TError,{data: BodyType<FindSpotInput>}, TContext> => {
+
+const mutationKey = ['recordFindSpot'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof recordFindSpot>>, {data: BodyType<FindSpotInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  recordFindSpot(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RecordFindSpotMutationResult = NonNullable<Awaited<ReturnType<typeof recordFindSpot>>>
+    export type RecordFindSpotMutationBody = BodyType<FindSpotInput>
+    export type RecordFindSpotMutationError = ErrorType<void>
+
+    /**
+ * @summary Add the caller's find of a species they scanned – only with consent; the app sends the 2-km cell, never the exact position
+ */
+export const useRecordFindSpot = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof recordFindSpot>>, TError,{data: BodyType<FindSpotInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof recordFindSpot>>,
+        TError,
+        {data: BodyType<FindSpotInput>},
+        TContext
+      > => {
+      return useMutation(getRecordFindSpotMutationOptions(options));
     }
 
 export const getGetSettingsUrl = () => {

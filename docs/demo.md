@@ -4,6 +4,8 @@ Zum Ausprobieren lädt jedes Konto unter Mehr → **„Meine Module“** (`/modu
 
 ## Was geladen wird
 
+Keine Fundorte (`docs/fundorte.md`): Die Karte ist für alle sichtbar, erfundene Funde würden echte Nutzer täuschen.
+
 Alles liegt auf einer eigenen Farm, dem **„Demo-Hof“**. Die App wechselt danach dorthin. Solange er gewählt ist, zeigt die Tiere-Seite einen Hinweis mit dem Weg zum Löschen.
 
 - **Tiere**: vier Gruppen („Hühner“ mit 2 Hühnern, „Ziegen“ mit 2 Ziegen, „Alpakas“ mit 3 Alpakas, „Laufenten“ mit 3 Enten, „Esel“ mit 2 Eseln) über den Schnellstart. Daraus entstehen auch die Rationen (Futterplaner) und die Stall-Aufgaben – bei den Alpakas mit Zehennägeln, Kotprobe und Schur, bei den Enten mit Eiersammeln und Badewasser, bei den Eseln mit Hufpflege, Kotprobe und Zähnen.

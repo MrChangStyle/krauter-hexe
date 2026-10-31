@@ -98,6 +98,24 @@ const STATEMENTS = [
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "frost_notice_on" date`,
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "organic_tips" boolean DEFAULT false NOT NULL`,
   `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "hidden_animals" jsonb DEFAULT '[]'::jsonb NOT NULL`,
+  // Fundorte (schema/find-spots.ts, docs/fundorte.md).
+  `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "share_find_spots" boolean`,
+  `ALTER TABLE "user_settings" ADD COLUMN IF NOT EXISTS "find_spots_decided_at" timestamp with time zone`,
+  `CREATE TABLE IF NOT EXISTS "find_spots" (
+	"id" serial PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"plant_id" integer REFERENCES "plants"("id") ON DELETE CASCADE,
+	"insect_id" integer REFERENCES "insects"("id") ON DELETE CASCADE,
+	"species_key" text NOT NULL,
+	"cell_row" integer NOT NULL,
+	"cell_col" integer NOT NULL,
+	"found_month" text NOT NULL,
+	"created_at" timestamp with time zone DEFAULT now() NOT NULL,
+	CONSTRAINT "find_spots_user_species_cell_unique" UNIQUE ("user_id","species_key","cell_row","cell_col"),
+	CONSTRAINT "find_spots_one_species" CHECK (("plant_id" IS NULL) <> ("insect_id" IS NULL))
+)`,
+  `CREATE INDEX IF NOT EXISTS "find_spots_plant_idx" ON "find_spots" ("plant_id")`,
+  `CREATE INDEX IF NOT EXISTS "find_spots_insect_idx" ON "find_spots" ("insect_id")`,
   // Wetterabhängige Pflege (schema/tasks.ts).
   `ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "outdoor" boolean DEFAULT false NOT NULL`,
   `ALTER TABLE "tasks" ADD COLUMN IF NOT EXISTS "rain_skipped_on" date`,

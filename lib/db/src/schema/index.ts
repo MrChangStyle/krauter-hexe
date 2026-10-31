@@ -21,6 +21,7 @@ export * from "./plants";
 export * from "./auth";
 export * from "./favorites";
 export * from "./plant-scans";
+export * from "./find-spots";
 export * from "./insects";
 export * from "./insect-scans";
 export * from "./tasks";

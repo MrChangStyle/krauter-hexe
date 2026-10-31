@@ -19,6 +19,8 @@ export interface UserSettingsInput {
   quietHours?: QuietHours | null;
   seasonalCare?: boolean;
   organicTips?: boolean;
+  /** Consent to the shared find map; false also deletes the own finds from it */
+  shareFindSpots?: boolean;
   /** @maxItems 20 */
   hiddenAnimals?: AnimalKind[];
 }

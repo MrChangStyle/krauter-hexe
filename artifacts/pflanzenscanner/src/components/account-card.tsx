@@ -16,6 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuthContext } from "@/lib/auth-context";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 import { ChangePasswordButton } from "@/components/password";
+import { FindSpotsSwitch } from "@/components/find-spots";
 
 /**
  * Meine Daten herunterladen (docs/datenexport.md): fetches the file and hands
@@ -190,6 +191,8 @@ export function AccountCard() {
       </div>
 
       <ChangePasswordButton />
+
+      <FindSpotsSwitch />
 
       {!user.isOwner && (
         <AlertDialog open={open} onOpenChange={reset}>

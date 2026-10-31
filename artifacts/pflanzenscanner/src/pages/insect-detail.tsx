@@ -28,6 +28,7 @@ import { ImageLockToggle } from "@/components/image-lock-toggle";
 import { ReportButton } from "@/components/report-button";
 import { beneficialForInsect, problemsForPest } from "@/lib/beneficials";
 import { GUIDE_HREF, beneficialHref, problemHref } from "@/components/beneficials-guide";
+import { FindSpotsSection } from "@/components/find-spots";
 
 export default function InsectDetailPage() {
   const params = useParams();
@@ -195,6 +196,8 @@ export default function InsectDetailPage() {
             {insect.description || "Keine Beschreibung vorhanden."}
           </p>
         </section>
+
+        <FindSpotsSection kind="insect" speciesId={insect.id} />
 
         {/* Affected plants */}
         {insect.affectedPlants && insect.affectedPlants.length > 0 && (

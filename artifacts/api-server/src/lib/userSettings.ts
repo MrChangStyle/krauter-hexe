@@ -9,6 +9,7 @@ import { ModuleId, PushTopic, type ModuleId as Module, type PushTopic as Topic, 
 import { ANIMAL_KINDS, db, userSettingsTable, type AnimalKind } from '@workspace/db';
 import { eq } from 'drizzle-orm';
 import { organicTipsFor } from './farming';
+import { removeFindSpotsOf } from './findSpots';
 
 const KNOWN = new Set<string>(Object.values(ModuleId));
 const TOPICS = new Set<string>(Object.values(PushTopic));
@@ -26,6 +27,8 @@ export interface UserSettings {
   organicFarm: string | null;
   /** Meine Tierarten: animal kinds hidden in "Essbar für" and the Kräuter-Hexe. */
   hiddenAnimals: AnimalKind[];
+  /** Fundorte (docs/fundorte.md): consent to the shared find map; null = not asked yet. */
+  shareFindSpots: boolean | null;
 }
 
 /** Known ids only, each once – a module the app no longer has drops out. */
@@ -57,12 +60,13 @@ export async function getSettings(userId: string): Promise<UserSettings> {
     organicTips: row?.organicTips ?? false,
     organicFarm: (await organicTipsFor(userId)).farmName,
     hiddenAnimals: cleanAnimals(row?.hiddenAnimals ?? []),
+    shareFindSpots: row?.shareFindSpots ?? null,
   };
 }
 
 export async function setSettings(
   userId: string,
-  input: { hiddenModules?: readonly string[]; onboarded?: boolean; pushOff?: readonly string[]; quietHours?: QuietHours | null; seasonalCare?: boolean; organicTips?: boolean; hiddenAnimals?: readonly string[] },
+  input: { hiddenModules?: readonly string[]; onboarded?: boolean; pushOff?: readonly string[]; quietHours?: QuietHours | null; seasonalCare?: boolean; organicTips?: boolean; hiddenAnimals?: readonly string[]; shareFindSpots?: boolean },
 ): Promise<UserSettings> {
   const set: Partial<typeof userSettingsTable.$inferInsert> = { updatedAt: new Date() };
   if (input.hiddenModules !== undefined) set.hiddenModules = cleanModules(input.hiddenModules);
@@ -71,6 +75,10 @@ export async function setSettings(
   if (input.seasonalCare !== undefined) set.seasonalCare = input.seasonalCare;
   if (input.organicTips !== undefined) set.organicTips = input.organicTips;
   if (input.hiddenAnimals !== undefined) set.hiddenAnimals = cleanAnimals(input.hiddenAnimals);
+  if (input.shareFindSpots !== undefined) {
+    set.shareFindSpots = input.shareFindSpots;
+    set.findSpotsDecidedAt = new Date();
+  }
   if (input.quietHours !== undefined) {
     const q = input.quietHours && quiet(input.quietHours.from, input.quietHours.to);
     set.quietStart = q ? q.from : null;
@@ -80,6 +88,8 @@ export async function setSettings(
     .insert(userSettingsTable)
     .values({ userId, ...set, hiddenModules: set.hiddenModules ?? [], pushOff: set.pushOff ?? [] })
     .onConflictDoUpdate({ target: userSettingsTable.userId, set });
+  // No to the map: the own finds come off it right away.
+  if (input.shareFindSpots === false) await removeFindSpotsOf(userId);
   return getSettings(userId);
 }
 

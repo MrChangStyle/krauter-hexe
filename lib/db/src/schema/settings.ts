@@ -23,4 +23,8 @@ export const userSettingsTable = pgTable("user_settings", {
   // Meine Tierarten (docs/module.md): animal kinds hidden in "Essbar für" and
   // the Kräuter-Hexe; empty = every kind shows.
   hiddenAnimals: jsonb("hidden_animals").$type<string[]>().notNull().default([]),
+  // Fundorte (docs/fundorte.md): consent to show own finds anonymously on the
+  // shared map; null = not asked yet. When it was last given or taken back.
+  shareFindSpots: boolean("share_find_spots"),
+  findSpotsDecidedAt: timestamp("find_spots_decided_at", { withTimezone: true }),
 });

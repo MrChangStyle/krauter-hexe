@@ -41,6 +41,7 @@ import {
   pushSubscriptionsTable,
   reportsTable,
   scanAttemptsTable,
+  findSpotsTable,
   tasksTable,
   userSettingsTable,
   usersTable,
@@ -66,6 +67,8 @@ export const PERSONAL_TABLES = [
   { name: 'plant_scans', table: plantScansTable, userId: plantScansTable.userId },
   { name: 'insect_scans', table: insectScansTable, userId: insectScansTable.userId },
   { name: 'scan_attempts', table: scanAttemptsTable, userId: scanAttemptsTable.userId },
+  // Fundorte on the shared map (docs/fundorte.md).
+  { name: 'find_spots', table: findSpotsTable, userId: findSpotsTable.userId },
   // Reports this person filed.
   { name: 'reports', table: reportsTable, userId: reportsTable.userId },
   // Grow: access and the grows (plants and logs go with them).

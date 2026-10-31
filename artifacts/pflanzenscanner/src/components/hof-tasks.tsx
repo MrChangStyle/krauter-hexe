@@ -131,8 +131,8 @@ function NotesTile() {
       value={notes.isLoading ? "…" : open.length === 0 ? "Leer" : `${shopping.length} kaufen`}
       line={
         open.length === 0
-          ? "Einkaufsliste & Merkzettel"
-          : [shopping.slice(0, 2).map((n) => n.text).join(" · "), remember > 0 ? `${remember} zum Merken` : ""].filter(Boolean).join(" · ")
+          ? "Einkaufsliste & To-dos"
+          : [shopping.slice(0, 2).map((n) => n.text).join(" · "), remember > 0 ? `${remember} To-dos` : ""].filter(Boolean).join(" · ")
       }
     />
   );

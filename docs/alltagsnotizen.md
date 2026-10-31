@@ -1,6 +1,6 @@
 # Alltagsnotizen
 
-Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betrifft: „Zahnbürsten kaufen“, „Fleisch holen“, „Oma anrufen“. Getrennt von den Hof-Aufgaben, aber genauso schnell: einfach reinsprechen.
+Zwei Listen für alles, was nicht direkt den Hof betrifft: oben die **Einkaufsliste** („Zahnbürsten“, „Fleisch“), darunter **Merken & Erledigen** als To-do-Liste („Oma anrufen“). Getrennt von den Hof-Aufgaben, aber genauso schnell: einfach reinsprechen.
 
 ## Wo
 
@@ -12,6 +12,8 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
 
 ## Die Seite
 
+**Wording (31.10.2026):** Das obere Eingabefeld heißt „Einkaufsliste“ (Hinweis „Was du kaufen musst“, Beispiel nur mit Einkäufen); To-dos gehören ins Feld unter „Merken & Erledigen“. Sagt man oben trotzdem ein To-do („Oma anrufen“), sortiert die KI es weiterhin zu den To-dos. In der Vorschau heißen die Arten „Einkaufsliste“ und „To-do (Merken & Erledigen)“.
+
 1. **Aufbau wie bei Hof-Aufgaben** (`components/tool-card.tsx`): Überschrift oben, Textfeld, „Halten & sprechen“ und „Speichern“ gleich groß nebeneinander, darunter klein der Hinweis – eine Zeile „Einfach reinsprechen“ mit Info-Symbol und „So geht's“; aufgeklappt die Erklärung mit Beispiel (`components/speak-hint.tsx`, zu Beginn zugeklappt).
 2. **Eingabe** getippt oder mit „Halten & sprechen“ (gedrückt halten, zum Beenden loslassen):
    - Nur eine einfache Sache – ein Wort („Zahnbürsten“) oder eine Menge mit Ding („2 kg Hackfleisch“) – kommt direkt auf die Liste (`notesNeedPlan`). Alles andere geht an die KI, auch „Nudeln Eier“ ohne Komma: Gesprochene Listen kommen oft ohne Satzzeichen.
@@ -22,7 +24,7 @@ Eine Einkaufsliste und ein Merkzettel für alles, was nicht direkt den Hof betri
    - **Schnell statt grübelnd:** Die neuen Gemini-Modelle denken vor jeder Antwort nach; für eine Liste brauchte Flash so über 12 Sekunden (im Betrieb: „AbortError“). Für die Listen fragt die App deshalb mit möglichst wenig Nachdenken (`quick` in `runModelChain`): erst `thinkingLevel: MINIMAL` (Gemini 3), lehnt das Modell ab, `thinkingBudget: 0` (Gemini 2.5), sonst ohne; was klappt, merkt sich der Server je Modell.
    - **Nie hängen:** Der Server gibt die KI nach 25 Sekunden auf (`AI_PLAN_TIMEOUT_MS`), ein einzelnes Modell darf davon höchstens 12 Sekunden brauchen (`AI_PLAN_ATTEMPT_MS`), damit Flash-Lite noch drankommt, wenn Flash zu langsam ist; 8192 Ausgabe-Tokens lassen dem Modell Platz zum Nachdenken (`AI_PLAN_OUTPUT_TOKENS`). Die App wartet höchstens 30 Sekunden (`lib/ai-plan.ts`) und teilt dann selbst auf – mit dem Hinweis „Die KI hat zu lange gebraucht“. Gilt genauso für den KI-Aufgabenplan der Hof-Aufgaben. Läuft die Zeit auf dem Server ab, antwortet er „Die KI hat zu lange gebraucht“ statt „nicht erreichbar“. Der Betreiber sieht das nur als Zahl „Langsam“ in den Tageszahlen unter Betrieb, nicht als Fehler mit Stack – es liegt an der Antwortzeit von Google, nicht an der App.
 3. **Einkaufsliste** nach Bereichen in der Reihenfolge eines Ladens: Lebensmittel, Getränke, Drogerie & Apotheke, Haushalt, Tierbedarf, Garten & Baumarkt, Sonstiges.
-4. **Merken & Erledigen** – mit eigenem Eingabefeld darunter (`RememberAdd`): Was dort getippt oder gesprochen wird, ist immer ein To-do (`kind: merken`), ohne KI und nie auf der Einkaufsliste. Gilt auch für eine mit mir geteilte Liste.
+4. **Merken & Erledigen · To-dos** – die To-do-Liste, mit eigenem Eingabefeld darunter (`RememberAdd`): Was dort getippt oder gesprochen wird, ist immer ein To-do (`kind: merken`), ohne KI und nie auf der Einkaufsliste. Gilt auch für eine mit mir geteilte Liste.
 5. **Erledigt** – durchgestrichen, mit „erledigt von …“; der Besitzer räumt mit „Erledigte entfernen“ auf.
 6. **Teilen** (unten).
 

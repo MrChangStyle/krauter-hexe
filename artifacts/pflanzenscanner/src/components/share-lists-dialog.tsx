@@ -145,7 +145,7 @@ export function ShareListsDialog({
               <span>
                 <span className="block font-medium">Meine Alltagsnotizen</span>
                 <span className="block text-xs text-muted-foreground">
-                  Deine Einkaufsliste und was du dir merkst.{sharedNames.length > 0 ? ` Schon geteilt mit: ${sharedNames.join(", ")}.` : ""}
+                  Deine Einkaufsliste und deine To-dos (Merken & Erledigen).{sharedNames.length > 0 ? ` Schon geteilt mit: ${sharedNames.join(", ")}.` : ""}
                 </span>
               </span>
             </label>

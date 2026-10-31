@@ -55,7 +55,7 @@ export default function NotizenPage() {
 
   return (
     <div className="space-y-5 px-4 pb-6 pt-6">
-      <PageHeader look="notizen" subtitle="Einkaufsliste und was du dir merken willst – getrennt von den Hof-Aufgaben." />
+      <PageHeader look="notizen" subtitle="Oben die Einkaufsliste, darunter deine To-dos unter „Merken & Erledigen“ – getrennt von den Hof-Aufgaben." />
 
       {sharedWithMe.length > 0 && (
         <div className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1" role="tablist" aria-label="Listen">
@@ -86,7 +86,7 @@ export default function NotizenPage() {
               Einkaufsliste {groups.shopping.length > 0 && `(${groups.shopping.reduce((n, g) => n + g.notes.length, 0)})`}
             </h2>
             {groups.shopping.length === 0 ? (
-              <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">Nichts auf der Einkaufsliste.</p>
+              <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">Nichts auf der Einkaufsliste. Trag oben ein, was du kaufen musst.</p>
             ) : (
               groups.shopping.map((g) => (
                 <div key={g.category} className="rounded-xl border bg-card p-3">
@@ -103,7 +103,7 @@ export default function NotizenPage() {
           <section className="space-y-2" aria-labelledby="notes-remember">
             <h2 id="notes-remember" className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               <StickyNote className="h-4 w-4" />
-              Merken & Erledigen {groups.remember.length > 0 && `(${groups.remember.length})`}
+              Merken & Erledigen · To-dos {groups.remember.length > 0 && `(${groups.remember.length})`}
             </h2>
             {groups.remember.length > 0 && (
               <ul className="divide-y rounded-2xl border bg-card px-3">
@@ -222,7 +222,7 @@ function RememberAdd({ listOwnerId, empty }: { listOwnerId: string | null; empty
 
   return (
     <form onSubmit={submit} className="space-y-1.5" data-testid="remember-add">
-      {empty && <p className="text-sm text-muted-foreground">Nichts zu merken. Trag hier To-dos ein, die nichts mit dem Einkauf zu tun haben.</p>}
+      {empty && <p className="text-sm text-muted-foreground">Deine To-do-Liste ist leer. Trag hier alles ein, was du erledigen oder nicht vergessen willst – ohne Einkäufe.</p>}
       <div className="flex items-center gap-2">
         <Input
           aria-label="Neues To-do"
@@ -244,8 +244,8 @@ function RememberAdd({ listOwnerId, empty }: { listOwnerId: string | null; empty
 
 const KINDS: Array<[NoteKind | "auto", string]> = [
   ["auto", "automatisch"],
-  ["einkauf", "Einkaufen"],
-  ["merken", "Merken"],
+  ["einkauf", "Einkaufsliste"],
+  ["merken", "To-do (Merken & Erledigen)"],
 ];
 
 /**
@@ -304,11 +304,11 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
   const needsPlan = notesNeedPlan(text);
 
   return (
-    <section className={cn("space-y-3 p-3.5", TOOL_FRAME)} aria-label="Neue Notiz" data-testid="notes-quick-card">
+    <section className={cn("space-y-3 p-3.5", TOOL_FRAME)} aria-label="Neu auf die Einkaufsliste" data-testid="notes-quick-card">
       <ToolCardHeader
         icon={<StickyNote className="h-5 w-5" />}
-        title={<label htmlFor="notes-quick">{ownerName ? `Auf die Liste von ${ownerName}` : "Neue Notiz"}</label>}
-        hint="Einkauf oder Merkzettel – sprechen oder tippen"
+        title={<label htmlFor="notes-quick">{ownerName ? `Auf die Einkaufsliste von ${ownerName}` : "Einkaufsliste"}</label>}
+        hint="Was du kaufen musst – sprechen oder tippen"
       />
       <form onSubmit={(e) => void submit(e)} className="space-y-2">
         <textarea
@@ -323,11 +323,11 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
               e.currentTarget.form?.requestSubmit();
             }
           }}
-          placeholder="Sprechen oder tippen …"
+          placeholder="z. B. Milch, Semmeln, Zahnbürsten …"
           className="w-full resize-none rounded-xl border border-orange-200 bg-background px-3 py-2.5 text-sm shadow-inner focus:outline-none focus:ring-2 focus:ring-orange-400 dark:border-orange-900"
         />
         <ToolActions>
-          <DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={MAX_SAID} label="Notizen sprechen" big />
+          <DictateButton value={text} onChange={(t) => { setText(t); setPreview(null); }} max={MAX_SAID} label="Einkauf sprechen" big />
           <Button type="submit" className={TOOL_SAVE} disabled={saving || plan.isPending || !text.trim()}>
             {saving || plan.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : needsPlan ? <Sparkles className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
             {plan.isPending ? "KI sortiert …" : needsPlan ? "Liste erstellen" : "Speichern"}
@@ -336,8 +336,8 @@ function QuickAdd({ listOwnerId, ownerName }: { listOwnerId: string | null; owne
       </form>
       <SpeakHint title="Einfach reinsprechen" tone="orange" testId="notes-speak-hint">
         <p>
-          Halte „Halten & sprechen“ gedrückt, sag frei, was du brauchst, und lass los, wenn du fertig bist, z. B.: <span className="italic">„Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen.“</span> Die KI
-          macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.
+          Halte „Halten & sprechen“ gedrückt, sag frei, was du kaufen musst, und lass los, wenn du fertig bist, z. B.: <span className="italic">„Ich brauche Zahnbürsten, Fleisch und zwei Liter Milch.“</span> Die KI
+          macht daraus einzelne Einträge und sortiert sie nach Bereichen im Laden. To-dos wie „Oma anrufen“ trägst du unten bei „Merken &amp; Erledigen“ ein.
         </p>
       </SpeakHint>
       {preview && (

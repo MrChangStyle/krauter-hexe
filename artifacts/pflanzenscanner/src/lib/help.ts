@@ -227,7 +227,7 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
   "farm-tasks": {
     title: "Hof- & Stall-Aufgaben",
     href: "/hof-aufgaben",
-    intro: "Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Gänse füttern, Teichpumpe kontrollieren. Einfach reinsprechen, was zu tun ist – die KI macht daraus die Liste. Alle im Team sehen sie, haken ab und schreiben dazu, wenn etwas fehlt. Auf dem Hof steht sie unter Pflanzenretter als orange Kachel, neben den Alltagsnotizen für Einkauf und Merkzettel.",
+    intro: "Eine gemeinsame Liste für alles, was auf dem Hof ansteht: Eier einsammeln, Gänse füttern, Teichpumpe kontrollieren. Einfach reinsprechen, was zu tun ist – die KI macht daraus die Liste. Alle im Team sehen sie, haken ab und schreiben dazu, wenn etwas fehlt. Auf dem Hof steht sie unter Pflanzenretter als orange Kachel, neben den Alltagsnotizen für Einkaufsliste und To-dos.",
     steps: [
       "Einfach reinsprechen: „Halten & sprechen“ gedrückt halten, frei sagen, was zu tun ist, und loslassen – z. B. „Heute müssen die Eier eingesammelt werden, die Gänse jeden Tag gefüttert und morgen für Maria die Blumen gegossen.“ Dann „Liste erstellen“.",
       "Die KI macht daraus einzelne Aufgaben und erkennt Tag (heute, morgen, Freitag …), Wiederholung (jeden Tag, jede Woche, alle 2 Tage …), Uhrzeit und für wen. In der Vorschau lässt sich alles ändern oder entfernen, dann „Alle anlegen“.",
@@ -541,7 +541,7 @@ export const GENERAL_HELP: HelpTopic[] = [
     faq: [
       {
         q: "Was sind die Alltagsnotizen?",
-        a: "Deine Einkaufsliste und ein Merkzettel – getrennt von den Hof-Aufgaben. Auf dem Hof unter Pflanzenretter stehen beide als orange Kacheln nebeneinander. Einfach „Halten & sprechen“ gedrückt halten, sagen, z. B. „Ich muss Zahnbürsten kaufen, Fleisch holen und Oma anrufen“, und loslassen: Die KI macht daraus einzelne Notizen und sortiert die Einkäufe nach Bereichen im Laden.",
+        a: "Zwei Listen für deinen Alltag, getrennt von den Hof-Aufgaben: oben die Einkaufsliste, darunter „Merken & Erledigen“ als deine To-do-Liste. Für die Einkaufsliste das obere Feld nutzen: „Halten & sprechen“ gedrückt halten, sagen, z. B. „Ich brauche Zahnbürsten, Fleisch und Milch“, und loslassen – die KI macht daraus einzelne Einträge und sortiert sie nach Bereichen im Laden. To-dos wie „Oma anrufen“ trägst du im Feld unter „Merken & Erledigen“ ein.",
       },
       {
         q: "Wie teile ich meine Einkaufsliste?",
@@ -549,7 +549,7 @@ export const GENERAL_HELP: HelpTopic[] = [
       },
       {
         q: "Wie trage ich ein To-do ein, das nichts mit dem Einkauf zu tun hat?",
-        a: "Direkt unter „Merken & Erledigen“ steht ein eigenes Feld: To-do eintippen (oder sprechen), z. B. „Oma anrufen“, und auf „Merken“ tippen. Was dort eingetragen wird, landet immer auf dem Merkzettel, nie auf der Einkaufsliste.",
+        a: "Direkt unter „Merken & Erledigen“ steht ein eigenes Feld: To-do eintippen (oder sprechen), z. B. „Oma anrufen“, und auf „Merken“ tippen. Was dort eingetragen wird, landet immer bei den To-dos, nie auf der Einkaufsliste.",
       },
       {
         q: "Was darf, wer mitmacht?",

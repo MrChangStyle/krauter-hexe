@@ -219,6 +219,8 @@ Details in `docs/ertrag.md` (`lib/farmYields.ts`, `routes/farm-yields.ts`, page 
 
 ## Module
 
+Name ändern (`docs/konto.md`): `PATCH /auth/user` also takes `firstName`/`lastName` (`lib/personName.ts`), edited under Mehr → Konto. Alltagsnotizen: own input field under „Merken & Erledigen“ (always `kind: merken`).
+
 Nutzer-ID (`docs/konto.md`): `users.user_code` (4 digits, 5 once 80 % are taken; `lib/userCode.ts`) – farms (`POST /farms/:farmId/members`) and note shares add people by it, not by email.
 
 Details in `docs/module.md`. Every account can hide areas (Pflanzen, Tiere) and single modules under Mehr → „Meine Module“ (`/module`); hidden ones leave the hub tiles, the dashboard and the bottom bar, the data stays. Registry `lib/modules.ts` (ids = `ModuleId` in the API, tier `base` or `lite` → label Lite/Premium), stored per account in `user_settings` (`GET/PUT /settings`, in `PERSONAL_TABLES`, also `onboarded_at` for the first-start assistant). The same page holds „Meine Tierarten“: `user_settings.hidden_animals` (`hiddenAnimals`, default all shown) limits the animal kinds in „Essbar für“ and the Kräuter-Hexe (`hooks/use-animal-kinds.ts`).

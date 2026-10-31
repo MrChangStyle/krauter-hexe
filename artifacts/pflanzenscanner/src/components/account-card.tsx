@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Check, Copy, Download, Loader2, Trash2, UserRound } from "lucide-react";
+import { Check, Copy, Download, Loader2, Pencil, Trash2, UserRound } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -62,6 +62,31 @@ export async function requestAccountDeletion(
   if (res.ok) return;
   const body = (await res.json().catch(() => ({}))) as { error?: string };
   throw new Error(body.error ?? "Das Konto konnte nicht gelöscht werden.");
+}
+
+/**
+ * Sends PATCH /api/auth/user with the new first and last name (docs/konto.md).
+ * Empty means "not given". Rejects with the server's German message.
+ */
+export async function requestNameChange(
+  names: { firstName: string; lastName: string },
+  fetchFn: typeof fetch = fetch,
+): Promise<void> {
+  const base = (import.meta.env?.BASE_URL ?? "/").replace(/\/$/, "");
+  let res: Response;
+  try {
+    res = await fetchFn(`${base}/api/auth/user`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ firstName: names.firstName.trim(), lastName: names.lastName.trim() }),
+      credentials: "include",
+    });
+  } catch {
+    throw new Error("Keine Verbindung zum Server. Bitte prüfe deine Internetverbindung.");
+  }
+  if (res.ok) return;
+  const body = (await res.json().catch(() => ({}))) as { error?: string };
+  throw new Error(body.error ?? "Der Name konnte nicht gespeichert werden.");
 }
 
 /**
@@ -133,6 +158,7 @@ export function AccountCard() {
         <UserRound className="h-4 w-4 text-primary" />
         Dein Konto
       </h2>
+      <NameEditor firstName={user.firstName} lastName={user.lastName} />
       {user.email && (
         <p className="text-sm text-muted-foreground break-all">{user.email}</p>
       )}
@@ -291,5 +317,89 @@ export function UserCodeBox({ code, hint }: { code: number; hint?: string }) {
         {copied ? "Kopiert" : "Kopieren"}
       </Button>
     </div>
+  );
+}
+
+/**
+ * Vor- und Nachname (docs/konto.md): shown to others in the team, on shared
+ * lists and tasks. Changeable any time, e.g. a new last name after a wedding.
+ */
+function NameEditor({ firstName, lastName }: { firstName: string | null; lastName: string | null }) {
+  const { refreshUser } = useAuthContext();
+  const { toast } = useToast();
+  const [editing, setEditing] = useState(false);
+  const [first, setFirst] = useState(firstName ?? "");
+  const [last, setLast] = useState(lastName ?? "");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const fullName = [firstName, lastName].filter(Boolean).join(" ");
+
+  function start() {
+    setFirst(firstName ?? "");
+    setLast(lastName ?? "");
+    setError(null);
+    setEditing(true);
+  }
+
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await requestNameChange({ firstName: first, lastName: last });
+      refreshUser();
+      setEditing(false);
+      toast({ title: "Name geändert", description: "Andere sehen ihn ab jetzt in Team, Listen und Aufgaben." });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Der Name konnte nicht gespeichert werden.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (!editing) {
+    return (
+      <div className="flex items-center gap-3" data-testid="account-name">
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs text-muted-foreground">Dein Name</span>
+          <span className="block break-words font-medium">{fullName || "Noch kein Name eingetragen"}</span>
+        </span>
+        <Button type="button" size="sm" variant="outline" className="shrink-0 gap-1.5" onClick={start}>
+          <Pencil className="h-4 w-4" />
+          {fullName ? "Ändern" : "Eintragen"}
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={(e) => void save(e)} className="space-y-3 rounded-xl border bg-muted/40 p-3" data-testid="account-name-form">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="account-first-name">Vorname</Label>
+          <Input id="account-first-name" autoComplete="given-name" maxLength={50} value={first} onChange={(e) => setFirst(e.target.value)} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <Label htmlFor="account-last-name">Nachname</Label>
+          <Input id="account-last-name" autoComplete="family-name" maxLength={50} value={last} onChange={(e) => setLast(e.target.value)} />
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">So sehen dich andere im Team, auf geteilten Listen und bei Aufgaben.</p>
+      {error && (
+        <p role="alert" className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          {error}
+        </p>
+      )}
+      <div className="flex justify-end gap-2">
+        <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => setEditing(false)}>
+          Abbrechen
+        </Button>
+        <Button type="submit" size="sm" className="gap-1.5" disabled={busy}>
+          {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+          Speichern
+        </Button>
+      </div>
+    </form>
   );
 }

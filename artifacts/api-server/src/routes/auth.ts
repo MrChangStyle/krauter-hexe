@@ -26,6 +26,7 @@ import {
 } from '../lib/registrationPolicy';
 import { getTurnstileConfig, verifyTurnstileToken } from '../lib/turnstile';
 import { isUsernameAllowed } from '../lib/usernameFilter';
+import { parsePersonName } from '../lib/personName';
 import { clearAuthCookie, setAuthCookie } from '../lib/auth';
 import {
   hashPassword,
@@ -336,46 +337,77 @@ router.get('/auth/user', async (req: Request, res: Response) => {
 });
 
 // ── PATCH /auth/user ──────────────────────────────────────────────────────────
-// Lets the current user choose their leaderboard username (1–8 letters, A-Z only).
+// Lets the current user change their own account data: the leaderboard
+// username (1–8 letters, A-Z only) and/or first and last name
+// (docs/konto.md – e.g. a new last name after a wedding). Only the fields
+// sent are changed.
 router.patch('/auth/user', async (req: Request, res: Response): Promise<void> => {
   if (!req.isAuthenticated()) {
     res.status(401).json({ error: 'Nicht angemeldet.' });
     return;
   }
-  const { username } = req.body as { username?: unknown };
-  if (
-    typeof username !== 'string' ||
-    !/^[A-Za-z]{1,8}$/.test(username)
-  ) {
-    res
-      .status(400)
-      .json({ error: 'Benutzername: 1–8 Buchstaben (A–Z), keine Zahlen oder Sonderzeichen.' });
-    return;
+  const body = (req.body ?? {}) as { username?: unknown; firstName?: unknown; lastName?: unknown };
+  const set: { username?: string; firstName?: string | null; lastName?: string | null } = {};
+
+  if (body.firstName !== undefined) {
+    const parsed = parsePersonName(body.firstName, 'Vorname');
+    if (!parsed.ok) {
+      res.status(400).json({ error: parsed.error });
+      return;
+    }
+    set.firstName = parsed.value;
   }
-  const normalized = username.toUpperCase();
-  if (!isUsernameAllowed(normalized)) {
-    res.status(400).json({ error: 'Dieser Benutzername ist nicht erlaubt. Bitte wähle einen anderen.' });
-    return;
+  if (body.lastName !== undefined) {
+    const parsed = parsePersonName(body.lastName, 'Nachname');
+    if (!parsed.ok) {
+      res.status(400).json({ error: parsed.error });
+      return;
+    }
+    set.lastName = parsed.value;
   }
 
-  // Case-insensitive uniqueness check (excluding self).
-  const [conflict] = await db
-    .select({ id: usersTable.id })
-    .from(usersTable)
-    .where(
-      and(
-        sql`upper(${usersTable.username}) = ${normalized}`,
-        ne(usersTable.id, req.user!.id),
-      ),
-    );
-  if (conflict) {
-    res.status(409).json({ error: 'Dieser Benutzername ist bereits vergeben.' });
+  if (body.username !== undefined) {
+    const { username } = body;
+    if (
+      typeof username !== 'string' ||
+      !/^[A-Za-z]{1,8}$/.test(username)
+    ) {
+      res
+        .status(400)
+        .json({ error: 'Benutzername: 1–8 Buchstaben (A–Z), keine Zahlen oder Sonderzeichen.' });
+      return;
+    }
+    const normalized = username.toUpperCase();
+    if (!isUsernameAllowed(normalized)) {
+      res.status(400).json({ error: 'Dieser Benutzername ist nicht erlaubt. Bitte wähle einen anderen.' });
+      return;
+    }
+
+    // Case-insensitive uniqueness check (excluding self).
+    const [conflict] = await db
+      .select({ id: usersTable.id })
+      .from(usersTable)
+      .where(
+        and(
+          sql`upper(${usersTable.username}) = ${normalized}`,
+          ne(usersTable.id, req.user!.id),
+        ),
+      );
+    if (conflict) {
+      res.status(409).json({ error: 'Dieser Benutzername ist bereits vergeben.' });
+      return;
+    }
+    set.username = normalized;
+  }
+
+  if (Object.keys(set).length === 0) {
+    res.status(400).json({ error: 'Nichts zu ändern.' });
     return;
   }
 
   const [updated] = await db
     .update(usersTable)
-    .set({ username: normalized })
+    .set(set)
     .where(eq(usersTable.id, req.user!.id))
     .returning(publicUserColumns);
 

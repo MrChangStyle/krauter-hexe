@@ -105,15 +105,14 @@ export default function NotizenPage() {
               <StickyNote className="h-4 w-4" />
               Merken & Erledigen {groups.remember.length > 0 && `(${groups.remember.length})`}
             </h2>
-            {groups.remember.length === 0 ? (
-              <p className="rounded-2xl border border-dashed p-4 text-sm text-muted-foreground">Nichts zu merken.</p>
-            ) : (
+            {groups.remember.length > 0 && (
               <ul className="divide-y rounded-2xl border bg-card px-3">
                 {groups.remember.map((n) => (
                   <NoteRow key={n.id} note={n} />
                 ))}
               </ul>
             )}
+            <RememberAdd listOwnerId={isOwn ? null : current} empty={groups.remember.length === 0} />
           </section>
           {groups.done.length > 0 && <DoneSection notes={groups.done} own={isOwn} />}
         </>
@@ -193,6 +192,53 @@ function DoneSection({ notes, own }: { notes: DailyNote[]; own: boolean }) {
         ))}
       </ul>
     </section>
+  );
+}
+
+/**
+ * A to-do straight onto "Merken & Erledigen" – no AI, no shopping: what is
+ * typed here is always a thing to remember or do ("Oma anrufen").
+ */
+function RememberAdd({ listOwnerId, empty }: { listOwnerId: string | null; empty: boolean }) {
+  const refresh = useRefresh();
+  const { toast } = useToast();
+  const [text, setText] = useState("");
+  const create = useCreateNote({
+    mutation: {
+      onSuccess: () => {
+        setText("");
+        refresh();
+      },
+      onError: (err: unknown) => toast({ title: errorText(err, "Nicht gespeichert"), variant: "destructive" }),
+    },
+  });
+
+  function submit(e: FormEvent) {
+    e.preventDefault();
+    const value = text.trim();
+    if (value.length < 2 || create.isPending) return;
+    create.mutate({ data: { text: value.slice(0, 120), kind: "merken", category: null, listOwnerId } });
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-1.5" data-testid="remember-add">
+      {empty && <p className="text-sm text-muted-foreground">Nichts zu merken. Trag hier To-dos ein, die nichts mit dem Einkauf zu tun haben.</p>}
+      <div className="flex items-center gap-2">
+        <Input
+          aria-label="Neues To-do"
+          placeholder="z. B. Oma anrufen, Tierarzt-Termin …"
+          maxLength={120}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          className="h-10 flex-1 text-sm"
+        />
+        <DictateButton value={text} onChange={setText} max={120} label="To-do sprechen" />
+        <Button type="submit" size="sm" className="h-10 gap-1.5 bg-orange-600 text-white hover:bg-orange-700" disabled={create.isPending || text.trim().length < 2}>
+          {create.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+          Merken
+        </Button>
+      </div>
+    </form>
   );
 }
 

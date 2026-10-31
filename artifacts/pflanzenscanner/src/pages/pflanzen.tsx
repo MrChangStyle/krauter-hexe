@@ -1,20 +1,22 @@
 /**
  * /pflanzen — parent page holding the two plant sub-sections as tabs.
- * Reads ?tab=archiv|arten and ?kat=<ViewCategory> from the URL so the
+ * Reads ?tab=archiv|arten|karte and ?kat=<ViewCategory> from the URL so the
  * back-button on the plant detail page can deep-link into the right tab and
  * category. The params are consumed once on mount; tab switching after that
  * is handled by local state.
  */
 import { useState, useEffect } from "react";
-import { BookOpen, Layers } from "lucide-react";
+import { BookOpen, Layers, Map as MapIcon } from "lucide-react";
 import { useSearch } from "wouter";
 import { cn } from "@/lib/utils";
 import { VIEW_CATEGORIES, type ViewCategory } from "@/lib/view-categories";
 import ArchivePage from "./archive";
 import CategoriesPage from "./categories";
 import { PageHeader } from "@/components/page-header";
+import { FindSpotsOverview } from "@/components/find-spots";
 
-type Tab = "archiv" | "arten";
+type Tab = "archiv" | "arten" | "karte";
+const TABS: readonly string[] = ["archiv", "arten", "karte"];
 
 export default function PflanzenPage() {
   const search = useSearch();
@@ -24,8 +26,7 @@ export default function PflanzenPage() {
   const tabParam = params.get("tab");
   const katParam = params.get("kat");
 
-  const initialTab: Tab =
-    tabParam === "arten" || tabParam === "archiv" ? tabParam : "archiv";
+  const initialTab: Tab = tabParam && TABS.includes(tabParam) ? (tabParam as Tab) : "archiv";
 
   // Legacy bookmarks: the former mushroom split categories map to "mushroom".
   const normalizedKat =
@@ -44,7 +45,7 @@ export default function PflanzenPage() {
   useEffect(() => {
     const p = new URLSearchParams(search);
     const t = p.get("tab");
-    if (t === "arten" || t === "archiv") setActiveTab(t);
+    if (t && TABS.includes(t)) setActiveTab(t as Tab);
   }, [search]);
 
   return (
@@ -67,6 +68,12 @@ export default function PflanzenPage() {
             icon={Layers}
             label="Arten"
           />
+          <TabButton
+            active={activeTab === "karte"}
+            onClick={() => setActiveTab("karte")}
+            icon={MapIcon}
+            label="Karte"
+          />
         </div>
       </div>
 
@@ -78,6 +85,12 @@ export default function PflanzenPage() {
       <div className={activeTab === "arten" ? "flex flex-col flex-1" : "hidden"}>
         <CategoriesPage initialCategory={initialKat} />
       </div>
+      {/* The map needs a visible box to size itself, so it mounts only when shown. */}
+      {activeTab === "karte" && (
+        <div className="px-4 py-4 max-w-2xl mx-auto w-full">
+          <FindSpotsOverview />
+        </div>
+      )}
     </div>
   );
 }
@@ -98,7 +111,7 @@ function TabButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2 px-5 py-3 text-sm font-medium border-b-2 transition-colors",
+        "flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors",
         active
           ? "border-primary text-primary"
           : "border-transparent text-muted-foreground hover:text-foreground",

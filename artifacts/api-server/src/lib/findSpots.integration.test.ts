@@ -125,4 +125,34 @@ describe.skipIf(!enabled)("Fundorte (real database)", () => {
     expect((await map(plantId)).status).toBe(404);
     expect((await api("GET", "/find-spots?kind=plant&speciesId=abc")).status).toBe(400);
   });
+  it("Archiv → Karte: all plants on one map, everyone's or only my own", async () => {
+    for (const who of ["anna", "bert"]) {
+      as = who;
+      await api("PUT", "/settings", { shareFindSpots: true });
+    }
+    as = "anna";
+    await find(plantId);
+    await find(orchidId);
+    await find(plantId, 52.52, 13.405);
+    as = "bert";
+    await find(plantId);
+
+    const all = (await api("GET", "/find-spots/overview?scope=all")).data;
+    expect(all).toMatchObject({ finds: 4, species: 2 });
+    // Rosenheim: nettle by both, in the same 2-km cell; the orchid only on the 25-km grid.
+    const nettle = all.cells.find((c: any) => c.km === 2 && c.finds === 2);
+    expect(nettle.species).toEqual([{ id: plantId, name: "Urtica dioica", finds: 2 }]);
+    const orchid = all.cells.find((c: any) => c.km === 25);
+    expect(orchid.species).toEqual([{ id: orchidId, name: "Ophrys apifera", finds: 1 }]);
+    expect(all.cells).toHaveLength(3);
+
+    as = "anna";
+    const mine = (await api("GET", "/find-spots/overview?scope=mine")).data;
+    expect(mine).toMatchObject({ finds: 3, species: 2 });
+    // Own finds stay at their own 2-km cell, the orchid too.
+    expect(mine.cells.every((c: any) => c.km === 2)).toBe(true);
+    expect(mine.cells.flatMap((c: any) => c.species.map((sp: any) => sp.finds))).toEqual([1, 1, 1]);
+
+    expect((await api("GET", "/find-spots/overview?scope=nobody")).status).toBe(400);
+  });
 });

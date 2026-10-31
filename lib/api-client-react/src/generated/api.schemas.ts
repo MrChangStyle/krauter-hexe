@@ -2232,6 +2232,30 @@ export interface FindSpotCell {
   lastMonth: string;
 }
 
+export type FindSpotOverviewCellSpeciesItem = {
+  id: number;
+  name: string;
+  finds: number;
+};
+
+export interface FindSpotOverviewCell {
+  lat: number;
+  lon: number;
+  /** Edge length of the cell – 2 km, 25 km for protected species on the shared map */
+  km: number;
+  finds: number;
+  /** Month of the latest find in the cell, YYYY-MM */
+  lastMonth: string;
+  species: FindSpotOverviewCellSpeciesItem[];
+}
+
+export interface FindSpotOverview {
+  cells: FindSpotOverviewCell[];
+  finds: number;
+  /** Number of different plants on the map */
+  species: number;
+}
+
 export interface FindSpotMap {
   cells: FindSpotCell[];
   /** Edge length of a cell – 2 km, 25 km for protected species */
@@ -6266,6 +6290,18 @@ export type AuthorizationSessionHeaderParameter = string;
 export type ListPlantsParams = {
 category?: PlantCategory;
 };
+
+export type GetFindSpotOverviewParams = {
+scope: GetFindSpotOverviewScope;
+};
+
+export type GetFindSpotOverviewScope = typeof GetFindSpotOverviewScope[keyof typeof GetFindSpotOverviewScope];
+
+
+export const GetFindSpotOverviewScope = {
+  mine: 'mine',
+  all: 'all',
+} as const;
 
 export type ListFindSpotsParams = {
 kind: FindSpotKind;

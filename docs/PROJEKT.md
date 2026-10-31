@@ -44,7 +44,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 | Pflegeplan | Gieß- und Düngeaufgaben mit Erinnerung, wetterabhängig | `docs/pflege-wetter.md` |
 | Pflanzendoc | Diagnose kranker Pflanzen, Pflege-Guide | `docs/schaedlinge.md` |
 | Schädlinge & Nützlinge | Hilfe bio und chemisch, Nützlinge | `docs/schaedlinge.md` |
-| Lexikon | alle Arten, auch Pilze; Fundorte-Karte je Art | `docs/fundorte.md` |
+| Lexikon | alle Arten, auch Pilze; Fundorte-Karte je Art und Reiter „Karte“ mit allen Funden | `docs/fundorte.md` |
 | Kräuter-Hexe | Heilkräuter-Ratgeber (KI) | `docs/kraeuter-hexe.md` |
 | Beet-Architekt | Beete im 30-cm-Raster, Mischkultur, Fruchtfolge, Gartenkalender, Frostwarnung, KI-Beet-Vorschlag mit Anteil Küche/Tierfutter, Garten-Assistent, Hochbeet-Begleiter | `docs/beet-architekt.md` |
 | Saatgut | Saatgut-Vorrat, Keimfähigkeit | `docs/saatgut.md` |
@@ -262,6 +262,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 31.10.2026 | #161 | Lexikon: neuer Reiter „Karte“ neben Archiv und Arten – alle Pflanzen und Pilze mit Fundort auf einer Karte, „Alle Funde“ oder „Meine Funde“, Tipp aufs Feld zeigt die Arten; Hilfe, Suche und Datenschutz ergänzt |
 | 31.10.2026 | #160 | Fundorte: gemeinsame Karte im Archiv, wo eine Art gefunden wurde – nur mit Einwilligung, anonym, auf 2 km gerundet (geschützte Arten 25 km); Datenschutzerklärung ergänzt, EXIF aus nicht verkleinerbaren Fotos entfernt |
 | 31.10.2026 | #159 | Name ändern unter Mehr → Konto (Vor- und Nachname, z. B. nach Hochzeit); Alltagsnotizen: eigenes Eingabefeld für To-dos unter „Merken & Erledigen“ |
 | 30.10.2026 | #158 | Nutzer-ID: ältere Konten ohne Nummer bekommen sie spätestens, wenn der Betreiber Verwaltung → Benutzer öffnet |

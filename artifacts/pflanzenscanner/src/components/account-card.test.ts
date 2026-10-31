@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { downloadMyData, requestAccountDeletion } from "@/components/account-card";
+import { downloadMyData, requestAccountDeletion, requestNameChange } from "@/components/account-card";
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -63,5 +63,24 @@ describe("downloadMyData", () => {
     await downloadMyData(fetchMock);
     expect(link.download).toBe("little-farming-daten-2026-10-24.json");
     expect(click).toHaveBeenCalled();
+  });
+});
+
+describe("requestNameChange", () => {
+  it("sends the trimmed names as PATCH with the session cookie", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({ user: {} }), { status: 200 }));
+    await requestNameChange({ firstName: " Yvonne ", lastName: "Huber " }, fetchMock);
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(url).toMatch(/\/api\/auth\/user$/);
+    expect(init.method).toBe("PATCH");
+    expect(init.credentials).toBe("include");
+    expect(JSON.parse(String(init.body))).toEqual({ firstName: "Yvonne", lastName: "Huber" });
+  });
+
+  it("passes on the server's German message", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: "Nachname: höchstens 50 Zeichen." }), { status: 400 }),
+    );
+    await expect(requestNameChange({ firstName: "A", lastName: "B" }, fetchMock)).rejects.toThrow("Nachname: höchstens 50 Zeichen.");
   });
 });

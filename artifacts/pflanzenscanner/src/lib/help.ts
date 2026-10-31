@@ -500,6 +500,7 @@ export const GENERAL_HELP: HelpTopic[] = [
         q: "Ich habe mein Passwort vergessen.",
         a: "Auf der Anmeldeseite auf „Passwort vergessen?“ tippen und die E-Mail-Adresse eingeben. Du bekommst einen Link, mit dem du ein neues Passwort festlegst; er gilt einmal. Solange der Mailversand nicht eingerichtet ist, schickt dir der Betreiber den Link.",
       },
+      { q: "Wie ändere ich meinen Namen?", a: "Unter „Mehr → Konto“ bei „Dein Name“ auf „Ändern“ tippen, Vor- und Nachname anpassen (z. B. nach einer Hochzeit) und speichern. Team, geteilte Listen und Aufgaben zeigen ab dann den neuen Namen. Die E-Mail-Adresse bleibt gleich." },
       { q: "Wie ändere ich mein Passwort?", a: "Unter „Mehr → Konto → Passwort ändern“. Danach sind alle anderen Geräte abgemeldet – praktisch, wenn jemand dein Passwort kennen könnte." },
       {
         q: "Wo finde ich meine Nutzer-ID?",
@@ -545,6 +546,10 @@ export const GENERAL_HELP: HelpTopic[] = [
       {
         q: "Wie teile ich meine Einkaufsliste?",
         a: "Auf der Seite der Alltagsnotizen unten auf „Teilen“ tippen und jemanden aus dem Team wählen oder die Nutzer-ID einer anderen Person eingeben – zum Beispiel jemanden aus der Familie mit eigenem Konto (die Nummer steht bei ihr unter Mehr → Konto). Im selben Dialog lassen sich auch die Hof-Aufgaben mitteilen. Setzt jemand etwas auf die geteilte Liste, bekommen die anderen eine Push-Nachricht (abschaltbar unter Mehr → Benachrichtigungen).",
+      },
+      {
+        q: "Wie trage ich ein To-do ein, das nichts mit dem Einkauf zu tun hat?",
+        a: "Direkt unter „Merken & Erledigen“ steht ein eigenes Feld: To-do eintippen (oder sprechen), z. B. „Oma anrufen“, und auf „Merken“ tippen. Was dort eingetragen wird, landet immer auf dem Merkzettel, nie auf der Einkaufsliste.",
       },
       {
         q: "Was darf, wer mitmacht?",

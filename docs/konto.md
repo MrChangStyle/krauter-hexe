@@ -1,8 +1,16 @@
-# Konto: Nutzer-ID, Passwort vergessen und ändern
+# Konto: Name, Nutzer-ID, Passwort vergessen und ändern
 
 Schritt 2 des Launch-Plans (`docs/LAUNCH-PLAN.md`). Wer sein Passwort vergisst, kommt ohne fremde Hilfe wieder ins Konto. Wer es ändern will, kann das in der App.
 
 ## So funktioniert’s
+
+### Name ändern
+
+- Mehr → Konto → „Dein Name“ → „Ändern“: Vor- und Nachname anpassen, z. B. nach einer Hochzeit. Ohne Namen steht dort „Eintragen“.
+- Der Name erscheint überall, wo andere das Konto sehen: Team, geteilte Listen („von …“), Hof-Aufgaben. Er wird bei jeder Anzeige frisch gelesen, ändert sich also überall sofort.
+- Regeln (`api-server/src/lib/personName.ts`): je Feld höchstens 50 Zeichen, nur Buchstaben (auch Umlaute und Akzente), Leerzeichen, Bindestrich, Apostroph und Punkt; leer = kein Name. Technik: `PATCH /api/auth/user` mit `firstName`/`lastName` (nur die gesendeten Felder ändern sich).
+- Eine Google-Anmeldung überschreibt einen selbst gesetzten Namen nicht – Google füllt nur leere Felder.
+- Die E-Mail-Adresse und die Adresse lassen sich hier nicht ändern.
 
 ### Nutzer-ID
 

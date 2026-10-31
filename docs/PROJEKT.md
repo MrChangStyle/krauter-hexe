@@ -95,7 +95,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 - **Registrierung:** E-Mail und Passwort oder Google, dazu die Zustimmung zu Datenschutz und Nutzungsbedingungen. **Es gibt keinen Einladungscode.**
 - **Nutzer-ID:** Jedes Konto hat eine vierstellige Nummer (später fünfstellig), zu finden unter Mehr → Konto. Mit ihr – nicht mit der E-Mail – holt man jemanden ins Team, als Vertretung oder Tierarzt und teilt Listen (`docs/konto.md`).
 - **Freischaltung:** Die ersten `FREE_TESTER_SLOTS` Konten (Standard 20, der Betreiber zählt nicht, bestehende Konten zählen mit) starten sofort. Danach wartet ein neues Konto auf die Freischaltung unter Verwaltung → Benutzer. Der Betreiber bekommt bei jeder Anmeldung einen Push.
-- **Betreiber:** Das erste Konto wird Betreiber (Owner). Es sieht die Verwaltung (Betrieb, Feedback, Moderation, Entwürfe, Premium, Benutzer, Aufräumen) und hat kein KI-Limit. In der Verwaltung ist alles zu, bis man eine Kachel antippt; dann öffnet sich nur dieser Bereich (`/verwaltung#feedback` öffnet direkt das Feedback).
+- **Betreiber:** Das erste Konto wird Betreiber (Owner). Es sieht die Verwaltung (Betrieb, Feedback, Moderation, Entwürfe, Finanzen, Premium, Benutzer, Aufräumen) und hat kein KI-Limit. In der Verwaltung ist alles zu, bis man eine Kachel antippt; dann öffnet sich nur dieser Bereich (`/verwaltung#feedback` öffnet direkt das Feedback).
 - **Höfe und Rollen:** Jedes Konto bekommt einen eigenen Hof („Meine Farm“) und kann weitere anlegen. Auf einem Hof gibt es die Rollen Admin, Mitarbeiter (caretaker) und Gast, dazu Modul-Freigaben und Vertretungen mit Enddatum (`docs/team.md`). Der Tierarzt bekommt per „Tierarzt einladen“ einen Zugang auf Zeit zu Tieren, Krankenakte, Arzneimitteln und Export (`docs/krankenakte.md`). Geteilte Höfe stehen unter „Wähle deine Farm“. Unter Farm & Team legt der Hof fest, wie er wirtschaftet: konventionell (Standard), naturnah oder bio – jederzeit umschaltbar; naturnah und bio stellen Pflanzendoc und Pflege-Guide auf biologische Mittel um (`docs/bio.md`).
 - **Passwort vergessen und ändern** (`docs/konto.md`):
   - „Passwort vergessen?“ auf der Anmeldeseite schickt einen Einmal-Link per Mail, sobald `RESEND_API_KEY` gesetzt ist.
@@ -262,6 +262,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
+| 31.10.2026 | #164 | Verwaltung → Finanzen: wer welches Paket hat (mit Filter), Umsatz je Monat, laufende Abos, KI-Anfragen und geschätzte KI-Kosten, Ergebnis, letzte Zahlungen, CSV-Export; Zahlungen aus Stripe-Webhook und Testkasse |
 | 31.10.2026 | #163 | Paket & Abo: Paket wechseln – Upgrade und Downgrade zwischen Lite und Premium, monatlich oder jährlich, sofort wirksam mit Verrechnung; zurück zu Basis per Kündigen; Hilfe ergänzt |
 | 31.10.2026 | #162 | Lexikon → Karte zeigt alle Scans, auch Insekten; ältere Scans mit gespeichertem Ort erscheinen unter „Meine Funde“ gestrichelt und ungefähr an diesem Ort (nur für einen selbst); Koordinaten von Rosenheim und drei weiteren Städten korrigiert |
 | 31.10.2026 | #161 | Lexikon: neuer Reiter „Karte“ neben Archiv und Arten – alle Pflanzen und Pilze mit Fundort auf einer Karte, „Alle Funde“ oder „Meine Funde“, Tipp aufs Feld zeigt die Arten; Hilfe, Suche und Datenschutz ergänzt |

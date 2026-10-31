@@ -22,6 +22,7 @@ import { db, premiumTable, usersTable } from '@workspace/db';
 import { eq } from 'drizzle-orm';
 
 import { FarmDataError } from './farmAnimals';
+import { PRICE_CENTS, recordPayment, recordStripeInvoice } from './finance';
 import { INTERVALS, TIERS, premiumOf, type Interval, type Premium, type Tier } from './premium';
 
 export type Provider = 'stripe' | 'mock';
@@ -162,6 +163,7 @@ export function subscriptionUpdate(sub: StripeSubscription, now: Date): { userId
  * Returns what happened, for the log.
  */
 export async function handleStripeEvent(event: { type: string; data: { object: unknown } }, now = new Date()): Promise<string> {
+  if (event.type === 'invoice.paid') return recordStripeInvoice(event.data.object);
   if (!event.type.startsWith('customer.subscription.')) return 'ignored';
   const update = subscriptionUpdate(event.data.object as StripeSubscription, now);
   if (!update) return 'no account';
@@ -226,6 +228,8 @@ export async function completeMockCheckout(userId: string, tier: unknown, interv
     subscriptionId: `mock_sub_${randomUUID()}`,
     cancelAtPeriodEnd: false,
   });
+  // What Stripe's invoice.paid would record.
+  await recordPayment({ accountId: userId, source: 'mock', externalId: `mock_inv_${randomUUID()}`, amountCents: PRICE_CENTS[tier][interval], tier, plan: interval, paidAt: now });
   return premiumOf(userId, false, now);
 }
 

@@ -2232,6 +2232,86 @@ export interface FindSpotCell {
   lastMonth: string;
 }
 
+export type FinancePaket = typeof FinancePaket[keyof typeof FinancePaket];
+
+
+export const FinancePaket = {
+  owner: 'owner',
+  premium: 'premium',
+  lite: 'lite',
+  manual: 'manual',
+  tester: 'tester',
+  test: 'test',
+  basis: 'basis',
+} as const;
+
+export type FinanceOverviewCounts = {
+  owner: number;
+  premium: number;
+  lite: number;
+  manual: number;
+  tester: number;
+  test: number;
+  basis: number;
+};
+
+export type FinanceOverviewMonthsItem = {
+  /** YYYY-MM (Berlin) */
+  month: string;
+  revenueCents: number;
+  payments: number;
+  aiRequests: number;
+  aiCostCents: number;
+  resultCents: number;
+};
+
+export type FinanceOverviewAccountsItem = {
+  id: string;
+  /** @nullable */
+  name: string | null;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  userCode: number | null;
+  paket: FinancePaket;
+  /** @nullable */
+  source: string | null;
+  /** @nullable */
+  plan: string | null;
+  /** @nullable */
+  until: string | null;
+  cancelAtPeriodEnd: boolean;
+  monthlyCents: number;
+  /** @nullable */
+  since: string | null;
+};
+
+export type FinanceOverviewPaymentsItem = {
+  paidAt: string;
+  amountCents: number;
+  currency: string;
+  source: string;
+  /** @nullable */
+  tier: string | null;
+  /** @nullable */
+  plan: string | null;
+  /** @nullable */
+  email: string | null;
+};
+
+export interface FinanceOverview {
+  counts: FinanceOverviewCounts;
+  /** Monthly recurring revenue of the running, not cancelled subscriptions (a yearly one as a twelfth), list prices */
+  mrrCents: number;
+  /** Cost of one AI request used for the estimate (Richtwert, env AI_COST_PER_REQUEST_CENT) */
+  aiCostPerRequestCent: number;
+  /** The last 12 months, newest first */
+  months: FinanceOverviewMonthsItem[];
+  accounts: FinanceOverviewAccountsItem[];
+  /** The latest 20 payments */
+  payments: FinanceOverviewPaymentsItem[];
+}
+
 export type FindSpotOverviewCellSpeciesItem = {
   kind: FindSpotKind;
   id: number;

@@ -134,6 +134,7 @@ import type {
   FeedbackMarkInput,
   Fertilizing,
   FertilizingInput,
+  FinanceOverview,
   FindSpotInput,
   FindSpotMap,
   FindSpotOverview,
@@ -23978,6 +23979,83 @@ export const useCompleteMockCheckout = <TError = ErrorType<void>,
       > => {
       return useMutation(getCompleteMockCheckoutMutationOptions(options));
     }
+
+export const getGetFinanceUrl = () => {
+
+
+
+
+  return `/api/admin/finance`
+}
+
+/**
+ * @summary Finanzen (docs/finanzen.md) – Paket of every account, revenue per month, AI requests and their estimated cost; owner only
+ */
+export const getFinance = async ( options?: RequestInit): Promise<FinanceOverview> => {
+
+  return customFetch<FinanceOverview>(getGetFinanceUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetFinanceQueryKey = () => {
+    return [
+    `/api/admin/finance`
+    ] as const;
+    }
+
+
+export const getGetFinanceQueryOptions = <TData = Awaited<ReturnType<typeof getFinance>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFinance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetFinanceQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getFinance>>> = ({ signal }) => getFinance({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getFinance>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetFinanceQueryResult = NonNullable<Awaited<ReturnType<typeof getFinance>>>
+export type GetFinanceQueryError = ErrorType<void>
+
+
+/**
+ * @summary Finanzen (docs/finanzen.md) – Paket of every account, revenue per month, AI requests and their estimated cost; owner only
+ */
+
+export function useGetFinance<TData = Awaited<ReturnType<typeof getFinance>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getFinance>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetFinanceQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
 
 export const getListPremiumUrl = () => {
 

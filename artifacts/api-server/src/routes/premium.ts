@@ -1,7 +1,8 @@
 import { Router, type IRouter } from 'express';
-import { GetPremiumResponse, ListPremiumResponse, SetPremiumBody, SetPremiumResponse } from '@workspace/api-zod';
+import { GetFinanceResponse, GetPremiumResponse, ListPremiumResponse, SetPremiumBody, SetPremiumResponse } from '@workspace/api-zod';
 
 import { requireApproved, requireOwner } from '../middlewares/requireApproved';
+import { financeOverview } from '../lib/finance';
 import { listPremium, premiumOf, setPremium } from '../lib/premium';
 import { badRequest, handle } from './farmRouteHelpers';
 
@@ -15,6 +16,15 @@ router.get(
   requireApproved,
   handle(async (req, res) => {
     res.json(GetPremiumResponse.parse(await premiumOf(req.user!.id, req.user!.isOwner)));
+  }),
+);
+
+// Finanzen (docs/finanzen.md): Pakete je Konto, Umsatz, KI-Kosten – owner only.
+router.get(
+  '/admin/finance',
+  requireOwner,
+  handle(async (_req, res) => {
+    res.json(GetFinanceResponse.parse(await financeOverview()));
   }),
 );
 

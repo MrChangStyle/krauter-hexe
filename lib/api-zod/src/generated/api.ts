@@ -11730,6 +11730,54 @@ export const CompleteMockCheckoutResponse = zod.object({
 
 
 /**
+ * @summary Finanzen (docs/finanzen.md) – Paket of every account, revenue per month, AI requests and their estimated cost; owner only
+ */
+export const GetFinanceResponse = zod.object({
+  "counts": zod.object({
+  "owner": zod.number(),
+  "premium": zod.number(),
+  "lite": zod.number(),
+  "manual": zod.number(),
+  "tester": zod.number(),
+  "test": zod.number(),
+  "basis": zod.number()
+}),
+  "mrrCents": zod.number().describe('Monthly recurring revenue of the running, not cancelled subscriptions (a yearly one as a twelfth), list prices'),
+  "aiCostPerRequestCent": zod.number().describe('Cost of one AI request used for the estimate (Richtwert, env AI_COST_PER_REQUEST_CENT)'),
+  "months": zod.array(zod.object({
+  "month": zod.string().describe('YYYY-MM (Berlin)'),
+  "revenueCents": zod.number(),
+  "payments": zod.number(),
+  "aiRequests": zod.number(),
+  "aiCostCents": zod.number(),
+  "resultCents": zod.number()
+})).describe('The last 12 months, newest first'),
+  "accounts": zod.array(zod.object({
+  "id": zod.string(),
+  "name": zod.string().nullable(),
+  "email": zod.string().nullable(),
+  "userCode": zod.number().nullable(),
+  "paket": zod.enum(['owner', 'premium', 'lite', 'manual', 'tester', 'test', 'basis']),
+  "source": zod.string().nullable(),
+  "plan": zod.string().nullable(),
+  "until": zod.string().nullable(),
+  "cancelAtPeriodEnd": zod.boolean(),
+  "monthlyCents": zod.number(),
+  "since": zod.string().nullable()
+})),
+  "payments": zod.array(zod.object({
+  "paidAt": zod.string(),
+  "amountCents": zod.number(),
+  "currency": zod.string(),
+  "source": zod.string(),
+  "tier": zod.string().nullable(),
+  "plan": zod.string().nullable(),
+  "email": zod.string().nullable()
+})).describe('The latest 20 payments')
+})
+
+
+/**
  * @summary Owner – accounts with Premium
  */
 export const ListPremiumResponseItem = zod.object({

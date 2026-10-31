@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { Link } from "wouter";
-import { Activity, ArrowLeft, Crown, Flag, MessageCircle, NotebookPen, Trash2, Users, X } from "lucide-react";
+import { Activity, ArrowLeft, Crown, Flag, MessageCircle, NotebookPen, Trash2, Users, Wallet, X } from "lucide-react";
 import { CropDraftsCard } from "@/components/crop-drafts-card";
 import { HubGrid, HubTile } from "@/components/hub-tile";
 import { ModerationCard } from "@/components/moderation-card";
 import { FeedbackCard } from "@/components/feedback-card";
+import { FinanceCard } from "@/components/finance-card";
 import { OperationsCard } from "@/components/operations-card";
 import { OrphanCleanupCard } from "@/components/orphan-cleanup-card";
 import { PremiumAdminCard } from "@/components/premium-admin-card";
@@ -41,6 +42,7 @@ const SECTIONS: Section[] = [
       </div>
     ),
   },
+  { id: "finanzen", icon: Wallet, label: "Finanzen", hint: "Pakete, Umsatz, KI-Kosten", tone: "bg-green-100 text-green-800 dark:bg-green-950/50 dark:text-green-300", render: () => <FinanceCard /> },
   { id: "premium", icon: Crown, label: "Premium", hint: "Per Hand vergeben", tone: "bg-yellow-100 text-yellow-800 dark:bg-yellow-950/50 dark:text-yellow-300", render: () => <PremiumAdminCard /> },
   { id: "benutzer", icon: Users, label: "Benutzer", hint: "Freigeben, verwalten", tone: "bg-violet-100 text-violet-800 dark:bg-violet-950/50 dark:text-violet-300", render: () => <Benutzerverwaltung /> },
   { id: "aufraeumen", icon: Trash2, label: "Aufräumen", hint: "Verwaiste Daten", tone: "bg-stone-200 text-stone-800 dark:bg-stone-800 dark:text-stone-200", render: () => <OrphanCleanupCard /> },

@@ -7387,6 +7387,20 @@ paths:
                 $ref: "#/components/schemas/Premium"
         "404":
           description: The test checkout is off.
+  /admin/finance:
+    get:
+      tags: [premium]
+      operationId: getFinance
+      summary: Finanzen (docs/finanzen.md) – Paket of every account, revenue per month, AI requests and their estimated cost; owner only
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FinanceOverview"
+        "403":
+          description: Not the owner.
   /admin/premium:
     get:
       tags: [premium]
@@ -9993,6 +10007,75 @@ components:
         lastMonth:
           type: string
           description: Month of the latest find in the cell, YYYY-MM
+    FinancePaket:
+      type: string
+      enum: [owner, premium, lite, manual, tester, test, basis]
+    FinanceOverview:
+      type: object
+      required: [counts, mrrCents, aiCostPerRequestCent, months, accounts, payments]
+      properties:
+        counts:
+          type: object
+          required: [owner, premium, lite, manual, tester, test, basis]
+          properties:
+            owner: { type: integer }
+            premium: { type: integer }
+            lite: { type: integer }
+            manual: { type: integer }
+            tester: { type: integer }
+            test: { type: integer }
+            basis: { type: integer }
+        mrrCents:
+          type: integer
+          description: Monthly recurring revenue of the running, not cancelled subscriptions (a yearly one as a twelfth), list prices
+        aiCostPerRequestCent:
+          type: number
+          description: Cost of one AI request used for the estimate (Richtwert, env AI_COST_PER_REQUEST_CENT)
+        months:
+          type: array
+          description: The last 12 months, newest first
+          items:
+            type: object
+            required: [month, revenueCents, payments, aiRequests, aiCostCents, resultCents]
+            properties:
+              month: { type: string, description: "YYYY-MM (Berlin)" }
+              revenueCents: { type: integer }
+              payments: { type: integer }
+              aiRequests: { type: integer }
+              aiCostCents: { type: integer }
+              resultCents: { type: integer }
+        accounts:
+          type: array
+          items:
+            type: object
+            required: [id, name, email, userCode, paket, source, plan, until, cancelAtPeriodEnd, monthlyCents, since]
+            properties:
+              id: { type: string }
+              name: { type: [string, 'null'] }
+              email: { type: [string, 'null'] }
+              userCode: { type: [integer, 'null'] }
+              paket:
+                $ref: "#/components/schemas/FinancePaket"
+              source: { type: [string, 'null'] }
+              plan: { type: [string, 'null'] }
+              until: { type: [string, 'null'] }
+              cancelAtPeriodEnd: { type: boolean }
+              monthlyCents: { type: integer }
+              since: { type: [string, 'null'] }
+        payments:
+          type: array
+          description: The latest 20 payments
+          items:
+            type: object
+            required: [paidAt, amountCents, currency, source, tier, plan, email]
+            properties:
+              paidAt: { type: string }
+              amountCents: { type: integer }
+              currency: { type: string }
+              source: { type: string }
+              tier: { type: [string, 'null'] }
+              plan: { type: [string, 'null'] }
+              email: { type: [string, 'null'] }
     FindSpotOverviewCell:
       type: object
       required: [lat, lon, km, finds, lastMonth, species, approx, place]

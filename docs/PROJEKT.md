@@ -262,7 +262,7 @@ Der Weg zum öffentlichen Start steht Schritt für Schritt in `docs/LAUNCH-PLAN.
 
 | Datum | PR | Änderung |
 |---|---|---|
-| 31.10.2026 | – | Fundorte: gemeinsame Karte im Archiv, wo eine Art gefunden wurde – nur mit Einwilligung, anonym, auf 2 km gerundet (geschützte Arten 25 km); Datenschutzerklärung ergänzt, EXIF aus nicht verkleinerbaren Fotos entfernt |
+| 31.10.2026 | #160 | Fundorte: gemeinsame Karte im Archiv, wo eine Art gefunden wurde – nur mit Einwilligung, anonym, auf 2 km gerundet (geschützte Arten 25 km); Datenschutzerklärung ergänzt, EXIF aus nicht verkleinerbaren Fotos entfernt |
 | 31.10.2026 | #159 | Name ändern unter Mehr → Konto (Vor- und Nachname, z. B. nach Hochzeit); Alltagsnotizen: eigenes Eingabefeld für To-dos unter „Merken & Erledigen“ |
 | 30.10.2026 | #158 | Nutzer-ID: ältere Konten ohne Nummer bekommen sie spätestens, wenn der Betreiber Verwaltung → Benutzer öffnet |
 | 30.10.2026 | #157 | Nutzer-ID in Verwaltung → Benutzer: der Betreiber sieht die Nummer jedes Kontos; ältere Konten bekommen sie beim Serverstart; Einrichtungsassistent und App-Tour zeigen die Nutzer-ID, Hilfe mit Anleitung „Wo finde ich meine Nutzer-ID?“ |

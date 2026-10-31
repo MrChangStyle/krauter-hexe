@@ -37,6 +37,7 @@ import { PhotoChoiceCard } from "@/components/photo-choice-card";
 import { ImageLockToggle } from "@/components/image-lock-toggle";
 import { ReportButton } from "@/components/report-button";
 import { MushroomReleaseCard } from "@/components/mushroom-release-card";
+import { FindSpotsSection } from "@/components/find-spots";
 
 /** Parse and validate the `tier` query-param; fall back to "poultry". */
 function parseTierParam(search: string): AnimalKey {
@@ -625,6 +626,8 @@ export default function PlantDetailPage() {
             icon={<MapPin className="w-5 h-5 text-secondary" />}
             content={plant.habitat}
           />
+
+          <FindSpotsSection kind="plant" speciesId={plant.id} />
 
           <Section 
             title="Standortansprüche" 

@@ -793,3 +793,42 @@ describe("daily limits", () => {
     expect(deps.markScanError).not.toHaveBeenCalled();
   });
 });
+
+describe("Fundorte", () => {
+  const spot = { lat: 47.8692, lon: 12.1241 };
+
+  it("puts the find of a scanned plant on the map with the cell from the queue item", async () => {
+    const item = makePending({ findSpot: spot });
+    const plant = { id: 12, germanName: "Brennnessel" } as unknown as Plant;
+    const recordFindSpot = vi.fn().mockResolvedValue({ saved: true });
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanPlant: vi.fn().mockResolvedValue({ plant, alreadyInArchive: true }),
+      recordFindSpot,
+    });
+    await drainQueue(deps);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(recordFindSpot).toHaveBeenCalledWith({ kind: "plant", speciesId: 12, ...spot });
+  });
+
+  it("sends nothing without a cell, and a failing map never fails the scan", async () => {
+    const recordFindSpot = vi.fn().mockRejectedValue(new Error("offline"));
+    const plain = makeDeps({ recordFindSpot });
+    await drainQueue(plain);
+    expect(recordFindSpot).not.toHaveBeenCalled();
+
+    const item = makePending({ kind: "insect", findSpot: spot });
+    const insect = { id: 7 } as unknown as import("@workspace/api-client-react").Insect;
+    const deps = makeDeps({
+      getAllPendingScans: vi.fn().mockResolvedValueOnce([item]).mockResolvedValue([]),
+      scanInsect: vi.fn().mockResolvedValue({ insect, alreadyInArchive: false }),
+      onInsectSuccess: vi.fn(),
+      recordFindSpot,
+    });
+    await drainQueue(deps);
+    await new Promise((r) => setTimeout(r, 0));
+    expect(recordFindSpot).toHaveBeenCalledWith({ kind: "insect", speciesId: 7, ...spot });
+    expect(deps.onInsectSuccess).toHaveBeenCalled();
+    expect(deps.markScanError).not.toHaveBeenCalled();
+  });
+});

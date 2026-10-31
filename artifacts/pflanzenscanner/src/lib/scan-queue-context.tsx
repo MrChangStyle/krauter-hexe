@@ -8,7 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { scanAuto, scanInsect, scanPlant, type Insect, type Plant } from "@workspace/api-client-react";
+import { getGetSettingsQueryKey, recordFindSpot, scanAuto, scanInsect, scanPlant, type Insect, type Plant, type UserSettings } from "@workspace/api-client-react";
+import { currentFindSpot } from "@/lib/find-spots";
 import { useToast } from "@/hooks/use-toast";
 import {
   addPendingScan,
@@ -224,6 +225,7 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
         scanPlant,
         scanInsect: (args) => scanInsect(args),
         scanAuto: (args) => scanAuto(args),
+        recordFindSpot: (args) => recordFindSpot(args),
         onNoSubject: (itemId, message) => {
           setIsAuthBlocked(false);
           setNoSubjectResults((prev) => [
@@ -386,7 +388,10 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
       // almost certainly logged in. Clear any stale auth block so the
       // subsequent processQueue() call in scan.tsx isn't silently gated.
       setIsAuthBlocked(false);
-      const item = await addPendingScan(image, imageSide, localImageId, locationRegion, kind, imageGills);
+      // Fundorte: the 2-km cell, only with consent to the shared map.
+      const consent = queryClient.getQueryData<UserSettings>(getGetSettingsQueryKey())?.shareFindSpots;
+      const findSpot = await currentFindSpot(consent);
+      const item = await addPendingScan(image, imageSide, localImageId, locationRegion, kind, imageGills, findSpot);
       await refresh();
       // NOTE: processQueue is intentionally NOT called here. The scan page
       // calls processQueue() itself AFTER setting waitingForItemId, which
@@ -396,7 +401,7 @@ export function ScanQueueProvider({ children }: { children: ReactNode }) {
       // come from other sources (retries, previous sessions).
       return item.id;
     },
-    [refresh],
+    [queryClient, refresh],
   );
 
   const remove = useCallback(

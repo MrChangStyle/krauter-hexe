@@ -47,6 +47,11 @@ export interface PendingScan {
    * drain infers the side key if needed.
    */
   hasSideImage?: boolean;
+  /**
+   * Fundorte (docs/fundorte.md): centre of the ~2 km cell where the photo was
+   * taken – only with consent to the shared map; never the exact position.
+   */
+  findSpot?: { lat: number; lon: number };
   /** Epoch milliseconds when the photo was captured. */
   createdAt: number;
   status: PendingScanStatus;
@@ -186,6 +191,7 @@ export async function addPendingScan(
   locationRegion?: string,
   kind: PendingScanKind = "plant",
   imageGills?: string,
+  findSpot?: { lat: number; lon: number } | null,
 ): Promise<PendingScan> {
   const db = await openDb();
   const item: PendingScan = {
@@ -197,6 +203,7 @@ export async function addPendingScan(
     ...(localImageId ? { localImageId } : {}),
     ...(localImageId && imageSide ? { hasSideImage: true } : {}),
     ...(locationRegion ? { locationRegion } : {}),
+    ...(findSpot ? { findSpot } : {}),
     createdAt: Date.now(),
     status: "pending",
     attempts: 0,

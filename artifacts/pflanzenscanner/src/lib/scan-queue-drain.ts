@@ -19,6 +19,14 @@ export type AutoScanResponse =
     }
   | { insect: Insect; alreadyInArchive: boolean; imageImproved?: boolean | null };
 
+/** Find on the shared map, if the item carries one; errors are swallowed. */
+function shareFind(deps: DrainDeps, item: PendingScan, kind: "plant" | "insect", speciesId: number): void {
+  if (!item.findSpot || !deps.recordFindSpot) return;
+  void Promise.resolve()
+    .then(() => deps.recordFindSpot!({ kind, speciesId, ...item.findSpot! }))
+    .catch(() => {});
+}
+
 export interface DrainScanResult {
   itemId: string;
   plant: Plant;
@@ -93,6 +101,11 @@ export interface DrainDeps {
    */
   onNoSubject?: (itemId: string, message: string) => void;
   onInsectSuccess?: (result: DrainInsectResult) => void;
+  /**
+   * Fundorte (docs/fundorte.md): puts the find of a scanned species on the
+   * shared map. Fire and forget – a failure never touches the scan.
+   */
+  recordFindSpot?: (args: { kind: "plant" | "insect"; speciesId: number; lat: number; lon: number }) => Promise<unknown>;
   /** The server found no insect on the photo (HTTP 422 KEIN_INSEKTEN_FOTO). */
   onNotInsect?: (itemId: string) => void;
   deletePendingScan: (id: string) => Promise<void>;
@@ -229,6 +242,8 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
             ...(item.locationRegion ? { locationRegion: item.locationRegion } : {}),
           });
           await deps.deletePendingScan(item.id);
+          if ("insect" in autoRes) shareFind(deps, item, "insect", autoRes.insect.id);
+          else shareFind(deps, item, "plant", autoRes.plant.id);
           if ("insect" in autoRes) {
             deps.onInsectSuccess?.({
               itemId: item.id,
@@ -264,6 +279,7 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
             ...(item.locationRegion ? { locationRegion: item.locationRegion } : {}),
           });
           await deps.deletePendingScan(item.id);
+          shareFind(deps, item, "insect", insectRes.insect.id);
           deps.onInsectSuccess?.({
             itemId: item.id,
             insect: insectRes.insect,
@@ -284,6 +300,7 @@ export async function drainQueue(deps: DrainDeps): Promise<DrainStats> {
           ...(item.locationRegion ? { locationRegion: item.locationRegion } : {}),
         });
         await deps.deletePendingScan(item.id);
+        shareFind(deps, item, "plant", res.plant.id);
         deps.onSuccess({
           itemId: item.id,
           plant: res.plant,

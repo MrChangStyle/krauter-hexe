@@ -6964,6 +6964,55 @@ paths:
                 $ref: "#/components/schemas/PushTestResult"
         "401":
           description: Not signed in
+  /find-spots:
+    get:
+      tags: [settings]
+      operationId: listFindSpots
+      summary: Fundorte (docs/fundorte.md) – where a species of the shared archive was found, anonymous and coarsened
+      parameters:
+        - name: kind
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/FindSpotKind"
+        - name: speciesId
+          in: query
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        "200":
+          description: Map cells with the number of finds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindSpotMap"
+        "400":
+          description: Invalid input.
+        "401":
+          description: Not signed in
+    post:
+      tags: [settings]
+      operationId: recordFindSpot
+      summary: Add the caller's find of a species they scanned – only with consent; the app sends the 2-km cell, never the exact position
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FindSpotInput"
+      responses:
+        "200":
+          description: Whether the find was put on the map
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FindSpotSaved"
+        "400":
+          description: Invalid input.
+        "401":
+          description: Not signed in
   /settings:
     get:
       tags: [settings]
@@ -9858,10 +9907,69 @@ components:
     ModuleId:
       type: string
       enum: [plants, my-plants, care-plan, plant-doc, pests, lexicon, herb-witch, garden, grow, animals, farm-tasks, feed, breeding, medicines, duties, yields, wildlife, handover, export, members, bees, pantry, pasture]
+    FindSpotKind:
+      type: string
+      enum: [plant, insect]
+    FindSpotInput:
+      type: object
+      required: [kind, speciesId, lat, lon]
+      properties:
+        kind:
+          $ref: "#/components/schemas/FindSpotKind"
+        speciesId:
+          type: integer
+          minimum: 1
+        lat:
+          type: number
+          minimum: -90
+          maximum: 90
+          description: Centre of the 2-km cell the app rounded the position to; the server rounds again
+        lon:
+          type: number
+          minimum: -180
+          maximum: 180
+    FindSpotSaved:
+      type: object
+      required: [saved]
+      properties:
+        saved:
+          type: boolean
+          description: False without consent or when the caller never scanned that species
+    FindSpotCell:
+      type: object
+      required: [lat, lon, finds, lastMonth]
+      properties:
+        lat:
+          type: number
+        lon:
+          type: number
+        finds:
+          type: integer
+        lastMonth:
+          type: string
+          description: Month of the latest find in the cell, YYYY-MM
+    FindSpotMap:
+      type: object
+      required: [cells, cellKm, protectedSpecies, finds]
+      properties:
+        cells:
+          type: array
+          items:
+            $ref: "#/components/schemas/FindSpotCell"
+        cellKm:
+          type: integer
+          description: Edge length of a cell – 2 km, 25 km for protected species
+        protectedSpecies:
+          type: boolean
+        finds:
+          type: integer
     UserSettings:
       type: object
       required: [hiddenModules, onboarded, pushOff, quietHours, seasonalCare, organicTips, organicFarm, hiddenAnimals]
       properties:
+        shareFindSpots:
+          type: [boolean, 'null']
+          description: Fundorte (docs/fundorte.md) – consent to show own finds anonymously on the shared map; null = not asked yet
         hiddenAnimals:
           type: array
           description: Meine Tierarten (docs/module.md) – animal kinds hidden in "Essbar für" and the Kräuter-Hexe
@@ -9914,6 +10022,9 @@ components:
           type: boolean
         organicTips:
           type: boolean
+        shareFindSpots:
+          type: boolean
+          description: Consent to the shared find map; false also deletes the own finds from it
         hiddenAnimals:
           type: array
           maxItems: 20

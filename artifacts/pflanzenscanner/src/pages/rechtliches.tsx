@@ -201,6 +201,19 @@ export function DatenschutzPage() {
             einer Weide zeigt die Karte deinen Standort nur auf deinem Gerät.
           </li>
           <li>
+            <strong>Fundorte (gemeinsame Karte im Archiv):</strong> Nur wenn du
+            „Fundorte anonym teilen“ einschaltest (Art. 6 Abs. 1 lit. a DSGVO),
+            speichern wir zu einer Art, die du gescannt hast, das Feld von etwa
+            2 × 2 km, in dem du warst, und den Monat. Den genauen Standort
+            rundet die App schon auf deinem Gerät; er wird nicht übertragen.
+            Andere sehen nur, wie viele Funde es je Feld gibt – ohne Namen,
+            ohne Uhrzeit. Bei geschützten Arten zeigt die Karte nur Felder von
+            etwa 25 × 25 km. Du kannst die Einwilligung jederzeit unter „Mehr →
+            Konto“ widerrufen; dann löschen wir deine Fundorte sofort. Aus
+            Fotos, die die App nicht verkleinern kann, entfernt sie vor dem
+            Senden die eingebetteten Standortdaten (EXIF).
+          </li>
+          <li>
             <strong>Grow (Eigenanbau ab 18):</strong> Wenn du den Bereich
             nutzt, speichern wir den Zeitpunkt deiner Bestätigung, dass du
             volljährig bist, und deine Anbau-Daten (Pflanzen, Tagebuch,
@@ -321,8 +334,9 @@ export function DatenschutzPage() {
             etwa 10 km gerundeter Ort)
           </li>
           <li>
-            OpenStreetMap Foundation (Weidekarte: Kartenbilder, erst nach Tipp auf „Karte zeigen“; deren
-            Server sieht dabei deine IP-Adresse und den Kartenausschnitt, nicht die eingezeichneten Weiden)
+            OpenStreetMap Foundation (Weidekarte und Fundorte-Karte: Kartenbilder, erst nach Tipp auf „Karte
+            zeigen“; deren Server sieht dabei deine IP-Adresse und den Kartenausschnitt, nicht die
+            eingezeichneten Weiden oder Fundorte)
           </li>
         </ul>
         <p className="mt-2">
@@ -339,7 +353,8 @@ export function DatenschutzPage() {
           unter „Mehr“ → „Konto“). Beim Löschen
           entfernen wir deine persönlichen Daten; Arten, die du dem
           gemeinsamen Archiv hinzugefügt hast, bleiben ohne Bezug zu deiner
-          Person erhalten. Daten zum Missbrauchsschutz werden nach spätestens
+          Person erhalten. Deine Fundorte löschen wir mit dem Konto oder
+          sobald du „Fundorte anonym teilen“ ausschaltest. Daten zum Missbrauchsschutz werden nach spätestens
           sieben Tagen gelöscht, behobene Fehlermeldungen nach 90 Tagen,
           Tageszahlen nach gut einem Jahr.
         </p>

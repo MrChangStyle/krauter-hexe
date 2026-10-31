@@ -102,7 +102,11 @@ export const MODULE_HELP: Record<ModuleId, HelpEntry> = {
     href: "/lexikon",
     intro: "Alle Arten, die die App kennt – Pflanzen, Pilze und Insekten – mit Giftigkeit für Menschen und Tiere, Inhaltsstoffen und Nutzen.",
     steps: ["Nach Namen oder Merkmalen suchen.", "Bei Pflanzen auf die Giftigkeit für deine Tierarten achten.", "Aus einem Eintrag direkt zum Pflegeplan."],
-    faq: [{ q: "Warum fehlt eine Art?", a: "Neue Arten kommen über Scans dazu. Scanne sie einfach – dann steht sie danach auch im Lexikon." }],
+    faq: [
+      { q: "Warum fehlt eine Art?", a: "Neue Arten kommen über Scans dazu. Scanne sie einfach – dann steht sie danach auch im Lexikon." },
+      { q: "Was zeigt die Karte „Fundorte“?", a: "Bei jeder Art im Archiv steht unter „Fundorte“, wo sie gefunden wurde – von allen, die ihre Fundorte teilen. Jedes Feld ist etwa 2 × 2 km groß und zeigt nur die Zahl der Funde, keine Namen und keine genauen Punkte. Geschützte Arten wie Orchideen oder Steinpilze zeigt die Karte nur in Feldern von etwa 25 km, damit niemand sie gezielt ausgräbt." },
+      { q: "Wie kommt mein Fund auf die Karte?", a: "Beim Scannen fragt die App einmal, ob du deine Fundorte anonym teilen willst, und braucht dazu den Standort. Den genauen Standort rundet die App schon auf deinem Handy auf ein Feld von etwa 2 km; er wird nie gesendet. Ändern kannst du das unter „Mehr → Konto → Fundorte anonym teilen“ – ausgeschaltet verschwinden auch deine bisherigen Fundorte." },
+    ],
   },
   "herb-witch": {
     title: "Kräuter-Hexe",
@@ -500,6 +504,7 @@ export const GENERAL_HELP: HelpTopic[] = [
         q: "Ich habe mein Passwort vergessen.",
         a: "Auf der Anmeldeseite auf „Passwort vergessen?“ tippen und die E-Mail-Adresse eingeben. Du bekommst einen Link, mit dem du ein neues Passwort festlegst; er gilt einmal. Solange der Mailversand nicht eingerichtet ist, schickt dir der Betreiber den Link.",
       },
+      { q: "Kann ich meine Fundorte von der Karte löschen?", a: "Ja: unter „Mehr → Konto“ „Fundorte anonym teilen“ ausschalten. Dann löschen wir alle deine Fundorte sofort. Gezeigt wurden sie ohnehin nur ohne Namen und auf etwa 2 km gerundet." },
       { q: "Wie ändere ich meinen Namen?", a: "Unter „Mehr → Konto“ bei „Dein Name“ auf „Ändern“ tippen, Vor- und Nachname anpassen (z. B. nach einer Hochzeit) und speichern. Team, geteilte Listen und Aufgaben zeigen ab dann den neuen Namen. Die E-Mail-Adresse bleibt gleich." },
       { q: "Wie ändere ich mein Passwort?", a: "Unter „Mehr → Konto → Passwort ändern“. Danach sind alle anderen Geräte abgemeldet – praktisch, wenn jemand dein Passwort kennen könnte." },
       {

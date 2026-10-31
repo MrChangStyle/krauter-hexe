@@ -152,7 +152,52 @@ function renderDownscaled(
   return canvas.toDataURL("image/jpeg", quality);
 }
 
-function fileToDataUrl(file: File): Promise<string> {
+/**
+ * Removes the metadata segments (APP1: EXIF and XMP – camera, time and GPS
+ * position) from a JPEG, keeping the picture itself untouched. Used for the
+ * rare photo the browser cannot decode, which would otherwise go out as the
+ * original file (docs/fundorte.md). Anything that is not a well-formed JPEG
+ * comes back unchanged.
+ */
+export function stripJpegMetadata(bytes: Uint8Array): Uint8Array {
+  if (bytes.length < 4 || bytes[0] !== 0xff || bytes[1] !== 0xd8) return bytes;
+  const keep: Uint8Array[] = [bytes.subarray(0, 2)];
+  let i = 2;
+  while (i + 4 <= bytes.length) {
+    if (bytes[i] !== 0xff) return bytes; // not a marker: give up, leave as is
+    const marker = bytes[i + 1]!;
+    // Start of scan: the image data follows – keep the rest as it is.
+    if (marker === 0xda) {
+      keep.push(bytes.subarray(i));
+      break;
+    }
+    const length = (bytes[i + 2]! << 8) | bytes[i + 3]!;
+    if (length < 2 || i + 2 + length > bytes.length) return bytes;
+    if (marker !== 0xe1) keep.push(bytes.subarray(i, i + 2 + length));
+    i += 2 + length;
+  }
+  const out = new Uint8Array(keep.reduce((n, k) => n + k.length, 0));
+  let at = 0;
+  for (const k of keep) {
+    out.set(k, at);
+    at += k.length;
+  }
+  return out;
+}
+
+async function fileToDataUrl(file: File): Promise<string> {
+  if (file.type === "image/jpeg" || /\.jpe?g$/i.test(file.name)) {
+    try {
+      const clean = stripJpegMetadata(new Uint8Array(await file.arrayBuffer()));
+      return await blobToDataUrl(new Blob([clean as Uint8Array<ArrayBuffer>], { type: "image/jpeg" }));
+    } catch {
+      // Fall back to the plain read below.
+    }
+  }
+  return blobToDataUrl(file);
+}
+
+function blobToDataUrl(file: Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => resolve(reader.result as string);

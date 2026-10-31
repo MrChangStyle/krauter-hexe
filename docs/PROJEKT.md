@@ -40,7 +40,7 @@ Jedes Konto blendet Bereiche und Module unter Mehr → „Meine Module“ selbst
 
 | Modul | Zweck | Doku |
 |---|---|---|
-| 31.10.2026 | – | Name ändern unter Mehr → Konto (Vor- und Nachname, z. B. nach Hochzeit); Alltagsnotizen: eigenes Eingabefeld für To-dos unter „Merken & Erledigen“ |
+| 31.10.2026 | #159 | Name ändern unter Mehr → Konto (Vor- und Nachname, z. B. nach Hochzeit); Alltagsnotizen: eigenes Eingabefeld für To-dos unter „Merken & Erledigen“ |
 | Scannen & Meine Pflanzen | KI bestimmt Pflanze, Pilz, Insekt; Sammlung mit Steckbrief, Giftigkeit, Standort | `replit.md`, `docs/kraeuter-hexe.md` |
 | Pflegeplan | Gieß- und Düngeaufgaben mit Erinnerung, wetterabhängig | `docs/pflege-wetter.md` |
 | Pflanzendoc | Diagnose kranker Pflanzen, Pflege-Guide | `docs/schaedlinge.md` |

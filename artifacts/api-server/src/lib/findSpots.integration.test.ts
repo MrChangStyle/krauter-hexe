@@ -154,5 +154,19 @@ describe.skipIf(!enabled)("Fundorte (real database)", () => {
     expect(mine.cells.flatMap((c: any) => c.species.map((sp: any) => sp.finds))).toEqual([1, 1, 1]);
 
     expect((await api("GET", "/find-spots/overview?scope=nobody")).status).toBe(400);
+
+    // Older scans kept only the nearest town: on the own map, approximately and marked.
+    const mint = await plant("Mentha aquatica");
+    const thyme = await plant("Thymus vulgaris");
+    await q(`UPDATE plants SET scanned_by_user_id = 'anna', location_region = 'Rosenheim' WHERE id IN ($1, $2)`, [mint, plantId]);
+    await q(`UPDATE plants SET scanned_by_user_id = 'anna', location_region = 'Irgendwo' WHERE id = $1`, [thyme]);
+    const withOlder = (await api("GET", "/find-spots/overview?scope=mine")).data;
+    // The nettle already has a real find – no second, approximate one; the unknown place is left out.
+    expect(withOlder).toMatchObject({ finds: 4, species: 3 });
+    const approx = withOlder.cells.filter((c: any) => c.approx);
+    expect(approx).toHaveLength(1);
+    expect(approx[0]).toMatchObject({ place: "Rosenheim", lat: 47.856, lon: 12.129, species: [{ id: mint, name: "Mentha aquatica", finds: 1 }] });
+    // Never on the shared map.
+    expect((await api("GET", "/find-spots/overview?scope=all")).data.cells.some((c: any) => c.approx)).toBe(false);
   });
 });

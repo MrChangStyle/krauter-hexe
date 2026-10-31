@@ -11276,6 +11276,8 @@ export const GetFindSpotOverviewResponse = zod.object({
   "lat": zod.number(),
   "lon": zod.number(),
   "km": zod.number().describe('Edge length of the cell – 2 km, 25 km for protected species on the shared map'),
+  "approx": zod.boolean().describe('Own map only – an older scan that kept only its town, drawn there'),
+  "place": zod.string().nullable().describe('The town of an approximate cell'),
   "finds": zod.number(),
   "lastMonth": zod.string().describe('Month of the latest find in the cell, YYYY-MM'),
   "species": zod.array(zod.object({

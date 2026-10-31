@@ -9,6 +9,7 @@ Bei jeder Art im Archiv (Pflanzen, Pilze, Insekten) zeigt eine Karte, wo sie gef
 3. **Nach dem Scan:** Ist die Art erkannt, schickt die Warteschlange `POST /api/find-spots` mit Art und Feld (`shareFind` in `scan-queue-drain.ts`, Fehler werden verschluckt – der Scan hängt nie daran). Der Server speichert nur, wenn die Einwilligung vorliegt und das Konto die Art selbst gescannt hat, rundet noch einmal und hält nur die Feldnummer (Zeile/Spalte) und den Monat fest.
 4. **Karte je Art:** Auf der Seite der Art (`plant-detail.tsx`, `insect-detail.tsx`) steht der Abschnitt „Fundorte“. Die Kartenbilder kommen erst nach Tipp auf „Karte zeigen“ von OpenStreetMap (gleiche Zustimmung wie die Weidekarte, `lf-osm-ok`). Jedes Feld ist ein Quadrat mit der Zahl der Funde; Tipp zeigt „x Funde · zuletzt MM/JJJJ“.
 5. **Gesamtkarte im Lexikon:** Lexikon → Reiter **„Karte“** (neben Archiv und Arten, `/lexikon?tab=karte`) zeigt alle Pflanzen und Pilze mit Fundort auf einer Karte. „Alle Funde“: die geteilten Funde aller, geschützte Arten wie bei der Art nur auf ~25 km. „Meine Funde“: nur die eigenen, im eigenen 2-km-Feld. Tipp auf ein Feld zeigt darunter, welche Arten dort wie oft gefunden wurden, mit Link zur Art. Kartenbilder erst nach „Karte zeigen“ (gleiche Zustimmung `lf-osm-ok`). Insekten sind dort (noch) nicht dabei.
+6. **Ältere Scans in „Meine Funde“:** Vor den Fundorten speicherte ein Scan nur den Namen der nächstgelegenen Stadt aus einer festen Liste (`location_region`, z. B. „Rosenheim“, `lib/reverseGeocode.ts`), keine Koordinaten. Diese Pflanzen (eigene Archiv-Einträge, `scanned_by_user_id`) zeigt „Meine Funde“ gestrichelt an dieser Stadt, als **ungefähr** gekennzeichnet (`approx`, `place`, Quadrat 10 km). Nur für das eigene Konto – sie kommen nie auf die gemeinsame Karte, weil es dafür weder Einwilligung noch eine echte Stelle gibt. Hat die Pflanze schon einen echten Fundort, entfällt der ungefähre; unbekannte Ortsnamen (z. B. von Hand eingetippt) bleiben weg. Dabei korrigiert: falsche Koordinaten für Rosenheim, Schwäbisch Gmünd, Hof und Mühldorf am Inn in der Städteliste.
 
 ## Datenschutz (Art. 6 Abs. 1 lit. a DSGVO)
 
@@ -32,5 +33,6 @@ Bei jeder Art im Archiv (Pflanzen, Pilze, Insekten) zeigt eine Karte, wo sie gef
 ## Offen
 
 - Liste der geschützten Arten ist ein **Richtwert** (BArtSchV/FFH, nach Gattung) – fachlich prüfen und ergänzen; zu viele Einträge machen die Karte nur gröber, nie genauer.
+- Ungefähre Quadrate (10 km) für ältere Scans sind ein **Richtwert**; die Stadt ist nur die nächstgelegene aus der Liste, der Fund kann deutlich weiter weg sein.
 - Feldgrößen 2 km und 25 km sowie 30 Fundorte je Tag sind **Richtwerte**.
 - Datenschutzerklärung vor dem Launch rechtlich prüfen lassen.

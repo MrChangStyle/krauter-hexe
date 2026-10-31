@@ -12,7 +12,8 @@
  * - saying no later, or deleting the account, removes the person's finds.
  */
 import { db, findSpotsTable, insectScansTable, insectsTable, plantScansTable, plantsTable } from '@workspace/db';
-import { and, count, eq, gte, sql } from 'drizzle-orm';
+import { and, count, eq, gte, isNotNull, sql } from 'drizzle-orm';
+import { cityPosition } from './reverseGeocode';
 
 export type FindSpotKind = 'plant' | 'insect';
 
@@ -210,7 +211,13 @@ export interface OverviewCell extends FindSpotCell {
   /** Edge length of this cell – 2 km, 25 km where a protected species was found. */
   km: number;
   species: Array<{ id: number; name: string; finds: number }>;
+  /** Only the place name of an older scan is known – drawn at that town. */
+  approx: boolean;
+  place: string | null;
 }
+
+/** Edge of the square drawn for an older scan that only knows its town. */
+export const APPROX_CELL_KM = 10;
 
 /**
  * Archiv → Karte: every plant of the archive with a find on one map. `userId`
@@ -243,7 +250,7 @@ export async function plantFindSpotOverview(userId: string | null) {
     const key = `${km}:${cell.row}:${cell.col}`;
     let hit = cells.get(key);
     if (!hit) {
-      hit = { ...cellCentre(cell, km), km, finds: 0, lastMonth: r.foundMonth, species: [], byId: new Map() };
+      hit = { ...cellCentre(cell, km), km, finds: 0, lastMonth: r.foundMonth, species: [], approx: false, place: null, byId: new Map() };
       cells.set(key, hit);
     }
     hit.finds += 1;
@@ -252,13 +259,42 @@ export async function plantFindSpotOverview(userId: string | null) {
     if (sp) sp.finds += 1;
     else hit.byId.set(r.plantId, { id: r.plantId, name: r.name, finds: 1 });
   }
+  let total = rows.length;
+  const plantIds = new Set(rows.map((r) => r.plantId));
+  if (userId) {
+    // Before Fundorte, a scan kept only the nearest town ("Rosenheim"). The
+    // own map shows those plants there, marked as approximate; they never go
+    // on the shared map – there was no consent and no real position.
+    const older = await db
+      .select({ plantId: plantsTable.id, name: plantsTable.germanName, region: plantsTable.locationRegion, createdAt: plantsTable.createdAt })
+      .from(plantsTable)
+      .where(and(eq(plantsTable.scannedByUserId, userId), isNotNull(plantsTable.locationRegion)))
+      .limit(5000);
+    for (const o of older) {
+      if (plantIds.has(o.plantId) || !o.region) continue;
+      const at = cityPosition(o.region);
+      if (!at) continue;
+      const key = `approx:${o.region}`;
+      const month = berlinMonth(o.createdAt);
+      let hit = cells.get(key);
+      if (!hit) {
+        hit = { ...at, km: APPROX_CELL_KM, finds: 0, lastMonth: month, species: [], approx: true, place: o.region, byId: new Map() };
+        cells.set(key, hit);
+      }
+      hit.finds += 1;
+      if (month > hit.lastMonth) hit.lastMonth = month;
+      hit.byId.set(o.plantId, { id: o.plantId, name: o.name, finds: 1 });
+      plantIds.add(o.plantId);
+      total += 1;
+    }
+  }
   const list = [...cells.values()].map(({ byId, ...c }) => ({
     ...c,
     species: [...byId.values()].sort((a, b) => b.finds - a.finds || a.name.localeCompare(b.name, 'de')),
   }));
   return {
     cells: list.sort((a, b) => b.finds - a.finds),
-    finds: rows.length,
-    species: new Set(rows.map((r) => r.plantId)).size,
+    finds: total,
+    species: plantIds.size,
   };
 }

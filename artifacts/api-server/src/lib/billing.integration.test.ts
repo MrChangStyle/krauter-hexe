@@ -170,4 +170,57 @@ describe.skipIf(!enabled)("Bezahlung (real database)", () => {
     expect(await deleteAccount("anna")).toBe(true);
     delete process.env["STRIPE_SECRET_KEY"];
   });
+
+  it("switches the Paket up and down at the test checkout, and back to Basis by cancelling", async () => {
+    expect((await api("POST", "/billing/change", { tier: "premium", interval: "monthly" })).status).toBe(404);
+    await api("POST", "/billing/mock/complete", { tier: "lite", interval: "monthly" });
+    const [{ active_until: firstEnd }] = await q<any>("SELECT active_until FROM premium WHERE user_id = 'anna'");
+
+    // Upgrade: Premium at once, same period.
+    let r = await api("POST", "/billing/change", { tier: "premium", interval: "monthly" });
+    expect(r.data).toMatchObject({ active: true, tier: "premium", plan: "monthly", subscribed: true });
+    expect(await limit("anna")).toBe(40);
+    expect((await q<any>("SELECT active_until FROM premium WHERE user_id = 'anna'"))[0].active_until).toEqual(firstEnd);
+    expect((await api("POST", "/billing/change", { tier: "premium", interval: "monthly" })).status).toBe(409);
+    expect((await api("POST", "/billing/change", { tier: "gold", interval: "monthly" })).status).toBe(400);
+
+    // Downgrade, now yearly: Lite at once, a new year starts.
+    r = await api("POST", "/billing/change", { tier: "lite", interval: "yearly" });
+    expect(r.data).toMatchObject({ tier: "lite", plan: "yearly" });
+    expect(await limit("anna")).toBe(15);
+    expect(new Date(r.data.until).getTime() - Date.now()).toBeGreaterThan(360 * 86_400_000);
+
+    // Cancelled, then changed: the cancellation is lifted.
+    await api("POST", "/billing/cancel");
+    r = await api("POST", "/billing/change", { tier: "premium", interval: "yearly" });
+    expect(r.data).toMatchObject({ tier: "premium", cancelAtPeriodEnd: false });
+  });
+
+  it("switches a Stripe subscription's price with proration", async () => {
+    process.env["BILLING_PROVIDER"] = "stripe";
+    process.env["STRIPE_SECRET_KEY"] = "sk_test_x";
+    for (const k of ["LITE_MONTHLY", "LITE_YEARLY", "PREMIUM_MONTHLY", "PREMIUM_YEARLY"]) process.env[`STRIPE_PRICE_${k}`] = `price_${k.toLowerCase()}`;
+    await q(`INSERT INTO premium (user_id, source, tier, plan, active_until, customer_id, subscription_id) VALUES ('anna', 'stripe', 'premium', 'monthly', now() + interval '20 days', 'cus_1', 'sub_1')`);
+    const calls: Array<{ method: string; url: string; body: string }> = [];
+    const realFetch = globalThis.fetch;
+    globalThis.fetch = (async (url: Parameters<typeof fetch>[0], init?: RequestInit) => {
+      const u = String(url);
+      if (!u.startsWith("https://api.stripe.com/")) return realFetch(url, init);
+      calls.push({ method: init?.method ?? "GET", url: u, body: String(init?.body ?? "") });
+      return new Response(JSON.stringify({ id: "sub_1", items: { data: [{ id: "si_1" }] } }), { status: 200 });
+    }) as typeof fetch;
+    try {
+      const r = await api("POST", "/billing/change", { tier: "lite", interval: "monthly" });
+      expect(r.data).toMatchObject({ tier: "lite", plan: "monthly" });
+      expect(calls.map((c) => `${c.method} ${c.url.replace("https://api.stripe.com/v1", "")}`)).toEqual(["GET /subscriptions/sub_1", "POST /subscriptions/sub_1"]);
+      const body = decodeURIComponent(calls[1]!.body);
+      expect(body).toContain("items[0][id]=si_1");
+      expect(body).toContain("items[0][price]=price_lite_monthly");
+      expect(body).toContain("proration_behavior=create_prorations");
+      expect(body).toContain("metadata[tier]=lite");
+    } finally {
+      globalThis.fetch = realFetch;
+      for (const k of ["STRIPE_SECRET_KEY", "STRIPE_PRICE_LITE_MONTHLY", "STRIPE_PRICE_LITE_YEARLY", "STRIPE_PRICE_PREMIUM_MONTHLY", "STRIPE_PRICE_PREMIUM_YEARLY"]) delete process.env[k];
+    }
+  });
 });

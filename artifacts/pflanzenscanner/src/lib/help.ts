@@ -536,6 +536,10 @@ export const GENERAL_HELP: HelpTopic[] = [
         a: "Unter „Mehr“ oben im grünen Kasten oder direkt unter „Paket & Abo“. Dort stehen dein Paket, dein Tageslimit und – mit Abo – bis wann es bezahlt ist. In der Testphase ist alles offen; wer jetzt testet, behält die App auch nach dem Start kostenlos.",
       },
       {
+        q: "Kann ich mein Paket wechseln – hoch oder runter?",
+        a: "Ja, unter „Mehr → Paket & Abo → Paket wechseln“: Lite oder Premium und monatlich oder jährlich wählen, dann wechseln. Das neue Paket gilt sofort. Beim Upgrade zahlst du für den Rest des Zeitraums nur den Unterschied, beim Downgrade wird zu viel Gezahltes mit der nächsten Zahlung verrechnet. Zurück zu Basis (kostenlos) geht über „Abo kündigen“.",
+      },
+      {
         q: "Wie kündige ich?",
         a: "Unter „Mehr → Paket & Abo → Abo kündigen“ und dann „Jetzt kündigen“. Das Paket läuft bis zum Ende des bezahlten Zeitraums, danach geht es als Basis weiter – deine Daten bleiben. Löschst du dein Konto, endet ein Abo sofort.",
       },

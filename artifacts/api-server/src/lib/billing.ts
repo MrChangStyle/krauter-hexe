@@ -136,7 +136,7 @@ interface StripeSubscription {
   cancel_at_period_end: boolean;
   /** Older API versions have it here, newer ones on the item. */
   current_period_end?: number;
-  items?: { data?: { current_period_end?: number }[] };
+  items?: { data?: { id?: string; current_period_end?: number }[] };
   metadata?: Record<string, string>;
 }
 
@@ -241,6 +241,49 @@ export async function cancelSubscription(userId: string, now = new Date()): Prom
   if (row.source === 'stripe') await stripe('POST', `/subscriptions/${encodeURIComponent(row.subscriptionId)}`, { cancel_at_period_end: true });
   await db.update(premiumTable).set({ cancelAtPeriodEnd: true }).where(eq(premiumTable.userId, userId));
   return premiumOf(userId, false, now);
+}
+
+/** Order of the Pakete, for "upgrade" and "downgrade". */
+const TIER_RANK: Record<Tier, number> = { lite: 1, premium: 2 };
+
+/**
+ * Paket wechseln: Lite ↔ Premium, monthly ↔ yearly, on the running
+ * subscription. Up and down take effect at once; Stripe settles the
+ * difference for the rest of the period (more now, or a credit on the next
+ * bill). A cancelled subscription runs on again. Back to Basis is "Kündigen".
+ */
+export async function changePlan(userId: string, tier: unknown, interval: unknown, now = new Date()): Promise<Premium> {
+  const provider = billingProvider();
+  if (!provider) off();
+  if (!isTier(tier) || !isInterval(interval)) throw new FarmDataError(400, 'Bitte Paket und Zeitraum wählen.');
+  const row = await rowOf(userId);
+  if (!row?.subscriptionId || !row.activeUntil || row.activeUntil <= now || (row.source !== 'stripe' && row.source !== 'mock')) {
+    throw new FarmDataError(404, 'Es gibt kein laufendes Abo zum Wechseln. Bitte bestelle ein Paket.');
+  }
+  if (row.tier === tier && row.plan === interval && !row.cancelAtPeriodEnd) throw new FarmDataError(409, 'Das ist schon dein Paket.');
+  if (row.source === 'stripe') {
+    const sub = await stripe<StripeSubscription>('GET', `/subscriptions/${encodeURIComponent(row.subscriptionId)}`);
+    const itemId = sub.items?.data?.[0]?.id;
+    if (!itemId) throw new FarmDataError(502, 'Das Abo ließ sich gerade nicht ändern. Bitte versuche es noch einmal.');
+    await stripe('POST', `/subscriptions/${encodeURIComponent(row.subscriptionId)}`, {
+      items: [{ id: itemId, price: process.env[PRICE_ENV[tier][interval]] }],
+      proration_behavior: 'create_prorations',
+      cancel_at_period_end: false,
+      metadata: { userId, tier, interval },
+    });
+    // The webhook confirms it with the new period; the Paket counts from now on.
+    await db.update(premiumTable).set({ tier, plan: interval, cancelAtPeriodEnd: false }).where(eq(premiumTable.userId, userId));
+  } else {
+    // Test checkout: a new period starts when the interval changes.
+    const activeUntil = row.plan === interval ? row.activeUntil : periodEnd(interval, now);
+    await db.update(premiumTable).set({ tier, plan: interval, activeUntil, cancelAtPeriodEnd: false }).where(eq(premiumTable.userId, userId));
+  }
+  return premiumOf(userId, false, now);
+}
+
+/** "up", "down" or "same" (only the interval changes) from one Paket to another. */
+export function changeDirection(from: Tier, to: Tier): 'up' | 'down' | 'same' {
+  return TIER_RANK[to] > TIER_RANK[from] ? 'up' : TIER_RANK[to] < TIER_RANK[from] ? 'down' : 'same';
 }
 
 /**

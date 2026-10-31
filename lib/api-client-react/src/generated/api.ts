@@ -23766,6 +23766,77 @@ export const useCancelBilling = <TError = ErrorType<void>,
       return useMutation(getCancelBillingMutationOptions(options));
     }
 
+export const getChangeBillingPlanUrl = () => {
+
+
+
+
+  return `/api/billing/change`
+}
+
+/**
+ * @summary Paket wechseln – Lite ↔ Premium or monthly ↔ yearly on the running subscription, at once; the provider settles the difference
+ */
+export const changeBillingPlan = async (billingOrderInput: BillingOrderInput, options?: RequestInit): Promise<Premium> => {
+
+  return customFetch<Premium>(getChangeBillingPlanUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(billingOrderInput)
+  }
+);}
+
+
+
+
+
+export const getChangeBillingPlanMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeBillingPlan>>, TError,{data: BodyType<BillingOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof changeBillingPlan>>, TError,{data: BodyType<BillingOrderInput>}, TContext> => {
+
+const mutationKey = ['changeBillingPlan'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof changeBillingPlan>>, {data: BodyType<BillingOrderInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  changeBillingPlan(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ChangeBillingPlanMutationResult = NonNullable<Awaited<ReturnType<typeof changeBillingPlan>>>
+    export type ChangeBillingPlanMutationBody = BodyType<BillingOrderInput>
+    export type ChangeBillingPlanMutationError = ErrorType<void>
+
+    /**
+ * @summary Paket wechseln – Lite ↔ Premium or monthly ↔ yearly on the running subscription, at once; the provider settles the difference
+ */
+export const useChangeBillingPlan = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof changeBillingPlan>>, TError,{data: BodyType<BillingOrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof changeBillingPlan>>,
+        TError,
+        {data: BodyType<BillingOrderInput>},
+        TContext
+      > => {
+      return useMutation(getChangeBillingPlanMutationOptions(options));
+    }
+
 export const getBillingPortalUrl = () => {
 
 

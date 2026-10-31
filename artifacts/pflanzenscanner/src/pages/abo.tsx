@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useSearch } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Check, CreditCard, Loader2, Sparkles } from "lucide-react";
+import { ArrowDown, ArrowLeft, ArrowUp, Check, CreditCard, Loader2, Repeat, Sparkles } from "lucide-react";
 import {
   getGetBillingQueryKey,
   getGetPremiumQueryKey,
   useBillingCheckout,
   useBillingPortal,
   useCancelBilling,
+  useChangeBillingPlan,
   useCompleteMockCheckout,
   useGetBilling,
   type Billing,
@@ -16,7 +17,7 @@ import {
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { INTERVAL_LABELS, aiPerDay, paketLabel, priceLine, untilText } from "@/lib/billing-labels";
+import { INTERVAL_LABELS, aiPerDay, changeDirection, paketLabel, priceLine, untilText } from "@/lib/billing-labels";
 import { LEGAL_PATHS, legalHref } from "@/lib/legal";
 import { isNativeApp } from "@/lib/native-app";
 import { TEST_PHASE, planById } from "@/lib/site";
@@ -133,6 +134,93 @@ function Order({ billing }: { billing: Billing }) {
   );
 }
 
+/**
+ * Paket wechseln: Lite ↔ Premium and monthly ↔ yearly on the running
+ * subscription, up or down, at once. The difference for the rest of the
+ * period is settled with the next payment. Back to Basis is "Abo kündigen".
+ */
+function ChangePlan({ billing }: { billing: Billing }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const p = billing.premium;
+  const currentTier: BillingTier = p.tier === "lite" ? "lite" : "premium";
+  const currentInterval: BillingInterval = p.plan ?? "yearly";
+  const [tier, setTier] = useState<BillingTier>(currentTier);
+  const [interval, setInterval] = useState<BillingInterval>(currentInterval);
+  const change = useChangeBillingPlan({
+    mutation: {
+      onSuccess: () => {
+        void queryClient.invalidateQueries({ queryKey: getGetBillingQueryKey() });
+        void queryClient.invalidateQueries({ queryKey: getGetPremiumQueryKey() });
+        toast({ title: "Paket gewechselt", description: `Ab jetzt: ${planById(tier).name}, ${INTERVAL_LABELS[interval]}.` });
+      },
+      onError: (err) => toast({ title: "Wechseln ging nicht", description: errorText(err, "Bitte versuche es noch einmal."), variant: "destructive" }),
+    },
+  });
+  const unchanged = tier === currentTier && interval === currentInterval && !p.cancelAtPeriodEnd;
+  const direction = changeDirection(currentTier, tier);
+  return (
+    <section className="space-y-3 rounded-2xl border bg-card p-4 text-sm" data-testid="abo-change">
+      <h2 className="flex items-center gap-2 font-semibold">
+        <Repeat className="h-4 w-4 text-primary" />
+        Paket wechseln
+      </h2>
+      <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label="Neues Paket">
+        {(["lite", "premium"] as const).map((t) => (
+          <button
+            key={t}
+            type="button"
+            role="radio"
+            aria-checked={tier === t}
+            onClick={() => setTier(t)}
+            className={`rounded-xl border p-3 text-left ${tier === t ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-muted/50"}`}
+          >
+            <p className="font-semibold">
+              {planById(t).name}
+              {t === currentTier && <span className="ml-1 text-xs font-normal text-muted-foreground">(jetzt)</span>}
+            </p>
+            <p className="text-xs">{planById(t).aiPerDay} KI-Anfragen am Tag</p>
+          </button>
+        ))}
+      </div>
+      <div className="flex gap-2" role="radiogroup" aria-label="Neuer Zeitraum">
+        {(["monthly", "yearly"] as const).map((i) => (
+          <button
+            key={i}
+            type="button"
+            role="radio"
+            aria-checked={interval === i}
+            onClick={() => setInterval(i)}
+            className={`flex-1 rounded-full border px-3 py-1.5 ${interval === i ? "border-primary bg-primary text-primary-foreground" : "border-border"}`}
+          >
+            {INTERVAL_LABELS[i]}
+          </button>
+        ))}
+      </div>
+      {!unchanged && (
+        <div className="space-y-2" data-testid="abo-change-summary">
+          <p className="font-semibold">
+            {planById(tier).name}: {priceLine(tier, interval)}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {direction === "up"
+              ? "Upgrade: Das größere Paket gilt sofort. Für den Rest des bezahlten Zeitraums zahlst du nur den Unterschied."
+              : direction === "down"
+                ? "Downgrade: Das kleinere Paket gilt sofort. Was du für den Rest des Zeitraums zu viel gezahlt hast, wird mit der nächsten Zahlung verrechnet."
+                : "Neuer Zeitraum: Der Unterschied wird mit der nächsten Zahlung verrechnet."}
+            {p.cancelAtPeriodEnd && " Deine Kündigung wird damit aufgehoben – das Abo läuft weiter."} Kündigen kannst du weiter jederzeit zum Ende des Zeitraums.
+          </p>
+          <Button className="w-full gap-2" disabled={change.isPending} onClick={() => change.mutate({ data: { tier, interval } })}>
+            {change.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : direction === "down" ? <ArrowDown className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
+            {direction === "down" ? `Zu ${planById(tier).name} wechseln` : `Kostenpflichtig zu ${planById(tier).name} wechseln`}
+          </Button>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">Zurück zu Basis (kostenlos): unten „Abo kündigen“ – dein Paket läuft bis zum Ende des bezahlten Zeitraums.</p>
+    </section>
+  );
+}
+
 /** Kündigen (§ 312k BGB): a button, a confirmation page, "Jetzt kündigen". Plus the provider's portal. */
 function Manage({ billing }: { billing: Billing }) {
   const { toast } = useToast();
@@ -162,7 +250,7 @@ function Manage({ billing }: { billing: Billing }) {
       {billing.provider === "stripe" && (
         <Button variant="outline" className="w-full gap-2" disabled={portal.isPending} onClick={() => portal.mutate()}>
           <CreditCard className="h-4 w-4" />
-          Zahlung verwalten (Zahlungsart, Rechnungen, Paket wechseln)
+          Zahlung verwalten (Zahlungsart, Rechnungen)
         </Button>
       )}
       {!p.cancelAtPeriodEnd &&
@@ -226,6 +314,7 @@ export default function AboPage() {
       ) : (
         <>
           <Status billing={b} />
+          {p!.subscribed && b.enabled && (p!.source === "stripe" || p!.source === "mock") && <ChangePlan billing={b} />}
           {p!.subscribed && b.enabled && <Manage billing={b} />}
           {canOrder && <Order billing={b} />}
           {nativeApp && b.enabled && !free && !p!.subscribed && (

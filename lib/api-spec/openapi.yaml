@@ -7331,6 +7331,28 @@ paths:
                 $ref: "#/components/schemas/Premium"
         "404":
           description: No running subscription.
+  /billing/change:
+    post:
+      tags: [premium]
+      operationId: changeBillingPlan
+      summary: Paket wechseln – Lite ↔ Premium or monthly ↔ yearly on the running subscription, at once; the provider settles the difference
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingOrderInput"
+      responses:
+        "200":
+          description: OK.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Premium"
+        "404":
+          description: No running subscription.
+        "409":
+          description: Already this Paket.
   /billing/portal:
     post:
       tags: [premium]

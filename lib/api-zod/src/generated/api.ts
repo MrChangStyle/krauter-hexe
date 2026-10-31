@@ -11684,6 +11684,25 @@ export const CancelBillingResponse = zod.object({
 
 
 /**
+ * @summary Paket wechseln – Lite ↔ Premium or monthly ↔ yearly on the running subscription, at once; the provider settles the difference
+ */
+export const ChangeBillingPlanBody = zod.object({
+  "tier": zod.enum(['lite', 'premium']),
+  "interval": zod.enum(['monthly', 'yearly'])
+})
+
+export const ChangeBillingPlanResponse = zod.object({
+  "active": zod.boolean(),
+  "until": zod.coerce.date().nullable(),
+  "source": zod.string().nullable().describe('owner | manual | test | tester | stripe | mock'),
+  "tier": zod.union([zod.null(),zod.enum(['lite', 'premium'])]),
+  "plan": zod.union([zod.null(),zod.enum(['monthly', 'yearly'])]),
+  "cancelAtPeriodEnd": zod.boolean().describe('Cancelled – runs until `until`'),
+  "subscribed": zod.boolean().describe('A subscription with the payment provider (cancel and portal work)')
+})
+
+
+/**
  * @summary Zahlung verwalten – the provider's portal
  */
 export const BillingPortalResponse = zod.object({

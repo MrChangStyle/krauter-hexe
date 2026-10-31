@@ -4,6 +4,8 @@ import {
   BillingCheckoutResponse,
   BillingPortalResponse,
   CancelBillingResponse,
+  ChangeBillingPlanBody,
+  ChangeBillingPlanResponse,
   CompleteMockCheckoutBody,
   CompleteMockCheckoutResponse,
   GetBillingResponse,
@@ -13,6 +15,7 @@ import { getAppConfig } from '../lib/appConfig';
 import {
   billingStatus,
   cancelSubscription,
+  changePlan,
   completeMockCheckout,
   handleStripeEvent,
   portalUrl,
@@ -56,6 +59,16 @@ router.post(
   requireApproved,
   handle(async (req, res) => {
     res.json(CancelBillingResponse.parse(await cancelSubscription(req.user!.id)));
+  }),
+);
+
+router.post(
+  '/billing/change',
+  requireApproved,
+  handle(async (req, res) => {
+    const body = ChangeBillingPlanBody.safeParse(req.body);
+    if (!body.success) return badRequest(res);
+    res.json(ChangeBillingPlanResponse.parse(await changePlan(req.user!.id, body.data.tier, body.data.interval)));
   }),
 );
 
